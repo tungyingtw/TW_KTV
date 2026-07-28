@@ -80,7 +80,9 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
 
 async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promise<Song[] | null> {
   try {
-    const response = await fetch(`/songs_catalog.json?v=${Date.now()}`);
+    const baseUrl = import.meta.env.BASE_URL || './';
+    const catalogUrl = `${baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'}songs_catalog.json?v=${Date.now()}`;
+    const response = await fetch(catalogUrl);
     if (response.ok && response.body) {
       const contentLength = response.headers.get('content-length');
       const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
