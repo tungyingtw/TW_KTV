@@ -67,15 +67,6 @@ function isLocalhostRequest(req) {
 }
 
 function handleAdminPageServe(req, res) {
-  if (!isLocalhostRequest(req)) {
-    return res.status(403).send(`
-      <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #0f172a; color: #f87171; height: 100vh; box-sizing: border-box;">
-        <h1 style="font-size: 2.5rem; margin-bottom: 10px;">🚫 403 Access Denied</h1>
-        <p style="font-size: 1.1rem; color: #cbd5e1;">基於安全資安防護，管理後台網頁與管理員 API 僅限架設伺服器之「本機 (Localhost)」存取。</p>
-        <p style="font-size: 0.9rem; color: #64748b; margin-top: 20px;">外網連線已自動隔絕阻擋，確保管理端安全。</p>
-      </div>
-    `);
-  }
   const adminPath = path.join(__dirname, '../public/admin.html');
   if (fs.existsSync(adminPath)) {
     res.sendFile(adminPath);
@@ -89,12 +80,9 @@ app.get('/sys-admin-panel', handleAdminPageServe);
 app.get('/admin', handleAdminPageServe);
 
 function requireAdmin(req, res, next) {
-  if (!isLocalhostRequest(req)) {
-    return res.status(403).json({ error: '拒絕存取：管理員 API 僅限伺服器本機 (Localhost) 存取，外網禁止連線。' });
-  }
   const token = req.headers['x-admin-token'] || req.query.token;
   if (!token || token !== ADMIN_TOKEN) {
-    return res.status(401).json({ error: '未授權：需要管理員密碼 Token (預設 0000)' });
+    return res.status(401).json({ error: '未授權：需要高強度管理員密碼 Token' });
   }
   next();
 }
