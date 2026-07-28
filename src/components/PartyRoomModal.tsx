@@ -109,10 +109,10 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
           </div>
           <div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
-              包廂多人點歌本 & 點歌號總表
+              包廂多人點歌本 & 收錄總表
             </h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-              朋友掃碼共同編輯歌單 · 統一輸出享溫馨/錢櫃/好樂迪點歌碼
+              朋友掃碼共同編輯歌單 · 統一對照全台各大 KTV 門市收錄狀態
             </p>
           </div>
         </div>

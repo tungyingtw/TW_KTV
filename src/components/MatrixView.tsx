@@ -58,8 +58,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
           <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '8px', maxWidth: '560px', margin: '8px auto 20px', lineHeight: 1.6 }}>
             {isSingleBrand ? (
               <>
-                資料庫中暫無【{currentBrandInfo?.shortName}】的驗證點歌碼對照記錄。<br />
-                實體包廂多採用雲端對應系統（建議可先參考 SingGo / 享溫馨 點歌號）。
+                資料庫中暫無【{currentBrandInfo?.shortName}】的驗證收錄對照記錄。<br />
+                實體包廂多採用雲端對應系統（建議可先參考 SingGo / 享溫馨 收錄狀態）。
               </>
             ) : (
               '嘗試更換關鍵字或取消過濾條件。'
@@ -71,7 +71,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               onClick={() => {
                 setReportingSong({
                   id: `report_${selectedBrand}`,
-                  title: `${currentBrandInfo?.shortName || ''} 點歌號`,
+                  title: `${currentBrandInfo?.shortName || ''} 門市收錄`,
                   artist: '現場資料補充',
                   lyricist: '', composer: '', language: '國語', zhuyin: '', pinyin: '', releaseYear: 2024, lyricsSnippet: '', brands: {} as any
                 });
@@ -87,7 +87,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               }}
             >
               <Flag size={16} />
-              <span>協助提供 / 回報【{currentBrandInfo?.shortName}】點歌資料</span>
+              <span>協助提供 / 回報【{currentBrandInfo?.shortName}】收錄狀態</span>
             </button>
           )}
         </div>
@@ -135,7 +135,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       minWidth: isSingleBrand ? '280px' : (isFewBrands ? '150px' : '70px'),
                     }}
                   >
-                    {isSingleBrand ? `【${b.shortName}】點歌號與收錄詳細` : (isMultiHighlighted ? `✓ ${b.shortName}` : b.shortName)}
+                    {isSingleBrand ? `【${b.shortName}】收錄狀態與詳細` : (isMultiHighlighted ? `✓ ${b.shortName}` : b.shortName)}
                   </th>
                 );
               })}
