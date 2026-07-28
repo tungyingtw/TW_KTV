@@ -164,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 backdropFilter: 'blur(4px)',
               }}
             >
-              <span>📊 累積人數 {totalVisits.toLocaleString()} 人</span>
+              <span>累積查詢 {totalVisits.toLocaleString()} 人</span>
             </div>
           </div>
         </div>
