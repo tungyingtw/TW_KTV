@@ -181,7 +181,7 @@ export function App() {
       pinyin: 'AUTO',
       releaseYear: 2023,
       popularRank: 99,
-      lyricsSnippet: `【${title}】全台 10 大 KTV 精準實況收錄對照。`,
+      lyricsSnippet: `【${title}】全台各大 KTV 精準實況收錄對照。`,
       youtubeUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanQuery)}`,
       isMainlandViral: isMainlandKeywords,
       isNiche: isSpecialCategory,
