@@ -217,7 +217,7 @@ const activeVisitors = new Map();
 const STATS_PATH = path.join(__dirname, 'stats.json');
 
 function loadStats() {
-  try { return JSON.parse(fs.readFileSync(STATS_PATH, 'utf8')); } catch { return { totalVisits: 1 }; }
+  try { return JSON.parse(fs.readFileSync(STATS_PATH, 'utf8')); } catch { return { totalVisits: 0 }; }
 }
 function saveStats(data) {
   try { fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch (e) {}

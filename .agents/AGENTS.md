@@ -54,3 +54,7 @@
   - `refactor`: 重構程式碼
   - `docs`: 修改文件
   - `test`: 新增或修改測試
+
+### 6.1 Git 本機 Commit 與推送權限規範 (Strict Local-Commit-Only Directive)
+- **僅限本機 Commit (Local Commit Only)**：AI Agent 完成程式碼修復或功能開發且驗證通過後，**僅允許執行本機 `git add` 與 `git commit`** 紀錄版本歷史。
+- **嚴禁 AI Agent 執行 `git push` (No AI-Initiated Push)**：**推送上傳至 GitHub (`git push`) 100% 由使用者本人親自手動點擊執行**。AI Agent 嚴禁自動或請求執行 `git push` 指令。

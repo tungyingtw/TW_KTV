@@ -22,12 +22,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [totalVisits, setTotalVisits] = useState<number>(() => {
     try {
       const stored = localStorage.getItem('tw_ktv_total_visits');
-      const count = stored ? parseInt(stored, 10) : 1280;
+      const count = stored ? parseInt(stored, 10) : 0;
       const nextCount = count + 1;
       localStorage.setItem('tw_ktv_total_visits', String(nextCount));
       return nextCount;
     } catch {
-      return 1280;
+      return 1;
     }
   });
 
