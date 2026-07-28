@@ -67,8 +67,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           if (data && isMounted) {
             if (typeof data.online === 'number') setOnlineCount(Math.max(1, data.online));
             if (typeof data.totalVisits === 'number') {
-              setTotalVisits(data.totalVisits);
-              localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits));
+              setTotalVisits(prev => {
+                const updated = Math.max(prev, data.totalVisits);
+                try { localStorage.setItem('tw_ktv_total_visits_v2', String(updated)); } catch {}
+                return updated;
+              });
             }
           }
         }
