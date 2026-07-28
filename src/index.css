@@ -504,10 +504,22 @@ button,
     font-size: 0.84rem !important;
   }
 
-  /* 5. 語種與字數分類標籤手機橫向流暢滾動 */
-  .quick-filter-group {
+  /* 5. 語種與字數分類標籤手機無痕橫向滾動 */
+  .search-bar-filter-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .quick-filter-scroll-row {
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: auto !important;
-    padding-bottom: 4px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    padding-bottom: 6px !important;
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: none !important;
   }

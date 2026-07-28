@@ -158,7 +158,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           borderTop: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
           {/* Left: Language & Word Count Filter Group */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <div className="search-bar-filter-group" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', width: '100%', maxWidth: '100%' }}>
             {/* Language Pills */}
             <div className="quick-filter-scroll-row">
               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '2px', flexShrink: 0 }}>
