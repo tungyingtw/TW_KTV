@@ -21,10 +21,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [onlineCount, setOnlineCount] = useState<number>(1);
   const [totalVisits, setTotalVisits] = useState<number>(() => {
     try {
-      const stored = localStorage.getItem('tw_ktv_total_visits');
+      localStorage.removeItem('tw_ktv_total_visits'); // 清除舊版歷史 key
+      const stored = localStorage.getItem('tw_ktv_real_accumulated_v2');
       const count = stored ? parseInt(stored, 10) : 0;
       const nextCount = count + 1;
-      localStorage.setItem('tw_ktv_total_visits', String(nextCount));
+      localStorage.setItem('tw_ktv_real_accumulated_v2', String(nextCount));
       return nextCount;
     } catch {
       return 1;
@@ -134,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Accumulated Visitor Counter Badge */}
             <div 
-              title="全台歌友累積查詢與使用人次"
+              title="全台歌友累積查詢與使用人數"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -150,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 backdropFilter: 'blur(4px)',
               }}
             >
-              <span>📊 累積對照 {totalVisits.toLocaleString()} 人次</span>
+              <span>📊 累積人數 {totalVisits.toLocaleString()} 人</span>
             </div>
           </div>
         </div>
