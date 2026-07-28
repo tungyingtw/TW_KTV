@@ -41,9 +41,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [totalVisits, setTotalVisits] = useState<number>(() => {
     try {
       const stored = localStorage.getItem('tw_ktv_total_visits_v2');
-      return stored ? parseInt(stored, 10) : 100;
+      return stored ? parseInt(stored, 10) : 1;
     } catch {
-      return 100;
+      return 1;
     }
   });
 
@@ -67,11 +67,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           if (data && isMounted) {
             if (typeof data.online === 'number') setOnlineCount(Math.max(1, data.online));
             if (typeof data.totalVisits === 'number') {
-              setTotalVisits(prev => {
-                const updated = Math.max(prev, data.totalVisits);
-                try { localStorage.setItem('tw_ktv_total_visits_v2', String(updated)); } catch {}
-                return updated;
-              });
+              setTotalVisits(data.totalVisits);
+              try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
             }
           }
         }

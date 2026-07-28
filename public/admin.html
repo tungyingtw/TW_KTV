@@ -227,6 +227,17 @@
           <li>實際驗證後套用修正，資料庫即時生效（下次使用者重新整理即可看到更新）</li>
         </ol>
       </div>
+
+      <div class="card" style="margin-top:20px; border-color:rgba(168,85,247,0.3)">
+        <h3 style="margin-bottom:12px; font-size:0.95rem; color:#c084fc;">📊 累積訪客查詢人數管理</h3>
+        <p style="color:var(--muted); font-size:0.85rem; margin-bottom:12px;">
+          在此您可以隨時一鍵重置全站累積查詢人數為 1 人次，或輸入自訂數值進行設定。
+        </p>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="number" id="custom-stats-count" value="1" min="0" style="width:140px; padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:#0f172a; color:#fff;" />
+          <button class="btn btn-primary" onclick="resetStatsCounter()">🔄 設定 / 一鍵重置人數</button>
+        </div>
+      </div>
     </div>
 
     <!-- ── 使用者回報 ── -->
@@ -572,6 +583,28 @@ async function applyFix() {
     loadStats();
   } else {
     showToast(`❌ 修正失敗：${data.error}`, 'error');
+  }
+}
+
+async function resetStatsCounter() {
+  const countInput = document.getElementById('custom-stats-count');
+  const count = parseInt(countInput.value, 10) || 1;
+  if (!confirm(`確定要將全站累積訪客查詢人數重置 / 設定為 ${count} 人次嗎？`)) return;
+
+  try {
+    const res = await apiFetch('/api/admin/stats/reset', {
+      method: 'POST',
+      body: JSON.stringify({ count }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`✅ 已成功將累積訪客查詢人數重置為 ${data.totalVisits} 人次！`, 'success');
+      try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
+    } else {
+      showToast('❌ 重置失敗：' + (data.error || '未知錯誤'), 'error');
+    }
+  } catch (e) {
+    showToast('❌ 網路請求失敗：' + e.message, 'error');
   }
 }
 
