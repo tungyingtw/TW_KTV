@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic2, Table2, LayoutGrid, Heart, PlusCircle } from 'lucide-react';
+import { Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
 import type { FilterOptions } from '../types/ktv';
 
 interface NavbarProps {
@@ -17,6 +17,25 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFavorites,
   onOpenSuggestSong,
 }) => {
+  // 日間/夜間 莫蘭迪主題模式切換
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      return (localStorage.getItem('tw_ktv_theme') as 'dark' | 'light') || 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('tw_ktv_theme', theme);
+    } catch {}
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
   // 100% 真實訪客線上與累積人數統計 (基於真實 API 與 本地累計機制)
   const [onlineCount, setOnlineCount] = useState<number>(1);
   const [totalVisits, setTotalVisits] = useState<number>(() => {
@@ -160,6 +179,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Light / Dark Mode Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="btn-secondary"
+            style={{
+              borderColor: theme === 'dark' ? 'rgba(251, 191, 36, 0.4)' : 'rgba(147, 51, 234, 0.4)',
+              color: theme === 'dark' ? '#fbbf24' : '#9333ea',
+              background: theme === 'dark' ? 'rgba(251, 191, 36, 0.1)' : 'rgba(147, 51, 234, 0.1)',
+            }}
+            title={theme === 'dark' ? '切換至莫蘭迪日光/亮色模式' : '切換至微光夜間模式'}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{theme === 'dark' ? '日光' : '夜間'}</span>
+          </button>
+
           {/* Suggest Missing Song Button */}
           {onOpenSuggestSong && (
             <button
