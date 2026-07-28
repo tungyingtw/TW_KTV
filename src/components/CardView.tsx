@@ -111,6 +111,7 @@ export const CardView: React.FC<CardViewProps> = ({
         return (
           <div 
             key={song.id}
+            onClick={() => onSelectSongDetail(song)}
             className="glass-panel animate-fade-in"
             style={{
               padding: '16px',
@@ -119,7 +120,8 @@ export const CardView: React.FC<CardViewProps> = ({
               flexDirection: 'column',
               justifyContent: 'space-between',
               gap: '12px',
-              transition: 'transform 0.2s ease, border-color 0.2s ease',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
             }}
           >
             {/* Header: Title & Favorite Button */}
@@ -166,7 +168,7 @@ export const CardView: React.FC<CardViewProps> = ({
                 </div>
 
                 <button
-                  onClick={() => onToggleFavorite(song.id)}
+                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -296,6 +298,7 @@ export const CardView: React.FC<CardViewProps> = ({
                     href={song.youtubeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
                     style={{
                       color: '#f87171',
                       textDecoration: 'none',
