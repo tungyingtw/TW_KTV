@@ -1,32 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
 
 :root {
-  --bg-dark: #131924;
-  --bg-card: rgba(26, 35, 48, 0.75);
-  --bg-card-hover: rgba(38, 50, 68, 0.85);
-  --bg-glass: rgba(19, 25, 36, 0.8);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(216, 140, 154, 0.3);
+  --bg-dark: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.72);
+  --bg-card-hover: rgba(51, 65, 85, 0.85);
+  --bg-glass: rgba(15, 23, 42, 0.8);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-glow: rgba(244, 114, 182, 0.35);
 
-  --text-primary: #f0f2f5;
-  --text-secondary: #9aa4b2;
-  --text-muted: #6a7685;
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
 
-  --accent-pink: #d88c9a;     /* 莫蘭迪煙粉 / 乾燥玫瑰 */
-  --accent-purple: #9a8bb0;   /* 莫蘭迪煙灰紫 */
-  --accent-blue: #6e85a0;     /* 莫蘭迪灰藍 */
-  --accent-cyan: #729ea1;     /* 莫蘭迪青綠 */
-  --accent-amber: #d6a87e;    /* 莫蘭迪燕麥褐 / 暖沙黃 */
-  --accent-emerald: #7e9a8b;  /* 莫蘭迪鼠尾草綠 */
+  --accent-pink: #f472b6;     /* 亮柔乾燥玫瑰粉 */
+  --accent-purple: #c084fc;   /* 清透煙灰紫 */
+  --accent-blue: #38bdf8;     /* 霧氣天空藍 */
+  --accent-cyan: #2dd4bf;     /* 薄荷青綠 */
+  --accent-amber: #fbbf24;    /* 燕麥暖金黃 */
+  --accent-emerald: #34d399;  /* 清透鼠尾草綠 */
 
-  --gradient-main: linear-gradient(135deg, #d88c9a 0%, #9a8bb0 50%, #6e85a0 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  --gradient-main: linear-gradient(135deg, #f472b6 0%, #c084fc 50%, #38bdf8 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
   --font-family: 'Outfit', 'Noto Sans TC', sans-serif;
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-full: 9999px;
-  --shadow-glow: 0 0 25px rgba(216, 140, 154, 0.18);
+  --shadow-glow: 0 0 25px rgba(244, 114, 182, 0.25);
 }
 
 * {
@@ -39,9 +39,9 @@ body {
   font-family: var(--font-family);
   background-color: var(--bg-dark);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(216, 140, 154, 0.09) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(154, 139, 176, 0.09) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(114, 158, 161, 0.08) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(244, 114, 182, 0.13) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(192, 132, 252, 0.13) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(56, 189, 248, 0.1) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
