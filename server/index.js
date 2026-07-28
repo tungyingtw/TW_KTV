@@ -241,10 +241,10 @@ app.get('/api/stats/ping', (req, res) => {
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
 app.post('/api/report', (req, res) => {
-  const { songId, songTitle, artist, brandId, issueType, lang, songCode, lyricist, composer, mvType, note } = req.body;
+  const { songId, songTitle, artist, brandId, issueType, lang, songCode, lyricist, composer, mvType, note, brandName, shortName, systemType, codeFormat, storeLocations } = req.body;
   if (!songId || !brandId || !issueType) return res.status(400).json({ error: '缺少必要欄位' });
 
-  const validTypes = ['no_song', 'has_song', 'missing_song', 'wrong_info', 'other'];
+  const validTypes = ['no_song', 'has_song', 'missing_song', 'suggest_new_brand', 'wrong_info', 'other'];
   if (!validTypes.includes(issueType)) return res.status(400).json({ error: '無效的 issueType' });
 
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
@@ -262,6 +262,11 @@ app.post('/api/report', (req, res) => {
     lyricist: lyricist || '',
     composer: composer || '',
     mvType: mvType || 'unknown',
+    brandName: brandName || '',
+    shortName: shortName || '',
+    systemType: systemType || '',
+    codeFormat: codeFormat || '',
+    storeLocations: storeLocations || '',
     note: note ? String(note).slice(0, 500) : '',
     timestamp: new Date().toISOString(),
     ip: clientIp,
