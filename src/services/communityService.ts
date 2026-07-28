@@ -7,7 +7,7 @@
 import type { BrandId, IssueType, VoteData, VoteConfidence } from '../types/ktv';
 
 const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : '');
+const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
 
 // ─────────────────────────────────────────────
 // 方案一：使用者回報錯誤
