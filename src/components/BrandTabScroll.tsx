@@ -32,6 +32,34 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftState, setScrollLeftState] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsMouseDown(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeftState(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeaveOrUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown || !scrollRef.current) return;
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.6;
+    scrollRef.current.scrollLeft = scrollLeftState - walk;
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (scrollRef.current && Math.abs(e.deltaY) > 0) {
+      scrollRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
   // 平滑滾動控制
   const handleScroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -100,9 +128,14 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           <ChevronLeft size={18} />
         </button>
 
-        {/* 廠牌 Tab 可滾動區域 */}
+        {/* 廠牌 Tab 可滾動區域（支援按住滑鼠左右拖曳與滾輪橫向滾動） */}
         <div
           ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeaveOrUp}
+          onMouseUp={handleMouseLeaveOrUp}
+          onMouseMove={handleMouseMove}
+          onWheel={handleWheel}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -112,7 +145,9 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             flex: 1,
-            scrollBehavior: 'smooth',
+            scrollBehavior: isMouseDown ? 'auto' : 'smooth',
+            cursor: isMouseDown ? 'grabbing' : 'grab',
+            userSelect: 'none',
           }}
         >
           {/* 全部廠牌 Tab */}
