@@ -130,12 +130,13 @@ function saveVotes(data) {
 }
 
 function saveCatalog(catalog) {
-  fs.writeFileSync(CATALOG_PATH, JSON.stringify(catalog, null, 2), 'utf8');
-  const distCatalogPath = path.join(__dirname, '../dist/songs_catalog.json');
-  if (fs.existsSync(path.dirname(distCatalogPath))) {
-    try {
-      fs.writeFileSync(distCatalogPath, JSON.stringify(catalog, null, 2), 'utf8');
-    } catch (e) {}
+  const dbPath = path.join(__dirname, 'database.json');
+  fs.writeFileSync(dbPath, JSON.stringify(catalog, null, 2), 'utf8');
+  try {
+    const { generateBinCatalog } = require('../scripts/buildCatalogBin.js');
+    generateBinCatalog();
+  } catch (e) {
+    console.warn('[Server] 自動同步加密 songs_catalog.bin 警告:', e.message);
   }
 }
 

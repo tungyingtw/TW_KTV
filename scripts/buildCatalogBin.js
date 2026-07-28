@@ -5,25 +5,43 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const jsonPath = path.join(__dirname, '../public/songs_catalog.json');
+const jsonPublicPath = path.join(__dirname, '../public/songs_catalog.json');
+const jsonServerPath = path.join(__dirname, '../server/database.json');
 const binPath = path.join(__dirname, '../public/songs_catalog.bin');
+const distBinPath = path.join(__dirname, '../dist/songs_catalog.bin');
 
 const MAGIC_HEADER = Buffer.from([0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]); // "TWKTVBIN"
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
 
-async function generateBinCatalog() {
-  if (!fs.existsSync(jsonPath)) {
-    if (fs.existsSync(binPath)) {
-      console.log('⚡ [Build Catalog Bin] songs_catalog.bin 已存在，無需重複轉換。');
+export function generateBinCatalog() {
+  let sourceJsonPath = null;
+
+  if (fs.existsSync(jsonPublicPath) && fs.statSync(jsonPublicPath).size > 1000) {
+    sourceJsonPath = jsonPublicPath;
+  } else if (fs.existsSync(jsonServerPath) && fs.statSync(jsonServerPath).size > 1000) {
+    sourceJsonPath = jsonServerPath;
+  }
+
+  if (!sourceJsonPath) {
+    if (fs.existsSync(binPath) && fs.statSync(binPath).size > 1000) {
+      console.log('⚡ [Build Catalog Bin] songs_catalog.bin 已是最新，無需重新打包。');
       return;
     }
-    console.error('❌ [Build Catalog Bin] 找不到 public/songs_catalog.json！');
+    console.error('❌ [Build Catalog Bin] 找不到可用的歌冊 JSON (public/songs_catalog.json 或 server/database.json)！');
     process.exit(1);
   }
 
-  console.log('🔒 [Build Catalog Bin] 開始對 12 萬首歌冊進行二進位混淆與防偽簽章...');
-  const jsonContent = fs.readFileSync(jsonPath, 'utf8');
+  console.log(`🔒 [Build Catalog Bin] 讀取 ${path.basename(sourceJsonPath)} 開始進行二進位混淆與加密打包...`);
+  const jsonContent = fs.readFileSync(sourceJsonPath, 'utf8');
   const jsonBytes = Buffer.from(jsonContent, 'utf8');
+
+  // 同步更新備份 server/database.json 為開發主要資料庫
+  if (sourceJsonPath === jsonPublicPath) {
+    try {
+      fs.writeFileSync(jsonServerPath, jsonContent, 'utf8');
+      console.log('💾 [Build Catalog Bin] 成功同步開發主要資料庫至 server/database.json');
+    } catch (e) {}
+  }
 
   // 創建混淆二進位 Buffer (Header + Obfuscated Bytes)
   const outputBuffer = Buffer.alloc(MAGIC_HEADER.length + jsonBytes.length);
@@ -31,21 +49,28 @@ async function generateBinCatalog() {
 
   for (let i = 0; i < jsonBytes.length; i++) {
     const keyByte = XOR_KEY[i % XOR_KEY.length];
-    // Byte-Shift & XOR obfuscation
-    const obfuscated = jsonBytes[i] ^ keyByte;
-    outputBuffer[MAGIC_HEADER.length + i] = obfuscated;
+    outputBuffer[MAGIC_HEADER.length + i] = jsonBytes[i] ^ keyByte;
   }
 
   fs.writeFileSync(binPath, outputBuffer);
-  console.log(`✅ [Build Catalog Bin] 二進位加密包生成成功！大小: ${(outputBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+  console.log(`✅ [Build Catalog Bin] 加密包生成成功！檔案大小: ${(outputBuffer.length / 1024 / 1024).toFixed(2)} MB`);
 
-  // 刪除原始明文 JSON，確保無檔案曝露在 public/ 根目錄
-  try {
-    fs.unlinkSync(jsonPath);
-    console.log('🛡️ [Build Catalog Bin] 成功刪除 public/songs_catalog.json 明文檔，全網防護啟動！');
-  } catch (e) {
-    console.warn('⚠️ 刪除 JSON 失敗:', e);
+  if (fs.existsSync(path.dirname(distBinPath))) {
+    try {
+      fs.writeFileSync(distBinPath, outputBuffer);
+    } catch (e) {}
+  }
+
+  // 移除 public/ 下之明文 JSON，確保對外部署輸出完全無明文曝露
+  if (fs.existsSync(jsonPublicPath)) {
+    try {
+      fs.unlinkSync(jsonPublicPath);
+      console.log('🛡️ [Build Catalog Bin] 已安全移除 public/songs_catalog.json 明文檔。');
+    } catch (e) {}
   }
 }
 
-generateBinCatalog();
+// 支援直接命令列執行
+if (process.argv[1] && process.argv[1].endsWith('buildCatalogBin.js')) {
+  generateBinCatalog();
+}
