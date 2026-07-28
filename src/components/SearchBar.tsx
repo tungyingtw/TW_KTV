@@ -160,8 +160,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           {/* Left: Language & Word Count Filter Group */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
             {/* Language Pills */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '2px' }}>
+            <div className="quick-filter-scroll-row">
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '2px', flexShrink: 0 }}>
                 語種與分類：
               </span>
               {LANGUAGES.map(lang => {
@@ -187,6 +187,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                       fontWeight: 600,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
+                      flexShrink: 0,
                     }}
                   >
                     {lang}
@@ -196,8 +197,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             </div>
 
             {/* Character Count Pills */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '2px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <div className="quick-filter-scroll-row">
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '2px', display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
                 <Hash size={13} color="var(--accent-purple)" /> 字數：
               </span>
               {TITLE_LENGTHS.map(item => {
