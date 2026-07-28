@@ -251,10 +251,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 gap: '6px',
                 transition: 'all 0.2s ease',
               }}
-              title="矩陣對比表 (各 KTV 廠牌一覽)"
+              title="列表模式 (各 KTV 廠牌一覽)"
             >
               <Table2 size={16} />
-              <span className="desktop-only">矩陣對比</span>
+              <span className="desktop-only">列表模式</span>
             </button>
             <button
               onClick={() => {
@@ -275,10 +275,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 gap: '6px',
                 transition: 'all 0.2s ease',
               }}
-              title="手機卡片檢視 (經典單首卡片)"
+              title="小卡模式 (經典單首卡片)"
             >
               <LayoutGrid size={16} />
-              <span className="desktop-only">手機卡片</span>
+              <span className="desktop-only">小卡模式</span>
             </button>
           </div>
         </div>

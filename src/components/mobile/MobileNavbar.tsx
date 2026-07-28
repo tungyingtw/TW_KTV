@@ -183,7 +183,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 color: filters.viewMode === 'matrix' ? '#fff' : 'var(--text-secondary)',
                 border: 'none', padding: '5px 8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center',
               }}
-              title="矩陣對比表"
+              title="列表模式 (各 KTV 廠牌一覽)"
             >
               <Table2 size={15} />
             </button>
@@ -197,7 +197,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 color: filters.viewMode === 'cards' ? '#fff' : 'var(--text-secondary)',
                 border: 'none', padding: '5px 8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center',
               }}
-              title="手機卡片"
+              title="小卡模式 (經典單首卡片)"
             >
               <LayoutGrid size={15} />
             </button>
