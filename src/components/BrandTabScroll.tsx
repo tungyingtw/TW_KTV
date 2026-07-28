@@ -168,6 +168,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             alignItems: 'center',
             gap: '8px',
             overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
             padding: '4px 6px 8px',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',

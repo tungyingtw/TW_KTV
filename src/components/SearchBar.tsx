@@ -228,7 +228,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </div>
 
           {/* Quick Quality Checkboxes & Result Count */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
+          <div className="search-bar-bottom-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <label style={{
