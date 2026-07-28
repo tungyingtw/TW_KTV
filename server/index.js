@@ -237,6 +237,18 @@ app.get('/api/stats/ping', (req, res) => {
   });
 });
 
+// XSS 與 HTML 注入安全過濾器 (Anti-XSS & Injection Guard)
+function sanitizeText(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/javascript:/gi, '')
+    .replace(/onload=/gi, '')
+    .replace(/onerror=/gi, '')
+    .trim();
+}
+
 // ─────────────────────────────────────────────
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
@@ -250,24 +262,37 @@ app.post('/api/report', (req, res) => {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
   const reports = loadReports();
 
+  // 100% 進行 XSS 與惡意 script 安全清處過濾
+  const cleanTitle = sanitizeText(songTitle);
+  const cleanArtist = sanitizeText(artist);
+  const cleanCode = sanitizeText(songCode);
+  const cleanLyricist = sanitizeText(lyricist);
+  const cleanComposer = sanitizeText(composer);
+  const cleanBrandName = sanitizeText(brandName);
+  const cleanShortName = sanitizeText(shortName);
+  const cleanSystemType = sanitizeText(systemType);
+  const cleanCodeFormat = sanitizeText(codeFormat);
+  const cleanStoreLocations = sanitizeText(storeLocations);
+  const cleanNote = sanitizeText(note).slice(0, 500);
+
   const newReport = {
     id: `rpt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    songId,
-    songTitle: songTitle || '',
-    artist: artist || '',
-    brandId,
+    songId: sanitizeText(songId),
+    songTitle: cleanTitle,
+    artist: cleanArtist,
+    brandId: sanitizeText(brandId),
     issueType,
-    lang: lang || '',
-    songCode: songCode || '',
-    lyricist: lyricist || '',
-    composer: composer || '',
+    lang: sanitizeText(lang),
+    songCode: cleanCode,
+    lyricist: cleanLyricist,
+    composer: cleanComposer,
     mvType: mvType || 'unknown',
-    brandName: brandName || '',
-    shortName: shortName || '',
-    systemType: systemType || '',
-    codeFormat: codeFormat || '',
-    storeLocations: storeLocations || '',
-    note: note ? String(note).slice(0, 500) : '',
+    brandName: cleanBrandName,
+    shortName: cleanShortName,
+    systemType: cleanSystemType,
+    codeFormat: cleanCodeFormat,
+    storeLocations: cleanStoreLocations,
+    note: cleanNote,
     timestamp: new Date().toISOString(),
     ip: clientIp,
     status: 'pending',
