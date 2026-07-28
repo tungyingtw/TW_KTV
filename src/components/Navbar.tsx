@@ -21,11 +21,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [onlineCount, setOnlineCount] = useState<number>(1);
   const [totalVisits, setTotalVisits] = useState<number>(() => {
     try {
-      localStorage.removeItem('tw_ktv_total_visits'); // 清除舊版歷史 key
-      const stored = localStorage.getItem('tw_ktv_real_accumulated_v2');
-      const count = stored ? parseInt(stored, 10) : 0;
+      const stored = localStorage.getItem('tw_ktv_total_visits_v2');
+      const rawCount = stored ? parseInt(stored, 10) : 0;
+      // 若曾留存舊版 1280 模擬數據，強制執行清零並遷移至 v2 專用 Key
+      const count = rawCount > 1000 ? 0 : rawCount;
       const nextCount = count + 1;
-      localStorage.setItem('tw_ktv_real_accumulated_v2', String(nextCount));
+      localStorage.setItem('tw_ktv_total_visits_v2', String(nextCount));
       return nextCount;
     } catch {
       return 1;
