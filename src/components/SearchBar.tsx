@@ -54,7 +54,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div style={{
+    <div className="search-bar-container" style={{
       maxWidth: '1400px',
       margin: '20px auto 10px',
       padding: '0 20px',
@@ -228,46 +228,50 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </div>
 
           {/* Quick Quality Checkboxes & Result Count */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
 
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '0.82rem',
-              color: filters.onlyOfficialMv ? '#34d399' : 'var(--text-secondary)',
-              cursor: 'pointer',
-              fontWeight: 600,
-            }}>
-              <input
-                type="checkbox"
-                checked={filters.onlyOfficialMv}
-                onChange={(e) => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
-                style={{ accentColor: '#10b981', cursor: 'pointer' }}
-              />
-              <Video size={14} /> 僅原版 MV
-            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.82rem',
+                color: filters.onlyOfficialMv ? '#34d399' : 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={filters.onlyOfficialMv}
+                  onChange={(e) => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
+                  style={{ accentColor: '#10b981', cursor: 'pointer' }}
+                />
+                <Video size={14} /> 僅原版 MV
+              </label>
 
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '0.82rem',
-              color: filters.onlyOriginalVocal ? '#f472b6' : 'var(--text-secondary)',
-              cursor: 'pointer',
-              fontWeight: 600,
-            }}>
-              <input
-                type="checkbox"
-                checked={filters.onlyOriginalVocal}
-                onChange={(e) => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
-                style={{ accentColor: '#ec4899', cursor: 'pointer' }}
-              />
-              <Disc size={14} /> 僅原聲原唱
-            </label>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.82rem',
+                color: filters.onlyOriginalVocal ? '#f472b6' : 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={filters.onlyOriginalVocal}
+                  onChange={(e) => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
+                  style={{ accentColor: '#ec4899', cursor: 'pointer' }}
+                />
+                <Disc size={14} /> 僅原聲原唱
+              </label>
+            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                 結果: <strong style={{ color: 'var(--accent-pink)' }}>{resultCount}</strong> 首
               </div>
 
@@ -287,6 +291,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                     alignItems: 'center',
                     gap: '4px',
                     transition: 'all 0.2s',
+                    whiteSpace: 'nowrap',
                   }}
                   title="找不到想唱的歌曲或想追加 KTV 廠牌對照？點此建議追加"
                 >
