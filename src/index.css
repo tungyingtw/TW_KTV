@@ -451,13 +451,24 @@ html, body {
    📱 100% 完美手機響應式排版與按鈕防不自然斷行適配 (Mobile Perfection)
    ============================================================ */
 
-/* 1. 全站所有按鈕、膠囊、標籤絕不允許中途文字不自然斷行 */
-button, 
+/* 1. 膠囊、標籤、導覽與工具列按鈕防中途文字不自然斷行 */
 .badge, 
 .glass-pill, 
 [class*="badge"], 
-[class*="pill"] {
+[class*="pill"],
+.nav-actions-group button,
+.btn-secondary,
+.btn-primary,
+.quick-filter-scroll-row button {
   white-space: nowrap !important;
+}
+
+/* 2. 彈窗內的長內文選項與按鈕允許彈性折行，防彈窗爆邊 */
+[style*="position: fixed"] button,
+.modal-content button,
+.drawer-content button {
+  white-space: normal !important;
+  word-break: break-word !important;
 }
 
 @media (max-width: 640px) {

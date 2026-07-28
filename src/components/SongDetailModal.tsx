@@ -221,7 +221,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: '12px',
           }}>
             {BRAND_LIST.map(b => {
