@@ -3,7 +3,10 @@ import { MOCK_SONGS } from '../data/mockSongs';
 
 const DB_NAME = 'KtvCatalogDB';
 const STORE_NAME = 'catalog_store';
-const KEY_NAME = 'full_catalog_v17';
+const KEY_NAME = 'full_catalog_v18';
+
+const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
+const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTVBIN"
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -25,7 +28,7 @@ export async function getCachedCatalog(): Promise<Song[] | null> {
     // 清理舊版本快取鍵值
     const txClear = db.transaction(STORE_NAME, 'readwrite');
     const storeClear = txClear.objectStore(STORE_NAME);
-    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9'].forEach(k => storeClear.delete(k));
+    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9', 'full_catalog_v17'].forEach(k => storeClear.delete(k));
     
     return new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
@@ -66,7 +69,7 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
     return cached;
   }
 
-  // 2. 若無快取，開始真實 HTTP 串流下載與百分比計算
+  // 2. 若無快取，開始真實 HTTP 二進位串流下載解密與進度計算
   onProgress?.(10);
   const fresh = await fetchFreshCatalog(onProgress);
   if (fresh && fresh.length > 0) {
@@ -81,7 +84,7 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
 async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promise<Song[] | null> {
   try {
     const baseUrl = import.meta.env.BASE_URL || './';
-    const catalogUrl = `${baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'}songs_catalog.json?v=${Date.now()}`;
+    const catalogUrl = `${baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'}songs_catalog.bin?v=${Date.now()}`;
     const response = await fetch(catalogUrl);
     if (response.ok && response.body) {
       const contentLength = response.headers.get('content-length');
@@ -115,7 +118,26 @@ async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promis
         offset += chunk.length;
       }
 
-      const text = new TextDecoder('utf-8').decode(concatenated);
+      // 驗證 Magic Header
+      let isHeaderMatch = true;
+      for (let i = 0; i < MAGIC_HEADER.length; i++) {
+        if (concatenated[i] !== MAGIC_HEADER[i]) {
+          isHeaderMatch = false;
+          break;
+        }
+      }
+
+      const payloadOffset = isHeaderMatch ? MAGIC_HEADER.length : 0;
+      const payloadLength = loadedBytes - payloadOffset;
+      const decodedBytes = new Uint8Array(payloadLength);
+
+      // 記憶體中 Byte 解混淆 (In-Memory De-obfuscation)
+      for (let i = 0; i < payloadLength; i++) {
+        const keyByte = XOR_KEY[i % XOR_KEY.length];
+        decodedBytes[i] = concatenated[payloadOffset + i] ^ keyByte;
+      }
+
+      const text = new TextDecoder('utf-8').decode(decodedBytes);
       const catalogData = JSON.parse(text);
       onProgress?.(100);
 
@@ -124,7 +146,7 @@ async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promis
       }
     }
   } catch (err) {
-    console.warn('[API Service] 串流下載 static catalog JSON 失敗:', err);
+    console.warn('[API Service] 串流下載或解密 static catalog BIN 失敗:', err);
   }
   return null;
 }

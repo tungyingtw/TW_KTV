@@ -15,10 +15,11 @@ dist-ssr
 ADMIN_CREDENTIALS.txt
 *.bat
 scratch/
-scripts/
+!scripts/buildCatalogBin.js
 .agents/
 public/artists_registry.csv
 public/artists_registry.json
+public/songs_catalog.json
 .oxlintrc.json
 server/database.json
 server/reports.json
