@@ -66,7 +66,7 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
       padding: slotType === 'modal' ? '0' : '0 20px',
       textAlign: 'center',
     }}>
-      <div className="ad-slot-container" style={{
+      <div className="sponsor-banner-card" style={{
         background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95))',
         border: '1px solid rgba(236, 72, 153, 0.3)',
         borderRadius: '16px',
