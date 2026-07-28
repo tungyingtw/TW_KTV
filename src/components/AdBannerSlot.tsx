@@ -17,8 +17,8 @@ interface AdBannerSlotProps {
 
 export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
   slotType = 'in_feed',
-  adClient = import.meta.env.VITE_ADSENSE_CLIENT_ID,
-  adSlot = import.meta.env.VITE_ADSENSE_SLOT_INFEED,
+  adClient = import.meta.env.VITE_ADSENSE_CLIENT_ID || 'ca-pub-6322989670610668',
+  adSlot = import.meta.env.VITE_ADSENSE_SLOT_INFEED || 'auto',
   adFormat = 'auto',
   customBannerUrl,
   targetUrl,
