@@ -13,6 +13,9 @@ dist-ssr
 *.local
 .env
 ADMIN_CREDENTIALS.txt
+*.bat
+scratch/
+scripts/
 
 # Editor directories and files
 .vscode/*
