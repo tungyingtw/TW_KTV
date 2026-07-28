@@ -13,7 +13,7 @@ interface ReportModalProps {
 const ISSUE_OPTIONS: { value: IssueType; label: string; emoji: string }[] = [
   { value: 'no_song',    label: '實際上沒有這首歌（系統誤標為收錄）', emoji: '❌' },
   { value: 'has_song',   label: '實際上有這首歌（系統誤標為未收錄）', emoji: '✅' },
-  { value: 'wrong_info', label: '歌名 / 歌手 / 點歌碼有誤', emoji: '✏️' },
+  { value: 'wrong_info', label: '歌名 / 歌手 / 收錄狀態有誤', emoji: '✏️' },
   { value: 'other',      label: '其他問題', emoji: '💬' },
 ];
 

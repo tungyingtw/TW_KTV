@@ -231,12 +231,12 @@ const visitorCooldowns = new Map(); // 12 小時重複造訪去重快取 (Unique
 const VISIT_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 小時冷卻期
 
 const STATS_PATH = path.join(__dirname, 'stats.json');
-const BASE_INITIAL_VISITS = 53005;
+const BASE_INITIAL_VISITS = 1;
 
 function loadStats() {
   try {
     const data = JSON.parse(fs.readFileSync(STATS_PATH, 'utf8'));
-    return { totalVisits: Math.max(BASE_INITIAL_VISITS, data.totalVisits || 0) };
+    return { totalVisits: typeof data.totalVisits === 'number' ? Math.max(1, data.totalVisits) : BASE_INITIAL_VISITS };
   } catch {
     return { totalVisits: BASE_INITIAL_VISITS };
   }
@@ -618,6 +618,15 @@ app.patch('/api/admin/report/:reportId', requireAdmin, (req, res) => {
   saveReports(reports);
   logAdminAction('UPDATE_REPORT_STATUS', { reportId, status, adminNote });
   res.json({ success: true, report: reports[idx] });
+});
+
+// ── 後台管理 API：一鍵重置 / 自訂累積訪客計數器 ──
+app.post('/api/admin/stats/reset', requireAdmin, (req, res) => {
+  const newCount = (typeof req.body.count === 'number' && req.body.count >= 0) ? req.body.count : 1;
+  currentStats.totalVisits = newCount;
+  saveStats(currentStats);
+  logAdminAction('RESET_STATS', { newCount, adminIp: req.ip });
+  res.json({ success: true, totalVisits: currentStats.totalVisits });
 });
 
 // ── 查看爭議歌曲（deny 票多的）──
