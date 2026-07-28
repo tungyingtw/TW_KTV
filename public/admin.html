@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8" />
@@ -326,7 +326,7 @@ if (adminToken) {
 function doLogin() {
   const t = document.getElementById('token-input').value.trim();
   if (!t) {
-    document.getElementById('login-err').textContent = '⚠️ 請輸入密碼 (預設: 0000)';
+    document.getElementById('login-err').textContent = '⚠️ 請輸入管理員 Token';
     return;
   }
   adminToken = t;
@@ -349,7 +349,7 @@ async function verifyLogin() {
       loadReports();
     } else {
       const data = await res.json().catch(() => ({}));
-      if (errEl) errEl.textContent = data.error || '❌ 密碼錯誤，請重試 (預設密碼: 0000)';
+      if (errEl) errEl.textContent = data.error || '❌ 密碼錯誤，請確認 Token 是否正確';
       sessionStorage.removeItem('ktv_admin_token');
     }
   } catch (e) {
@@ -585,3 +585,4 @@ function showToast(msg, type = 'success') {
 </script>
 </body>
 </html>
+
