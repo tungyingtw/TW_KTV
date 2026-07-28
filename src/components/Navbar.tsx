@@ -85,11 +85,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             width: '42px',
             height: '42px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
+            background: 'linear-gradient(135deg, #d88c9a, #9a8bb0)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(236, 72, 153, 0.4)',
+            boxShadow: '0 0 15px rgba(216, 140, 154, 0.3)',
           }}>
             <Mic2 size={24} color="#ffffff" />
           </div>
@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               fontSize: '1.3rem', 
               fontWeight: 800, 
               letterSpacing: '-0.02em',
-              background: 'linear-gradient(90deg, #ffffff, #f472b6, #c084fc)',
+              background: 'linear-gradient(90deg, #f0f2f5, #e0a3ad, #b8abcc)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               margin: 0,
