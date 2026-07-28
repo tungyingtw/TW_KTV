@@ -1,0 +1,276 @@
+import type { FilterOptions, TitleLengthFilter } from '../types/ktv';
+import { X, Check, RotateCcw, SortAsc, Hash } from 'lucide-react';
+
+interface BottomSheetFilterProps {
+  isOpen: boolean;
+  onClose: () => void;
+  filters: FilterOptions;
+  setFilters: React.Dispatch<React.SetStateAction<FilterOptions>>;
+}
+
+const LANGUAGES = ['國語', '台語', '粵語', '日語', '韓語', '英語'];
+const TITLE_LENGTHS: { id: TitleLengthFilter; label: string }[] = [
+  { id: 'all', label: '全部字數' },
+  { id: '1', label: '1字歌' },
+  { id: '2', label: '2字歌' },
+  { id: '3', label: '3字歌' },
+  { id: '4', label: '4字歌' },
+  { id: '5', label: '5字歌' },
+  { id: '6', label: '6字歌' },
+  { id: '7+', label: '7字以上' },
+];
+
+export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
+  isOpen,
+  onClose,
+  filters,
+  setFilters,
+}) => {
+  if (!isOpen) return null;
+
+  const handleReset = () => {
+    setFilters(prev => ({
+      ...prev,
+      selectedLanguages: [],
+      selectedTitleLength: 'all',
+      onlyOfficialMv: false,
+      onlyOriginalVocal: false,
+      sortBy: 'length',
+    }));
+  };
+
+  const toggleLanguage = (lang: string) => {
+    setFilters(prev => {
+      const exists = prev.selectedLanguages.includes(lang);
+      if (exists) {
+        return { ...prev, selectedLanguages: prev.selectedLanguages.filter(l => l !== lang) };
+      } else {
+        return { ...prev, selectedLanguages: [...prev.selectedLanguages, lang] };
+      }
+    });
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 100,
+      background: 'rgba(15, 23, 42, 0.8)',
+      backdropFilter: 'blur(8px)',
+      display: 'flex',
+      alignItems: 'flex-end',
+    }}>
+      <div 
+        className="glass-panel animate-slide-up"
+        style={{
+          width: '100%',
+          maxWidth: '600px',
+          margin: '0 auto',
+          borderTopLeftRadius: 'var(--radius-lg)',
+          borderTopRightRadius: 'var(--radius-lg)',
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
+          padding: '24px',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+        }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
+            進階條件過濾與排序
+          </h3>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Sort By Option Row */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+            <SortAsc size={16} color="var(--accent-pink)" /> 排序方式
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            {[
+              { id: 'length', label: '字數排序（預設）' },
+              { id: 'popular', label: '熱門程度' },
+              { id: 'newest', label: '最新發行' },
+              { id: 'stroke', label: '首字筆劃' },
+              { id: 'title', label: '注音與字典序' },
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setFilters(prev => ({ ...prev, sortBy: item.id as any }))}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  background: filters.sortBy === item.id ? 'var(--accent-pink)' : 'rgba(255, 255, 255, 0.05)',
+                  color: filters.sortBy === item.id ? '#fff' : 'var(--text-secondary)',
+                  border: `1px solid ${filters.sortBy === item.id ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                  fontWeight: 600,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Character Count Filter */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+            <Hash size={16} color="var(--accent-purple)" /> 歌名字數篩選
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+            {TITLE_LENGTHS.map(item => {
+              const isSelected = filters.selectedTitleLength === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id as any }))}
+                  style={{
+                    padding: '8px 4px',
+                    borderRadius: 'var(--radius-md)',
+                    background: isSelected ? 'rgba(168, 85, 247, 0.3)' : 'rgba(255, 255, 255, 0.05)',
+                    color: isSelected ? '#c084fc' : 'var(--text-secondary)',
+                    border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.6)' : 'rgba(255, 255, 255, 0.1)'}`,
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quality Toggles */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+            影片與音訊品質
+          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(255, 255, 255, 0.04)',
+              cursor: 'pointer',
+            }}>
+              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
+                僅顯示官方原版 MV (Official MV)
+              </span>
+              <input
+                type="checkbox"
+                checked={filters.onlyOfficialMv}
+                onChange={(e) => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
+                style={{ accentColor: '#10b981', width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+            </label>
+
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(255, 255, 255, 0.04)',
+              cursor: 'pointer',
+            }}>
+              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
+                僅顯示原聲原唱 (Original Vocal)
+              </span>
+              <input
+                type="checkbox"
+                checked={filters.onlyOriginalVocal}
+                onChange={(e) => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
+                style={{ accentColor: '#ec4899', width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* Language Multi-Select */}
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+            多選語種
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            {LANGUAGES.map(lang => {
+              const isSelected = filters.selectedLanguages.includes(lang);
+
+              return (
+                <button
+                  key={lang}
+                  onClick={() => toggleLanguage(lang)}
+                  style={{
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    background: isSelected ? 'rgba(236, 72, 153, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    color: isSelected ? '#f472b6' : 'var(--text-secondary)',
+                    border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
+                    fontWeight: 600,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  {isSelected && <Check size={14} />}
+                  {lang}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom Actions */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={handleReset}
+            className="btn-secondary"
+            style={{ flex: 1, justifyContent: 'center' }}
+          >
+            <RotateCcw size={16} /> 重置
+          </button>
+          <button
+            onClick={onClose}
+            className="btn-primary"
+            style={{ flex: 2, justifyContent: 'center' }}
+          >
+            套用設定
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

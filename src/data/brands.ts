@@ -1,0 +1,86 @@
+import type { BrandInfo, BrandId } from '../types/ktv';
+
+export const BRANDS: Record<BrandId, BrandInfo> = {
+  cashbox: {
+    id: 'cashbox',
+    name: '錢○ Cashbox 點歌碼',
+    shortName: '錢○',
+    color: '#10b981',
+    badgeBg: 'rgba(16, 185, 129, 0.15)',
+    description: '錢○ 系統對應點歌號',
+  },
+  holiday: {
+    id: 'holiday',
+    name: '好○迪 Holiday 點歌碼',
+    shortName: '好○迪',
+    color: '#3b82f6',
+    badgeBg: 'rgba(59, 130, 246, 0.15)',
+    description: '好○迪 系統對應點歌號',
+  },
+  watering_hole: {
+    id: 'watering_hole',
+    name: '享○馨 KTV 點歌碼',
+    shortName: '享○馨',
+    color: '#eab308',
+    badgeBg: 'rgba(234, 179, 8, 0.15)',
+    description: '享○馨 系統庭園包廂點歌號',
+  },
+  starlight: {
+    id: 'starlight',
+    name: '星○點 點歌碼',
+    shortName: '星○點',
+    color: '#a855f7',
+    badgeBg: 'rgba(168, 85, 247, 0.15)',
+    description: '星○點 系統點歌號',
+  },
+  singgo: {
+    id: 'singgo',
+    name: 'Sing○ 聚唱點歌碼',
+    shortName: 'Sing○',
+    color: '#ec4899',
+    badgeBg: 'rgba(236, 72, 153, 0.15)',
+    description: 'Sing○ 系統時尚包廂點歌號',
+  },
+  vmix: {
+    id: 'vmix',
+    name: 'V-M○X 點歌碼',
+    shortName: 'V-M○X',
+    color: '#06b6d4',
+    badgeBg: 'rgba(6, 182, 212, 0.15)',
+    description: 'V-M○X 系統點歌號',
+  },
+  superstar: {
+    id: 'superstar',
+    name: '超○巨星 點歌碼',
+    shortName: '超○巨星',
+    color: '#f97316',
+    badgeBg: 'rgba(249, 115, 22, 0.15)',
+    description: '超○巨星 系統點歌號',
+  },
+  yinyuan: {
+    id: 'yinyuan',
+    name: '音○ 伴唱碼',
+    shortName: '音○',
+    color: '#84cc16',
+    badgeBg: 'rgba(132, 204, 22, 0.15)',
+    description: '音○ 伴唱機點歌號',
+  },
+  golden_voice: {
+    id: 'golden_voice',
+    name: '金○ 伴唱碼',
+    shortName: '金○',
+    color: '#14b8a6',
+    badgeBg: 'rgba(20, 184, 166, 0.15)',
+    description: '金○ 伴唱機點歌號',
+  },
+  hongyin: {
+    id: 'hongyin',
+    name: '弘○ 伴唱碼',
+    shortName: '弘○',
+    color: '#f43f5e',
+    badgeBg: 'rgba(244, 63, 94, 0.15)',
+    description: '弘音 伴唱機點歌號',
+  },
+};
+
+export const BRAND_LIST: BrandInfo[] = Object.values(BRANDS);

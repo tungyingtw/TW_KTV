@@ -1,0 +1,72 @@
+[
+  {
+    "id": "rpt_1785201667210_644aq",
+    "songId": "pass2_45010",
+    "songTitle": "",
+    "artist": "",
+    "brandId": "cashbox",
+    "issueType": "other",
+    "note": "[MV畫面對照] 現場回報為: 原版MV",
+    "timestamp": "2026-07-28T01:21:07.210Z",
+    "ip": "122.117.159.214",
+    "status": "rejected",
+    "adminNote": "",
+    "reviewedAt": "2026-07-28T02:07:05.016Z"
+  },
+  {
+    "id": "rpt_1785201668170_ntatg",
+    "songId": "pass2_45010",
+    "songTitle": "",
+    "artist": "",
+    "brandId": "cashbox",
+    "issueType": "other",
+    "note": "[MV畫面對照] 現場回報為: 非原版/剪輯MV",
+    "timestamp": "2026-07-28T01:21:08.170Z",
+    "ip": "122.117.159.214",
+    "status": "rejected",
+    "adminNote": "",
+    "reviewedAt": "2026-07-28T02:07:04.609Z"
+  },
+  {
+    "id": "rpt_1785201669885_o25u4",
+    "songId": "pass2_45010",
+    "songTitle": "",
+    "artist": "",
+    "brandId": "cashbox",
+    "issueType": "other",
+    "note": "[MV畫面對照] 現場回報為: 非原版/剪輯MV",
+    "timestamp": "2026-07-28T01:21:09.885Z",
+    "ip": "122.117.159.214",
+    "status": "rejected",
+    "adminNote": "",
+    "reviewedAt": "2026-07-28T02:07:03.873Z"
+  },
+  {
+    "id": "rpt_1785201670370_xrv7n",
+    "songId": "pass2_45010",
+    "songTitle": "",
+    "artist": "",
+    "brandId": "cashbox",
+    "issueType": "other",
+    "note": "[MV畫面對照] 現場回報為: 原版MV",
+    "timestamp": "2026-07-28T01:21:10.370Z",
+    "ip": "122.117.159.214",
+    "status": "rejected",
+    "adminNote": "",
+    "reviewedAt": "2026-07-28T02:07:03.465Z"
+  },
+  {
+    "id": "rpt_1785201677590_da05b",
+    "songId": "pass2_45010",
+    "songTitle": "",
+    "artist": "",
+    "brandId": "singgo",
+    "issueType": "other",
+    "note": "[MV畫面對照] 現場回報為: 原版MV",
+    "timestamp": "2026-07-28T01:21:17.590Z",
+    "ip": "122.117.159.214",
+    "status": "rejected",
+    "adminNote": "",
+    "reviewedAt": "2026-07-28T02:07:02.944Z"
+  }
+]
