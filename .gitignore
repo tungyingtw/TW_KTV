@@ -16,6 +16,7 @@ ADMIN_CREDENTIALS.txt
 *.bat
 scratch/
 scripts/
+.agents/
 
 # Editor directories and files
 .vscode/*
