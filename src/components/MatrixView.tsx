@@ -115,7 +115,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
               color: 'var(--text-secondary)',
             }}>
-              <th style={{ padding: '14px 16px', width: '52px', textAlign: 'center' }}>最愛</th>
+              <th style={{ padding: '14px 10px', width: '64px', minWidth: '64px', textAlign: 'center', whiteSpace: 'nowrap' }}>最愛</th>
               <th style={{ padding: '14px 16px', width: isSingleBrand ? '45%' : (isFewBrands ? 'auto' : '260px'), minWidth: '200px' }}>歌名 / 歌手 / 創作者</th>
               <th style={{ padding: '14px 16px', width: isSingleBrand ? '80px' : (isFewBrands ? '90px' : '65px'), textAlign: 'center' }}>語種</th>
 
@@ -172,16 +172,25 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   <td style={{ textAlign: 'center', padding: '12px' }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
+                      className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
                       style={{
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
                         color: isFav ? '#ec4899' : 'var(--text-muted)',
                         padding: '4px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                       }}
-                      title={isFav ? '移除歌單' : '加入歌單'}
+                      title={isFav ? '移出歌單' : '加入歌單'}
                     >
-                      <Heart size={18} fill={isFav ? '#ec4899' : 'none'} />
+                      <Heart 
+                        size={18} 
+                        fill={isFav ? '#ec4899' : 'none'} 
+                        className={isFav ? 'heart-pop-anim' : ''}
+                      />
                     </button>
                   </td>
 
