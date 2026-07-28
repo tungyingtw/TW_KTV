@@ -66,7 +66,7 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
       padding: slotType === 'modal' ? '0' : '0 20px',
       textAlign: 'center',
     }}>
-      <div style={{
+      <div className="ad-slot-container" style={{
         background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95))',
         border: '1px solid rgba(236, 72, 153, 0.3)',
         borderRadius: '16px',
@@ -79,6 +79,8 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
         overflow: 'hidden',
         boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
         cursor: 'pointer',
+        boxSizing: 'border-box',
+        maxWidth: '100%',
       }}>
         {/* AD 標記 */}
         <span style={{
