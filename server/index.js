@@ -199,6 +199,27 @@ function normalizeString(str) {
 }
 
 // ─────────────────────────────────────────────
+// Google Search Console / Sitemap.xml 動態生成 (Google Indexing Engine)
+// ─────────────────────────────────────────────
+app.get('/sitemap.xml', (req, res) => {
+  const baseUrl = 'https://tw-ktv.onrender.com';
+  const today = new Date().toISOString().split('T')[0];
+  const brands = ['cashbox', 'holiday', 'watering_hole', 'starlight', 'singgo', 'vmix', 'superstar', 'yinyuan', 'golden_voice', 'hongyin'];
+
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+  xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+  xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+
+  brands.forEach(b => {
+    xml += `  <url>\n    <loc>${baseUrl}/?brand=${b}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+  });
+
+  xml += `</urlset>`;
+  res.header('Content-Type', 'application/xml');
+  res.send(xml);
+});
+
+// ─────────────────────────────────────────────
 // 公開 API：真實訪客線上人數統計與心跳 (Real-Time Visitor Tracking)
 // ─────────────────────────────────────────────
 const activeVisitors = new Map();
