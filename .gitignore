@@ -15,6 +15,7 @@ dist-ssr
 ADMIN_CREDENTIALS.txt
 *.bat
 scratch/
+scripts/
 !scripts/buildCatalogBin.js
 .agents/
 public/artists_registry.csv
