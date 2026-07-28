@@ -374,6 +374,22 @@ export function App() {
     }, 2800);
   };
 
+  // 搜尋關鍵字或過濾條件變更時，自動重置分頁渲染數量至 40 首，維持最佳渲染效能
+  useEffect(() => {
+    setDisplayedCount(40);
+  }, [
+    debouncedSearchQuery,
+    filters.selectedBrand,
+    filters.selectedBrands,
+    filters.brandFilterMode,
+    filters.selectedLanguages,
+    filters.selectedTitleLength,
+    filters.onlyOfficialMv,
+    filters.onlyOriginalVocal,
+    filters.onlyMainlandViral,
+    filters.sortBy,
+  ]);
+
   // Favorite Songs list objects
   const favoriteSongObjects = useMemo(() => {
     return allSongs.filter(s => favorites.includes(s.id));
