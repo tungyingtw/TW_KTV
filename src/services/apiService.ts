@@ -53,6 +53,9 @@ export async function setCachedCatalog(catalog: Song[]): Promise<void> {
   }
 }
 
+const TIME_KEY = 'full_catalog_timestamp_v18';
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小時快取效期 (避免重複浪費頻寬)
+
 export async function fetchFullCatalog(onProgress?: (percent: number) => void): Promise<Song[]> {
   onProgress?.(5);
 
@@ -60,12 +63,19 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
   const cached = await getCachedCatalog();
   if (cached && cached.length > 0) {
     onProgress?.(100);
-    // 背景默默更新快取
-    fetchFreshCatalog().then(fresh => {
-      if (fresh && fresh.length > 0) {
-        setCachedCatalog(fresh);
-      }
-    });
+    const lastFetch = localStorage.getItem(TIME_KEY);
+    const now = Date.now();
+    const isExpired = !lastFetch || (now - parseInt(lastFetch, 10) > CACHE_TTL_MS);
+
+    // 僅在快取超過 24 小時時才於背景默默觸發更新，省下載流量
+    if (isExpired) {
+      fetchFreshCatalog().then(fresh => {
+        if (fresh && fresh.length > 0) {
+          setCachedCatalog(fresh);
+          try { localStorage.setItem(TIME_KEY, String(Date.now())); } catch {}
+        }
+      });
+    }
     return cached;
   }
 
@@ -74,6 +84,7 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
   const fresh = await fetchFreshCatalog(onProgress);
   if (fresh && fresh.length > 0) {
     setCachedCatalog(fresh);
+    try { localStorage.setItem(TIME_KEY, String(Date.now())); } catch {}
     return fresh;
   }
 

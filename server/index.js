@@ -67,6 +67,9 @@ function isLocalhostRequest(req) {
 }
 
 function handleAdminPageServe(req, res) {
+  if (!isLocalhostRequest(req)) {
+    return res.status(403).send('Access Denied: Admin panel is strictly restricted to localhost connection.');
+  }
   const adminPath = path.join(__dirname, '../public/admin.html');
   if (fs.existsSync(adminPath)) {
     res.sendFile(adminPath);
