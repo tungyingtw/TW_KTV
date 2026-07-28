@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8" />
@@ -312,9 +312,11 @@
 <div id="toast"></div>
 
 <script>
-const API = (window.location.port === '5173' || window.location.port === '3000')
+const isLocalEnv = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const isGitHubPages = window.location.hostname.endsWith('github.io');
+const API = isLocalEnv 
   ? `${window.location.protocol}//${window.location.hostname}:3001`
-  : window.location.origin;
+  : (isGitHubPages ? 'https://tw-ktv.onrender.com' : window.location.origin);
 
 let adminToken = sessionStorage.getItem('ktv_admin_token') || '';
 

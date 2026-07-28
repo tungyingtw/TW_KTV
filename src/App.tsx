@@ -25,22 +25,33 @@ export function App() {
   const [targetProgress, setTargetProgress] = useState<number>(0);
   const [displayProgress, setDisplayProgress] = useState<number>(0);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
-  const [displayedCount, setDisplayedCount] = useState<number>(40);
 
   // Filter Options State (Default: length = 字數 > 注音/筆劃)
-  const [filters, setFilters] = useState<FilterOptions>({
-    searchQuery: '',
-    selectedBrand: 'all',
-    selectedBrands: [],
-    brandFilterMode: 'any',
-    selectedLanguages: [],
-    selectedTitleLength: 'all',
-    onlyOfficialMv: false,
-    onlyOriginalVocal: false,
-    onlyMainlandViral: false,
-    onlyNicheSongs: false,
-    viewMode: 'matrix',
-    sortBy: 'length',
+  const [filters, setFilters] = useState<FilterOptions>(() => {
+    let initialViewMode: 'matrix' | 'cards' = 'matrix';
+    try {
+      const savedMode = localStorage.getItem('ktv_view_mode');
+      if (savedMode === 'matrix' || savedMode === 'cards') {
+        initialViewMode = savedMode;
+      } else if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        initialViewMode = 'cards';
+      }
+    } catch {}
+
+    return {
+      searchQuery: '',
+      selectedBrand: 'all',
+      selectedBrands: [],
+      brandFilterMode: 'any',
+      selectedLanguages: [],
+      selectedTitleLength: 'all',
+      onlyOfficialMv: false,
+      onlyOriginalVocal: false,
+      onlyMainlandViral: false,
+      onlyNicheSongs: false,
+      viewMode: initialViewMode,
+      sortBy: 'length',
+    };
   });
 
   // Debounced Search Query (280ms delay)
@@ -59,11 +70,31 @@ export function App() {
 
   // UI Modals State
   const [selectedSongDetail, setSelectedSongDetail] = useState<Song | null>(null);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
-  const [isFavoritesOpen, setIsFavoritesOpen] = useState<boolean>(false);
-  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState<boolean>(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const [reportModalSong, setReportModalSong] = useState<Song | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Pagination / Load More limit state (Default display: 40)
+  const [displayedCount, setDisplayedCount] = useState<number>(40);
+
+  // Reset pagination when search query or filter changes
+  useEffect(() => {
+    setDisplayedCount(40);
+  }, [
+    debouncedSearchQuery,
+    filters.selectedBrand,
+    filters.selectedBrands,
+    filters.brandFilterMode,
+    filters.selectedLanguages,
+    filters.selectedTitleLength,
+    filters.onlyOfficialMv,
+    filters.onlyOriginalVocal,
+    filters.onlyMainlandViral,
+    filters.onlyNicheSongs,
+    filters.sortBy,
+  ]);
 
   // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
   useEffect(() => {
@@ -631,13 +662,20 @@ export function App() {
             台灣KTV歌曲索引
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem' }}>
+          <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Sparkles size={14} color="#10b981" /> 原版MV標示
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Music size={14} color="#ec4899" /> 原聲原唱對照
             </span>
+            <a 
+              href="./admin.html"
+              style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.78rem', opacity: 0.7 }}
+              title="管理後台 (僅限管理員 Token 登入)"
+            >
+              ⚙️ 管理後台
+            </a>
           </div>
         </div>
       </footer>

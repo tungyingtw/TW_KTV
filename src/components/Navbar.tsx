@@ -230,7 +230,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             border: '1px solid rgba(255, 255, 255, 0.08)',
           }}>
             <button
-              onClick={() => setFilters(prev => ({ ...prev, viewMode: 'matrix' }))}
+              onClick={() => {
+                try { localStorage.setItem('ktv_view_mode', 'matrix'); } catch {}
+                setFilters(prev => ({ ...prev, viewMode: 'matrix' }));
+              }}
               style={{
                 background: filters.viewMode === 'matrix' ? 'var(--accent-pink)' : 'transparent',
                 color: filters.viewMode === 'matrix' ? '#fff' : 'var(--text-secondary)',
@@ -245,13 +248,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 gap: '6px',
                 transition: 'all 0.2s ease',
               }}
-              title="桌面端矩陣比對表"
+              title="矩陣對比表 (各 KTV 廠牌一覽)"
             >
               <Table2 size={16} />
-              <span className="desktop-only">矩陣比對</span>
+              <span className="desktop-only">矩陣對比</span>
             </button>
             <button
-              onClick={() => setFilters(prev => ({ ...prev, viewMode: 'cards' }))}
+              onClick={() => {
+                try { localStorage.setItem('ktv_view_mode', 'cards'); } catch {}
+                setFilters(prev => ({ ...prev, viewMode: 'cards' }));
+              }}
               style={{
                 background: filters.viewMode === 'cards' ? 'var(--accent-pink)' : 'transparent',
                 color: filters.viewMode === 'cards' ? '#fff' : 'var(--text-secondary)',
@@ -266,7 +272,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 gap: '6px',
                 transition: 'all 0.2s ease',
               }}
-              title="手機卡片檢視"
+              title="手機卡片檢視 (經典單首卡片)"
             >
               <LayoutGrid size={16} />
               <span className="desktop-only">手機卡片</span>
