@@ -426,6 +426,27 @@ body {
   animation: toastCenterPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.quick-filter-scroll-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  ms-overflow-style: none;
+}
+
+.quick-filter-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
 /* ============================================================
    📱 100% 完美手機響應式排版與按鈕防不自然斷行適配 (Mobile Perfection)
    ============================================================ */
