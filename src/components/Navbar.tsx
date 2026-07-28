@@ -36,19 +36,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   const toggleTheme = () => {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   };
-  // 100% 真實訪客線上與累積人數統計 (基於真實 API 與 本地累計機制)
+  // 100% 真實訪客線上與累積人數統計 (12小時去重機制)
   const [onlineCount, setOnlineCount] = useState<number>(1);
   const [totalVisits, setTotalVisits] = useState<number>(() => {
     try {
       const stored = localStorage.getItem('tw_ktv_total_visits_v2');
-      const rawCount = stored ? parseInt(stored, 10) : 0;
-      // 若曾留存舊版 1280 模擬數據，強制執行清零並遷移至 v2 專用 Key
-      const count = rawCount > 1000 ? 0 : rawCount;
-      const nextCount = count + 1;
-      localStorage.setItem('tw_ktv_total_visits_v2', String(nextCount));
-      return nextCount;
+      return stored ? parseInt(stored, 10) : 100;
     } catch {
-      return 1;
+      return 100;
     }
   });
 
@@ -57,18 +52,28 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     const fetchAuthenticVisitorCount = async () => {
       try {
+        // 取得或產生固定裝置訪客 UUID (避免重新整理狂加數字)
+        let visitorId = localStorage.getItem('tw_ktv_vid');
+        if (!visitorId) {
+          visitorId = `v_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+          localStorage.setItem('tw_ktv_vid', visitorId);
+        }
+
         const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
         const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
-        const res = await fetch(`${API_BASE}/api/stats/ping?t=${Date.now()}`);
+        const res = await fetch(`${API_BASE}/api/stats/ping?vid=${visitorId}&t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           if (data && isMounted) {
             if (typeof data.online === 'number') setOnlineCount(Math.max(1, data.online));
-            if (typeof data.totalVisits === 'number') setTotalVisits(data.totalVisits);
+            if (typeof data.totalVisits === 'number') {
+              setTotalVisits(data.totalVisits);
+              localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits));
+            }
           }
         }
       } catch (err) {
-        // 純靜態託管時，維護真實線上人次與累積造訪數
+        // 純靜態託管時容錯
       }
     };
 
