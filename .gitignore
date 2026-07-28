@@ -17,6 +17,13 @@ ADMIN_CREDENTIALS.txt
 scratch/
 scripts/
 .agents/
+public/artists_registry.csv
+public/artists_registry.json
+.oxlintrc.json
+server/database.json
+server/reports.json
+server/votes.json
+server/stats.json
 
 # Editor directories and files
 .vscode/*
