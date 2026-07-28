@@ -425,3 +425,86 @@ body {
   pointer-events: none;
   animation: toastCenterPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ============================================================
+   📱 100% 完美手機響應式排版與按鈕防不自然斷行適配 (Mobile Perfection)
+   ============================================================ */
+
+/* 1. 全站所有按鈕、膠囊、標籤絕不允許中途文字不自然斷行 */
+button, 
+.badge, 
+.glass-pill, 
+[class*="badge"], 
+[class*="pill"] {
+  white-space: nowrap !important;
+}
+
+@media (max-width: 640px) {
+  /* 2. 手機頂部導覽列按鈕邊距與大小適配 */
+  header {
+    padding: 10px 12px !important;
+  }
+
+  header > div {
+    gap: 8px !important;
+  }
+
+  .navbar-title {
+    font-size: 1.12rem !important;
+  }
+
+  /* 3. 手機版按鈕縮減邊距與文字大寫 */
+  .btn-secondary, 
+  .btn-primary {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+    gap: 4px !important;
+  }
+
+  /* 4. 搜尋輸入框 */
+  input[placeholder*="搜尋歌名"] {
+    padding: 11px 36px 11px 40px !important;
+    font-size: 0.86rem !important;
+  }
+
+  /* 5. 語種與字數分類標籤手機橫向流暢滾動 */
+  .quick-filter-group {
+    overflow-x: auto !important;
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  /* 6. 手機版彈窗 100% 防出界與高彈性滾動 */
+  [style*="position: fixed"] > [style*="background"],
+  .modal-content {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    max-height: 86vh !important;
+    padding: 16px !important;
+    margin: 10px auto !important;
+    overflow-y: auto !important;
+    border-radius: 16px !important;
+  }
+
+  /* 7. 手機版右側歌本抽屜自適應寬度 */
+  .drawer-content {
+    width: 90vw !important;
+    max-width: 360px !important;
+  }
+
+  /* 8. 手機版卡片排列與門市號碼對齊 */
+  .song-card {
+    padding: 12px 14px !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* 9. 手機版底部 Toast 訊息氣泡防擋與居中 */
+  .toast-notification-container {
+    bottom: 24px !important;
+    padding: 10px 18px !important;
+    font-size: 0.88rem !important;
+    max-width: 92vw !important;
+    white-space: nowrap !important;
+  }
+}
