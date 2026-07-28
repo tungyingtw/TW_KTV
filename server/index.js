@@ -227,9 +227,15 @@ const visitorCooldowns = new Map(); // 12 小時重複造訪去重快取 (Unique
 const VISIT_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 小時冷卻期
 
 const STATS_PATH = path.join(__dirname, 'stats.json');
+const BASE_INITIAL_VISITS = 53005;
 
 function loadStats() {
-  try { return JSON.parse(fs.readFileSync(STATS_PATH, 'utf8')); } catch { return { totalVisits: 0 }; }
+  try {
+    const data = JSON.parse(fs.readFileSync(STATS_PATH, 'utf8'));
+    return { totalVisits: Math.max(BASE_INITIAL_VISITS, data.totalVisits || 0) };
+  } catch {
+    return { totalVisits: BASE_INITIAL_VISITS };
+  }
 }
 function saveStats(data) {
   try { fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch (e) {}
