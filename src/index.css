@@ -528,18 +528,21 @@ html, body {
     font-size: 0.84rem !important;
   }
 
-  /* 5. 語種與字數分類標籤手機無痕橫向滾動 */
+  /* 5. 語種與字數分類標籤手機無痕橫向滾動 (具備 min-width: 0 防護防止擠爆 Flex 容器) */
   .search-bar-filter-group {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 10px !important;
+    box-sizing: border-box !important;
   }
 
   .quick-filter-scroll-row {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     overflow-x: auto !important;
     box-sizing: border-box !important;
     white-space: nowrap !important;
@@ -553,10 +556,13 @@ html, body {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
   .search-bar-bottom-row > div {
     width: 100% !important;
+    min-width: 0 !important;
     justify-content: space-between !important;
   }
 
