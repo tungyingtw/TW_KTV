@@ -65,7 +65,7 @@
 
 /* Light mode component overrides for crystal clear contrast */
 [data-theme="light"] header {
-  background: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
   border-bottom-color: rgba(15, 23, 42, 0.1) !important;
 }
 
@@ -88,6 +88,11 @@
   color: #94a3b8 !important;
 }
 
+/* Light mode tables & headers */
+[data-theme="light"] table {
+  background: #ffffff !important;
+}
+
 [data-theme="light"] td,
 [data-theme="light"] th {
   color: #0f172a !important;
@@ -103,9 +108,16 @@
   background: #f1f5f9 !important;
 }
 
-[data-theme="light"] .song-card {
+[data-theme="light"] tr {
+  border-bottom-color: #f1f5f9 !important;
+}
+
+/* Light mode song cards & list items */
+[data-theme="light"] .song-card,
+[data-theme="light"] [style*="background: linear-gradient(135deg, rgba(30, 41, 59"],
+[data-theme="light"] [style*="background: rgba(30, 41, 59"] {
   background: #ffffff !important;
-  border-color: rgba(15, 23, 42, 0.08) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
   color: #0f172a !important;
 }
@@ -115,19 +127,11 @@
   box-shadow: 0 8px 24px rgba(219, 39, 119, 0.12) !important;
 }
 
-[data-theme="light"] .modal-content,
-[data-theme="light"] .drawer-content {
+/* Light mode buttons, pills & chips */
+[data-theme="light"] button[style*="rgba(30, 41, 59"],
+[data-theme="light"] div[style*="rgba(30, 41, 59"] {
   background: #ffffff !important;
-  color: #0f172a !important;
-  border-color: rgba(15, 23, 42, 0.1) !important;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15) !important;
-}
-
-[data-theme="light"] .song-title-link,
-[data-theme="light"] h1,
-[data-theme="light"] h2,
-[data-theme="light"] h3,
-[data-theme="light"] h4 {
+  border-color: rgba(15, 23, 42, 0.12) !important;
   color: #0f172a !important;
 }
 
@@ -139,6 +143,42 @@
 
 [data-theme="light"] .btn-secondary:hover {
   background: #e2e8f0 !important;
+}
+
+/* Light mode Modals, Drawers & Popups */
+[data-theme="light"] .modal-content,
+[data-theme="light"] .drawer-content,
+[data-theme="light"] [style*="position: fixed"][style*="background: rgba(15, 23, 42"],
+[data-theme="light"] [style*="position: absolute"][style*="background: rgba(15, 23, 42"] {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15) !important;
+}
+
+/* Light mode text & links */
+[data-theme="light"] .song-title-link,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] strong,
+[data-theme="light"] b {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] p,
+[data-theme="light"] span:not([class*="badge"]):not([style*="color"]) {
+  color: #334155;
+}
+
+/* Light mode Ad Banner placeholder card */
+[data-theme="light"] [style*="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8)"] {
+  background: linear-gradient(135deg, #ffffff, #f8fafc) !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
 }
 
 * {
