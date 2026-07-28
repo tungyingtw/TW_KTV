@@ -223,6 +223,9 @@ app.get('/sitemap.xml', (req, res) => {
 // 公開 API：真實訪客線上人數統計與心跳 (Real-Time Visitor Tracking)
 // ─────────────────────────────────────────────
 const activeVisitors = new Map();
+const visitorCooldowns = new Map(); // 12 小時重複造訪去重快取 (Unique Visitor Deduplication)
+const VISIT_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 小時冷卻期
+
 const STATS_PATH = path.join(__dirname, 'stats.json');
 
 function loadStats() {
@@ -236,18 +239,31 @@ let currentStats = loadStats();
 
 app.get('/api/stats/ping', (req, res) => {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const visitorId = (req.query.vid && typeof req.query.vid === 'string') ? req.query.vid : clientIp;
   const now = Date.now();
   
-  if (!activeVisitors.has(clientIp)) {
+  // 1. 即時線上人數心跳紀錄
+  activeVisitors.set(clientIp, now);
+
+  // 2. 12 小時內同一訪客/裝置反覆 F5 重新整理，絕不重複計入「總累積查詢人數」
+  const lastVisit = visitorCooldowns.get(visitorId);
+  if (!lastVisit || (now - lastVisit > VISIT_COOLDOWN_MS)) {
     currentStats.totalVisits = (currentStats.totalVisits || 0) + 1;
+    visitorCooldowns.set(visitorId, now);
     saveStats(currentStats);
   }
-  activeVisitors.set(clientIp, now);
 
   // 清理超過 60 秒未發送心跳的離線 Session
   for (const [ip, lastPing] of activeVisitors.entries()) {
     if (now - lastPing > 60000) {
       activeVisitors.delete(ip);
+    }
+  }
+
+  // 清理過期的 Cooldown 快取避免 RAM 佔用
+  for (const [vId, time] of visitorCooldowns.entries()) {
+    if (now - time > VISIT_COOLDOWN_MS * 2) {
+      visitorCooldowns.delete(vId);
     }
   }
 
