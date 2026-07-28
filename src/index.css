@@ -548,6 +548,18 @@ html, body {
     scrollbar-width: none !important;
   }
 
+  /* 5.1 搜尋列底部佈局手機端垂直自適應折行 */
+  .search-bar-bottom-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .search-bar-bottom-row > div {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
   /* 6. 手機版彈窗 100% 防出界與高彈性滾動 */
   [style*="position: fixed"] > div,
   .modal-content {
