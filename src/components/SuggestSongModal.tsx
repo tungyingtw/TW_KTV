@@ -199,7 +199,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                   transition: 'all 0.15s ease',
                 }}
               >
-                <Music size={16} /> 🎵 建議追加新歌曲
+                <Music size={16} /> 建議追加新歌曲
               </button>
 
               <button
@@ -221,7 +221,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                   transition: 'all 0.15s ease',
                 }}
               >
-                <Store size={16} /> 🏪 建議追加 KTV 新廠牌
+                <Store size={16} /> 建議追加 KTV 新廠牌
               </button>
             </div>
 
@@ -271,7 +271,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#fbbf24', marginBottom: '5px', fontWeight: 700 }}>
-                      🔢 KTV 點歌號 / 編號
+                      KTV 點歌號 / 編號
                     </label>
                     <input
                       type="text"
@@ -289,7 +289,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '5px', fontWeight: 600 }}>
-                      📍 相關 KTV 廠牌
+                      相關 KTV 廠牌
                     </label>
                     <select
                       value={brandId}
@@ -311,7 +311,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 {/* Row 3: MV 畫面類型標記 */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.83rem', color: '#38bdf8', marginBottom: '6px', fontWeight: 700 }}>
-                    🎬 現場包廂 MV 畫面類型
+                    現場包廂 MV 畫面類型
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                     <button
@@ -467,7 +467,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#38bdf8', marginBottom: '5px', fontWeight: 700 }}>
-                      🏪 KTV 廠牌/連鎖體系全名 <span style={{ color: '#f87171' }}>*</span>
+                      KTV 廠牌/連鎖體系全名 <span style={{ color: '#f87171' }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -485,7 +485,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#f472b6', marginBottom: '5px', fontWeight: 700 }}>
-                      🏷️ 顯示簡稱
+                      顯示簡稱
                     </label>
                     <input
                       type="text"
@@ -506,7 +506,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '5px', fontWeight: 600 }}>
-                      🖥️ 系統 / 伴唱機類型
+                      系統 / 伴唱機類型
                     </label>
                     <input
                       type="text"
@@ -524,7 +524,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '5px', fontWeight: 600 }}>
-                      🔢 點歌碼格式範例
+                      點歌碼格式範例
                     </label>
                     <input
                       type="text"
@@ -544,7 +544,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 {/* Row 3: 門市/區域分佈 */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '5px', fontWeight: 600 }}>
-                    📍 門市 / 主要據點分佈區域
+                    門市 / 主要據點分佈區域
                   </label>
                   <input
                     type="text"
@@ -563,7 +563,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 {/* Row 4: 備註與官方網址 */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '4px', fontWeight: 600 }}>
-                    💬 備註說明或官方網址（選填）
+                    備註說明或官方網址（選填）
                   </label>
                   <textarea
                     value={brandNote}
