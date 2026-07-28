@@ -3,6 +3,7 @@ import type { Song, BrandId } from '../types/ktv';
 import { BRANDS } from '../data/brands';
 import { Heart, Video, Disc, ChevronRight, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
+import { AdBannerSlot } from './AdBannerSlot';
 
 interface CardViewProps {
   songs: Song[];
@@ -99,7 +100,7 @@ export const CardView: React.FC<CardViewProps> = ({
       gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
       gap: '16px',
     }}>
-      {songs.map(song => {
+      {songs.map((song, index) => {
         const isFav = favorites.includes(song.id);
 
         const displayBrands = isMultiSelecting
@@ -109,9 +110,8 @@ export const CardView: React.FC<CardViewProps> = ({
             : [BRANDS[selectedBrand]]);
 
         return (
+          <React.Fragment key={song.id}>
           <div 
-            key={song.id}
-            onClick={() => onSelectSongDetail(song)}
             className="glass-panel animate-fade-in"
             style={{
               padding: '16px',
@@ -360,6 +360,12 @@ export const CardView: React.FC<CardViewProps> = ({
               </button>
             </div>
           </div>
+          {(index + 1) % 12 === 0 && (
+            <div style={{ gridColumn: '1 / -1', margin: '8px 0' }}>
+              <AdBannerSlot slotType="in_feed" />
+            </div>
+          )}
+          </React.Fragment>
         );
       })}
     </div>

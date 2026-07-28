@@ -223,8 +223,8 @@ export function App() {
       isMainlandViral: isMainlandKeywords,
       isNiche: isSpecialCategory,
       brands: isSpecialCategory ? {
-        cashbox: { available: false, note: '錢櫃未收錄' },
-        holiday: { available: false, note: '好樂迪未收錄' },
+        cashbox: { available: false, note: '錢○未收錄' },
+        holiday: { available: false, note: '好○迪未收錄' },
         watering_hole: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
         starlight: { available: false },
         singgo: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },

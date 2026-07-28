@@ -277,7 +277,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                       type="text"
                       value={songCode}
                       onChange={e => setSongCode(e.target.value)}
-                      placeholder="例：45678 或 錢櫃:45678"
+                      placeholder="例：45678 或 錢○:45678"
                       style={{
                         width: '100%', background: 'rgba(15, 23, 42, 0.75)',
                         border: '1px solid rgba(251, 191, 36, 0.35)', borderRadius: '8px',
