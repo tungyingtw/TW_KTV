@@ -4,6 +4,9 @@ import type { Song, FilterOptions, BrandId } from './types/ktv';
 import { Navbar } from './components/Navbar';
 import { SearchBar } from './components/SearchBar';
 import { BrandTabScroll } from './components/BrandTabScroll';
+import { MobileNavbar } from './components/mobile/MobileNavbar';
+import { MobileSearchBar } from './components/mobile/MobileSearchBar';
+import { MobileBrandTabScroll } from './components/mobile/MobileBrandTabScroll';
 import { MatrixView } from './components/MatrixView';
 import { CardView } from './components/CardView';
 import { SongDetailModal } from './components/SongDetailModal';
@@ -15,10 +18,13 @@ import { FavoritesDrawer } from './components/FavoritesDrawer';
 import { ToastNotification } from './components/ToastNotification';
 import { fetchFullCatalog } from './services/apiService';
 import { useDebounce } from './hooks/useDebounce';
+import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
 import { Sparkles, Music, ChevronDown } from 'lucide-react';
 
 export function App() {
+  const isMobile = useIsMobile();
+
   // Main Catalog State
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(true);
@@ -429,72 +435,140 @@ export function App() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Navbar */}
-      <Navbar
-        filters={filters}
-        setFilters={setFilters}
-        favoriteCount={favorites.length}
-        onOpenFavorites={() => setIsFavoritesOpen(true)}
-        onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
-      />
+      {isMobile ? (
+        <MobileNavbar
+          filters={filters}
+          setFilters={setFilters}
+          favoriteCount={favorites.length}
+          onOpenFavorites={() => setIsFavoritesOpen(true)}
+          onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
+        />
+      ) : (
+        <Navbar
+          filters={filters}
+          setFilters={setFilters}
+          favoriteCount={favorites.length}
+          onOpenFavorites={() => setIsFavoritesOpen(true)}
+          onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
+        />
+      )}
 
       {/* Main Search Controls */}
-      <SearchBar
-        filters={filters}
-        setFilters={setFilters}
-        onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
-        resultCount={filteredSongs.length}
-        isSearching={isSearching}
-        onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
-      />
+      {isMobile ? (
+        <MobileSearchBar
+          filters={filters}
+          setFilters={setFilters}
+          onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
+          resultCount={filteredSongs.length}
+          isSearching={isSearching}
+          onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
+        />
+      ) : (
+        <SearchBar
+          filters={filters}
+          setFilters={setFilters}
+          onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
+          resultCount={filteredSongs.length}
+          isSearching={isSearching}
+          onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
+        />
+      )}
 
       {/* 📢 【廣告位 #1 頂部黃金專區】 */}
       <AdBannerSlot slotType="header" />
 
-      {/* Horizontally Scrollable Brand Tabs (支持複選與折疊) */}
-      <BrandTabScroll
-        selectedBrand={filters.selectedBrand}
-        selectedBrands={filters.selectedBrands}
-        brandFilterMode={filters.brandFilterMode}
-        onSelectBrand={(brand) => {
-          setFilters(prev => ({
-            ...prev,
-            selectedBrand: brand,
-            selectedBrands: brand === 'all' ? [] : [brand],
-          }));
-          setDisplayedCount(40);
-        }}
-        onToggleBrand={(brandId) => {
-          setFilters(prev => {
-            const current = prev.selectedBrands || [];
-            const exists = current.includes(brandId);
-            const nextBrands = exists
-              ? current.filter(b => b !== brandId)
-              : [...current, brandId];
-            return {
+      {/* Horizontally Scrollable Brand Tabs */}
+      {isMobile ? (
+        <MobileBrandTabScroll
+          selectedBrand={filters.selectedBrand}
+          selectedBrands={filters.selectedBrands}
+          brandFilterMode={filters.brandFilterMode}
+          onSelectBrand={(brand) => {
+            setFilters(prev => ({
               ...prev,
-              selectedBrands: nextBrands,
-              selectedBrand: nextBrands.length === 1 ? nextBrands[0] : (nextBrands.length === 0 ? 'all' : prev.selectedBrand),
-            };
-          });
-          setDisplayedCount(40);
-        }}
-        onClearBrands={() => {
-          setFilters(prev => ({
-            ...prev,
-            selectedBrands: [],
-            selectedBrand: 'all',
-          }));
-          setDisplayedCount(40);
-        }}
-        onToggleFilterMode={() => {
-          setFilters(prev => ({
-            ...prev,
-            brandFilterMode: prev.brandFilterMode === 'all_of_them' ? 'any' : 'all_of_them',
-          }));
-        }}
-        brandSongCounts={brandSongCounts}
-        totalSongCount={allSongs.length}
-      />
+              selectedBrand: brand,
+              selectedBrands: brand === 'all' ? [] : [brand],
+            }));
+            setDisplayedCount(40);
+          }}
+          onToggleBrand={(brandId) => {
+            setFilters(prev => {
+              const current = prev.selectedBrands || [];
+              const exists = current.includes(brandId);
+              const nextBrands = exists
+                ? current.filter(b => b !== brandId)
+                : [...current, brandId];
+              return {
+                ...prev,
+                selectedBrands: nextBrands,
+                selectedBrand: nextBrands.length === 1 ? nextBrands[0] : (nextBrands.length === 0 ? 'all' : prev.selectedBrand),
+              };
+            });
+            setDisplayedCount(40);
+          }}
+          onClearBrands={() => {
+            setFilters(prev => ({
+              ...prev,
+              selectedBrands: [],
+              selectedBrand: 'all',
+            }));
+            setDisplayedCount(40);
+          }}
+          onToggleFilterMode={() => {
+            setFilters(prev => ({
+              ...prev,
+              brandFilterMode: prev.brandFilterMode === 'all_of_them' ? 'any' : 'all_of_them',
+            }));
+          }}
+          brandSongCounts={brandSongCounts}
+          totalSongCount={allSongs.length}
+        />
+      ) : (
+        <BrandTabScroll
+          selectedBrand={filters.selectedBrand}
+          selectedBrands={filters.selectedBrands}
+          brandFilterMode={filters.brandFilterMode}
+          onSelectBrand={(brand) => {
+            setFilters(prev => ({
+              ...prev,
+              selectedBrand: brand,
+              selectedBrands: brand === 'all' ? [] : [brand],
+            }));
+            setDisplayedCount(40);
+          }}
+          onToggleBrand={(brandId) => {
+            setFilters(prev => {
+              const current = prev.selectedBrands || [];
+              const exists = current.includes(brandId);
+              const nextBrands = exists
+                ? current.filter(b => b !== brandId)
+                : [...current, brandId];
+              return {
+                ...prev,
+                selectedBrands: nextBrands,
+                selectedBrand: nextBrands.length === 1 ? nextBrands[0] : (nextBrands.length === 0 ? 'all' : prev.selectedBrand),
+              };
+            });
+            setDisplayedCount(40);
+          }}
+          onClearBrands={() => {
+            setFilters(prev => ({
+              ...prev,
+              selectedBrands: [],
+              selectedBrand: 'all',
+            }));
+            setDisplayedCount(40);
+          }}
+          onToggleFilterMode={() => {
+            setFilters(prev => ({
+              ...prev,
+              brandFilterMode: prev.brandFilterMode === 'all_of_them' ? 'any' : 'all_of_them',
+            }));
+          }}
+          brandSongCounts={brandSongCounts}
+          totalSongCount={allSongs.length}
+        />
+      )}
 
       {/* 📢 Google AdSense 廣告橫幅區域 */}
       <AdBannerSlot slotType="in_feed" />
