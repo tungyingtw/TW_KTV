@@ -100,7 +100,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   }
 
   return (
-    <div style={{ padding: '0 20px', overflowX: 'auto' }}>
+    <div className="matrix-view-container" style={{ padding: '0 20px', overflowX: 'auto' }}>
       <div className="glass-panel" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
         <table style={{
           width: '100%',

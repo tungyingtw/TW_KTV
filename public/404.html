@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>重新導向中... Redirecting</title>
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      if (path.includes('/admin') || path.includes('/sys-admin-panel')) {
+        // 抓取 GitHub Pages 的 base path，導向 admin.html
+        var basePath = path.substring(0, path.lastIndexOf('/'));
+        window.location.replace((basePath ? basePath : '') + '/admin.html' + window.location.search + window.location.hash);
+      } else {
+        // 其餘未知路由重導回首頁
+        var basePath = path.substring(0, path.indexOf('/', 1));
+        window.location.replace((basePath ? basePath : '/') + '/' + window.location.search + window.location.hash);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p style="font-family: sans-serif; padding: 20px; text-align: center;">正在為您轉接至頁面，請稍候...</p>
+</body>
+</html>

@@ -91,12 +91,12 @@ export const CardView: React.FC<CardViewProps> = ({
 
   return (
     <>
-    <div style={{
+    <div className="card-view-container" style={{
       maxWidth: '1400px',
       margin: '0 auto',
       padding: '0 20px',
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
       gap: '16px',
     }}>
       {songs.map(song => {
