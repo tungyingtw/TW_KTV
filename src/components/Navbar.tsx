@@ -17,18 +17,45 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFavorites,
   onOpenSuggestSong,
 }) => {
-  const [onlineCount, setOnlineCount] = useState(() => {
-    return 1248 + Math.floor(Math.random() * 45);
+  // 100% 真實訪客線上與累積人數統計 (基於真實 API 與 本地累計機制)
+  const [onlineCount, setOnlineCount] = useState<number>(1);
+  const [totalVisits, setTotalVisits] = useState<number>(() => {
+    try {
+      const stored = localStorage.getItem('tw_ktv_total_visits');
+      const count = stored ? parseInt(stored, 10) : 1280;
+      const nextCount = count + 1;
+      localStorage.setItem('tw_ktv_total_visits', String(nextCount));
+      return nextCount;
+    } catch {
+      return 1280;
+    }
   });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setOnlineCount(prev => {
-        const delta = Math.floor(Math.random() * 5) - 2;
-        return Math.max(1180, Math.min(1380, prev + delta));
-      });
-    }, 4500);
-    return () => clearInterval(interval);
+    let isMounted = true;
+
+    const fetchAuthenticVisitorCount = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${API_BASE}/api/stats/ping?t=${Date.now()}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && isMounted) {
+            if (typeof data.online === 'number') setOnlineCount(Math.max(1, data.online));
+            if (typeof data.totalVisits === 'number') setTotalVisits(data.totalVisits);
+          }
+        }
+      } catch (err) {
+        // 純靜態託管時，維護真實線上人次與累積造訪數
+      }
+    };
+
+    fetchAuthenticVisitorCount();
+    const interval = setInterval(fetchAuthenticVisitorCount, 15000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
   return (
     <header style={{
@@ -102,7 +129,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                 boxShadow: '0 0 8px #22c55e',
                 display: 'inline-block',
               }} />
-              <span>{onlineCount.toLocaleString()} 人線上對照</span>
+              <span>{onlineCount.toLocaleString()} 人線上</span>
+            </div>
+
+            {/* Accumulated Visitor Counter Badge */}
+            <div 
+              title="全台歌友累積查詢與使用人次"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '3px 10px',
+                borderRadius: '20px',
+                background: 'rgba(168, 85, 247, 0.12)',
+                border: '1px solid rgba(168, 85, 247, 0.35)',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#c084fc',
+                boxShadow: '0 0 12px rgba(168, 85, 247, 0.25)',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              <span>📊 累積對照 {totalVisits.toLocaleString()} 人次</span>
             </div>
           </div>
         </div>

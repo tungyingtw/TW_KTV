@@ -211,6 +211,45 @@ function normalizeString(str) {
 }
 
 // ─────────────────────────────────────────────
+// 公開 API：真實訪客線上人數統計與心跳 (Real-Time Visitor Tracking)
+// ─────────────────────────────────────────────
+const activeVisitors = new Map();
+const STATS_PATH = path.join(__dirname, 'stats.json');
+
+function loadStats() {
+  try { return JSON.parse(fs.readFileSync(STATS_PATH, 'utf8')); } catch { return { totalVisits: 1 }; }
+}
+function saveStats(data) {
+  try { fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch (e) {}
+}
+
+let currentStats = loadStats();
+
+app.get('/api/stats/ping', (req, res) => {
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  
+  if (!activeVisitors.has(clientIp)) {
+    currentStats.totalVisits = (currentStats.totalVisits || 0) + 1;
+    saveStats(currentStats);
+  }
+  activeVisitors.set(clientIp, now);
+
+  // 清理超過 60 秒未發送心跳的離線 Session
+  for (const [ip, lastPing] of activeVisitors.entries()) {
+    if (now - lastPing > 60000) {
+      activeVisitors.delete(ip);
+    }
+  }
+
+  res.json({
+    online: activeVisitors.size,
+    totalVisits: currentStats.totalVisits,
+    timestamp: now
+  });
+});
+
+// ─────────────────────────────────────────────
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
 app.post('/api/report', (req, res) => {
