@@ -3,6 +3,7 @@ import type { Song, BrandId } from '../types/ktv';
 import { BRAND_LIST, BRANDS } from '../data/brands';
 import { Heart, Video, Disc, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
+import { AdBannerSlot } from './AdBannerSlot';
 
 interface MatrixViewProps {
   songs: Song[];
@@ -149,8 +150,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               const isSelected = selectedSongId === song.id;
 
               return (
+                <React.Fragment key={song.id}>
                 <tr
-                  key={song.id}
                   onClick={() => onSelectSongDetail(song)}
                   style={{
                     background: isSelected
@@ -419,6 +420,14 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     )}
                   </td>
                 </tr>
+                {(index + 1) % 15 === 0 && (
+                  <tr>
+                    <td colSpan={3 + activeBrands.length + 1} style={{ padding: '8px 12px', background: 'rgba(15, 23, 42, 0.5)' }}>
+                      <AdBannerSlot slotType="in_feed" />
+                    </td>
+                  </tr>
+                )}
+                </React.Fragment>
               );
             })}
           </tbody>
