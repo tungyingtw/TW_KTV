@@ -271,7 +271,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#fbbf24', marginBottom: '5px', fontWeight: 700 }}>
-                      KTV 點歌號 / 編號
+                      相關門市 / KTV 廠牌
                     </label>
                     <input
                       type="text"

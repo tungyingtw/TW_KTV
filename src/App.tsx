@@ -600,7 +600,7 @@ export function App() {
               🎤 全台 KTV 歌庫同步中...
             </h3>
             <p style={{ fontSize: '0.88rem', color: '#94a3b8', marginBottom: '24px' }}>
-              {displayProgress >= 100 ? '✅ 歌庫載入完成！正在為您開啟唱將頁面...' : '正在載入全台各門市點碼與 125,824 首歌曲收錄矩陣'}
+              {displayProgress >= 100 ? '✅ 歌庫載入完成！正在為您開啟唱將頁面...' : '正在載入全台各門市與 125,824 首歌曲收錄資料庫'}
             </p>
 
             {/* 進度條容器 */}
