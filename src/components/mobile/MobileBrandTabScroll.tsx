@@ -18,11 +18,11 @@ interface MobileBrandTabScrollProps {
 export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   selectedBrand,
   selectedBrands = [],
-  brandFilterMode: _brandFilterMode = 'any',
+  brandFilterMode = 'any',
   onSelectBrand,
   onToggleBrand,
   onClearBrands,
-  onToggleFilterMode: _onToggleFilterMode,
+  onToggleFilterMode,
   brandSongCounts,
   totalSongCount,
 }) => {
@@ -205,6 +205,82 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           </button>
         )}
       </div>
+
+      {/* 🎯 手機端廠牌複選比對列 (Multi-Brand Action Bar) */}
+      {selectedBrands.length > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'rgba(30, 41, 59, 0.85)',
+          border: '1px solid rgba(236, 72, 153, 0.3)',
+          borderRadius: '10px',
+          padding: '6px 10px',
+          marginTop: '6px',
+          fontSize: '0.76rem',
+          flexWrap: 'wrap',
+          gap: '6px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
+            <span style={{ color: '#94a3b8', fontWeight: 600 }}>複選 ({selectedBrands.length}):</span>
+            {selectedBrands.map(bId => {
+              const b = BRAND_LIST.find(x => x.id === bId);
+              return (
+                <span
+                  key={bId}
+                  onClick={() => handleBrandClick(bId)}
+                  style={{
+                    background: `${b?.color || '#ec4899'}22`,
+                    color: b?.color || '#ec4899',
+                    border: `1px solid ${b?.color || '#ec4899'}55`,
+                    borderRadius: '12px',
+                    padding: '1px 7px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  ✕ {b?.shortName || bId}
+                </span>
+              );
+            })}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {onToggleFilterMode && (
+              <button
+                onClick={onToggleFilterMode}
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '6px',
+                  padding: '2px 6px',
+                  color: brandFilterMode === 'all_of_them' ? '#4ade80' : '#38bdf8',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+                title={brandFilterMode === 'all_of_them' ? '切換為：任一家有收錄 (OR)' : '切換為：全部廠牌均有收錄 (AND)'}
+              >
+                {brandFilterMode === 'all_of_them' ? '🔗 全都有(AND)' : '🔀 任一家(OR)'}
+              </button>
+            )}
+
+            {onClearBrands && (
+              <button
+                onClick={onClearBrands}
+                style={{
+                  background: 'none', border: 'none', color: '#94a3b8',
+                  cursor: 'pointer', fontSize: '0.72rem', textDecoration: 'underline', whiteSpace: 'nowrap',
+                }}
+              >
+                重置
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
