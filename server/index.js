@@ -242,8 +242,8 @@ app.get('/api/stats/ping', (req, res) => {
   const visitorId = (req.query.vid && typeof req.query.vid === 'string') ? req.query.vid : clientIp;
   const now = Date.now();
   
-  // 1. 即時線上人數心跳紀錄
-  activeVisitors.set(clientIp, now);
+  // 1. 即時線上人數心跳紀錄（以裝置 UUID 為 Key，支援同一 KTV 包廂 WiFi 多人同步在線）
+  activeVisitors.set(visitorId, now);
 
   // 2. 12 小時內同一訪客/裝置反覆 F5 重新整理，絕不重複計入「總累積查詢人數」
   const lastVisit = visitorCooldowns.get(visitorId);
@@ -253,10 +253,10 @@ app.get('/api/stats/ping', (req, res) => {
     saveStats(currentStats);
   }
 
-  // 清理超過 60 秒未發送心跳的離線 Session
-  for (const [ip, lastPing] of activeVisitors.entries()) {
-    if (now - lastPing > 60000) {
-      activeVisitors.delete(ip);
+  // 清理超過 45 秒未發送心跳的離線 Session
+  for (const [vId, lastPing] of activeVisitors.entries()) {
+    if (now - lastPing > 45000) {
+      activeVisitors.delete(vId);
     }
   }
 
