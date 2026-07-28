@@ -91,6 +91,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               <span>協助提供 / 回報【{currentBrandInfo?.shortName}】收錄狀態</span>
             </button>
           )}
+          <div style={{ marginTop: '20px' }}>
+            <AdBannerSlot slotType="in_feed" />
+          </div>
         </div>
 
         {reportingSong && (

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Song, BrandId } from '../types/ktv';
 import { BRAND_LIST } from '../data/brands';
 import { X, Users, Copy, Share2, Check, Music } from 'lucide-react';
+import { AdBannerSlot } from './AdBannerSlot';
 
 interface PartyRoomModalProps {
   isOpen: boolean;
@@ -116,6 +117,9 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
             </p>
           </div>
         </div>
+
+        {/* 📢 廣告位（多人包廂點歌本專用） */}
+        <AdBannerSlot slotType="modal" />
 
         {/* Room Code & Share Banner */}
         <div style={{
