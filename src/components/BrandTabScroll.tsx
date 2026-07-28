@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Layers } from 'lucide-react';
 import { BRAND_LIST } from '../data/brands';
 import type { BrandId } from '../types/ktv';
@@ -32,12 +32,24 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeftState, setScrollLeftState] = useState(0);
 
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
+    if (scrollRef.current.scrollWidth <= scrollRef.current.clientWidth) return;
     setIsMouseDown(true);
     setStartX(e.pageX - scrollRef.current.offsetLeft);
     setScrollLeftState(scrollRef.current.scrollLeft);
@@ -52,11 +64,13 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX) * 1.6;
     scrollRef.current.scrollLeft = scrollLeftState - walk;
+    checkScroll();
   };
 
   const handleWheel = (e: React.WheelEvent) => {
     if (scrollRef.current && Math.abs(e.deltaY) > 0) {
       scrollRef.current.scrollLeft += e.deltaY;
+      checkScroll();
     }
   };
 
@@ -65,6 +79,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     if (scrollRef.current) {
       const scrollAmount = direction === 'left' ? -260 : 260;
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      setTimeout(checkScroll, 300);
     }
   };
 
@@ -86,6 +101,16 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     if (isExpanded || isSelectedInSecondary) return true;
     return PRIMARY_BRAND_IDS.includes(brand.id);
   });
+
+  useEffect(() => {
+    checkScroll();
+    const timer = setTimeout(checkScroll, 120);
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [displayedBrands, isExpanded]);
 
   const secondaryCount = BRAND_LIST.length - PRIMARY_BRAND_IDS.length;
 
@@ -110,27 +135,29 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
       position: 'relative',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {/* 向左滾動按鈕 */}
-        <button
-          onClick={() => handleScroll('left')}
-          style={{
-            background: 'rgba(30, 41, 59, 0.85)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderRadius: '50%',
-            width: '32px', height: '32px',
-            color: '#cbd5e1',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-            transition: 'all 0.2s ease',
-          }}
-          title="向左滾動廠牌"
-        >
-          <ChevronLeft size={18} />
-        </button>
+        {/* 向左滾動按鈕 (內容有溢出時才動態顯示) */}
+        {canScrollLeft && (
+          <button
+            onClick={() => handleScroll('left')}
+            className="btn-secondary"
+            style={{
+              borderRadius: '50%',
+              width: '32px', height: '32px',
+              padding: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+              transition: 'all 0.2s ease',
+            }}
+            title="向左滾動廠牌"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        )}
 
         {/* 廠牌 Tab 可滾動區域（支援按住滑鼠左右拖曳與滾輪橫向滾動） */}
         <div
           ref={scrollRef}
+          onScroll={checkScroll}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeaveOrUp}
           onMouseUp={handleMouseLeaveOrUp}
@@ -146,7 +173,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             msOverflowStyle: 'none',
             flex: 1,
             scrollBehavior: isMouseDown ? 'auto' : 'smooth',
-            cursor: isMouseDown ? 'grabbing' : 'grab',
+            cursor: (canScrollLeft || canScrollRight) ? (isMouseDown ? 'grabbing' : 'grab') : 'default',
             userSelect: 'none',
           }}
         >
@@ -225,23 +252,24 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           })}
         </div>
 
-        {/* 向右滾動按鈕 */}
-        <button
-          onClick={() => handleScroll('right')}
-          style={{
-            background: 'rgba(30, 41, 59, 0.85)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderRadius: '50%',
-            width: '32px', height: '32px',
-            color: '#cbd5e1',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-            transition: 'all 0.2s ease',
-          }}
-          title="向右滾動廠牌"
-        >
-          <ChevronRight size={18} />
-        </button>
+        {/* 向右滾動按鈕 (內容有溢出時才動態顯示) */}
+        {canScrollRight && (
+          <button
+            onClick={() => handleScroll('right')}
+            className="btn-secondary"
+            style={{
+              borderRadius: '50%',
+              width: '32px', height: '32px',
+              padding: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+              transition: 'all 0.2s ease',
+            }}
+            title="向右滾動廠牌"
+          >
+            <ChevronRight size={18} />
+          </button>
+        )}
 
         {/* 廠牌顯示數量切換開關 (精簡 vs 展開全部) */}
         <button
