@@ -168,21 +168,26 @@ export const CardView: React.FC<CardViewProps> = ({
                 </div>
 
                 <button
-                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite(song.id);
+                  }}
+                  className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: isFav ? 'rgba(236, 72, 153, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                    border: `1px solid ${isFav ? 'rgba(236, 72, 153, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
                     borderRadius: '50%',
-                    width: '36px',
-                    height: '36px',
+                    width: '34px',
+                    height: '34px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
                     color: isFav ? '#ec4899' : 'var(--text-muted)',
                   }}
+                  title={isFav ? '移出歌單' : '加入歌單'}
                 >
-                  <Heart size={18} fill={isFav ? '#ec4899' : 'none'} />
+                  <Heart size={18} fill={isFav ? '#ec4899' : 'none'} className={isFav ? 'heart-pop-anim' : ''} />
                 </button>
               </div>
 
