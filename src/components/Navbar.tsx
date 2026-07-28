@@ -113,15 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Mic2 size={24} color="#ffffff" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <h1 style={{ 
-              fontSize: '1.3rem', 
-              fontWeight: 800, 
-              letterSpacing: '-0.02em',
-              background: 'linear-gradient(90deg, #ffffff, #f472b6, #c084fc)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              margin: 0,
-            }}>
+            <h1 className="navbar-title">
               台灣KTV歌曲索引
             </h1>
 
