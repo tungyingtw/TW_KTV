@@ -25,6 +25,12 @@ export interface ReportPayload {
   composer?: string;
   mvType?: 'official' | 'edited' | 'unknown';
   note?: string;
+  // 新廠牌建議特有欄位
+  brandName?: string;
+  shortName?: string;
+  systemType?: string;
+  codeFormat?: string;
+  storeLocations?: string;
 }
 
 export async function submitReport(payload: ReportPayload): Promise<{ success: boolean; reportId?: string }> {

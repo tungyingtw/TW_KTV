@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{theme === 'dark' ? '日光' : '夜間'}</span>
           </button>
 
-          {/* Suggest Missing Song Button */}
+          {/* Suggest Addition Button */}
           {onOpenSuggestSong && (
             <button
               onClick={onOpenSuggestSong}
@@ -196,10 +196,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 color: '#fbbf24',
                 background: 'rgba(251, 191, 36, 0.1)',
               }}
-              title="建議 / 許願新增本站尚未收錄的新歌或遺漏歌曲"
+              title="建議追加新歌曲、KTV 伴唱機廠牌或系統對照"
             >
               <PlusCircle size={16} />
-              <span>建議/許願新歌</span>
+              <span>建議追加</span>
             </button>
           )}
 

@@ -288,10 +288,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                     gap: '4px',
                     transition: 'all 0.2s',
                   }}
-                  title="找不到想唱的歌曲？點此建議新增至全台歌庫"
+                  title="找不到想唱的歌曲或想追加 KTV 廠牌對照？點此建議追加"
                 >
                   <PlusCircle size={13} />
-                  <span>建議/許願新歌</span>
+                  <span>建議追加</span>
                 </button>
               )}
             </div>
