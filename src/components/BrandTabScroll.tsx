@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Layers } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { BRAND_LIST } from '../data/brands';
 import type { BrandId } from '../types/ktv';
 
@@ -15,9 +15,6 @@ interface BrandTabScrollProps {
   totalSongCount?: number;
 }
 
-// 定義主要大廠牌 (Top Major KTV Chains) 與其他廠牌
-const PRIMARY_BRAND_IDS: BrandId[] = ['cashbox', 'holiday', 'watering_hole', 'starlight', 'singgo'];
-
 export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   selectedBrand,
   selectedBrands = [],
@@ -30,7 +27,6 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   totalSongCount,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -67,6 +63,26 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     checkScroll();
   };
 
+  // 📱 手機觸控拖曳支援 (Touch Dragging Support)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!scrollRef.current) return;
+    setIsMouseDown(true);
+    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
+    setScrollLeftState(scrollRef.current.scrollLeft);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isMouseDown || !scrollRef.current) return;
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeftState - walk;
+    checkScroll();
+  };
+
+  const handleTouchEnd = () => {
+    setIsMouseDown(false);
+  };
+
   const handleWheel = (e: React.WheelEvent) => {
     if (scrollRef.current && Math.abs(e.deltaY) > 0) {
       scrollRef.current.scrollLeft += e.deltaY;
@@ -93,14 +109,8 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
 
   const isMultiSelecting = selectedBrands.length > 0;
 
-  // 判斷選中的廠牌是否屬於「更多廠牌」，若是且當前為精簡模式，自動展開
-  const isSelectedInSecondary = (selectedBrand !== 'all' && !PRIMARY_BRAND_IDS.includes(selectedBrand)) ||
-    selectedBrands.some(b => !PRIMARY_BRAND_IDS.includes(b));
-
-  const displayedBrands = BRAND_LIST.filter(brand => {
-    if (isExpanded || isSelectedInSecondary) return true;
-    return PRIMARY_BRAND_IDS.includes(brand.id);
-  });
+  // 10 大 KTV 廠牌全數呈現供橫向滾動切換
+  const displayedBrands = BRAND_LIST;
 
   useEffect(() => {
     checkScroll();
@@ -110,9 +120,8 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
       clearTimeout(timer);
       window.removeEventListener('resize', checkScroll);
     };
-  }, [displayedBrands, isExpanded]);
+  }, [displayedBrands]);
 
-  const secondaryCount = BRAND_LIST.length - PRIMARY_BRAND_IDS.length;
 
   const handleBrandClick = (brandId: BrandId) => {
     if (onToggleBrand) {
@@ -162,6 +171,9 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           onMouseLeave={handleMouseLeaveOrUp}
           onMouseUp={handleMouseLeaveOrUp}
           onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           onWheel={handleWheel}
           style={{
             display: 'flex',
@@ -271,32 +283,6 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             <ChevronRight size={18} />
           </button>
         )}
-
-        {/* 廠牌顯示數量切換開關 (精簡 vs 展開全部) */}
-        <button
-          onClick={() => setIsExpanded(prev => !prev)}
-          style={{
-            background: isExpanded || isSelectedInSecondary ? 'rgba(168, 85, 247, 0.18)' : 'rgba(255, 255, 255, 0.05)',
-            border: `1px solid ${isExpanded || isSelectedInSecondary ? 'rgba(168, 85, 247, 0.4)' : 'rgba(255, 255, 255, 0.12)'}`,
-            borderRadius: '20px',
-            padding: '6px 12px',
-            color: isExpanded || isSelectedInSecondary ? '#c084fc' : '#94a3b8',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-            transition: 'all 0.2s ease',
-          }}
-          title={isExpanded ? '切換為精簡顯示主廠牌' : `展開更多其他廠牌 (${secondaryCount})`}
-        >
-          <Layers size={13} />
-          <span>{isExpanded || isSelectedInSecondary ? '精簡廠牌' : `更多廠牌 (${secondaryCount})`}</span>
-          {isExpanded || isSelectedInSecondary ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
       </div>
 
       {/* 🎯 廠牌複選比對列 (Multi-Brand Action Bar) */}
