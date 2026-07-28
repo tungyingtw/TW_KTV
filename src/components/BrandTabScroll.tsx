@@ -85,7 +85,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
 
   const formatCount = (count?: number) => {
     if (count === undefined) return '';
-    if (count === 0) return ' ⚠️ 尚無資料';
+    if (count === 0) return ' (0)';
     if (count >= 10000) return ` (${(count / 10000).toFixed(1)}萬)`;
     if (count >= 1000) return ` (${(count / 1000).toFixed(1)}k)`;
     return ` (${count})`;
@@ -128,7 +128,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   };
 
   return (
-    <div style={{
+    <div className="brand-tab-container" style={{
       maxWidth: '1400px',
       margin: '0 auto 16px',
       padding: '0 20px',

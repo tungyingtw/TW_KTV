@@ -479,7 +479,9 @@ html, body {
 
   /* 1. 頁面主要容器內邊距適配 */
   .card-view-container,
-  .matrix-view-container {
+  .matrix-view-container,
+  .search-bar-container,
+  .brand-tab-container {
     padding: 0 10px !important;
   }
 
