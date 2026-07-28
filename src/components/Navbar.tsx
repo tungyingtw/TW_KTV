@@ -38,7 +38,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     const fetchAuthenticVisitorCount = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || '';
+        const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
         const res = await fetch(`${API_BASE}/api/stats/ping?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
