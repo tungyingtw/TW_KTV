@@ -3,6 +3,7 @@ import { X, PlusCircle, Send, CheckCircle2, Video, Film, HelpCircle, Store, Musi
 import type { BrandId } from '../types/ktv';
 import { BRAND_LIST } from '../data/brands';
 import { submitReport } from '../services/communityService';
+import { AdBannerSlot } from './AdBannerSlot';
 
 interface SuggestSongModalProps {
   onClose: () => void;
@@ -224,6 +225,9 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                 <Store size={16} /> 建議追加 KTV 新廠牌
               </button>
             </div>
+
+            {/* 📢 廣告位（回報與建議 Modal 專用） */}
+            <AdBannerSlot slotType="modal" />
 
             {/* TAB 1: 建議追加新歌曲 Form */}
             {activeTab === 'song' && (

@@ -81,6 +81,9 @@ export const CardView: React.FC<CardViewProps> = ({
               <span>協助提供 / 回報【{currentBrandInfo?.shortName}】點歌資料</span>
             </button>
           )}
+          <div style={{ marginTop: '20px' }}>
+            <AdBannerSlot slotType="in_feed" />
+          </div>
         </div>
 
         {reportingSong && (
