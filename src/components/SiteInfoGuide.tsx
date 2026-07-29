@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sliders, Disc, Mic2, Search, CheckCircle2, Users, Vote } from 'lucide-react';
+import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sliders, Disc, Mic2, Search, CheckCircle2, Heart, Vote } from 'lucide-react';
 
 export const SiteInfoGuide: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
@@ -329,11 +329,11 @@ export const SiteInfoGuide: React.FC = () => {
 
                 <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
-                    <Users size={18} />
-                    <span>3. 包廂連線與歌單收藏</span>
+                    <Heart size={18} />
+                    <span>3. 我的最愛口袋歌單</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單。開啟<strong>「包廂點歌連線」</strong>功能可產生專屬 Room Code，同包廂的好友掃碼即可同步瀏覽與共享歌單。
+                    點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單，方便您在歡唱時快速瀏覽個人專屬愛歌與比對各大門市點歌代碼。
                   </p>
                 </div>
 
