@@ -129,7 +129,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                收錄 錢○、好○迪、享○馨、星○點、超○巨星、音○、金○等 10 大廠牌對照說明與歡唱秘笈
+                整合全台各大連鎖門市與營業型伴唱機系統之對照說明、原聲原唱標示與歡唱秘笈
               </p>
             </div>
           </div>
@@ -265,13 +265,13 @@ export const SiteInfoGuide: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
                     <Music2 size={18} />
-                    <span>1. 全台 10 大伴唱機廠牌對照說明</span>
+                    <span>1. 跨廠牌點歌系統與伴唱機對照說明</span>
                   </div>
                   <p style={{ margin: 0 }}>
-                    全台連鎖 KTV 與自助式伴唱系統使用的點歌系統主要分為 <strong>連鎖門市專用伴唱系統</strong>（如錢○ Cashbox、好○迪 Holiday、享○馨 Enjoy KTV、星○點等）以及 <strong>家用/專業電腦伴唱機</strong>（如音○ InYuan、金○ Golden Voice、弘○等）。
+                    全台連鎖門市與自助式伴唱系統採用的點歌系統主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
                   </p>
                   <p style={{ margin: 0 }}>
-                    本網站透過大眾共識校對，為歌友整理各大廠牌門市的歌曲收錄狀況對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
+                    本網站透過大眾共識校對與數據彙整，為歌友提供動態擴充的跨廠牌門市收錄對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
                   </p>
                 </div>
 
@@ -313,7 +313,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>1. 快速搜尋與門市對照</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌詞片段</strong>，系統將自動比對全台 10 大伴唱廠牌門市收錄狀態。亦可點擊廠牌頁籤切換特定門市（如錢○ Cashbox、好○迪 Holiday、享○馨 Enjoy KTV 等 10 大品牌）查看發行狀況。
+                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌詞片段</strong>，系統將自動即時比對各大 KTV 門市與伴唱系統之收錄狀態。您亦可點擊頂部廠牌頁籤快速篩選特定門市或伴唱機系統查看發行狀況。
                   </p>
                 </div>
 
