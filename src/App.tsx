@@ -22,7 +22,7 @@ import { fetchFullCatalog } from './services/apiService';
 import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
-import { Sparkles, Music, ChevronDown } from 'lucide-react';
+import { Sparkles, Music, ChevronDown, Mail } from 'lucide-react';
 
 export function App() {
   const isMobile = useIsMobile();
@@ -82,7 +82,7 @@ export function App() {
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const [reportModalSong, setReportModalSong] = useState<Song | null>(null);
-  const [legalNoticeTab, setLegalNoticeTab] = useState<'privacy' | 'terms' | 'about' | null>(null);
+  const [legalNoticeTab, setLegalNoticeTab] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Pagination / Load More limit state (Default display: 40)
@@ -794,6 +794,36 @@ export function App() {
             >
               關於我們
             </button>
+
+            <button
+              onClick={() => setLegalNoticeTab('contact')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#38bdf8',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+            >
+              聯絡我們
+            </button>
+
+            <a
+              href="mailto:tyfunlab@gmail.com"
+              style={{
+                color: '#cbd5e1',
+                fontSize: '0.8rem',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+              title="點擊發送信件至 tyfunlab@gmail.com"
+            >
+              <Mail size={14} color="#38bdf8" /> 聯絡信箱：tyfunlab@gmail.com
+            </a>
 
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Sparkles size={14} color="#10b981" /> 原版MV標示
