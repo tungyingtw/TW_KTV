@@ -220,46 +220,6 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                 style={{ accentColor: '#ec4899', width: '18px', height: '18px', cursor: 'pointer' }}
               />
             </label>
-
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(255, 255, 255, 0.04)',
-              cursor: 'pointer',
-            }}>
-              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
-                僅顯示爆款熱門陸歌 (Mainland Viral Hits)
-              </span>
-              <input
-                type="checkbox"
-                checked={filters.onlyMainlandViral}
-                onChange={(e) => setFilters(prev => ({ ...prev, onlyMainlandViral: e.target.checked }))}
-                style={{ accentColor: '#8b5cf6', width: '18px', height: '18px', cursor: 'pointer' }}
-              />
-            </label>
-
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(255, 255, 255, 0.04)',
-              cursor: 'pointer',
-            }}>
-              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
-                僅顯示獨立 / 樂團與獨家歌冊 (Indie & Niche Songs)
-              </span>
-              <input
-                type="checkbox"
-                checked={filters.onlyNicheSongs}
-                onChange={(e) => setFilters(prev => ({ ...prev, onlyNicheSongs: e.target.checked }))}
-                style={{ accentColor: '#06b6d4', width: '18px', height: '18px', cursor: 'pointer' }}
-              />
-            </label>
           </div>
         </div>
 
