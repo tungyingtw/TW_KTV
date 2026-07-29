@@ -119,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <h1 className="navbar-title">
-              台灣KTV歌曲索引
+              台灣 KTV 歌曲查詢
             </h1>
 
             {/* Live Visitor Counter Badge */}
