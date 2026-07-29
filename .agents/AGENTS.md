@@ -66,3 +66,21 @@
 - **內部維護腳本嚴格隔離 (Strict Script Isolation)**：本機開發、資料清洗與爬蟲測試腳本 (`scripts/*.py` 等)，必須全數保持在 `.gitignore` 隔離範疇中，**嚴禁將內部採集工具與明文數據檔 (`public/songs_catalog.json`) Commit 上傳至遠端倉庫**。
 - **歌冊二進位加密發布 (Binary Encrypted Catalog Only)**：對對外發布與生產環境只允許使用 `songs_catalog.bin` 二進位加密包，防範數據被全盤下載或抄襲。
 
+---
+
+## 8. 商業廠牌名稱圓圈遮蔽與 UI 淨化規範 (Strict Brand Name Masking & Clean UI Directive)
+
+- **商業廠牌 100% 強制圓圈遮蔽 (`○`)**：為保護專案隱私與避免商標爭議，**所有 UI 元件、說明指南、Modal 視窗、HTML 靜態頁面、SEO Meta 標籤及 Schema.org JSON-LD 中的廠牌名稱，必須一律進行圓圈遮蔽**：
+  - 錢櫃 ➔ **`錢○`**
+  - 好樂迪 ➔ **`好○迪`**
+  - 享溫馨 ➔ **`享○馨`**
+  - 星聚點 ➔ **`星○點`**
+  - 超級巨星 ➔ **`超○巨星`**
+  - 音圓 ➔ **`音○`**
+  - 金嗓 ➔ **`金○`**
+  - 弘音 ➔ **`弘○`**
+  - SingGo ➔ **`Sing○`**
+  - V-MIX / V-Mix ➔ **`V-M○X`**
+- **嚴禁未遮蔽全稱對外發布**：AI Agent 新增或修改任何功能、導覽專題或 Modal 時，**嚴禁將上述品牌之無遮蔽全稱硬編碼寫入 UI**。
+- **全站 UI 淨化與表情符號控制**：符合 Google AdSense 規範，UI 介面與按鈕內嚴禁過度堆疊 Emoji 符號（如 📢, 🎤, 🎬, 🏷️, 🎵, 💡, 🎯, ❓, ✨, ⚑, 🔒, ✅, 📖, ℹ️）與多餘驚嘆號 `！`，保持企業級專業乾淨排版。
+- **自動化防護攔截**：專案已配置 `scripts/checkBrandMasking.js`，每次執行 `npm run build` 時會自動進行靜態掃描。若發現未遮蔽廠牌名稱，打包程序將強制終止。
