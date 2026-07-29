@@ -51,16 +51,20 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 100,
-      background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
-      backdropFilter: 'blur(8px)',
-      display: 'flex',
-      alignItems: 'flex-end',
-    }}>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'flex-end',
+      }}
+    >
       <div 
+        onClick={e => e.stopPropagation()}
         className="glass-panel animate-slide-up"
         style={{
           width: '100%',
