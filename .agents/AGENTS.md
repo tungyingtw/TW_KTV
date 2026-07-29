@@ -84,3 +84,30 @@
 - **嚴禁未遮蔽全稱對外發布**：AI Agent 新增或修改任何功能、導覽專題或 Modal 時，**嚴禁將上述品牌之無遮蔽全稱硬編碼寫入 UI**。
 - **全站 UI 淨化與表情符號控制**：符合 Google AdSense 規範，UI 介面與按鈕內嚴禁過度堆疊 Emoji 符號（如 📢, 🎤, 🎬, 🏷️, 🎵, 💡, 🎯, ❓, ✨, ⚑, 🔒, ✅, 📖, ℹ️）與多餘驚嘆號 `！`，保持企業級專業乾淨排版。
 - **自動化防護攔截**：專案已配置 `scripts/checkBrandMasking.js`，每次執行 `npm run build` 時會自動進行靜態掃描。若發現未遮蔽廠牌名稱，打包程序將強制終止。
+
+---
+
+## 9. AI 開發者自我檢查與品質驗證規範 (AI Self-Inspection Checklist Directive)
+
+在每次完成程式碼修改、UI 元件新增或功能重構後，AI Agent **必須強制自主執行以下 6 大品質維度檢驗**，確認零瑕疵後方可回報完成：
+
+### 9.1 視覺佈局穩定度檢驗 (Layout Shift Prevention Check)
+- [ ] **固定版型保護**：Table 或 Grid 在「無過濾」、「全過濾」、「關鍵字搜尋」時，欄位與容器寬度是否會發生任何跳動、偏移或位移？（必須配置 `tableLayout: 'fixed'`、`scrollbarGutter: 'stable'` 或固定 CSS `width` / `minWidth`）。
+
+### 9.2 跨平台與尺寸一致性檢驗 (Responsive & Badge Uniformity Check)
+- [ ] **膠囊與標籤高寬齊平**：所有狀態（有收錄/未收錄/MV/原唱）下的膠囊標籤高度 (`height`) 與最小寬度 (`minWidth`) 是否 100% 齊平一致？
+- [ ] **桌面與行動端對齊**：網頁版 (`Desktop`) 與手機版 (`Mobile`) 的元件色彩、專屬代表色、透光彩框與字體主題是否 100% 雙向對齊？
+
+### 9.3 防溢出與防破版檢驗 (Overflow & Wrap Safeguard Check)
+- [ ] **極端文字邊界防護**：當出現極長廠牌名稱、位數龐大的數字、極長歌名或創作者姓名時，組件是否配置 `width: 'max-content'`、`whiteSpace: 'nowrap'` 或 `textOverflow: 'ellipsis'`，100% 確保文字絕不溢出組件外框？
+
+### 9.4 全站名詞與文案統一檢驗 (Terminology Consistency Check)
+- [ ] **文案一致性**：頁尾 (Footer)、Modal 標題 (Modal Header)、分頁 Tab、按鈕導航中的名詞定義是否 100% 統一？（例如：統一使用 `關於本站` 而非混用 `關於我們`；統一使用 `點歌代碼` 而非 `點歌號碼`）。
+
+### 9.5 數據邊界與語意對映檢驗 (Filter Logic & Schema Boundary Check)
+- [ ] **語意與縮寫對應**：UI 呈現的全稱標籤（如 `國語`, `台語`, `粵語`）與資料庫 Schema 中的簡寫代碼（如 `'國'`, `'台'`, `'粵'`）是否建立完整雙向匹配映射？
+- [ ] **Empty State 邊界體驗**：當過濾條件無任何結果時，是否提供溫馨明確的無資料提示，並保留回報與重置按鈕？
+
+### 9.6 程式碼與品牌遮蔽自動驗證 (Build & Brand Masking Audit)
+- [ ] **靜態型別零錯誤**：執行 `npx tsc --noEmit` 0 錯誤。
+- [ ] **自動遮蔽靜態掃描**：執行 `npm run build` 通過 `checkBrandMasking.js` 驗證。

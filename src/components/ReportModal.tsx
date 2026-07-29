@@ -103,8 +103,8 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
               <AlertTriangle size={22} color="#f87171" />
               <div>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: '1.05rem' }}>
-                  ⚑ 回報歌曲資料異常
+                <div style={{ fontWeight: 700, color: 'var(--text-primary, #fff)', fontSize: '1.05rem' }}>
+                  回報歌曲資料異常
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#f472b6', marginTop: '2px', fontWeight: 600 }}>
                   《{song.title}》— {song.artist}
