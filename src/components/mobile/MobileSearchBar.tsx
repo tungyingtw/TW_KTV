@@ -66,9 +66,9 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               placeholder="搜尋歌名、歌手 (周傑倫、蔡依林)..."
               style={{
                 width: '100%', padding: '10px 32px 10px 36px',
-                background: 'rgba(15, 23, 42, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                borderRadius: '10px', color: '#fff', fontSize: '0.85rem', outline: 'none',
+                background: 'var(--bg-input, rgba(15, 23, 42, 0.7))',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
+                borderRadius: '10px', color: 'var(--text-primary, #ffffff)', fontSize: '0.85rem', outline: 'none',
               }}
             />
             {filters.searchQuery && (

@@ -1,36 +1,68 @@
 import React, { useState } from 'react';
-import type { Song, BrandId } from '../types/ktv';
+import { Users, Copy, Check, FileText, X, Music } from 'lucide-react';
+import type { Song } from '../types/ktv';
 import { BRAND_LIST } from '../data/brands';
-import { X, Users, Copy, Share2, Check, Music } from 'lucide-react';
 import { AdBannerSlot } from './AdBannerSlot';
 
 interface PartyRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
   partySongs: Song[];
-  onCopyCode: (code: string, brandName: string, songTitle: string) => void;
-  selectedBrand?: BrandId | 'all';
+  onRemoveSong: (songId: string) => void;
 }
+
+// 跨平台安全剪貼簿寫入工具（支援 LINE 內建瀏覽器、HTTP 開發環境與 iOS Safari）
+const safeCopyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (err) {
+    console.warn('[Clipboard] Async write failed, executing fallback:', err);
+  }
+
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return successful;
+  } catch (err) {
+    console.error('[Clipboard] Fallback copy failed:', err);
+    return false;
+  }
+};
 
 export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
   isOpen,
   onClose,
   partySongs,
-  onCopyCode,
+  onRemoveSong,
 }) => {
   const [roomCode] = useState<string>('KTV-8888');
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
-  const handleShareRoomLink = () => {
+  const handleShareRoomLink = async () => {
     const text = `🎤 歡唱包廂點歌單 (房間碼: ${roomCode})\n共 ${partySongs.length} 首歌曲，快點擊連結一起加入點歌！\nhttps://ktv-search.tw/room/${roomCode}`;
-    navigator.clipboard.writeText(text);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
+    const success = await safeCopyToClipboard(text);
+    if (success) {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    } else {
+      alert('複製失敗，請手動複製文字');
+    }
   };
 
-  const handleExportTextPlaylist = () => {
+  const handleExportTextPlaylist = async () => {
     let summary = `唱 KTV 點歌清單 (房間碼: ${roomCode})\n==================\n`;
     partySongs.forEach((song, idx) => {
       summary += `${idx + 1}. 《${song.title}》 - ${song.artist}\n`;
@@ -43,8 +75,12 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
       summary += `------------------\n`;
     });
 
-    navigator.clipboard.writeText(summary);
-    alert('已複製完整點歌碼文字檔！可直接貼至 LINE 群組中對照點歌。');
+    const success = await safeCopyToClipboard(summary);
+    if (success) {
+      alert('已複製完整點歌碼文字檔！可直接貼至 LINE 群組中對照點歌。');
+    } else {
+      alert('複製失敗，請手動選擇複製');
+    }
   };
 
   return (
@@ -80,7 +116,7 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
             position: 'absolute',
             top: '18px',
             right: '18px',
-            background: 'rgba(255, 255, 255, 0.08)',
+            background: 'var(--bg-glass, rgba(255, 255, 255, 0.08))',
             border: 'none',
             borderRadius: '50%',
             width: '32px',
@@ -109,7 +145,7 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
             <Users size={22} color="#fff" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary, #fff)' }}>
               包廂多人點歌本 & 收錄總表
             </h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
@@ -149,8 +185,8 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
               className="btn-primary"
               style={{ fontSize: '0.85rem', padding: '8px 14px' }}
             >
-              {copiedLink ? <Check size={16} /> : <Share2 size={16} />}
-              <span>{copiedLink ? '已複製包廂連結' : '分享 LINE 包廂連結'}</span>
+              {copiedLink ? <Check size={16} /> : <Copy size={16} />}
+              <span>{copiedLink ? '已複製房間連結' : '分享點歌房間'}</span>
             </button>
 
             <button
@@ -158,17 +194,18 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
               className="btn-secondary"
               style={{ fontSize: '0.85rem', padding: '8px 14px' }}
             >
-              <Copy size={16} />
+              <FileText size={16} />
               <span>導出點歌清單</span>
             </button>
           </div>
         </div>
 
-        {/* Playlist Items */}
-        <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Party Playlist Songs Count Header */}
+        <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '10px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Music size={16} color="var(--accent-pink)" /> 包廂已點歌曲 ({partySongs.length} 首)：
-        </h4>
+        </div>
 
+        {/* Songs List */}
         {partySongs.length === 0 ? (
           <div style={{
             textAlign: 'center',
@@ -176,62 +213,52 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
             color: 'var(--text-muted)',
             background: 'rgba(255, 255, 255, 0.02)',
             borderRadius: 'var(--radius-md)',
+            fontSize: '0.85rem',
           }}>
-            <p>包廂歌本目前沒有歌曲，快在搜尋列點擊愛心新增歌曲吧！</p>
+            包廂內尚未點選任何歌曲，請點擊對照表中的歌曲加入！
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {partySongs.map((song, idx) => (
               <div
                 key={song.id}
                 style={{
-                  background: 'rgba(30, 41, 59, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: 'var(--bg-glass, rgba(255, 255, 255, 0.04))',
+                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '10px 14px',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '1.05rem' }}>
-                    {idx + 1}. 《{song.title}》
-                    <span style={{ fontSize: '0.85rem', color: 'var(--accent-pink)', marginLeft: '8px', fontWeight: 600 }}>
-                      {song.artist}
-                    </span>
-                  </div>
-                  <span className="badge badge-original-vocal" style={{ fontSize: '0.68rem' }}>
-                    {song.language}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--accent-pink)', fontWeight: 800 }}>
+                    #{idx + 1}
                   </span>
+                  <div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {song.title}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      {song.artist} ({song.language})
+                    </div>
+                  </div>
                 </div>
 
-                {/* KTV Brand Song Codes Row */}
-                <div style={{
-                  marginTop: '10px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '6px',
-                }}>
-                  {BRAND_LIST.map(b => {
-                    const status = song.brands[b.id];
-                    if (!status || !status.available || !status.code) return null;
-
-                    return (
-                      <button
-                        key={b.id}
-                        onClick={() => onCopyCode(status.code!, b.shortName, song.title)}
-                        className="btn-copy"
-                        style={{
-                          fontSize: '0.78rem',
-                          background: b.badgeBg,
-                          borderColor: `${b.color}44`,
-                          color: b.color,
-                        }}
-                      >
-                        <span>{b.shortName}: <strong>{status.code}</strong></span>
-                        <Copy size={11} />
-                      </button>
-                    );
-                  })}
-                </div>
+                <button
+                  onClick={() => onRemoveSong(song.id)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: '4px',
+                  }}
+                  title="移出包廂歌單"
+                >
+                  <X size={16} />
+                </button>
               </div>
             ))}
           </div>

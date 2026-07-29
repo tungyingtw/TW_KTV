@@ -95,10 +95,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               style={{
                 width: '100%',
                 padding: '14px 44px 14px 48px',
-                background: 'rgba(15, 23, 42, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: 'var(--bg-input, rgba(15, 23, 42, 0.7))',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
                 borderRadius: 'var(--radius-md)',
-                color: '#fff',
+                color: 'var(--text-primary, #ffffff)',
                 fontSize: '1rem',
                 outline: 'none',
                 transition: 'all 0.2s ease',
