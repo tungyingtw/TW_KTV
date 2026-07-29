@@ -55,7 +55,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
       position: 'fixed',
       inset: 0,
       zIndex: 100,
-      background: 'rgba(15, 23, 42, 0.8)',
+      background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
       backdropFilter: 'blur(8px)',
       display: 'flex',
       alignItems: 'flex-end',
