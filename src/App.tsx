@@ -380,6 +380,16 @@ export function App() {
       });
     }
 
+    // 6.5 Mainland Viral Filter
+    if (filters.onlyMainlandViral) {
+      result = result.filter(song => song.isMainlandViral || song.language === '陸歌');
+    }
+
+    // 6.6 Niche Songs Filter
+    if (filters.onlyNicheSongs) {
+      result = result.filter(song => song.isNiche);
+    }
+
     // 7. Sorting: 預設【字數 ➔ 注音/筆劃 (短至長)】
     return [...result].sort((a, b) => {
       if (filters.sortBy === 'length') {
@@ -399,7 +409,21 @@ export function App() {
         return a.title.localeCompare(b.title, 'zh-Hant');
       }
     });
-  }, [filters.selectedBrand, filters.selectedLanguages, filters.selectedTitleLength, filters.onlyOfficialMv, filters.onlyOriginalVocal, filters.sortBy, debouncedSearchQuery, fuse, allSongs]);
+  }, [
+    filters.selectedBrand,
+    filters.selectedBrands,
+    filters.brandFilterMode,
+    filters.selectedLanguages,
+    filters.selectedTitleLength,
+    filters.onlyOfficialMv,
+    filters.onlyOriginalVocal,
+    filters.onlyMainlandViral,
+    filters.onlyNicheSongs,
+    filters.sortBy,
+    debouncedSearchQuery,
+    fuse,
+    allSongs,
+  ]);
 
   // Currently Paginated Songs
   const paginatedSongs = useMemo(() => {
@@ -427,22 +451,6 @@ export function App() {
       setToastMessage(prev => prev === msg ? null : prev);
     }, 2800);
   };
-
-  // 搜尋關鍵字或過濾條件變更時，自動重置分頁渲染數量至 40 首，維持最佳渲染效能
-  useEffect(() => {
-    setDisplayedCount(40);
-  }, [
-    debouncedSearchQuery,
-    filters.selectedBrand,
-    filters.selectedBrands,
-    filters.brandFilterMode,
-    filters.selectedLanguages,
-    filters.selectedTitleLength,
-    filters.onlyOfficialMv,
-    filters.onlyOriginalVocal,
-    filters.onlyMainlandViral,
-    filters.sortBy,
-  ]);
 
   // Favorite Songs list objects
   const favoriteSongObjects = useMemo(() => {

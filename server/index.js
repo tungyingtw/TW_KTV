@@ -3,7 +3,6 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -209,7 +208,7 @@ function normalizeString(str) {
     // 數字轉習慣用語 (例: 5月天 -> 五月天)
     .replace(/\b5月天\b/g, '五月天')
     // 移除常見符號、括號與空白
-    .replace(/[\《\》\〈\〉\『\』\「\」\(\)（）\[\]【】\s\-\_\.\,\!\?]/g, '')
+    .replace(/[《》〈〉『』「」()（）[\]【】\s\-_.,!?]/g, '')
     .trim();
 }
 
@@ -253,7 +252,7 @@ function loadStats() {
   }
 }
 function saveStats(data) {
-  try { fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch (e) {}
+  try { fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch {}
 }
 
 let currentStats = loadStats();
