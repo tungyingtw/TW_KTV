@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ShieldCheck, FileText, Info, X } from 'lucide-react';
+import { ShieldCheck, FileText, Info, Mail, X } from 'lucide-react';
 
 interface LegalNoticeModalProps {
-  initialTab?: 'privacy' | 'terms' | 'about';
+  initialTab?: 'privacy' | 'terms' | 'about' | 'contact';
   onClose: () => void;
 }
 
@@ -10,7 +10,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
   initialTab = 'privacy',
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'privacy' | 'terms' | 'about'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'privacy' | 'terms' | 'about' | 'contact'>(initialTab);
 
   return (
     <div
@@ -165,6 +165,26 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           >
             <Info size={16} /> 關於本站
           </button>
+
+          <button
+            onClick={() => setActiveTab('contact')}
+            style={{
+              padding: '12px 16px',
+              border: 'none',
+              background: 'transparent',
+              color: activeTab === 'contact' ? '#38bdf8' : 'var(--text-muted, #94a3b8)',
+              borderBottom: activeTab === 'contact' ? '2px solid #38bdf8' : '2px solid transparent',
+              fontWeight: activeTab === 'contact' ? 700 : 500,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.9rem',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Mail size={16} /> 聯絡我們
+          </button>
         </div>
 
         {/* Modal Body Content */}
@@ -252,6 +272,70 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               </ul>
               <p style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)' }}>
                 本站為非營利性質之社群伴唱資訊索引庫，歡迎廣大歌友共同維護與回報勘誤。
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'contact' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 style={{ color: '#f8fafc', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
+                聯絡我們 (Contact Us)
+              </h4>
+              <p>
+                感謝您使用「台灣 KTV 歌曲索引」！若您有任何意見建議、資料勘誤、合作提案或著作權聯繫，歡迎隨時透過下方公用信箱與我們聯繫：
+              </p>
+
+              <div
+                style={{
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  borderRadius: '12px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    background: 'rgba(56, 189, 248, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#38bdf8',
+                  }}
+                >
+                  <Mail size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)' }}>
+                    公用聯絡信箱
+                  </div>
+                  <a
+                    href="mailto:tyfunlab@gmail.com"
+                    style={{
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: '#38bdf8',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    tyfunlab@gmail.com
+                  </a>
+                </div>
+              </div>
+
+              <h5 style={{ color: '#38bdf8', margin: '8px 0 4px 0' }}>主要服務與聯繫範疇</h5>
+              <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
+                <li><strong>品牌合作與廣告贊助</strong>：歡迎相關歡唱品牌、設備廠牌與活動贊助洽詢。</li>
+                <li><strong>歌曲收錄與數據勘誤</strong>：若現場點唱發現門市收錄狀況異動，歡迎來信或使用網站回報功能。</li>
+                <li><strong>權益與技術交流</strong>：著作權通知、技術意見反饋與社群交流。</li>
+              </ul>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)', margin: 0 }}>
+                我們會在收到您的信件後，儘速處理並回覆您的郵件。
               </p>
             </div>
           )}
