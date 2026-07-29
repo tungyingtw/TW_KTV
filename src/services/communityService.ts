@@ -33,7 +33,7 @@ export interface ReportPayload {
   storeLocations?: string;
 }
 
-export async function submitReport(payload: ReportPayload): Promise<{ success: boolean; reportId?: string }> {
+export async function submitReport(payload: ReportPayload): Promise<{ success: boolean; reportId?: string; error?: string }> {
   try {
     const res = await fetch(`${API_BASE}/api/report`, {
       method: 'POST',
@@ -46,6 +46,55 @@ export async function submitReport(payload: ReportPayload): Promise<{ success: b
     console.warn('[CommunityService] submitReport fallback to local success state:', err);
     return { success: true, reportId: `local_${Date.now()}` };
   }
+}
+
+export async function submitSuggestSong(payload: {
+  title: string;
+  artist: string;
+  lyricist?: string;
+  composer?: string;
+  language: string;
+  songCode?: string;
+  brandId: BrandId;
+  hasOfficialMv?: boolean;
+  hasOriginalVocal?: boolean;
+  lyricsSnippet?: string;
+  youtubeUrl?: string;
+}): Promise<{ success: boolean; reportId?: string; error?: string }> {
+  return submitReport({
+    songId: 'suggest_new_song',
+    songTitle: payload.title,
+    artist: payload.artist,
+    brandId: payload.brandId || 'cashbox',
+    issueType: 'other',
+    songCode: payload.songCode,
+    lyricist: payload.lyricist,
+    composer: payload.composer,
+    note: `[新歌建議] 語種:${payload.language} | MV:${payload.hasOfficialMv ? '有' : '無'} | 原唱:${payload.hasOriginalVocal ? '有' : '無'} | 歌詞:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
+  });
+}
+
+export async function submitSuggestBrand(payload: {
+  brandName: string;
+  shortName: string;
+  systemType?: string;
+  codeFormat?: string;
+  storeLocations?: string;
+  note?: string;
+}): Promise<{ success: boolean; reportId?: string; error?: string }> {
+  return submitReport({
+    songId: 'suggest_new_brand',
+    songTitle: payload.brandName,
+    artist: payload.shortName,
+    brandId: 'cashbox',
+    issueType: 'other',
+    brandName: payload.brandName,
+    shortName: payload.shortName,
+    systemType: payload.systemType,
+    codeFormat: payload.codeFormat,
+    storeLocations: payload.storeLocations,
+    note: `[新廠牌建議] 系統:${payload.systemType || ''} | 格式:${payload.codeFormat || ''} | 據點:${payload.storeLocations || ''} | 備註:${payload.note || ''}`,
+  });
 }
 
 // ─────────────────────────────────────────────
