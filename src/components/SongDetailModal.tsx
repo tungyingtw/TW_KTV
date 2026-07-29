@@ -50,8 +50,8 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.82)',
-          backdropFilter: 'blur(10px)',
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(8px)',
           zIndex: 9999,
           display: 'flex',
           alignItems: 'center',
@@ -59,20 +59,20 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
           padding: '16px',
         }}
       >
-        {/* Modal 主容器 */}
+        {/* Modal 主容器 - 使用動態 CSS 主題變數支援日間/夜間雙切換 */}
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            backgroundColor: '#0f172a',
-            color: '#f8fafc',
-            borderRadius: '20px',
+            backgroundColor: 'var(--bg-card, #1e293b)',
+            color: 'var(--text-primary, #ffffff)',
+            borderRadius: 'var(--radius-lg, 20px)',
             width: '100%',
             maxWidth: '680px',
             maxHeight: '88vh',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
             overflow: 'hidden',
           }}
         >
@@ -94,12 +94,12 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 position: 'absolute',
                 top: '20px',
                 right: '20px',
-                background: 'rgba(255, 255, 255, 0.06)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'var(--bg-glass, rgba(255, 255, 255, 0.08))',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
                 borderRadius: '50%',
                 width: '34px',
                 height: '34px',
-                color: '#cbd5e1',
+                color: 'var(--text-secondary, #cbd5e1)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -116,7 +116,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 <span
                   style={{
                     background: 'rgba(56, 189, 248, 0.15)',
-                    color: '#38bdf8',
+                    color: 'var(--accent-blue, #38bdf8)',
                     border: '1px solid rgba(56, 189, 248, 0.3)',
                     padding: '2px 8px',
                     borderRadius: '6px',
@@ -127,7 +127,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   {displayLanguage}
                 </span>
                 {song.releaseYear && (
-                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)' }}>
                     {song.releaseYear} 年發行
                   </span>
                 )}
@@ -137,7 +137,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 style={{
                   fontSize: '1.65rem',
                   fontWeight: 800,
-                  color: '#ffffff',
+                  color: 'var(--text-primary, #ffffff)',
                   margin: '4px 0 8px 0',
                   display: 'flex',
                   alignItems: 'center',
@@ -151,23 +151,23 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: isFav ? '#ec4899' : '#64748b',
+                    color: isFav ? 'var(--accent-pink, #ec4899)' : 'var(--text-muted, #64748b)',
                     padding: 0,
                     display: 'flex',
                     alignItems: 'center',
                   }}
                   title={isFav ? '已加入最愛' : '加入最愛'}
                 >
-                  <Heart size={24} fill={isFav ? '#ec4899' : 'none'} />
+                  <Heart size={24} fill={isFav ? 'var(--accent-pink, #ec4899)' : 'none'} />
                 </button>
               </h2>
 
-              <p style={{ fontSize: '1.05rem', color: '#ec4899', fontWeight: 700, margin: '0 0 6px 0' }}>
+              <p style={{ fontSize: '1.05rem', color: 'var(--accent-pink, #ec4899)', fontWeight: 700, margin: '0 0 6px 0' }}>
                 歌手：{song.artist}
               </p>
 
               {(song.lyricist || song.composer) && (
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)' }}>
                   {song.lyricist && <span>作詞：{song.lyricist}</span>}
                   {song.lyricist && song.composer && <span style={{ margin: '0 6px' }}>|</span>}
                   {song.composer && <span>作曲：{song.composer}</span>}
@@ -179,16 +179,16 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             {song.lyricsSnippet && !song.lyricsSnippet.includes('全台 10 大 KTV') ? (
               <div
                 style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
+                  background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))',
                   padding: '14px 18px',
-                  borderRadius: '12px',
-                  borderLeft: '4px solid #ec4899',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderRight: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: 'var(--radius-md, 14px)',
+                  borderLeft: '4px solid var(--accent-pink, #ec4899)',
+                  borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
+                  borderRight: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
+                  borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
                   margin: '16px 0 12px 0',
                   fontSize: '0.88rem',
-                  color: '#cbd5e1',
+                  color: 'var(--text-secondary, #cbd5e1)',
                   fontStyle: 'italic',
                   lineHeight: 1.6,
                 }}
@@ -198,29 +198,29 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             ) : (
               <div
                 style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
+                  background: 'var(--bg-glass, rgba(255, 255, 255, 0.02))',
                   padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: '1px dashed rgba(255, 255, 255, 0.08)',
+                  borderRadius: 'var(--radius-sm, 8px)',
+                  border: '1px dashed var(--border-color, rgba(255, 255, 255, 0.1))',
                   margin: '16px 0 12px 0',
                   fontSize: '0.82rem',
-                  color: '#94a3b8',
+                  color: 'var(--text-muted, #94a3b8)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                 }}
               >
                 <span>歌詞導引：可點擊下方按鈕進行官方原唱 / MV 歌詞預覽</span>
-                <span style={{ fontSize: '0.78rem', color: '#38bdf8', fontWeight: 600 }}>[即時對照]</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--accent-blue, #38bdf8)', fontWeight: 600 }}>[即時對照]</span>
               </div>
             )}
 
             {/* 歡唱建議與技巧提示 */}
             <div
               style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: '12px',
+                background: 'var(--bg-glass, rgba(255, 255, 255, 0.03))',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.06))',
+                borderRadius: 'var(--radius-md, 14px)',
                 padding: '14px 16px',
                 margin: '12px 0 16px 0',
               }}
@@ -230,7 +230,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   style={{
                     fontSize: '0.75rem',
                     fontWeight: 700,
-                    color: '#ec4899',
+                    color: 'var(--accent-pink, #ec4899)',
                     background: 'rgba(236, 72, 153, 0.12)',
                     border: '1px solid rgba(236, 72, 153, 0.25)',
                     padding: '2px 8px',
@@ -243,7 +243,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   style={{
                     fontSize: '0.75rem',
                     fontWeight: 700,
-                    color: '#f59e0b',
+                    color: 'var(--accent-amber, #f59e0b)',
                     background: 'rgba(245, 158, 11, 0.12)',
                     border: '1px solid rgba(245, 158, 11, 0.25)',
                     padding: '2px 8px',
@@ -253,7 +253,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   經典歌單
                 </span>
               </div>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: '#cbd5e1', lineHeight: 1.6 }}>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary, #cbd5e1)', lineHeight: 1.6 }}>
                 歡唱提示：可在包廂點歌時利用伴唱機升降調按鍵調整 Key（男唱女歌建議降 3-4 調、女唱男歌建議升 3-4 調），隨心切換原聲導唱體驗最佳音感。
               </p>
             </div>
@@ -273,7 +273,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   border: '1px solid rgba(239, 68, 68, 0.25)',
                   color: '#f87171',
                   padding: '10px 16px',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--radius-md, 14px)',
                   fontWeight: 700,
                   textDecoration: 'none',
                   fontSize: '0.88rem',
@@ -290,14 +290,14 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               style={{
                 fontSize: '0.98rem',
                 fontWeight: 700,
-                color: '#ffffff',
+                color: 'var(--text-primary, #ffffff)',
                 margin: '20px 0 12px 0',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
             >
-              <Sparkles size={16} color="#ec4899" /> 全台各大 KTV 門市 / 廠牌收錄狀態：
+              <Sparkles size={16} color="var(--accent-pink, #ec4899)" /> 全台各大 KTV 門市 / 廠牌收錄狀態：
             </h4>
 
             <div
@@ -317,15 +317,15 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                       key={b.id}
                       style={{
                         padding: '10px 14px',
-                        borderRadius: '10px',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        opacity: 0.7,
+                        borderRadius: 'var(--radius-sm, 10px)',
+                        background: 'var(--bg-glass, rgba(255, 255, 255, 0.02))',
+                        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
+                        opacity: 0.75,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: 700, color: b.color, fontSize: '0.9rem' }}>{b.shortName}</span>
-                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>未收錄</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>未收錄</span>
                       </div>
                       <BrandVoteBar songId={song.id} brandId={b.id} initialVote={brandVote} />
                     </div>
@@ -337,8 +337,8 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                     key={b.id}
                     style={{
                       padding: '10px 14px',
-                      borderRadius: '10px',
-                      background: 'rgba(255, 255, 255, 0.04)',
+                      borderRadius: 'var(--radius-sm, 10px)',
+                      background: b.badgeBg,
                       border: `1px solid ${b.color}44`,
                     }}
                   >
@@ -383,7 +383,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </div>
 
             {/* 回報錯誤按鈕 */}
-            <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px' }}>
+            <div style={{ marginTop: '24px', borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingTop: '16px' }}>
               <button
                 onClick={() => setShowReport(true)}
                 style={{
@@ -394,7 +394,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   border: '1px solid rgba(251, 191, 36, 0.2)',
                   borderRadius: '8px',
                   padding: '8px 16px',
-                  color: '#fbbf24',
+                  color: 'var(--accent-amber, #fbbf24)',
                   fontSize: '0.85rem',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -405,7 +405,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               >
                 <Flag size={14} />
                 回報資料錯誤
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 400 }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', fontWeight: 400 }}>
                   （幫助我們讓資料更準確）
                 </span>
               </button>

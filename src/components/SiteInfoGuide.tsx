@@ -69,13 +69,13 @@ export const SiteInfoGuide: React.FC = () => {
     >
       <div
         style={{
-          background: 'rgba(30, 41, 59, 0.6)',
+          background: 'var(--bg-glass, rgba(30, 41, 59, 0.6))',
           backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
           borderRadius: '16px',
           padding: '24px',
           color: 'var(--text-secondary, #cbd5e1)',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
         }}
       >
         {/* Title Header with Expand/Collapse Button */}
@@ -84,7 +84,7 @@ export const SiteInfoGuide: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: isExpanded ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+            borderBottom: isExpanded ? '1px solid var(--border-color, rgba(255, 255, 255, 0.08))' : 'none',
             paddingBottom: isExpanded ? '16px' : '0',
             marginBottom: isExpanded ? '20px' : '0',
             cursor: 'pointer',
@@ -131,8 +131,8 @@ export const SiteInfoGuide: React.FC = () => {
 
           <button
             style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
+              border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
               borderRadius: '8px',
               padding: '6px 12px',
               color: 'var(--text-secondary, #cbd5e1)',
@@ -166,7 +166,7 @@ export const SiteInfoGuide: React.FC = () => {
                 display: 'flex',
                 gap: '8px',
                 marginBottom: '20px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                 paddingBottom: '12px',
                 overflowX: 'auto',
               }}
@@ -180,8 +180,8 @@ export const SiteInfoGuide: React.FC = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   border: 'none',
-                  background: activeTab === 'overview' ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)',
-                  color: activeTab === 'overview' ? '#0f172a' : '#cbd5e1',
+                  background: activeTab === 'overview' ? '#38bdf8' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
+                  color: activeTab === 'overview' ? '#0f172a' : 'var(--text-secondary, #cbd5e1)',
                   transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap',
                 }}
@@ -198,8 +198,8 @@ export const SiteInfoGuide: React.FC = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   border: 'none',
-                  background: activeTab === 'how_to_use' ? '#10b981' : 'rgba(255, 255, 255, 0.05)',
-                  color: activeTab === 'how_to_use' ? '#0f172a' : '#cbd5e1',
+                  background: activeTab === 'how_to_use' ? '#10b981' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
+                  color: activeTab === 'how_to_use' ? '#0f172a' : 'var(--text-secondary, #cbd5e1)',
                   transition: 'all 0.2s ease',
                   display: 'flex',
                   alignItems: 'center',
@@ -220,8 +220,8 @@ export const SiteInfoGuide: React.FC = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   border: 'none',
-                  background: activeTab === 'articles' ? '#ec4899' : 'rgba(255, 255, 255, 0.05)',
-                  color: activeTab === 'articles' ? '#ffffff' : '#cbd5e1',
+                  background: activeTab === 'articles' ? '#ec4899' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
+                  color: activeTab === 'articles' ? '#ffffff' : 'var(--text-secondary, #cbd5e1)',
                   transition: 'all 0.2s ease',
                   display: 'flex',
                   alignItems: 'center',
@@ -242,8 +242,8 @@ export const SiteInfoGuide: React.FC = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   border: 'none',
-                  background: activeTab === 'faq' ? '#f59e0b' : 'rgba(255, 255, 255, 0.05)',
-                  color: activeTab === 'faq' ? '#0f172a' : '#cbd5e1',
+                  background: activeTab === 'faq' ? '#f59e0b' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
+                  color: activeTab === 'faq' ? '#0f172a' : 'var(--text-secondary, #cbd5e1)',
                   transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap',
                 }}
@@ -309,42 +309,42 @@ export const SiteInfoGuide: React.FC = () => {
             {/* Tab 2: How to Use (系統操作指引與教學) */}
             {activeTab === 'how_to_use' && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
-                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Search size={18} />
                     <span>1. 快速搜尋與門市對照</span>
                   </div>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌詞片段</strong>，系統將自動比對全台 10 大伴唱廠牌門市收錄狀態。亦可點擊廠牌頁籤切換特定門市（如錢○ Cashbox、好○迪 Holiday、享○馨 Enjoy KTV 等 10 大品牌）查看發行狀況。
                   </p>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <CheckCircle2 size={18} />
                     <span>2. 辨識原唱與原版 MV 標示</span>
                   </div>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     歌曲卡片上標示 <strong>綠色原唱標籤</strong> 代表該門市伴唱系統提供歌手原聲導唱音軌；標示 <strong>粉色 MV 標籤</strong> 代表門市播放畫面為唱片公司授權之官方原版拍攝 MV 影音。
                   </p>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Users size={18} />
                     <span>3. 包廂連線與歌單收藏</span>
                   </div>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單。開啟<strong>「包廂點歌連線」</strong>功能可產生專屬 Room Code，同包廂的好友掃碼即可同步瀏覽與共享歌單。
                   </p>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(168, 85, 247, 0.2)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(168, 85, 247, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a855f7', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Vote size={18} />
                     <span>4. 社群共識投票與補件回報</span>
                   </div>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     找不到欲點唱的歌曲？可點擊「建議追加歌曲」進行登記。若在門市現場發現收錄狀況有誤，亦可在歌曲詳情中對該廠牌點擊「確認/否決」參與社群共識校對。
                   </p>
                 </div>
@@ -366,9 +366,9 @@ export const SiteInfoGuide: React.FC = () => {
                         style={{
                           padding: '8px 12px',
                           borderRadius: '8px',
-                          border: isSelected ? '1px solid #ec4899' : '1px solid rgba(255, 255, 255, 0.08)',
-                          background: isSelected ? 'rgba(236, 72, 153, 0.15)' : 'rgba(15, 23, 42, 0.4)',
-                          color: isSelected ? '#f472b6' : '#94a3b8',
+                          border: isSelected ? '1px solid #ec4899' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                          background: isSelected ? 'rgba(236, 72, 153, 0.15)' : 'var(--bg-glass, rgba(15, 23, 42, 0.4))',
+                          color: isSelected ? '#f472b6' : 'var(--text-muted, #94a3b8)',
                           fontSize: '0.82rem',
                           cursor: 'pointer',
                           display: 'flex',
@@ -387,10 +387,10 @@ export const SiteInfoGuide: React.FC = () => {
                 {articles[activeArticleIndex] && (
                   <article
                     style={{
-                      background: 'rgba(15, 23, 42, 0.5)',
+                      background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))',
                       borderRadius: '12px',
                       padding: '20px',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -411,7 +411,7 @@ export const SiteInfoGuide: React.FC = () => {
                       style={{
                         fontSize: '1.1rem',
                         fontWeight: 700,
-                        color: '#f8fafc',
+                        color: 'var(--text-primary, #f8fafc)',
                         marginTop: 0,
                         marginBottom: '12px',
                       }}
@@ -421,7 +421,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <p style={{ fontSize: '0.85rem', color: '#38bdf8', fontStyle: 'italic', marginBottom: '16px' }}>
                       說明：{articles[activeArticleIndex].summary}
                     </p>
-                    <div style={{ fontSize: '0.88rem', lineHeight: 1.75, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ fontSize: '0.88rem', lineHeight: 1.75, color: 'var(--text-secondary, #cbd5e1)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {articles[activeArticleIndex].content.map((paragraph, pIdx) => (
                         <p key={pIdx} style={{ margin: 0 }}>
                           {paragraph}
@@ -436,38 +436,38 @@ export const SiteInfoGuide: React.FC = () => {
             {/* Tab 4: FAQ */}
             {activeTab === 'faq' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem', lineHeight: 1.65 }}>
-                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q1：為什麼同一首歌在不同 KTV 門市的收錄狀況不一樣？
                   </h4>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     答：各大 KTV 門市與伴唱機廠牌版權授權進度與歌本目錄更新頻率不同，因此同一首歌曲在不同連鎖門市與伴唱系統中的收錄時間點有所差異。
                   </p>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q2：如何區分 KTV 門市的「原聲原唱」與「官方原版 MV」標示？
                   </h4>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     答：「原聲原唱」代表該伴唱系統包含歌手原聲人聲導唱音軌，切換導唱時可聆聽原唱聲線；「官方原版 MV」代表門市播放畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。
                   </p>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q3：門市沒有收錄我想唱的歌曲該怎麼辦？
                   </h4>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     答：您可利用本站的「無歌/補件回報」功能進行登記，共識演算法將即時彙整社群數據與投票供廣大歌友參考。
                   </p>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q4：連鎖門市（如錢○、好○迪）與家用伴唱機（如音○、金○）有何差異？
                   </h4>
-                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     答：連鎖門市專用伴唱系統採用連鎖營業公播授權，多包含唱片公司授權之原版 MV 與原音軌；家用與專業伴唱機則採用電腦伴唱規格與發行模式，歌本目錄更新頻率與版權範圍各有不同。
                   </p>
                 </div>
@@ -479,7 +479,7 @@ export const SiteInfoGuide: React.FC = () => {
               style={{
                 marginTop: '20px',
                 paddingTop: '16px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                 fontSize: '0.82rem',
                 color: 'var(--text-muted, #94a3b8)',
                 display: 'flex',

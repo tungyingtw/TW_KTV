@@ -20,7 +20,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
         backdropFilter: 'blur(8px)',
         zIndex: 9999,
         display: 'flex',
@@ -32,16 +32,16 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
     >
       <div
         style={{
-          backgroundColor: 'var(--bg-secondary, #1e293b)',
+          backgroundColor: 'var(--bg-card, #1e293b)',
           color: 'var(--text-primary, #f8fafc)',
-          borderRadius: '16px',
+          borderRadius: 'var(--radius-lg, 16px)',
           width: '100%',
           maxWidth: '750px',
           maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
+          border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
           overflow: 'hidden',
         }}
         onClick={e => e.stopPropagation()}
@@ -50,11 +50,11 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'rgba(15, 23, 42, 0.4)',
+            backgroundColor: 'var(--bg-glass, rgba(15, 23, 42, 0.4))',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -72,7 +72,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             >
               <ShieldCheck size={18} />
             </div>
-            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
               網站條款與權益說明
             </h3>
           </div>
@@ -80,7 +80,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.05)',
+              background: 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
               border: 'none',
               borderRadius: '50%',
               width: '32px',
@@ -100,8 +100,8 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         <div
           style={{
             display: 'flex',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            backgroundColor: 'rgba(15, 23, 42, 0.2)',
+            borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+            backgroundColor: 'var(--bg-glass, rgba(15, 23, 42, 0.2))',
             padding: '0 16px',
             overflowX: 'auto',
           }}
@@ -199,7 +199,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         >
           {activeTab === 'privacy' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
+              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
                 隱私權政策 (Privacy Policy)
               </h4>
               <p>
@@ -229,7 +229,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
           {activeTab === 'terms' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
+              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
                 免責聲明與服務條款 (Terms & Disclaimer)
               </h4>
               
@@ -257,7 +257,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
           {activeTab === 'about' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
+              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
                 關於「台灣 KTV 歌曲索引」
               </h4>
               <p>
@@ -278,7 +278,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
           {activeTab === 'contact' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
+              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
                 聯絡我們 (Contact Us)
               </h4>
               <p>
@@ -287,8 +287,8 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <div
                 style={{
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  background: 'var(--bg-glass, rgba(15, 23, 42, 0.6))',
+                  border: '1px solid var(--border-color, rgba(56, 189, 248, 0.25))',
                   borderRadius: '12px',
                   padding: '16px 20px',
                   display: 'flex',
@@ -345,8 +345,8 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         <div
           style={{
             padding: '16px 24px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            backgroundColor: 'rgba(15, 23, 42, 0.6)',
+            borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+            backgroundColor: 'var(--bg-glass, rgba(15, 23, 42, 0.6))',
             display: 'flex',
             justifyContent: 'flex-end',
           }}
