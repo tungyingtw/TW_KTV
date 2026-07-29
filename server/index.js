@@ -54,7 +54,19 @@ app.get('/robots.txt', (req, res) => {
   res.type('text/plain').send('User-agent: *\nDisallow: /\n');
 });
 
-// 靜態檔案服務與 /admin 路由
+// ─────────────────────────────────────────────
+// 301 永久重導向：將 Render 根目錄與所有前端路由導向正式 GitHub Pages
+// 目的：讓 Google PageRank 完全傳遞給正式網站，防止 Render 搶佔 SEO 排名
+// ─────────────────────────────────────────────
+const OFFICIAL_SITE = 'https://tungyingtw.github.io/TW_KTV/';
+app.get('/', (req, res) => {
+  res.redirect(301, OFFICIAL_SITE);
+});
+
+// /admin 與 /sys-admin-panel 僅限本機，不重導向（後面另有路由處理）
+// /api/* 路由也不重導向（後面另有 API 路由處理）
+
+// 靜態檔案服務（僅供本機開發用，Render 線上不再直接 serve 前端頁面）
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, '../dist')));
 
