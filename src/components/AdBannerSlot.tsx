@@ -90,28 +90,17 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
           <>
             {/* 左側廣告內文 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left', flex: 1, minWidth: '220px' }}>
-              <div style={{
-                fontSize: '1.5rem', background: 'rgba(168, 85, 247, 0.15)',
-                padding: '6px 10px', borderRadius: '10px', flexShrink: 0,
-                border: '1px solid rgba(168, 85, 247, 0.3)',
-              }}>
-                📢
-              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                   <span>
-                    {slotType === 'header' && '【廣告贊助位 #1 頂部黃金區】'}
-                    {slotType === 'in_feed' && '【廣告贊助位 #2 列表熱區】'}
-                    {slotType === 'modal' && '【廣告贊助位 #3 歌曲詳細頁】'}
-                    {slotType === 'footer' && '【廣告贊助位 #4 頁尾專區】'}
-                    Google AdSense 審核與品牌招募中
+                    廣告贊助區
                   </span>
                   <span style={{ background: 'rgba(168, 85, 247, 0.25)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.4)', fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }}>
-                    📢 AD SLOT 招商中
+                    AD SLOT 招商中
                   </span>
                 </div>
                 <div style={{ color: '#94a3b8', fontSize: '0.78rem', marginTop: '2px', lineHeight: 1.3 }}>
-                  精準觸及全台 KTV 歡唱聚會歌友族群！開放品牌贊助與廣告合作
+                  精準觸及全台 KTV 歡唱聚會歌友族群，開放品牌贊助與廣告合作
                 </div>
               </div>
             </div>
@@ -119,7 +108,7 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
             {/* 右側行動按鈕 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
               <button 
-                onClick={() => alert('此廣告欄位目前為審核與招商預留狀態。已串接 Google AdSense 規格，審核通過或設定 adSlot 代碼後將自動投遞正式廣告！')}
+                onClick={() => alert('此廣告欄位目前為審核與招商預留狀態。已串接 Google AdSense 規格，審核通過或設定 adSlot 代碼後將自動投遞正式廣告。')}
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   color: '#e2e8f0',
@@ -132,7 +121,7 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
                   whiteSpace: 'nowrap',
                 }}
               >
-                廣告位說明 ℹ️
+                廣告位說明
               </button>
             </div>
           </>

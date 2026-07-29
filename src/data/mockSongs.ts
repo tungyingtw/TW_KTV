@@ -98,7 +98,7 @@ export const MOCK_SONGS: Song[] = [
     brands: {
       cashbox: { available: true, code: '48102', audioType: 'original_vocal', mvType: 'official_mv', note: '官方原裝MV' },
       holiday: { available: true, code: '10923', audioType: 'original_vocal', mvType: 'official_mv', note: '高畫質原唱' },
-      watering_hole: { available: true, code: '72801', audioType: 'original_vocal', mvType: 'official_mv', note: '享溫馨雙螢幕高清' },
+      watering_hole: { available: true, code: '72801', audioType: 'original_vocal', mvType: 'official_mv', note: '享○馨雙螢幕高清' },
       starlight: { available: true, code: '30491', audioType: 'original_vocal', mvType: 'official_mv' },
       singgo: { available: true, code: '88019', audioType: 'original_vocal', mvType: 'official_mv' },
       vmix: { available: true, code: '55012', audioType: 'original_vocal', mvType: 'official_mv' },
