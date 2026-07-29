@@ -16,6 +16,8 @@ import { AdBannerSlot } from './components/AdBannerSlot';
 import { BottomSheetFilter } from './components/BottomSheetFilter';
 import { FavoritesDrawer } from './components/FavoritesDrawer';
 import { ToastNotification } from './components/ToastNotification';
+import { LegalNoticeModal } from './components/LegalNoticeModal';
+import { SiteInfoGuide } from './components/SiteInfoGuide';
 import { fetchFullCatalog } from './services/apiService';
 import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
@@ -80,6 +82,7 @@ export function App() {
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const [reportModalSong, setReportModalSong] = useState<Song | null>(null);
+  const [legalNoticeTab, setLegalNoticeTab] = useState<'privacy' | 'terms' | 'about' | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Pagination / Load More limit state (Default display: 40)
@@ -709,7 +712,17 @@ export function App() {
         />
       )}
 
+      {legalNoticeTab && (
+        <LegalNoticeModal
+          initialTab={legalNoticeTab}
+          onClose={() => setLegalNoticeTab(null)}
+        />
+      )}
+
       <ToastNotification message={toastMessage} />
+
+      {/* 📖 【全台 KTV 歌曲對照與點歌攻略指南 (AdSense 爬蟲 & 導覽區塊)】 */}
+      <SiteInfoGuide />
 
       {/* 📢 【廣告位 #4 頁尾專區】 */}
       <AdBannerSlot slotType="footer" />
@@ -737,6 +750,51 @@ export function App() {
           </div>
 
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setLegalNoticeTab('privacy')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#38bdf8',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+            >
+              隱私權政策
+            </button>
+
+            <button
+              onClick={() => setLegalNoticeTab('terms')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#38bdf8',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+            >
+              免責聲明與條款
+            </button>
+
+            <button
+              onClick={() => setLegalNoticeTab('about')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#38bdf8',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+            >
+              關於我們
+            </button>
+
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Sparkles size={14} color="#10b981" /> 原版MV標示
             </span>
