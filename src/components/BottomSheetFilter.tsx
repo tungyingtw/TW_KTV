@@ -8,7 +8,7 @@ interface BottomSheetFilterProps {
   setFilters: React.Dispatch<React.SetStateAction<FilterOptions>>;
 }
 
-const LANGUAGES = ['國語', '台語', '粵語', '日語', '韓語', '英語'];
+const LANGUAGES = ['國語', '台語', '粵語', '陸歌', '日語', '韓語', '英語'];
 const TITLE_LENGTHS: { id: TitleLengthFilter; label: string }[] = [
   { id: 'all', label: '全部字數' },
   { id: '1', label: '1字歌' },
@@ -35,6 +35,8 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
       selectedTitleLength: 'all',
       onlyOfficialMv: false,
       onlyOriginalVocal: false,
+      onlyMainlandViral: false,
+      onlyNicheSongs: false,
       sortBy: 'length',
     }));
   };
@@ -218,6 +220,46 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                 style={{ accentColor: '#ec4899', width: '18px', height: '18px', cursor: 'pointer' }}
               />
             </label>
+
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(255, 255, 255, 0.04)',
+              cursor: 'pointer',
+            }}>
+              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
+                僅顯示爆款熱門陸歌 (Mainland Viral Hits)
+              </span>
+              <input
+                type="checkbox"
+                checked={filters.onlyMainlandViral}
+                onChange={(e) => setFilters(prev => ({ ...prev, onlyMainlandViral: e.target.checked }))}
+                style={{ accentColor: '#8b5cf6', width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+            </label>
+
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(255, 255, 255, 0.04)',
+              cursor: 'pointer',
+            }}>
+              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
+                僅顯示獨立 / 樂團與獨家歌冊 (Indie & Niche Songs)
+              </span>
+              <input
+                type="checkbox"
+                checked={filters.onlyNicheSongs}
+                onChange={(e) => setFilters(prev => ({ ...prev, onlyNicheSongs: e.target.checked }))}
+                style={{ accentColor: '#06b6d4', width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+            </label>
           </div>
         </div>
 
@@ -226,7 +268,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
             多選語種
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {LANGUAGES.map(lang => {
               const isSelected = filters.selectedLanguages.includes(lang);
 
