@@ -1,8 +1,62 @@
 import React, { useState } from 'react';
-import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
+import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sparkles, Sliders, Disc, Mic2 } from 'lucide-react';
 
 export const SiteInfoGuide: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<'overview' | 'articles' | 'faq'>('overview');
+  const [activeArticleIndex, setActiveArticleIndex] = useState<number>(0);
+
+  const articles = [
+    {
+      id: 'vocal-mv-guide',
+      title: '原聲原唱 vs 人聲導唱 vs 伴奏切換完全解析',
+      icon: Mic2,
+      tag: '音軌切換必學',
+      summary: '解密 KTV 門市伴唱機立體音軌與導唱切換原理，教您如何聽出歌手原音音軌。',
+      content: [
+        '在連鎖 KTV 門市歡唱時，許多歌友常困惑於「原聲原唱」與「人聲導唱」的差別。傳統伴唱機的導唱音軌主要利用立體聲左右聲道（L/R Channel）分離技術，將歌聲錄製在其中一個聲道；點歌機切換導唱時，系統會將包含人聲的聲道混合輸出。',
+        '而真正的「原聲原唱（Original Track）」則是唱片公司直接提供原曲的多軌母帶人聲，歡唱時可以清晰聽到歌手原汁原味的聲線與呼吸細節，而非合聲老師或後製重錄的人聲。',
+        '官方原版 MV（Official MV）則是唱片公司授權之官方拍攝影片，播放畫面為歌手親自演出之 MV，而非一般伴唱機常見的通用風景照或模特兒示範畫面，大幅提升包廂內的視覺歡唱氣氛。'
+      ]
+    },
+    {
+      id: 'system-licensing',
+      title: '連鎖門市 (錢櫃/好樂迪) vs 家用伴唱機 (音圓/金嗓) 版權生態解密',
+      icon: Disc,
+      tag: '系統與版權',
+      summary: '為什麼門市新歌與家用電腦伴唱機的上架時間不同？揭開公播授權與歌本發行機制。',
+      content: [
+        '全台伴唱系統主要分為兩大陣營：一為連鎖營業門市專用系統（如錢櫃 Cashbox、好樂迪 Holiday、享溫馨 Enjoy KTV、星聚點、超級巨星等）；二為家用與專業電腦伴唱機（如音圓 InYuan、金嗓 Golden Voice、弘音等）。',
+        '連鎖門市專用伴唱系統採用「連鎖營業公播授權」，新歌從唱片公司發行、門市伴唱機網路自動同步到門市專用影音資料庫的時間較短。',
+        '家用與專業電腦伴唱機則需配合電腦伴唱機規格、卡拉OK晶片音源製作與每月歌本更新發行，因此在不同伴唱機品牌間，同一首新歌的上架發行時間點會有所差異。'
+      ]
+    },
+    {
+      id: 'pitch-key-tips',
+      title: '歡唱技巧：男歌女唱與女歌男唱升降調 (Pitch/Key) 實用指南',
+      icon: Sliders,
+      tag: '練歌與調性',
+      summary: '包廂歡唱如何調 Key 不變形？掌握男女聲調轉換黃金法則，輕鬆飆高音不鎖喉。',
+      content: [
+        '在包廂點唱異性歌手的歌曲時，盲目硬唱容易導致鎖喉或音準不佳。由於男女平均音域通常相差約 4 至 5 個半音（Half Steps），適當使用伴唱機的升降調（Key / Pitch Adjust）是發揮歌聲的關鍵。',
+        '【男唱女歌建議】：建議將 Key **調降 3 至 4 個半音 (-3 ~ -4 Key)**，或**升 1 至 2 個半音 (+1 ~ +2 Key) 並降八度唱**，這樣可以在舒適的中低音域展現磁性音調。',
+        '【女唱男歌建議】：建議將 Key **升 3 至 4 個半音 (+3 ~ +4 Key)**，讓旋律落在女聲自然明亮的真聲與混音發聲區間。'
+      ]
+    },
+    {
+      id: 'party-songs-guide',
+      title: '熱門歡唱情境與合唱歌單分類推薦',
+      icon: Sparkles,
+      tag: '點歌指南',
+      summary: '包廂破冰開嗓、男女對唱金曲、飆高音紓壓等情境點歌心法。',
+      content: [
+        '歡唱聚會的成功關鍵在於氣氛的鋪陳與歌單的輪替。建議將歡唱過程分為三個階段：',
+        '1. 【開嗓破冰期】：選擇節奏明快、傳唱度高的中速流行流行歌或台語經典，讓包廂全員快速進入歡唱狀態。',
+        '2. 【氣氛高峰期】：安排男女經典對唱神曲、團體合唱爆紅曲或飆高音抒情歌曲，炒熱全場氣氛。',
+        '3. 【尾聲暖心期】：歡唱結束前最後半小時，適合點選感性懷舊金曲或全員大合唱曲目，為聚會畫下完美句點。'
+      ]
+    }
+  ];
 
   return (
     <section
@@ -61,7 +115,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-primary, #f8fafc)',
                 }}
               >
-                全台 KTV 歌曲對照與點歌攻略指南
+                全台 KTV 歌曲對照與歡唱知識指南
               </h2>
               <p
                 style={{
@@ -70,7 +124,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                收錄 錢櫃、好樂迪、享溫馨、星聚點、超級巨星、音圓、金嗓等 10 大廠牌對照說明
+                收錄 錢櫃、好樂迪、享溫馨、星聚點、超級巨星、音圓、金嗓等 10 大廠牌對照說明與歡唱秘笈
               </p>
             </div>
           </div>
@@ -103,67 +157,255 @@ export const SiteInfoGuide: React.FC = () => {
           </button>
         </div>
 
-        {/* Expandable Crawlable Content */}
+        {/* Expandable Content */}
         {isExpanded && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '24px',
-              fontSize: '0.88rem',
-              lineHeight: 1.65,
-            }}
-          >
-            {/* Column 1: System Differences & Brands */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
-                <Music2 size={18} />
-                <span>1. 全台 10 大伴唱機廠牌對照說明</span>
-              </div>
-              <p style={{ margin: 0 }}>
-                全台連鎖 KTV 與自助式伴唱系統使用的點歌系統主要分為 **連鎖門市專用伴唱系統**（如錢櫃 Cashbox、好樂迪 Holiday、享溫馨 Enjoy KTV、星聚點等）以及 **家用/專業電腦伴唱機**（如音圓 InYuan、金嗓 Golden Voice、弘音等）。
-              </p>
-              <p style={{ margin: 0 }}>
-                本網站透過大眾共識校對，為歌友整理各大廠牌門市的歌曲收錄狀況對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
-              </p>
+          <div>
+            {/* Top Navigation Tabs */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                marginBottom: '20px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                paddingBottom: '12px',
+                overflowX: 'auto',
+              }}
+            >
+              <button
+                onClick={() => setActiveTab('overview')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: activeTab === 'overview' ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)',
+                  color: activeTab === 'overview' ? '#0f172a' : '#cbd5e1',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                廠牌收錄對照
+              </button>
+              <button
+                onClick={() => setActiveTab('articles')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: activeTab === 'articles' ? '#ec4899' : 'rgba(255, 255, 255, 0.05)',
+                  color: activeTab === 'articles' ? '#ffffff' : '#cbd5e1',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Sparkles size={14} />
+                <span>KTV 歡唱知識學堂 (原創專題)</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('faq')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: activeTab === 'faq' ? '#f59e0b' : 'rgba(255, 255, 255, 0.05)',
+                  color: activeTab === 'faq' ? '#0f172a' : '#cbd5e1',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                常見問答 FAQ
+              </button>
             </div>
 
-            {/* Column 2: Original Vocal & MV Explanation */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700 }}>
-                <BookOpen size={18} />
-                <span>2. 原聲原唱與官方 MV 標示指引</span>
-              </div>
-              <p style={{ margin: 0 }}>
-                在 KTV 點歌時，「原聲原唱」與「官方原版 MV」是影響歡唱體驗的核心因素。
-              </p>
-              <ul style={{ paddingLeft: '18px', margin: 0 }}>
-                <li>**原聲原唱標示**：代表該伴唱系統含有歌手原聲人聲導唱音軌，切換導唱時可聆聽原唱聲線。</li>
-                <li>**官方原版 MV 標示**：代表該門市播放之畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。</li>
-              </ul>
-            </div>
+            {/* Tab 1: Overview */}
+            {activeTab === 'overview' && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '24px',
+                  fontSize: '0.88rem',
+                  lineHeight: 1.65,
+                }}
+              >
+                {/* Column 1: System Differences & Brands */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
+                    <Music2 size={18} />
+                    <span>1. 全台 10 大伴唱機廠牌對照說明</span>
+                  </div>
+                  <p style={{ margin: 0 }}>
+                    全台連鎖 KTV 與自助式伴唱系統使用的點歌系統主要分為 **連鎖門市專用伴唱系統**（如錢櫃 Cashbox、好樂迪 Holiday、享溫馨 Enjoy KTV、星聚點等）以及 **家用/專業電腦伴唱機**（如音圓 InYuan、金嗓 Golden Voice、弘音等）。
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    本網站透過大眾共識校對，為歌友整理各大廠牌門市的歌曲收錄狀況對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
+                  </p>
+                </div>
 
-            {/* Column 3: FAQ & Common Questions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700 }}>
-                <HelpCircle size={18} />
-                <span>3. 點歌常識與 FAQ</span>
+                {/* Column 2: Original Vocal & MV Explanation */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700 }}>
+                    <BookOpen size={18} />
+                    <span>2. 原聲原唱與官方 MV 標示指引</span>
+                  </div>
+                  <p style={{ margin: 0 }}>
+                    在 KTV 點歌時，「原聲原唱」與「官方原版 MV」是影響歡唱體驗的核心因素。
+                  </p>
+                  <ul style={{ paddingLeft: '18px', margin: 0 }}>
+                    <li>**原聲原唱標示**：代表該伴唱系統含有歌手原聲人聲導唱音軌，切換導唱時可聆聽原唱聲線。</li>
+                    <li>**官方原版 MV 標示**：代表該門市播放之畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。</li>
+                  </ul>
+                </div>
+
+                {/* Column 3: FAQ & Common Questions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700 }}>
+                    <HelpCircle size={18} />
+                    <span>3. 眾包共識校對與回報</span>
+                  </div>
+                  <p style={{ margin: 0 }}>
+                    **社群自癒與勘誤校對**：<br />
+                    若現場點歌時發現門市歌曲收錄狀況有變更，歡迎點擊本站「無歌/補件回報」功能進行登記。共識演算法將即時彙整投票與社群回饋數據供大家參考。
+                  </p>
+                </div>
               </div>
-              <p style={{ margin: 0 }}>
-                **問：為什麼同一首歌在不同 KTV 門市的收錄狀況不一樣？**<br />
-                答：各大 KTV 門市與伴唱機廠牌版權授權進度與歌本目錄更新頻率不同，因此同一首歌曲在不同連鎖門市與伴唱系統中的收錄時間點有所差異。
-              </p>
-              <p style={{ margin: 0 }}>
-                **問：門市沒有收錄該首歌怎麼辦？**<br />
-                答：您可利用本站的「無歌/補件回報」功能進行登記，共識演算法將自動彙整數據供社群參考。
-              </p>
-            </div>
+            )}
+
+            {/* Tab 2: Articles (Knowledge Hub) */}
+            {activeTab === 'articles' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Article Sub-selector */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {articles.map((art, idx) => {
+                    const IconComp = art.icon;
+                    const isSelected = activeArticleIndex === idx;
+                    return (
+                      <button
+                        key={art.id}
+                        onClick={() => setActiveArticleIndex(idx)}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: isSelected ? '1px solid #ec4899' : '1px solid rgba(255, 255, 255, 0.08)',
+                          background: isSelected ? 'rgba(236, 72, 153, 0.15)' : 'rgba(15, 23, 42, 0.4)',
+                          color: isSelected ? '#f472b6' : '#94a3b8',
+                          fontSize: '0.82rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <IconComp size={15} />
+                        <span>{art.tag}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Active Article Detail */}
+                {articles[activeArticleIndex] && (
+                  <article
+                    style={{
+                      background: 'rgba(15, 23, 42, 0.5)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <span
+                        style={{
+                          background: 'rgba(236, 72, 153, 0.2)',
+                          color: '#ec4899',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {articles[activeArticleIndex].tag}
+                      </span>
+                    </div>
+                    <h3
+                      style={{
+                        fontSize: '1.1rem',
+                        fontWeight: 700,
+                        color: '#f8fafc',
+                        marginTop: 0,
+                        marginBottom: '12px',
+                      }}
+                    >
+                      {articles[activeArticleIndex].title}
+                    </h3>
+                    <p style={{ fontSize: '0.85rem', color: '#38bdf8', fontStyle: 'italic', marginBottom: '16px' }}>
+                      💡 {articles[activeArticleIndex].summary}
+                    </p>
+                    <div style={{ fontSize: '0.88rem', lineHeight: 1.75, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {articles[activeArticleIndex].content.map((paragraph, pIdx) => (
+                        <p key={pIdx} style={{ margin: 0 }}>
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                  </article>
+                )}
+              </div>
+            )}
+
+            {/* Tab 3: FAQ */}
+            {activeTab === 'faq' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem', lineHeight: 1.65 }}>
+                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
+                    Q1：為什麼同一首歌在不同 KTV 門市的收錄狀況不一樣？
+                  </h4>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    答：各大 KTV 門市與伴唱機廠牌版權授權進度與歌本目錄更新頻率不同，因此同一首歌曲在不同連鎖門市與伴唱系統中的收錄時間點有所差異。
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
+                    Q2：如何區分 KTV 門市的「原聲原唱」與「官方原版 MV」標示？
+                  </h4>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    答：「原聲原唱」代表該伴唱系統包含歌手原聲人聲導唱音軌，切換導唱時可聆聽原唱聲線；「官方原版 MV」代表門市播放畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
+                    Q3：門市沒有收錄我想唱的歌曲該怎麼辦？
+                  </h4>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    答：您可利用本站的「無歌/補件回報」功能進行登記，共識演算法將即時彙整社群數據與投票供廣大歌友參考。
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
+                    Q4：連鎖門市（如錢櫃、好樂迪）與家用伴唱機（如音圓、金嗓）有何差異？
+                  </h4>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    答：連鎖門市專用伴唱系統採用連鎖營業公播授權，多包含唱片公司授權之原版 MV 與原音軌；家用與專業伴唱機則採用電腦伴唱規格與發行模式，歌本目錄更新頻率與版權範圍各有不同。
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Column 4: Disclaimer Summary */}
             <div
               style={{
-                gridColumn: '1 / -1',
-                marginTop: '12px',
+                marginTop: '20px',
                 paddingTop: '16px',
                 borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                 fontSize: '0.82rem',
