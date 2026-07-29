@@ -806,7 +806,7 @@ export function App() {
                 textDecoration: 'underline',
               }}
             >
-              關於我們
+              關於本站
             </button>
 
             <button
