@@ -265,10 +265,10 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           {activeTab === 'about' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
-                關於「台灣 KTV 歌曲索引」 (About This Site)
+                關於「台灣 KTV 歌曲對照查詢網」 (About This Site)
               </h4>
               <p>
-                「台灣 KTV 歌曲索引」成立旨在解決廣大歌友在全台各大 KTV 連鎖門市歡唱時，常遇到「找不到原聲原唱」及「不確定現場門市有無收錄」等痛點。
+                「台灣 KTV 歌曲對照查詢網」成立旨在解決廣大歌友在全台各大 KTV 連鎖門市歡唱時，常遇到「找不到原聲原唱」及「不確定現場門市有無收錄」等痛點。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
                 <b>English Summary:</b> Taiwan KTV Song Catalog is a crowdsourced reference directory helping users cross-check song availability, original vocals, and official MVs across top karaoke venue systems.
@@ -289,7 +289,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
                 聯絡我們 (Contact Us)
               </h4>
               <p>
-                感謝您使用「台灣 KTV 歌曲索引」！若您有任何意見建議、資料勘誤、合作提案或著作權聯繫，歡迎透過下方公用信箱與我們聯繫：
+                感謝您使用「台灣 KTV 歌曲對照查詢網」！若您有任何意見建議、資料勘誤、合作提案或著作權聯繫，歡迎透過下方公用信箱與我們聯繫：
               </p>
 
               <div

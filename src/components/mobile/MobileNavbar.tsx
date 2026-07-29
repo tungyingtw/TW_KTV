@@ -98,7 +98,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               background: 'linear-gradient(90deg, #ffffff 0%, #f472b6 60%, #c084fc 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>
-              台灣KTV歌曲索引
+              台灣 KTV 歌曲查詢
             </h1>
           </div>
 
