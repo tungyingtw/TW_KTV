@@ -258,7 +258,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           key={b.id} 
                           style={{ 
                             textAlign: 'center', 
-                            padding: '12px 8px',
+                            padding: '10px 4px',
                             borderLeft: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
                             color: 'var(--text-muted, #64748b)',
                             fontSize: '0.85rem',
@@ -288,6 +288,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                               display: 'inline-flex',
                               flexDirection: 'column',
                               alignItems: 'center',
+                              justifyContent: 'center',
                               gap: '6px',
                               padding: '8px 16px',
                               borderRadius: '12px',
@@ -343,21 +344,26 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         key={b.id}
                         style={{
                           textAlign: 'center',
-                          padding: '10px 6px',
+                          padding: '8px 4px',
                           borderLeft: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
                         }}
                       >
+                        {/* 統一高度 (40px) 與最小寬度 (70px) 的標準化膠囊標籤 */}
                         <div 
                           style={{
                             display: 'inline-flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '3px',
-                            padding: '5px 8px',
-                            borderRadius: '16px',
+                            justifyContent: 'center',
+                            gap: '2px',
+                            height: '40px',
+                            minWidth: '70px',
+                            padding: '4px 6px',
+                            borderRadius: '14px',
                             background: b.badgeBg,
                             border: `1px solid ${b.color}44`,
                             whiteSpace: 'nowrap',
+                            boxSizing: 'border-box',
                           }}
                         >
                           <div style={{ 
@@ -372,20 +378,18 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             有收錄
                           </div>
                           
-                          {(isOfficialMv || isOriginalVocal) && (
-                            <div style={{ display: 'flex', gap: '2px' }}>
-                              {isOfficialMv && (
-                                <span className="badge badge-official-mv" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
-                                  MV
-                                </span>
-                              )}
-                              {isOriginalVocal && (
-                                <span className="badge badge-original-vocal" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
-                                  原唱
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <div style={{ display: 'flex', gap: '2px', minHeight: '12px', alignItems: 'center' }}>
+                            {isOfficialMv && (
+                              <span className="badge badge-official-mv" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
+                                MV
+                              </span>
+                            )}
+                            {isOriginalVocal && (
+                              <span className="badge badge-original-vocal" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
+                                原唱
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
                     );
