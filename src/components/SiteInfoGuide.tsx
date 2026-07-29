@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sparkles, Sliders, Disc, Mic2, Compass, Search, CheckCircle2, Users, Vote } from 'lucide-react';
+import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sliders, Disc, Mic2, Compass, Search, CheckCircle2, Users, Vote } from 'lucide-react';
 
 export const SiteInfoGuide: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
@@ -11,7 +11,7 @@ export const SiteInfoGuide: React.FC = () => {
       id: 'vocal-mv-guide',
       title: '原聲原唱 vs 人聲導唱 vs 伴奏切換完全解析',
       icon: Mic2,
-      tag: '音軌切換必學',
+      tag: '音軌切換指南',
       summary: '解密 KTV 門市伴唱機立體音軌與導唱切換原理，教您如何聽出歌手原音音軌。',
       content: [
         '在連鎖 KTV 門市歡唱時，許多歌友常困惑於「原聲原唱」與「人聲導唱」的差別。傳統伴唱機的導唱音軌主要利用立體聲左右聲道（L/R Channel）分離技術，將歌聲錄製在其中一個聲道；點歌機切換導唱時，系統會將包含人聲的聲道混合輸出。',
@@ -21,12 +21,12 @@ export const SiteInfoGuide: React.FC = () => {
     },
     {
       id: 'system-licensing',
-      title: '連鎖門市 (錢櫃/好樂迪) vs 家用伴唱機 (音圓/金嗓) 版權生態解密',
+      title: '連鎖門市 (錢○/好○迪) vs 家用伴唱機 (音○/金○) 版權生態解密',
       icon: Disc,
       tag: '系統與版權',
       summary: '為什麼門市新歌與家用電腦伴唱機的上架時間不同？揭開公播授權與歌本發行機制。',
       content: [
-        '全台伴唱系統主要分為兩大陣營：一為連鎖營業門市專用系統（如錢櫃 Cashbox、好樂迪 Holiday、享溫馨 Enjoy KTV、星聚點等）；二為家用與專業電腦伴唱機（如音圓 InYuan、金嗓 Golden Voice、弘音等）。',
+        '全台伴唱系統主要分為兩大陣營：一為連鎖營業門市專用系統（如錢○ Cashbox、好○迪 Holiday、享○馨 Enjoy KTV、星○點等）；二為家用與專業電腦伴唱機（如音○ InYuan、金○ Golden Voice、弘○等）。',
         '連鎖門市專用伴唱系統採用「連鎖營業公播授權」，新歌從唱片公司發行、門市伴唱機網路自動同步到門市專用影音資料庫的時間較短。',
         '家用與專業電腦伴唱機則需配合電腦伴唱機規格、卡拉OK晶片音源製作與每月歌本更新發行，因此在不同伴唱機品牌間，同一首新歌的上架發行時間點會有所差異。'
       ]
@@ -46,7 +46,7 @@ export const SiteInfoGuide: React.FC = () => {
     {
       id: 'party-songs-guide',
       title: '熱門歡唱情境與合唱歌單分類推薦',
-      icon: Sparkles,
+      icon: BookOpen,
       tag: '點歌指南',
       summary: '包廂破冰開嗓、男女對唱金曲、飆高音紓壓等情境點歌心法。',
       content: [
@@ -124,7 +124,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                收錄 錢櫃、好樂迪、享溫馨、星聚點、超級巨星、音圓、金嗓等 10 大廠牌對照說明與歡唱秘笈
+                收錄 錢○、好○迪、享○馨、星○點、超○巨星、音○、金○等 10 大廠牌對照說明與歡唱秘笈
               </p>
             </div>
           </div>
@@ -208,7 +208,7 @@ export const SiteInfoGuide: React.FC = () => {
                 }}
               >
                 <Compass size={15} />
-                <span>🎯 系統操作指引與教學</span>
+                <span>系統操作指引與教學</span>
               </button>
 
               <button
@@ -229,7 +229,7 @@ export const SiteInfoGuide: React.FC = () => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                <Sparkles size={14} />
+                <BookOpen size={14} />
                 <span>KTV 歡唱知識學堂 (原創專題)</span>
               </button>
 
@@ -270,7 +270,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>1. 全台 10 大伴唱機廠牌對照說明</span>
                   </div>
                   <p style={{ margin: 0 }}>
-                    全台連鎖 KTV 與自助式伴唱系統使用的點歌系統主要分為 <strong>連鎖門市專用伴唱系統</strong>（如錢櫃 Cashbox、好樂迪 Holiday、享溫馨 Enjoy KTV、星聚點等）以及 <strong>家用/專業電腦伴唱機</strong>（如音圓 InYuan、金嗓 Golden Voice、弘音等）。
+                    全台連鎖 KTV 與自助式伴唱系統使用的點歌系統主要分為 <strong>連鎖門市專用伴唱系統</strong>（如錢○ Cashbox、好○迪 Holiday、享○馨 Enjoy KTV、星○點等）以及 <strong>家用/專業電腦伴唱機</strong>（如音○ InYuan、金○ Golden Voice、弘○等）。
                   </p>
                   <p style={{ margin: 0 }}>
                     本網站透過大眾共識校對，為歌友整理各大廠牌門市的歌曲收錄狀況對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
@@ -315,7 +315,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>1. 快速搜尋與門市對照</span>
                   </div>
                   <p style={{ margin: 0, color: '#cbd5e1' }}>
-                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌詞片段</strong>，系統將自動比對全台 10 大伴唱廠牌門市收錄狀態。亦可點擊廠牌頁籤切換特定門市（如錢櫃 Cashbox、好樂迪 Holiday、享溫馨 Enjoy KTV 等 10 大品牌）查看發行狀況。
+                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌詞片段</strong>，系統將自動比對全台 10 大伴唱廠牌門市收錄狀態。亦可點擊廠牌頁籤切換特定門市（如錢○ Cashbox、好○迪 Holiday、享○馨 Enjoy KTV 等 10 大品牌）查看發行狀況。
                   </p>
                 </div>
 
@@ -325,7 +325,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>2. 辨識原唱與原版 MV 標示</span>
                   </div>
                   <p style={{ margin: 0, color: '#cbd5e1' }}>
-                    歌曲卡片上標示 <strong>🎤 綠色原唱標籤</strong> 代表該門市伴唱系統提供歌手原聲導唱音軌；標示 <strong>🎬 粉色 MV 標籤</strong> 代表門市播放畫面為唱片公司授權之官方原版拍攝 MV 影音。
+                    歌曲卡片上標示 <strong>綠色原唱標籤</strong> 代表該門市伴唱系統提供歌手原聲導唱音軌；標示 <strong>粉色 MV 標籤</strong> 代表門市播放畫面為唱片公司授權之官方原版拍攝 MV 影音。
                   </p>
                 </div>
 
@@ -419,7 +419,7 @@ export const SiteInfoGuide: React.FC = () => {
                       {articles[activeArticleIndex].title}
                     </h3>
                     <p style={{ fontSize: '0.85rem', color: '#38bdf8', fontStyle: 'italic', marginBottom: '16px' }}>
-                      💡 {articles[activeArticleIndex].summary}
+                      說明：{articles[activeArticleIndex].summary}
                     </p>
                     <div style={{ fontSize: '0.88rem', lineHeight: 1.75, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {articles[activeArticleIndex].content.map((paragraph, pIdx) => (
@@ -465,7 +465,7 @@ export const SiteInfoGuide: React.FC = () => {
 
                 <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q4：連鎖門市（如錢櫃、好樂迪）與家用伴唱機（如音圓、金嗓）有何差異？
+                    Q4：連鎖門市（如錢○、好○迪）與家用伴唱機（如音○、金○）有何差異？
                   </h4>
                   <p style={{ margin: 0, color: '#cbd5e1' }}>
                     答：連鎖門市專用伴唱系統採用連鎖營業公播授權，多包含唱片公司授權之原版 MV 與原音軌；家用與專業伴唱機則採用電腦伴唱規格與發行模式，歌本目錄更新頻率與版權範圍各有不同。

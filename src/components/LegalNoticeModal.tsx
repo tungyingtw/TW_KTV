@@ -40,11 +40,11 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           overflow: 'hidden',
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div
@@ -54,43 +54,55 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'rgba(15, 23, 42, 0.6)',
+            backgroundColor: 'rgba(15, 23, 42, 0.4)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <ShieldCheck size={24} color="#38bdf8" />
-            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>
-              條款與法規聲明
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #38bdf8, #0284c7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+              }}
+            >
+              <ShieldCheck size={18} />
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
+              網站條款與權益說明
             </h3>
           </div>
+
           <button
             onClick={onClose}
             style={{
-              background: 'transparent',
+              background: 'rgba(255, 255, 255, 0.05)',
               border: 'none',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
               color: 'var(--text-muted, #94a3b8)',
               cursor: 'pointer',
-              padding: '6px',
-              borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'background 0.2s',
             }}
-            aria-label="關閉"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Modal Tabs Navigation */}
         <div
           style={{
             display: 'flex',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            backgroundColor: 'rgba(15, 23, 42, 0.3)',
+            backgroundColor: 'rgba(15, 23, 42, 0.2)',
             padding: '0 16px',
-            gap: '8px',
             overflowX: 'auto',
           }}
         >
@@ -203,22 +215,22 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               
               <h5 style={{ color: '#f59e0b', margin: '8px 0 4px 0' }}>1. 第三方非官方獨立平台聲明</h5>
               <p>
-                本網站為**民間社群獨立開發維護之客觀歌曲索引與對照平台**，非任何 KTV 伴唱業者（包括但不限於錢櫃、好樂迪、享溫馨、星聚點、SingGo、V-MIX、超級巨星、音圓、金嗓、弘音等）之官方網站或營利附屬機構。本網站與上述任何連鎖業者及伴唱機品牌無商業隸屬或官方授權關係。
+                本網站為<strong>民間社群獨立開發維護之客觀歌曲索引與對照平台</strong>，非任何 KTV 伴唱業者（包括但不限於錢○、好○迪、享○馨、星○點、Sing○、V-M○X、超○巨星、音○、金○、弘○等）之官方網站或營利附屬機構。本網站與上述任何連鎖業者及伴唱機品牌無商業隸屬或官方授權關係。
               </p>
 
               <h5 style={{ color: '#f59e0b', margin: '8px 0 4px 0' }}>2. 商標權與品牌宣告</h5>
               <p>
-                本網站提及之所有公司名稱、KTV 門市品牌、伴唱機廠牌名稱及商標標誌，其財產權與商標權均**完全歸屬於原註冊公司及權利人所有**。本網站僅出於資訊客觀對照、便於民眾個人歌唱檢索之合理使用目的進行載錄。
+                本網站提及之所有公司名稱、KTV 門市品牌、伴唱機廠牌名稱及商標標誌，其財產權與商標權均<strong>完全歸屬於原註冊公司及權利人所有</strong>。本網站僅出於資訊客觀對照、便於民眾個人歌唱檢索之合理使用目的進行載錄。
               </p>
 
               <h5 style={{ color: '#f59e0b', margin: '8px 0 4px 0' }}>3. 音樂影音與著作權聲明</h5>
               <p>
-                本網站**不儲存、上傳、託管或散佈任何未經授權之 MP3、MP4 音訊、影片檔案或盜版影音資源**。網站內展示之官方 MV 影片連結，均來自第三方公開影音平台（如 YouTube 官方頻道）之標準嵌入或超連結，版權均屬原唱片公司、創作者及原發布平台所有。歌詞與歌曲目錄數據僅供學術研究、社群校對與個人伴唱參考。
+                本網站<strong>不儲存、上傳、託管或散佈任何未經授權之 MP3、MP4 音訊、影片檔案或盜版影音資源</strong>。網站內展示之官方 MV 影片連結，均來自第三方公開影音平台（如 YouTube 官方頻道）之標準嵌入或超連結，版權均屬原唱片公司、創作者及原發布平台所有。歌詞與歌曲目錄數據僅供學術研究、社群校對與個人伴唱參考。
               </p>
 
               <h5 style={{ color: '#f59e0b', margin: '8px 0 4px 0' }}>4. 門市數據精準度與現場機器免責</h5>
               <p>
-                本網站之門市收錄狀態為大眾共識校對與公開目錄整理，僅供社群歡唱前之輔助查詢。因各大 KTV 門市伴唱機器之維護狀況、地區版權授權及即時更新進度不一，**現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準**。
+                本網站之門市收錄狀態為大眾共識校對與公開目錄整理，僅供社群歡唱前之輔助查詢。因各大 KTV 門市伴唱機器之維護狀況、地區版權授權及即時更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
               </p>
             </div>
           )}
@@ -234,9 +246,9 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色</h5>
               <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
-                <li>**跨廠牌門市對照**：整合錢櫃、好樂迪、享溫馨、星聚點、超級巨星、音圓、金嗓等 10 大廠牌門市收錄資訊。</li>
-                <li>**原版 MV 與原聲原唱標示**：明確註記歌曲是否提供原聲原唱或官方 MV 影音參考。</li>
-                <li>**眾包共識與現場勘誤**：提供現場歌友實時參與歌曲收錄與對照勘誤回報，維持歌冊資訊更新。</li>
+                <li><strong>跨廠牌門市對照</strong>：整合錢○、好○迪、享○馨、星○點、超○巨星、音○、金○等 10 大廠牌門市收錄資訊。</li>
+                <li><strong>原版 MV 與原聲原唱標示</strong>：明確註記歌曲是否提供原聲原唱或官方 MV 影音參考。</li>
+                <li><strong>眾包共識與現場勘誤</strong>：提供現場歌友實時參與歌曲收錄與對照勘誤回報，維持歌冊資訊更新。</li>
               </ul>
               <p style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)' }}>
                 本站為非營利性質之社群伴唱資訊索引庫，歡迎廣大歌友共同維護與回報勘誤。

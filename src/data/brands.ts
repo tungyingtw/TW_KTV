@@ -79,7 +79,7 @@ export const BRANDS: Record<BrandId, BrandInfo> = {
     shortName: '弘○',
     color: '#f43f5e',
     badgeBg: 'rgba(244, 63, 94, 0.16)',
-    description: '弘音 伴唱系統歌曲收錄',
+    description: '弘○ 伴唱系統歌曲收錄',
   },
 };
 

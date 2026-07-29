@@ -60,7 +60,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
             {isSingleBrand ? (
               <>
                 資料庫中暫無【{currentBrandInfo?.shortName}】的驗證收錄對照記錄。<br />
-                實體包廂多採用雲端對應系統（建議可先參考 SingGo / 享溫馨 收錄狀態）。
+                實體包廂多採用雲端對應系統（建議可先參考 Sing○ / 享○馨 收錄狀態）。
               </>
             ) : (
               '嘗試更換關鍵字或取消過濾條件。'

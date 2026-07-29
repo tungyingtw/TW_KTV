@@ -464,7 +464,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                   color: '#e0f2fe',
                   lineHeight: 1.5,
                 }}>
-                  💡 <b>KTV 廠牌追加提示：</b> 發現全台有新開立的連鎖 KTV、獨立歡唱門市，或未收錄的營業型伴唱機（如：超級巨星、晴空點播...）？請在此回報，管理員審核後將第一時間建置其點歌碼對照欄位！
+                  <b>KTV 廠牌追加提示：</b> 發現全台有新開立的連鎖 KTV、獨立歡唱門市，或未收錄的營業型伴唱機（如：超○巨星、晴空點播...）？請在此回報，管理員審核後將第一時間建置其點歌碼對照欄位！
                 </div>
 
                 {/* Row 1: 廠牌全名 & 簡稱 */}
