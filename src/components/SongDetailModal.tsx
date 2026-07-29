@@ -36,6 +36,9 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
   const isFav = favorites.includes(song.id);
 
+  // 規範語言標示顯示
+  const displayLanguage = song.language || '流行曲目';
+
   return (
     <>
       {/* 背景遮罩 - 點擊空白處關閉 */}
@@ -47,9 +50,9 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(8px)',
-          zIndex: 999,
+          backgroundColor: 'rgba(15, 23, 42, 0.82)',
+          backdropFilter: 'blur(10px)',
+          zIndex: 9999,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -60,27 +63,28 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            backgroundColor: 'var(--bg-secondary)',
-            color: 'var(--text-primary)',
-            borderRadius: 'var(--radius-lg)',
+            backgroundColor: '#0f172a',
+            color: '#f8fafc',
+            borderRadius: '20px',
             width: '100%',
             maxWidth: '680px',
-            maxHeight: '90vh',
+            maxHeight: '88vh',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             overflow: 'hidden',
           }}
         >
+          {/* Scrollable Modal Content */}
           <div
             style={{
               width: '100%',
-              height: '100%',
-              maxHeight: '90vh',
+              maxHeight: '88vh',
               overflowY: 'auto',
               padding: '24px',
               position: 'relative',
+              boxSizing: 'border-box',
             }}
           >
             {/* Close Button */}
@@ -88,121 +92,168 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               onClick={onClose}
               style={{
                 position: 'absolute',
-                top: '18px',
-                right: '18px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: 'none',
+                top: '20px',
+                right: '20px',
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '50%',
-                width: '32px',
-                height: '32px',
-                color: 'var(--text-secondary)',
+                width: '34px',
+                height: '34px',
+                color: '#cbd5e1',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                transition: 'all 0.2s ease',
               }}
             >
               <X size={18} />
             </button>
 
-            {/* Song Header */}
-            <div style={{ paddingRight: '40px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="badge badge-original-vocal" style={{ fontSize: '0.75rem' }}>
-                  {song.language}
+            {/* Song Header Section */}
+            <div style={{ paddingRight: '44px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span
+                  style={{
+                    background: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38bdf8',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  {displayLanguage}
                 </span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {song.releaseYear} 年發行
-                </span>
+                {song.releaseYear && (
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                    {song.releaseYear} 年發行
+                  </span>
+                )}
               </div>
 
-              <h2 style={{
-                fontSize: '1.6rem',
-                fontWeight: 800,
-                color: '#fff',
-                marginTop: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}>
-                {song.title}
+              <h2
+                style={{
+                  fontSize: '1.65rem',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  margin: '4px 0 8px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
+              >
+                <span>{song.title}</span>
                 <button
                   onClick={() => onToggleFavorite(song.id)}
                   style={{
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: isFav ? '#ec4899' : 'var(--text-muted)',
+                    color: isFav ? '#ec4899' : '#64748b',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
                   }}
+                  title={isFav ? '已加入最愛' : '加入最愛'}
                 >
                   <Heart size={24} fill={isFav ? '#ec4899' : 'none'} />
                 </button>
               </h2>
 
-              <p style={{ fontSize: '1.05rem', color: 'var(--accent-pink)', fontWeight: 700, marginTop: '2px' }}>
+              <p style={{ fontSize: '1.05rem', color: '#ec4899', fontWeight: 700, margin: '0 0 6px 0' }}>
                 歌手：{song.artist}
               </p>
 
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '6px' }}>
-                作詞：{song.lyricist} | 作曲：{song.composer}
-              </div>
+              {(song.lyricist || song.composer) && (
+                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+                  {song.lyricist && <span>作詞：{song.lyricist}</span>}
+                  {song.lyricist && song.composer && <span style={{ margin: '0 6px' }}>|</span>}
+                  {song.composer && <span>作曲：{song.composer}</span>}
+                </div>
+              )}
             </div>
 
-            {/* Lyrics Snippet */}
+            {/* Lyrics Snippet Section */}
             {song.lyricsSnippet && !song.lyricsSnippet.includes('全台 10 大 KTV') ? (
-              <div style={{
-                background: 'rgba(15, 23, 42, 0.6)',
-                padding: '14px 18px',
-                borderRadius: 'var(--radius-md)',
-                borderLeft: '4px solid var(--accent-pink)',
-                margin: '12px 0',
-                fontSize: '0.88rem',
-                color: 'var(--text-secondary)',
-                fontStyle: 'italic',
-                lineHeight: 1.5,
-              }}>
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  padding: '14px 18px',
+                  borderRadius: '12px',
+                  borderLeft: '4px solid #ec4899',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                  margin: '16px 0 12px 0',
+                  fontSize: '0.88rem',
+                  color: '#cbd5e1',
+                  fontStyle: 'italic',
+                  lineHeight: 1.6,
+                }}
+              >
                 "{song.lyricsSnippet}"
               </div>
             ) : (
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                padding: '10px 14px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px dashed rgba(255, 255, 255, 0.1)',
-                margin: '12px 0',
-                fontSize: '0.82rem',
-                color: 'var(--text-muted)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '6px',
-              }}>
-                <span>歌詞導引：可點擊下方按鈕進行官方原唱/MV歌詞預覽</span>
-                <span style={{ fontSize: '0.78rem', color: '#a855f7', fontWeight: 600 }}>[即時對照]</span>
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '1px dashed rgba(255, 255, 255, 0.08)',
+                  margin: '16px 0 12px 0',
+                  fontSize: '0.82rem',
+                  color: '#94a3b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <span>歌詞導引：可點擊下方按鈕進行官方原唱 / MV 歌詞預覽</span>
+                <span style={{ fontSize: '0.78rem', color: '#38bdf8', fontWeight: 600 }}>[即時對照]</span>
               </div>
             )}
 
-            {/* 歡唱建議與風格標籤 */}
-            <div style={{
-              background: 'rgba(30, 41, 59, 0.4)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-              borderRadius: 'var(--radius-md)',
-              padding: '12px 16px',
-              margin: '12px 0',
-            }}>
+            {/* 歡唱建議與技巧提示 */}
+            <div
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                margin: '12px 0 16px 0',
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
-                  {song.language || '流行曲目'}
-                </span>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ec4899', background: 'rgba(236, 72, 153, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: '#ec4899',
+                    background: 'rgba(236, 72, 153, 0.12)',
+                    border: '1px solid rgba(236, 72, 153, 0.25)',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                  }}
+                >
                   歡唱熱播
                 </span>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: '#f59e0b',
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                  }}
+                >
                   經典歌單
                 </span>
               </div>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: '#cbd5e1', lineHeight: 1.6 }}>
                 歡唱提示：可在包廂點歌時利用伴唱機升降調按鍵調整 Key（男唱女歌建議降 3-4 調、女唱男歌建議升 3-4 調），隨心切換原聲導唱體驗最佳音感。
               </p>
             </div>
@@ -218,55 +269,63 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  background: 'rgba(239, 68, 68, 0.15)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  color: '#ef4444',
-                  padding: '10px',
-                  borderRadius: 'var(--radius-md)',
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  color: '#f87171',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
                   fontWeight: 700,
                   textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  margin: '12px 0 20px',
+                  fontSize: '0.88rem',
+                  margin: '12px 0 20px 0',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <Video size={20} /> 在 YouTube 播放全曲及官方 MV 預覽
+                <Video size={18} /> 在 YouTube 播放全曲及官方 MV 預覽
               </a>
             )}
 
             {/* 10 KTV Brands Availability Table */}
-            <h4 style={{
-              fontSize: '1rem',
-              fontWeight: 700,
-              color: '#fff',
-              marginBottom: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}>
-              <Sparkles size={16} color="var(--accent-pink)" /> 全台各大 KTV 門市/廠牌收錄狀態：
+            <h4
+              style={{
+                fontSize: '0.98rem',
+                fontWeight: 700,
+                color: '#ffffff',
+                margin: '20px 0 12px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <Sparkles size={16} color="#ec4899" /> 全台各大 KTV 門市 / 廠牌收錄狀態：
             </h4>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: '12px',
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                gap: '12px',
+              }}
+            >
               {BRAND_LIST.map(b => {
                 const status = song.brands[b.id];
                 const brandVote = songVotes[b.id];
 
                 if (!status || !status.available) {
                   return (
-                    <div key={b.id} style={{
-                      padding: '10px 14px',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
-                      opacity: 0.65,
-                    }}>
+                    <div
+                      key={b.id}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        opacity: 0.7,
+                      }}
+                    >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: 700, color: b.color, fontSize: '0.9rem' }}>{b.shortName}</span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>未收錄</span>
+                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>未收錄</span>
                       </div>
                       <BrandVoteBar songId={song.id} brandId={b.id} initialVote={brandVote} />
                     </div>
@@ -274,12 +333,15 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 }
 
                 return (
-                  <div key={b.id} style={{
-                    padding: '10px 14px',
-                    borderRadius: 'var(--radius-md)',
-                    background: b.badgeBg,
-                    border: `1px solid ${b.color}44`,
-                  }}>
+                  <div
+                    key={b.id}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: `1px solid ${b.color}44`,
+                    }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
                         <div style={{ fontWeight: 700, color: b.color, fontSize: '0.9rem' }}>
@@ -299,14 +361,16 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                         </div>
                       </div>
 
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        color: b.color,
-                      }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '0.85rem',
+                          fontWeight: 700,
+                          color: b.color,
+                        }}
+                      >
                         <CheckCircle2 size={16} color={b.color} />
                         <span>有收錄</span>
                       </div>
@@ -319,7 +383,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </div>
 
             {/* 回報錯誤按鈕 */}
-            <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
+            <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px' }}>
               <button
                 onClick={() => setShowReport(true)}
                 style={{
@@ -336,8 +400,8 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.15)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.08)')}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(251, 191, 36, 0.15)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251, 191, 36, 0.08)')}
               >
                 <Flag size={14} />
                 回報資料錯誤
@@ -348,7 +412,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </div>
 
             {/* 廣告位專區 */}
-            <div style={{ padding: '0 24px 16px' }}>
+            <div style={{ marginTop: '16px' }}>
               <AdBannerSlot slotType="modal" />
             </div>
           </div>
