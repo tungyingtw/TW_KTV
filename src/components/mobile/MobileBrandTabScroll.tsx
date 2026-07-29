@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BrandId } from '../../types/ktv';
 import { BRAND_LIST } from '../../data/brands';
@@ -32,6 +32,16 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeftState, setScrollLeftState] = useState(0);
+
+  // 動態依據【收錄歌曲數量多寡】由大至小排序廠牌標籤
+  const displayedBrands = useMemo(() => {
+    if (!brandSongCounts) return BRAND_LIST;
+    return [...BRAND_LIST].sort((a, b) => {
+      const countA = brandSongCounts[a.id] || 0;
+      const countB = brandSongCounts[b.id] || 0;
+      return countB - countA; // 歌曲數量最多的優先排序
+    });
+  }, [brandSongCounts]);
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -103,7 +113,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
     const timer = setTimeout(checkScroll, 150);
     window.addEventListener('resize', checkScroll);
     return () => { clearTimeout(timer); window.removeEventListener('resize', checkScroll); };
-  }, []);
+  }, [brandSongCounts, totalSongCount, displayedBrands]);
 
   const handleBrandClick = (brandId: BrandId) => {
     if (onToggleBrand) {
@@ -156,6 +166,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
             style={{
               height: '32px',
               minWidth: '120px',
+              width: 'max-content',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -171,8 +182,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
             全部廠牌 (10){formatCount(totalSongCount)}
           </button>
 
-          {/* 10大 KTV 廠牌按鈕 - 統一固定 32px 高度與 92px 最小寬度 */}
-          {BRAND_LIST.map(brand => {
+          {/* 10大 KTV 廠牌按鈕 - 動態依【收錄歌曲數量】由多至少優先排序！ */}
+          {displayedBrands.map(brand => {
             const isSingleSelected = !isMultiSelecting && selectedBrand === brand.id;
             const isMultiSelected = selectedBrands.includes(brand.id);
             const isSelected = isSingleSelected || isMultiSelected;

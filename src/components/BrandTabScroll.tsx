@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BrandId } from '../types/ktv';
 import { BRAND_LIST } from '../data/brands';
@@ -36,6 +36,16 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   const [scrollLeftState, setScrollLeftState] = useState(0);
   const [hasDragged, setHasDragged] = useState(false);
 
+  // 動態依據【收錄歌曲數量多寡】由大至小排序廠牌標籤
+  const displayedBrands = useMemo(() => {
+    if (!brandSongCounts) return BRAND_LIST;
+    return [...BRAND_LIST].sort((a, b) => {
+      const countA = brandSongCounts[a.id] || 0;
+      const countB = brandSongCounts[b.id] || 0;
+      return countB - countA; // 歌曲數量最多的優先排序
+    });
+  }, [brandSongCounts]);
+
   // 檢查是否有左右溢出需要顯示捲動按鈕
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -49,7 +59,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     checkScroll();
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
-  }, [brandSongCounts, totalSongCount]);
+  }, [brandSongCounts, totalSongCount, displayedBrands]);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -126,7 +136,6 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   };
 
   const isMultiSelecting = selectedBrands.length > 0;
-  const displayedBrands = BRAND_LIST;
 
   const handleBrandClick = (brandId: BrandId) => {
     if (hasDragged) return;
@@ -222,7 +231,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             全部廠牌 ({BRAND_LIST.length}){totalSongCount ? ` · ${totalSongCount >= 10000 ? (totalSongCount / 10000).toFixed(1) + '萬首' : totalSongCount + '首'}` : ''}
           </button>
 
-          {/* 各大 KTV 廠牌 - 與手機版一致採用豐富的廠牌專屬代表色與透光彩框 */}
+          {/* 各大 KTV 廠牌 - 動態依【收錄歌曲數量】由多至少優先排序！ */}
           {displayedBrands.map(brand => {
             const isSelected = selectedBrands.includes(brand.id) || (!isMultiSelecting && selectedBrand === brand.id);
             const count = brandSongCounts ? brandSongCounts[brand.id] : undefined;
@@ -250,13 +259,13 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                     ? '#ffffff'
                     : isZero
                       ? '#fca5a5'
-                      : brand.color, // ★ 採用廠牌專屬色彩文字！
+                      : brand.color,
                   border: `1px solid ${
                     isSelected
                       ? brand.color
                       : isZero
                         ? '#f87171'
-                        : `${brand.color}44` // ★ 採用廠牌專屬彩色透光外框！
+                        : `${brand.color}44`
                   }`,
                   padding: '0 14px',
                   borderRadius: '9999px',
