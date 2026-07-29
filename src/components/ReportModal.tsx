@@ -183,7 +183,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 value={note}
                 onChange={e => setNote(e.target.value)}
                 maxLength={300}
-                placeholder="例如：我在錢○包廂點歌輸入歌名沒有搜出這首..."
+                placeholder="例如：我在門市包廂點歌輸入歌名沒有搜出這首..."
                 rows={3}
                 style={{
                   width: '100%',
