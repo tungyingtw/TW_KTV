@@ -276,7 +276,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色 (Key Features)</h5>
               <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
-                <li><strong>跨廠牌門市對照</strong>：整合錢○、好○迪、享○馨、星○點、超○巨星、音○、金○等 10 大廠牌門市收錄資訊。</li>
+                <li><strong>跨廠牌門市對照</strong>：整合全台各大連鎖門市與伴唱機系統之動態歌曲對照目錄。</li>
                 <li><strong>原版 MV 與原聲原唱標示</strong>：明確註記歌曲是否提供原聲原唱或官方 MV 影音參考。</li>
                 <li><strong>眾包共識與現場勘誤</strong>：提供現場歌友實時參與歌曲收錄與對照勘誤回報。</li>
               </ul>
