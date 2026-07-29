@@ -185,6 +185,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                 style={{
                   height: '32px',
                   minWidth: '92px',
+                  width: 'max-content',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
