@@ -44,6 +44,17 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '2mb' }));
 
+// 告訴搜尋引擎爬蟲：此伺服器為後端 API，請集中索引 https://tungyingtw.github.io/ 正式網站
+app.use((req, res, next) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
+// 後端專用 robots.txt 路由：一律拒絕搜尋引擎索引此 API 伺服器
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send('User-agent: *\nDisallow: /\n');
+});
+
 // 靜態檔案服務與 /admin 路由
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, '../dist')));
