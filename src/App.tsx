@@ -326,9 +326,23 @@ export function App() {
       });
     }
 
-    // 3. Language Filter
+    // 3. Language Filter (對應語種標籤：如「國語」<->「國」、「台語」<->「台」、「粵語」<->「粵」)
     if (filters.selectedLanguages.length > 0) {
-      result = result.filter(song => filters.selectedLanguages.includes(song.language));
+      const isLanguageMatch = (songLang: string, selectedLangs: string[], isMainlandViral?: boolean) => {
+        if (selectedLangs.length === 0) return true;
+        return selectedLangs.some(sel => {
+          if (sel === '國語' && (songLang === '國語' || songLang === '國')) return true;
+          if (sel === '台語' && (songLang === '台語' || songLang === '台')) return true;
+          if (sel === '粵語' && (songLang === '粵語' || songLang === '粵')) return true;
+          if (sel === '英語' && (songLang === '英語' || songLang === '英')) return true;
+          if (sel === '日語' && (songLang === '日語' || songLang === '日')) return true;
+          if (sel === '韓語' && (songLang === '韓語' || songLang === '韓')) return true;
+          if (sel === '陸歌' && (songLang === '陸歌' || isMainlandViral)) return true;
+          if (songLang && (songLang === sel || songLang.startsWith(sel.substring(0, 1)))) return true;
+          return false;
+        });
+      };
+      result = result.filter(song => isLanguageMatch(song.language, filters.selectedLanguages, song.isMainlandViral));
     }
 
     // 4. Character Count Filter
