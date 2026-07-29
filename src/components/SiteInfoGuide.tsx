@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sliders, Disc, Mic2, Compass, Search, CheckCircle2, Users, Vote } from 'lucide-react';
+import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sliders, Disc, Mic2, Search, CheckCircle2, Users, Vote } from 'lucide-react';
 
 export const SiteInfoGuide: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
@@ -60,15 +60,19 @@ export const SiteInfoGuide: React.FC = () => {
 
   return (
     <section
-      aria-label="全台 KTV 歌曲對照與點歌攻略指南"
+      aria-label="全台 KTV 歌曲對照與歡唱知識指南"
       style={{
+        width: '100%',
         maxWidth: '1400px',
-        margin: '32px auto 20px auto',
+        margin: '24px auto',
         padding: '0 20px',
+        boxSizing: 'border-box',
       }}
     >
       <div
         style={{
+          width: '100%',
+          boxSizing: 'border-box',
           background: 'var(--bg-glass, rgba(30, 41, 59, 0.6))',
           backdropFilter: 'blur(12px)',
           border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
@@ -102,6 +106,7 @@ export const SiteInfoGuide: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#fff',
+                flexShrink: 0,
               }}
             >
               <BookOpen size={20} />
@@ -141,6 +146,7 @@ export const SiteInfoGuide: React.FC = () => {
               alignItems: 'center',
               gap: '6px',
               cursor: 'pointer',
+              flexShrink: 0,
             }}
           >
             {isExpanded ? (
@@ -160,7 +166,7 @@ export const SiteInfoGuide: React.FC = () => {
         {/* Expandable Content */}
         {isExpanded && (
           <div>
-            {/* Top Navigation Tabs */}
+            {/* Top Navigation Tabs (無圖示、一律保持純文字風格對齊) */}
             <div
               style={{
                 display: 'flex',
@@ -201,14 +207,10 @@ export const SiteInfoGuide: React.FC = () => {
                   background: activeTab === 'how_to_use' ? '#10b981' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
                   color: activeTab === 'how_to_use' ? '#0f172a' : 'var(--text-secondary, #cbd5e1)',
                   transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
                   whiteSpace: 'nowrap',
                 }}
               >
-                <Compass size={15} />
-                <span>系統操作指引與教學</span>
+                系統操作指引與教學
               </button>
 
               <button
@@ -223,14 +225,10 @@ export const SiteInfoGuide: React.FC = () => {
                   background: activeTab === 'articles' ? '#ec4899' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
                   color: activeTab === 'articles' ? '#ffffff' : 'var(--text-secondary, #cbd5e1)',
                   transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
                   whiteSpace: 'nowrap',
                 }}
               >
-                <BookOpen size={14} />
-                <span>KTV 歡唱知識學堂 (原創專題)</span>
+                KTV 歡唱知識學堂 (原創專題)
               </button>
 
               <button
@@ -257,7 +255,7 @@ export const SiteInfoGuide: React.FC = () => {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                   gap: '24px',
                   fontSize: '0.88rem',
                   lineHeight: 1.65,
@@ -308,7 +306,7 @@ export const SiteInfoGuide: React.FC = () => {
 
             {/* Tab 2: How to Use (系統操作指引與教學) */}
             {activeTab === 'how_to_use' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
                 <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Search size={18} />
@@ -357,26 +355,22 @@ export const SiteInfoGuide: React.FC = () => {
                 {/* Article Sub-selector */}
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {articles.map((art, idx) => {
-                    const IconComp = art.icon;
                     const isSelected = activeArticleIndex === idx;
                     return (
                       <button
                         key={art.id}
                         onClick={() => setActiveArticleIndex(idx)}
                         style={{
-                          padding: '8px 12px',
+                          padding: '8px 14px',
                           borderRadius: '8px',
                           border: isSelected ? '1px solid #ec4899' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                           background: isSelected ? 'rgba(236, 72, 153, 0.15)' : 'var(--bg-glass, rgba(15, 23, 42, 0.4))',
                           color: isSelected ? '#f472b6' : 'var(--text-muted, #94a3b8)',
                           fontSize: '0.82rem',
+                          fontWeight: 600,
                           cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
                         }}
                       >
-                        <IconComp size={15} />
                         <span>{art.tag}</span>
                       </button>
                     );
