@@ -1,14 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { BRAND_LIST } from '../../data/brands';
 import type { BrandId } from '../../types/ktv';
+import { BRAND_LIST } from '../../data/brands';
 
 interface MobileBrandTabScrollProps {
   selectedBrand: BrandId | 'all';
   selectedBrands?: BrandId[];
   brandFilterMode?: 'any' | 'all_of_them';
-  onSelectBrand: (brand: BrandId | 'all') => void;
-  onToggleBrand?: (brand: BrandId) => void;
+  onSelectBrand: (brandId: BrandId | 'all') => void;
+  onToggleBrand?: (brandId: BrandId) => void;
   onClearBrands?: () => void;
   onToggleFilterMode?: () => void;
   brandSongCounts?: Record<BrandId, number>;
@@ -36,8 +36,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   const checkScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 4);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4);
+      setCanScrollLeft(scrollLeft > 2);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
     }
   };
 
@@ -50,6 +50,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isMouseDown || !scrollRef.current) return;
+    e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX) * 1.5;
     scrollRef.current.scrollLeft = scrollLeftState - walk;
@@ -60,7 +61,6 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
     setIsMouseDown(false);
   };
 
-  // 📱 觸控事件支援 (Touch Support)
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!scrollRef.current) return;
     setIsMouseDown(true);
@@ -154,19 +154,24 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           <button
             onClick={handleAllClick}
             style={{
+              height: '32px',
+              minWidth: '120px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               background: !isMultiSelecting && selectedBrand === 'all'
                 ? 'linear-gradient(135deg, #ec4899, #8b5cf6)'
                 : 'rgba(30, 41, 59, 0.75)',
               color: '#fff',
               border: `1px solid ${!isMultiSelecting && selectedBrand === 'all' ? 'transparent' : 'rgba(255, 255, 255, 0.12)'}`,
-              padding: '6px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
-              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+              padding: '0 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, boxSizing: 'border-box',
             }}
           >
             全部廠牌 (10){formatCount(totalSongCount)}
           </button>
 
-          {/* 10大 KTV 廠牌按鈕 */}
+          {/* 10大 KTV 廠牌按鈕 - 統一固定 32px 高度與 92px 最小寬度 */}
           {BRAND_LIST.map(brand => {
             const isSingleSelected = !isMultiSelecting && selectedBrand === brand.id;
             const isMultiSelected = selectedBrands.includes(brand.id);
@@ -178,13 +183,18 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                 key={brand.id}
                 onClick={() => handleBrandClick(brand.id)}
                 style={{
+                  height: '32px',
+                  minWidth: '92px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   background: isSelected
                     ? `linear-gradient(135deg, ${brand.color}, #8b5cf6)`
                     : 'rgba(30, 41, 59, 0.75)',
                   color: isSelected ? '#ffffff' : brand.color,
                   border: `1px solid ${isSelected ? 'transparent' : `${brand.color}44`}`,
-                  padding: '6px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
-                  cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '0 10px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
+                  cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, gap: '4px', boxSizing: 'border-box',
                 }}
               >
                 <span>{isMultiSelected ? `✓ ${brand.shortName}` : brand.shortName}</span>
