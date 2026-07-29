@@ -16,6 +16,10 @@ dist-ssr
 ADMIN_CREDENTIALS.txt
 *.bat
 
+# AI Agent Guides & Rules (Keep Local Only)
+.agents/
+.agents
+
 # Internal Maintenance & Scratch Scripts (Strict Isolation)
 scratch/
 scripts/
@@ -30,10 +34,6 @@ public/songs_catalog.json
 server/database.json
 server/reports.json
 server/votes.json
-
-# Workspace Agent Guide (Keep AGENTS.md tracked)
-.agents/*
-!.agents/AGENTS.md
 
 # IDE & OS temporary files
 .vscode/*
