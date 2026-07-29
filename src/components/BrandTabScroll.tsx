@@ -1,14 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { BRAND_LIST } from '../data/brands';
 import type { BrandId } from '../types/ktv';
+import { BRAND_LIST } from '../data/brands';
 
 interface BrandTabScrollProps {
   selectedBrand: BrandId | 'all';
   selectedBrands?: BrandId[];
   brandFilterMode?: 'any' | 'all_of_them';
-  onSelectBrand: (brand: BrandId | 'all') => void;
-  onToggleBrand?: (brand: BrandId) => void;
+  onSelectBrand: (brandId: BrandId | 'all') => void;
+  onToggleBrand?: (brandId: BrandId) => void;
   onClearBrands?: () => void;
   onToggleFilterMode?: () => void;
   brandSongCounts?: Record<BrandId, number>;
@@ -27,26 +27,43 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   totalSongCount,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
+  // 滑鼠按住拖曳 state
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeftState, setScrollLeftState] = useState(0);
+  const [hasDragged, setHasDragged] = useState(false);
 
+  // 檢查是否有左右溢出需要顯示捲動按鈕
   const checkScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+      setCanScrollLeft(scrollLeft > 2);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
     }
   };
 
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [brandSongCounts, totalSongCount]);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -280 : 280;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      setTimeout(checkScroll, 300);
+    }
+  };
+
+  // 滑鼠按住橫動拖曳處理
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
-    if (scrollRef.current.scrollWidth <= scrollRef.current.clientWidth) return;
     setIsMouseDown(true);
+    setHasDragged(false);
     setStartX(e.pageX - scrollRef.current.offsetLeft);
     setScrollLeftState(scrollRef.current.scrollLeft);
   };
@@ -57,16 +74,21 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isMouseDown || !scrollRef.current) return;
+    e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.6;
+    const walk = (x - startX) * 1.5;
+    if (Math.abs(walk) > 4) {
+      setHasDragged(true);
+    }
     scrollRef.current.scrollLeft = scrollLeftState - walk;
     checkScroll();
   };
 
-  // 📱 手機觸控拖曳支援 (Touch Dragging Support)
+  // 觸控滑動處理
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!scrollRef.current) return;
     setIsMouseDown(true);
+    setHasDragged(false);
     setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
     setScrollLeftState(scrollRef.current.scrollLeft);
   };
@@ -75,6 +97,9 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     if (!isMouseDown || !scrollRef.current) return;
     const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX) * 1.5;
+    if (Math.abs(walk) > 4) {
+      setHasDragged(true);
+    }
     scrollRef.current.scrollLeft = scrollLeftState - walk;
     checkScroll();
   };
@@ -83,19 +108,12 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     setIsMouseDown(false);
   };
 
+  // 滑鼠滾輪橫向滾動
   const handleWheel = (e: React.WheelEvent) => {
-    if (scrollRef.current && Math.abs(e.deltaY) > 0) {
+    if (!scrollRef.current) return;
+    if (e.deltaY !== 0) {
       scrollRef.current.scrollLeft += e.deltaY;
       checkScroll();
-    }
-  };
-
-  // 平滑滾動控制
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -260 : 260;
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      setTimeout(checkScroll, 300);
     }
   };
 
@@ -108,22 +126,10 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   };
 
   const isMultiSelecting = selectedBrands.length > 0;
-
-  // 10 大 KTV 廠牌全數呈現供橫向滾動切換
   const displayedBrands = BRAND_LIST;
 
-  useEffect(() => {
-    checkScroll();
-    const timer = setTimeout(checkScroll, 120);
-    window.addEventListener('resize', checkScroll);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', checkScroll);
-    };
-  }, [displayedBrands]);
-
-
   const handleBrandClick = (brandId: BrandId) => {
+    if (hasDragged) return;
     if (onToggleBrand) {
       onToggleBrand(brandId);
     } else {
@@ -132,17 +138,13 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   };
 
   const handleAllClick = () => {
+    if (hasDragged) return;
     if (onClearBrands) onClearBrands();
     onSelectBrand('all');
   };
 
   return (
-    <div className="brand-tab-container" style={{
-      maxWidth: '1400px',
-      margin: '0 auto 16px',
-      padding: '0 20px',
-      position: 'relative',
-    }}>
+    <div style={{ maxWidth: '1400px', margin: '0 auto 16px auto', padding: '0 20px', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {/* 向左滾動按鈕 (內容有溢出時才動態顯示) */}
         {canScrollLeft && (
@@ -163,7 +165,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           </button>
         )}
 
-        {/* 廠牌 Tab 可滾動區域（支援按住滑鼠左右拖曳與滾輪橫向滾動） */}
+        {/* 廠牌 Tab 可滾動區域 */}
         <div
           ref={scrollRef}
           onScroll={checkScroll}
@@ -190,16 +192,21 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             userSelect: 'none',
           }}
         >
-          {/* 全部廠牌 Tab */}
+          {/* 全部廠牌 Tab - 統一標準化高度與寬度 */}
           <button
             onClick={handleAllClick}
             style={{
+              height: '36px',
+              minWidth: '150px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               background: !isMultiSelecting && selectedBrand === 'all'
                 ? 'linear-gradient(135deg, #ec4899, #8b5cf6)'
                 : 'rgba(30, 41, 59, 0.75)',
               color: '#fff',
               border: `1px solid ${!isMultiSelecting && selectedBrand === 'all' ? 'transparent' : 'rgba(255, 255, 255, 0.12)'}`,
-              padding: '8px 16px',
+              padding: '0 16px',
               borderRadius: '9999px',
               fontSize: '0.85rem',
               fontWeight: 700,
@@ -208,12 +215,13 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
               boxShadow: !isMultiSelecting && selectedBrand === 'all' ? '0 0 16px rgba(236, 72, 153, 0.45)' : 'none',
               transition: 'all 0.2s ease',
               flexShrink: 0,
+              boxSizing: 'border-box',
             }}
           >
             全部廠牌 ({BRAND_LIST.length}){totalSongCount ? ` · ${totalSongCount >= 10000 ? (totalSongCount / 10000).toFixed(1) + '萬首' : totalSongCount + '首'}` : ''}
           </button>
 
-          {/* 各大 KTV 廠牌 */}
+          {/* 各大 KTV 廠牌 - 全數採用 36px 固定高度與 108px 標準化最小寬度 */}
           {displayedBrands.map(brand => {
             const isSelected = selectedBrands.includes(brand.id) || (!isMultiSelecting && selectedBrand === brand.id);
             const count = brandSongCounts ? brandSongCounts[brand.id] : undefined;
@@ -224,26 +232,31 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                 key={brand.id}
                 onClick={() => handleBrandClick(brand.id)}
                 style={{
+                  height: '36px',
+                  minWidth: '108px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   background: isSelected
                     ? isZero
-                      ? 'linear-gradient(135deg, #ef4444, #b91c1c)' // 無資料點擊高亮警示紅
+                      ? 'linear-gradient(135deg, #ef4444, #b91c1c)'
                       : brand.color
                     : isZero
-                      ? 'rgba(248, 113, 113, 0.12)' // 無資料未點擊：明亮紅粉警示底
+                      ? 'rgba(248, 113, 113, 0.12)'
                       : 'rgba(30, 41, 59, 0.75)',
                   color: isSelected
                     ? '#ffffff'
                     : isZero
-                      ? '#fca5a5' // 亮紅警示字體
+                      ? '#fca5a5'
                       : 'var(--text-secondary)',
                   border: `1px solid ${
                     isSelected
                       ? brand.color
                       : isZero
-                        ? '#f87171' // ★ 明亮亮紅色外框！一眼辨識無資料狀態
+                        ? '#f87171'
                         : 'rgba(255, 255, 255, 0.12)'
                   }`,
-                  padding: '8px 16px',
+                  padding: '0 14px',
                   borderRadius: '9999px',
                   fontSize: '0.85rem',
                   fontWeight: isSelected || isZero ? 700 : 600,
@@ -252,8 +265,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                   boxShadow: isSelected ? `0 0 16px ${brand.color}88` : isZero ? '0 0 8px rgba(248, 113, 113, 0.25)' : 'none',
                   transition: 'all 0.2s ease',
                   flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
+                  boxSizing: 'border-box',
                   gap: '4px',
                 }}
                 title="點擊單選或複選此廠牌比對"
@@ -265,7 +277,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           })}
         </div>
 
-        {/* 向右滾動按鈕 (內容有溢出時才動態顯示) */}
+        {/* 向右滾動按鈕 */}
         {canScrollRight && (
           <button
             onClick={() => handleScroll('right')}
@@ -357,4 +369,3 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
     </div>
   );
 };
-
