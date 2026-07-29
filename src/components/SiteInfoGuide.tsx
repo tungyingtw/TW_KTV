@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sparkles, Sliders, Disc, Mic2 } from 'lucide-react';
+import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sparkles, Sliders, Disc, Mic2, Compass, Search, CheckCircle2, Users, Vote } from 'lucide-react';
 
 export const SiteInfoGuide: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'articles' | 'faq'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'how_to_use' | 'articles' | 'faq'>('overview');
   const [activeArticleIndex, setActiveArticleIndex] = useState<number>(0);
 
   const articles = [
@@ -51,7 +51,7 @@ export const SiteInfoGuide: React.FC = () => {
       summary: '包廂破冰開嗓、男女對唱金曲、飆高音紓壓等情境點歌心法。',
       content: [
         '歡唱聚會的成功關鍵在於氣氛的鋪陳與歌單的輪替。建議將歡唱過程分為三個階段：',
-        '1. 【開嗓破冰期】：選擇節奏明快、傳唱度高的中速流行流行歌或台語經典，讓包廂全員快速進入歡唱狀態。',
+        '1. 【開嗓破冰期】：選擇節奏明快、傳唱度高的中速流行歌或台語經典，讓包廂全員快速進入歡唱狀態。',
         '2. 【氣氛高峰期】：安排男女經典對唱神曲、團體合唱爆紅曲或飆高音抒情歌曲，炒熱全場氣氛。',
         '3. 【尾聲暖心期】：歡唱結束前最後半小時，適合點選感性懷舊金曲或全員大合唱曲目，為聚會畫下完美句點。'
       ]
@@ -183,10 +183,34 @@ export const SiteInfoGuide: React.FC = () => {
                   background: activeTab === 'overview' ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)',
                   color: activeTab === 'overview' ? '#0f172a' : '#cbd5e1',
                   transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 廠牌收錄對照
               </button>
+
+              <button
+                onClick={() => setActiveTab('how_to_use')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: activeTab === 'how_to_use' ? '#10b981' : 'rgba(255, 255, 255, 0.05)',
+                  color: activeTab === 'how_to_use' ? '#0f172a' : '#cbd5e1',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <Compass size={15} />
+                <span>🎯 系統操作指引與教學</span>
+              </button>
+
               <button
                 onClick={() => setActiveTab('articles')}
                 style={{
@@ -202,11 +226,13 @@ export const SiteInfoGuide: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 <Sparkles size={14} />
                 <span>KTV 歡唱知識學堂 (原創專題)</span>
               </button>
+
               <button
                 onClick={() => setActiveTab('faq')}
                 style={{
@@ -219,6 +245,7 @@ export const SiteInfoGuide: React.FC = () => {
                   background: activeTab === 'faq' ? '#f59e0b' : 'rgba(255, 255, 255, 0.05)',
                   color: activeTab === 'faq' ? '#0f172a' : '#cbd5e1',
                   transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 常見問答 FAQ
@@ -279,7 +306,52 @@ export const SiteInfoGuide: React.FC = () => {
               </div>
             )}
 
-            {/* Tab 2: Articles (Knowledge Hub) */}
+            {/* Tab 2: How to Use (系統操作指引與教學) */}
+            {activeTab === 'how_to_use' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
+                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
+                    <Search size={18} />
+                    <span>1. 快速搜尋與門市對照</span>
+                  </div>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    在頂部搜尋欄輸入**歌手名稱、歌名關鍵字或歌詞片段**，系統將自動比對全台 10 大伴唱廠牌門市收錄狀態。亦可點擊廠牌標籤切換特定門市（如錢櫃、好樂迪、享溫馨等）查看發行狀況。
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
+                    <CheckCircle2 size={18} />
+                    <span>2. 辨識原唱與原版 MV 標示</span>
+                  </div>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    歌曲卡片上標示 **🎤 綠色原唱標籤** 代表該門市伴唱系統提供歌手原聲導唱音軌；標示 **🎬 粉色 MV 標籤** 代表門市播放畫面為唱片公司授權之官方原版拍攝 MV 影音。
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
+                    <Users size={18} />
+                    <span>3. 包廂連線與歌單收藏</span>
+                  </div>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    點擊歌曲愛心圖示可將歌曲加入**「我的最愛」**口袋歌單。開啟**「包廂點歌連線」**功能可產生專屬 Room Code，同包廂的好友掃碼即可同步瀏覽與共享歌單。
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(168, 85, 247, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a855f7', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
+                    <Vote size={18} />
+                    <span>4. 社群共識投票與補件回報</span>
+                  </div>
+                  <p style={{ margin: 0, color: '#cbd5e1' }}>
+                    找不到欲點唱的歌曲？可點擊「建議追加歌曲」進行登記。若在門市現場發現收錄狀況有誤，亦可在歌曲詳情中對該廠牌點擊「確認/否決」參與社群共識校對。
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3: Articles (Knowledge Hub) */}
             {activeTab === 'articles' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Article Sub-selector */}
@@ -361,7 +433,7 @@ export const SiteInfoGuide: React.FC = () => {
               </div>
             )}
 
-            {/* Tab 3: FAQ */}
+            {/* Tab 4: FAQ */}
             {activeTab === 'faq' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem', lineHeight: 1.65 }}>
                 <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
