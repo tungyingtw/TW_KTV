@@ -57,7 +57,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(15, 23, 42, 0.88)',
+        background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
         backdropFilter: 'blur(10px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px',
@@ -67,11 +67,12 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: '480px',
-          background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-          border: '1px solid rgba(248, 113, 113, 0.3)',
+          background: 'var(--bg-card, #1e293b)',
+          color: 'var(--text-primary, #ffffff)',
+          border: '1px solid var(--border-color, rgba(248, 113, 113, 0.3))',
           borderRadius: '16px',
           padding: '26px',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+          boxShadow: 'var(--shadow-lg, 0 24px 60px rgba(0,0,0,0.6))',
           position: 'relative',
         }}
       >
@@ -80,8 +81,8 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
           onClick={onClose}
           style={{
             position: 'absolute', top: '16px', right: '16px',
-            background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%',
-            width: '30px', height: '30px', color: '#94a3b8',
+            background: 'var(--bg-glass, rgba(255,255,255,0.08))', border: 'none', borderRadius: '50%',
+            width: '30px', height: '30px', color: 'var(--text-muted, #94a3b8)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -92,8 +93,8 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
           /* 送出成功視窗 */
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fff' }}>回報已成功送出！</div>
-            <div style={{ color: '#94a3b8', marginTop: '8px', fontSize: '0.88rem' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>回報已成功送出！</div>
+            <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
               管理後台已收到您的回報，我們會盡快審查更正。
             </div>
           </div>
@@ -114,7 +115,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
 
             {/* 問題類型選擇 */}
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '8px', fontWeight: 600 }}>
+              <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '8px', fontWeight: 600 }}>
                 異常類型 <span style={{ color: '#f87171' }}>*</span>
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -125,11 +126,11 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                     onClick={() => setIssueType(opt.value)}
                     style={{
                       background: issueType === opt.value
-                        ? 'rgba(248, 113, 113, 0.18)' : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${issueType === opt.value ? '#f87171' : 'rgba(255,255,255,0.08)'}`,
+                        ? 'rgba(248, 113, 113, 0.18)' : 'var(--bg-glass, rgba(255,255,255,0.04))',
+                      border: `1px solid ${issueType === opt.value ? '#f87171' : 'var(--border-color, rgba(255,255,255,0.08))'}`,
                       borderRadius: '8px',
                       padding: '9px 14px',
-                      color: issueType === opt.value ? '#f87171' : '#cbd5e1',
+                      color: issueType === opt.value ? '#f87171' : 'var(--text-secondary, #cbd5e1)',
                       fontSize: '0.88rem',
                       cursor: 'pointer',
                       textAlign: 'left',
@@ -146,7 +147,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             {/* 廠牌選擇 */}
             {issueType !== 'other' && (
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '6px', fontWeight: 600 }}>
+                <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
                   相關 KTV 廠牌 <span style={{ color: '#f87171' }}>*</span>
                 </label>
                 <select
@@ -154,18 +155,18 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                   onChange={e => setSelectedBrand(e.target.value as BrandId)}
                   style={{
                     width: '100%',
-                    background: 'rgba(15, 23, 42, 0.75)',
-                    border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'var(--bg-input, rgba(15, 23, 42, 0.6))',
+                    border: '1px solid var(--border-color, rgba(255,255,255,0.15))',
                     borderRadius: '8px',
                     padding: '9px 12px',
-                    color: '#fff',
+                    color: 'var(--text-primary, #fff)',
                     fontSize: '0.88rem',
                     cursor: 'pointer',
                   }}
                 >
-                  <option value="" style={{ background: '#1e293b' }}>── 請選擇廠牌 ──</option>
+                  <option value="" style={{ background: 'var(--bg-card, #1e293b)' }}>── 請選擇廠牌 ──</option>
                   {BRAND_LIST.map(b => (
-                    <option key={b.id} value={b.id} style={{ background: '#1e293b' }}>
+                    <option key={b.id} value={b.id} style={{ background: 'var(--bg-card, #1e293b)' }}>
                       {b.name}
                     </option>
                   ))}
@@ -175,7 +176,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
 
             {/* 補充說明 */}
             <div style={{ marginBottom: '18px' }}>
-              <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '6px', fontWeight: 600 }}>
+              <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
                 補充說明
               </label>
               <textarea
@@ -186,11 +187,11 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 rows={3}
                 style={{
                   width: '100%',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--bg-glass, rgba(255,255,255,0.04))',
+                  border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
                   borderRadius: '8px',
                   padding: '10px 12px',
-                  color: '#fff',
+                  color: 'var(--text-primary, #fff)',
                   fontSize: '0.88rem',
                   resize: 'vertical',
                   fontFamily: 'inherit',
@@ -199,34 +200,44 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               />
             </div>
 
-            {/* Error Message */}
+            {/* 錯誤訊息 */}
             {error && (
               <div style={{
-                background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.35)',
-                borderRadius: '8px', padding: '8px 12px', color: '#f87171',
-                fontSize: '0.85rem', marginBottom: '14px',
+                background: 'rgba(248,113,113,0.15)',
+                border: '1px solid rgba(248,113,113,0.3)',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                color: '#f87171',
+                fontSize: '0.85rem',
+                marginBottom: '14px',
               }}>
                 ⚠️ {error}
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* 送出按鈕 */}
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
               style={{
                 width: '100%',
-                background: isSubmitting ? 'rgba(248,113,113,0.3)' : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                border: 'none', borderRadius: '10px',
+                background: isSubmitting ? 'rgba(248, 113, 113, 0.4)' : 'linear-gradient(135deg, #f87171, #ef4444)',
+                border: 'none',
+                borderRadius: '10px',
                 padding: '11px',
-                color: '#fff', fontWeight: 700, fontSize: '0.95rem',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '0.95rem',
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 15px rgba(248, 113, 113, 0.3)',
               }}
             >
               <Send size={16} />
-              {isSubmitting ? '送出中...' : '送出異常回報'}
+              <span>{isSubmitting ? '傳送中...' : '送出資料異常回報'}</span>
             </button>
           </>
         )}
@@ -234,4 +245,3 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
     </div>
   );
 };
-
