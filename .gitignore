@@ -17,6 +17,7 @@ ADMIN_CREDENTIALS.txt
 scratch/
 scripts/
 !scripts/buildCatalogBin.js
+!scripts/checkBrandMasking.js
 .agents/
 !.agents/AGENTS.md
 public/artists_registry.csv
