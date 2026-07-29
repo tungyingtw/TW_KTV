@@ -20,16 +20,20 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 100,
-      background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
-      backdropFilter: 'blur(12px)',
-      display: 'flex',
-      justifyContent: 'flex-end',
-    }}>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
+        backdropFilter: 'blur(12px)',
+        display: 'flex',
+        justifyContent: 'flex-end',
+      }}
+    >
       <div 
+        onClick={e => e.stopPropagation()}
         className="glass-panel animate-fade-in"
         style={{
           width: '100%',
