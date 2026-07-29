@@ -30,7 +30,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
     fetchSongVotes(song.id).then(votes => {
       setSongVotes(votes as SongVotes);
     });
-  }, [song?.id]);
+  }, [song]);
 
   if (!song) return null;
 

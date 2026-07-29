@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }
           }
         }
-      } catch (err) {
+      } catch {
         // 純靜態託管時容錯
       }
     };
