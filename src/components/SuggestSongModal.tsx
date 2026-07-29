@@ -271,11 +271,11 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                   </div>
                 </div>
 
-                {/* Row 2: KTV點歌號 & 相關廠牌 */}
+                {/* Row 2: 點歌代碼 & 相關廠牌 */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#fbbf24', marginBottom: '5px', fontWeight: 700 }}>
-                      相關門市 / KTV 廠牌
+                      點歌代碼（選填）
                     </label>
                     <input
                       type="text"
@@ -293,7 +293,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#94a3b8', marginBottom: '5px', fontWeight: 600 }}>
-                      相關 KTV 廠牌
+                      對應 KTV 廠牌
                     </label>
                     <select
                       value={brandId}
@@ -516,7 +516,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, ini
                       type="text"
                       value={systemType}
                       onChange={e => setSystemType(e.target.value)}
-                      placeholder="例：庭園包廂點歌號 / 自助伴唱"
+                      placeholder="例：庭園包廂點歌系統 / 自助伴唱"
                       style={{
                         width: '100%', background: 'rgba(15, 23, 42, 0.75)',
                         border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px',
