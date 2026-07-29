@@ -52,7 +52,7 @@ export const PartyRoomModal: React.FC<PartyRoomModalProps> = ({
       position: 'fixed',
       inset: 0,
       zIndex: 100,
-      background: 'rgba(15, 23, 42, 0.85)',
+      background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
       backdropFilter: 'blur(12px)',
       display: 'flex',
       alignItems: 'center',
