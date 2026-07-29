@@ -1,4 +1,4 @@
-# Logs
+# Logs & Debug
 logs
 *.log
 npm-debug.log*
@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & Build Output
 node_modules
 dist
 dist-ssr
@@ -14,12 +15,14 @@ dist-ssr
 .env
 ADMIN_CREDENTIALS.txt
 *.bat
+
+# Internal Maintenance & Scratch Scripts (Strict Isolation)
 scratch/
 scripts/
 !scripts/buildCatalogBin.js
 !scripts/checkBrandMasking.js
-.agents/
-!.agents/AGENTS.md
+
+# Internal Data & Raw JSON Catalogs (Strict Isolation)
 public/artists_registry.csv
 public/artists_registry.json
 public/songs_catalog.json
@@ -28,7 +31,11 @@ server/database.json
 server/reports.json
 server/votes.json
 
-# Editor directories and files
+# Workspace Agent Guide (Keep AGENTS.md tracked)
+.agents/*
+!.agents/AGENTS.md
+
+# IDE & OS temporary files
 .vscode/*
 !.vscode/extensions.json
 .idea

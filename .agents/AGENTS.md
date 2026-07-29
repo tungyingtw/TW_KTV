@@ -87,7 +87,7 @@
 
 ---
 
-## 9. AI 開發者自我檢查與品質驗證規範 (AI Self-Inspection Checklist Directive)
+## 9. AI 開發者 UI 自我檢查與品質驗證規範 (AI UI Self-Inspection Checklist Directive)
 
 在每次完成程式碼修改、UI 元件新增或功能重構後，AI Agent **必須強制自主執行以下 6 大品質維度檢驗**，確認零瑕疵後方可回報完成：
 
@@ -111,3 +111,57 @@
 ### 9.6 程式碼與品牌遮蔽自動驗證 (Build & Brand Masking Audit)
 - [ ] **靜態型別零錯誤**：執行 `npx tsc --noEmit` 0 錯誤。
 - [ ] **自動遮蔽靜態掃描**：執行 `npm run build` 通過 `checkBrandMasking.js` 驗證。
+
+---
+
+## 10. 系統層面架構與可靠性檢查規範 (System-Level Architecture & Reliability Checklist Directive)
+
+針對核心架構、資料流、效能與資安維度，AI Agent 在進行系統層面修改時，**必須強制執行以下 5 大系統級防護驗證**：
+
+### 10.1 巨量資料庫與快取效能驗證 (Data & Memory Performance Audit)
+- [ ] **秒開體驗保護 ($<50\text{ms}$)**：當資料庫擴充至 10 萬筆等級時，前端必須透過本機 IndexedDB 快取與 `songs_catalog.bin` 加密包載入，禁止在 React Rendering 週期中進行耗時的 O(N) 全表硬搜尋。
+- [ ] **非阻塞串流動畫**：大容量資料下載時，必須結合 HTML5 `ReadableStream` 進度填滿動畫，禁止阻塞 UI 主線程 (Main Looper Thread) 或造成畫面凍結。
+
+### 10.2 安全隔離與權限驗證 (Security & Access Control Audit)
+- [ ] **Localhost 存取嚴格防護**：管理後台 (`/sys-admin-panel`) 與系統 API 必須強制檢查 `X-Forwarded-For` 與 IP 來源（僅允許 `127.0.0.1` / `localhost`），外網請求一律被攔截。
+- [ ] **內部腳本與明文檔隔離**：所有內部清洗腳本 (`scripts/*.py`) 與原始 JSON 明文檔 (`public/songs_catalog.json`) 必須全數留在 `.gitignore` 隔離範疇中，絕不盲目 Commit 上傳。
+
+### 10.3 CI/CD 自動化與建置安全防護 (Build & Deployment Pipeline Safeguard)
+- [ ] **完整打包攔截機制**：執行 `npm run build` 時，必須依序觸發 `scripts/checkBrandMasking.js` 靜態遮蔽檢查與 `scripts/buildCatalogBin.js` 加密檔生成。任何一環失敗，Build 程序必須強制中斷。
+- [ ] **GitHub Actions 相依檔完整性**：建置所需的腳本（如 `checkBrandMasking.js`）必須在 `.gitignore` 配置例外放行 (`!scripts/checkBrandMasking.js`)，確保 GitHub CI/CD Runner 可以順利建置與發布。
+
+### 10.4 SEO、結構化數據與語意網規範 (SEO & JSON-LD Compliance Audit)
+- [ ] **單一主標題與語意標籤**：全站頁面嚴格維持單一 `<h1>` 主標題，正確套用 HTML5 語意元素 (`<header>`, `<nav>`, `<main>`, `<article>`, `<footer>`)。
+- [ ] **JSON-LD Schema 圓圈遮蔽**：所有 Schema.org JSON-LD 中的廠牌名稱（錢○、好○迪...）必須同樣進行 `○` 遮蔽，確保 SEO 抓取時符合資安規範。
+
+### 10.5 系統防崩潰與極端邊界容錯 (Fault Tolerance & Exception Boundary Audit)
+- [ ] **全站 Error Boundary 保護**：當使用者輸入極端特殊字元、破壞性標點或非法搜尋語法時，搜尋引擎 (Fuse.js) 與字串剖析器必須提供預設兜底 (Fallback Engine)，100% 確保頁面永不安裝白畫面或崩潰。
+
+---
+
+## 11. 商業企業級開發與產品品質極致規範 (Commercial Enterprise-Grade Engineering Directive)
+
+本專案正式定位為 **「商業企業級 (Commercial Enterprise-Grade) 高標準 Web App 產品」**。AI Agent 開發與維護時必須全盤遵循以下 6 大頂級商業化工程標準：
+
+### 11.1 視覺與介面品質 (Enterprise Premium UI/UX & WOW Factor)
+- **絕不接受 MVP 粗糙介面**：所有組件、Modal 與頁籤必須達到商業級頂級視覺質感（高飽和配色、深色玻璃擬態 Glassmorphism、柔和微動畫與透光彩框）。
+- **零 Layout Shift (CLS = 0)**：全站組件在任何資料載入與過濾狀態下，版型位移與跳動率必須為零。
+
+### 11.2 系統高可用與三級備援 (High Availability & SLA)
+- **目標 $99.99\%$ 高可用與 $<50\text{ms}$ 響應**：採用 **IndexedDB ⚡ 本機快取 + `songs_catalog.bin` 二進位包 🔒 + CDN 🌐 遠端兜底** 的三級備援體系，確保即時離線依然可秒開搜尋。
+
+### 11.3 商業合規與智慧財產權防護 (Compliance & IP Shield)
+- **100% 品牌圓圈遮蔽 (`○`)**：全站無死角進行廠牌遮蔽，防範商標爭議。
+- **二進位 128-bit XOR 混淆發布**：對外只發布二進位包，保護商業數據資產不被非法爬蟲全盤抄襲。
+
+### 11.4 巨量資料治理與自動共識自癒 (Data Governance & Consensus)
+- **眾包自動判定共識**：社群勘誤與門市收錄回報優先由演算法自動計算信賴度與權重更新，減少人工營運成本。
+
+### 11.5 效能指標 (Lighthouse Performance SLA)
+- Performance $\ge 90$
+- Accessibility $\ge 95$
+- Best Practices $\ge 95$
+- SEO $= 100$
+
+### 11.6 企業級擴充性 (Enterprise Scalability)
+- 架構原生支援 10 萬筆以上巨量歌庫、多國語言 (i18n) 與海外 KTV 門市擴充能力。
