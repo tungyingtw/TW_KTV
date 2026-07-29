@@ -192,12 +192,13 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             userSelect: 'none',
           }}
         >
-          {/* 全部廠牌 Tab - 統一標準化高度與寬度 */}
+          {/* 全部廠牌 Tab */}
           <button
             onClick={handleAllClick}
             style={{
               height: '36px',
               minWidth: '150px',
+              width: 'max-content',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -221,7 +222,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             全部廠牌 ({BRAND_LIST.length}){totalSongCount ? ` · ${totalSongCount >= 10000 ? (totalSongCount / 10000).toFixed(1) + '萬首' : totalSongCount + '首'}` : ''}
           </button>
 
-          {/* 各大 KTV 廠牌 - 全數採用 36px 固定高度與 108px 標準化最小寬度 */}
+          {/* 各大 KTV 廠牌 - 與手機版一致採用豐富的廠牌專屬代表色與透光彩框 */}
           {displayedBrands.map(brand => {
             const isSelected = selectedBrands.includes(brand.id) || (!isMultiSelecting && selectedBrand === brand.id);
             const count = brandSongCounts ? brandSongCounts[brand.id] : undefined;
@@ -241,7 +242,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                   background: isSelected
                     ? isZero
                       ? 'linear-gradient(135deg, #ef4444, #b91c1c)'
-                      : brand.color
+                      : `linear-gradient(135deg, ${brand.color}, #8b5cf6)`
                     : isZero
                       ? 'rgba(248, 113, 113, 0.12)'
                       : 'rgba(30, 41, 59, 0.75)',
@@ -249,13 +250,13 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                     ? '#ffffff'
                     : isZero
                       ? '#fca5a5'
-                      : 'var(--text-secondary)',
+                      : brand.color, // ★ 採用廠牌專屬色彩文字！
                   border: `1px solid ${
                     isSelected
                       ? brand.color
                       : isZero
                         ? '#f87171'
-                        : 'rgba(255, 255, 255, 0.12)'
+                        : `${brand.color}44` // ★ 採用廠牌專屬彩色透光外框！
                   }`,
                   padding: '0 14px',
                   borderRadius: '9999px',
