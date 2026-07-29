@@ -180,6 +180,30 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </div>
           )}
 
+          {/* 歡唱建議與風格標籤 (Singing Suggestions & Badges) */}
+          <div style={{
+            background: 'rgba(30, 41, 59, 0.4)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            borderRadius: 'var(--radius-md)',
+            padding: '12px 16px',
+            margin: '12px 0',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
+                🏷️ {song.language || '流行曲目'}
+              </span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ec4899', background: 'rgba(236, 72, 153, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
+                🎤 歡唱熱播
+              </span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
+                🎵 經典歌單
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              💡 歡唱提示：可在包廂點歌時利用伴唱機升降調按鍵調整 Key（男唱女歌建議降 3-4 調、女唱男歌建議升 3-4 調），隨心切換原聲導唱體驗最佳音感。
+            </p>
+          </div>
+
           {/* YouTube Link Banner */}
           {song.youtubeUrl && (
             <a

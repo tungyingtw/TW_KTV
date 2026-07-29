@@ -49,6 +49,49 @@
     <!-- Google AdSense SDK -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6322989670610668"
          crossorigin="anonymous"></script>
+  
+    <!-- Google Structured Data (FAQPage Schema.org for Google Search & AdSense Rich Snippets) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "為什麼同一首歌在不同 KTV 門市的收錄狀況不一樣？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "各大 KTV 門市與伴唱機廠牌版權授權進度與歌本目錄更新頻率不同，因此同一首歌曲在不同連鎖門市與伴唱系統中的收錄時間點有所差異。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "如何區分 KTV 門市的「原聲原唱」與「官方原版 MV」標示？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "「原聲原唱」代表該伴唱系統包含歌手原聲人聲導唱音軌，切換導唱時可聆聽原唱聲線；「官方原版 MV」代表門市播放畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "門市沒有收錄我想唱的歌曲該怎麼辦？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "您可利用本站的「無歌/補件回報」功能進行登記，本站的自動共識演算法將即時彙整社群數據與投票供廣大歌友參考。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "連鎖門市（如錢櫃、好樂迪）與家用伴唱機（如音圓、金嗓）有何差異？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "連鎖門市專用伴唱系統採用連鎖營業公播授權，多包含唱片公司授權之原版 MV 與原音軌；家用與專業伴唱機則採用電腦伴唱規格與發行模式，歌本目錄更新頻率與版權範圍各有不同。"
+          }
+        }
+      ]
+    }
+    </script>
+
   </head>
   <body>
     <div id="root"></div>
