@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tungyingtw.github.io/sitemap.xml
+Sitemap: https://tungyingtw.github.io/TW_KTV/sitemap.xml
