@@ -23,6 +23,9 @@ LOGO/
 .agents/
 .agents
 
+# Internal planning documents (Keep Local Only)
+docs/copywriting-review-plan.md
+
 # Internal Maintenance & Scratch Scripts (Strict Isolation)
 scratch/
 scripts/
