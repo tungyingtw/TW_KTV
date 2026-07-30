@@ -113,24 +113,52 @@ export interface VoteResponse {
   success: boolean;
   confirm: number;
   deny: number;
+  guidedVocal?: number;
+  noGuidedVocal?: number;
   confidence: VoteConfidence;
+}
+
+export interface VoteOptions<TVote extends string> {
+  previousVote?: TVote | null;
+  removeVote?: boolean;
 }
 
 export async function submitVote(
   songId: string,
   brandId: BrandId,
-  vote: 'confirm' | 'deny'
+  vote: 'confirm' | 'deny',
+  options: VoteOptions<'confirm' | 'deny'> = {}
 ): Promise<VoteResponse | null> {
   try {
     const res = await fetch(`${API_BASE}/api/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ songId, brandId, vote }),
+      body: JSON.stringify({ songId, brandId, vote, ...options }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
     console.error('[CommunityService] submitVote failed:', err);
+    return null;
+  }
+}
+
+export async function submitGuidedVote(
+  songId: string,
+  brandId: BrandId,
+  vote: 'guided' | 'none',
+  options: VoteOptions<'guided' | 'none'> = {}
+): Promise<VoteResponse | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/vote/guided`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ songId, brandId, vote, ...options }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('[CommunityService] submitGuidedVote failed:', err);
     return null;
   }
 }

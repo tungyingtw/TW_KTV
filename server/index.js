@@ -88,6 +88,25 @@ app.get('/robots.txt', (req, res) => {
 // 目的：讓 Google PageRank 完全傳遞給正式網站，防止 Render 搶佔 SEO 排名
 // ─────────────────────────────────────────────
 const OFFICIAL_SITE = 'https://tungyingtw.github.io/TW_KTV/';
+const BRAND_IDS = [
+  'watering_hole',
+  'golden_voice',
+  'superstar',
+  'starlight',
+  'cashbox',
+  'holiday',
+  'singgo',
+  'vmix',
+  'yinyuan',
+  'hongyin',
+];
+
+function parseVoteKey(key) {
+  const brandId = BRAND_IDS.find(id => key.endsWith(`_${id}`));
+  if (!brandId) return { songId: key, brandId: '' };
+  return { songId: key.slice(0, -(brandId.length + 1)), brandId };
+}
+
 app.get('/', (req, res) => {
   res.redirect(301, OFFICIAL_SITE);
 });
@@ -194,6 +213,34 @@ function saveVotes(data) {
   fs.writeFileSync(VOTES_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
+async function loadVotesStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', VOTES_REDIS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (err) {
+      console.warn('[Votes] Redis read failed, fallback to local JSON:', err.message);
+    }
+  }
+  return loadVotes();
+}
+
+async function saveVotesStore(data) {
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', VOTES_REDIS_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.warn('[Votes] Redis write failed, fallback to local JSON:', err.message);
+      saveVotes(data);
+      return;
+    }
+  }
+
+  try { saveVotes(data); } catch (err) {
+    console.warn('[Votes] Local JSON backup write failed:', err.message);
+  }
+}
+
 async function saveCatalog(catalog) {
   const dbPath = path.join(__dirname, 'database.json');
   fs.writeFileSync(dbPath, JSON.stringify(catalog, null, 2), 'utf8');
@@ -289,6 +336,7 @@ const BASE_INITIAL_VISITS = 1;
 const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
+const VOTES_REDIS_KEY = 'ktv:votes';
 
 if (USE_REDIS) {
   console.log('[Stats] Upstash Redis 已啟用：累積查詢人數將持久化儲存');
@@ -622,19 +670,31 @@ app.get('/api/reports', requireAdmin, (req, res) => {
 // 公開 API：眾包投票
 // ─────────────────────────────────────────────
 app.post('/api/vote', async (req, res) => {
-  const { songId, brandId, vote } = req.body;
+  const { songId, brandId, vote, previousVote, removeVote } = req.body;
   if (!songId || !brandId || !['confirm', 'deny'].includes(vote)) {
     return res.status(400).json({ error: '缺少必要欄位' });
   }
+  if (previousVote && !['confirm', 'deny'].includes(previousVote)) {
+    return res.status(400).json({ error: '無效的 previousVote' });
+  }
 
-  const votes = loadVotes();
+  const votes = await loadVotesStore();
   const key = `${songId}_${brandId}`;
-  if (!votes[key]) votes[key] = { confirm: 0, deny: 0 };
-  votes[key][vote] = Math.max(0, votes[key][vote] + 1);
-  saveVotes(votes);
+  if (!votes[key]) votes[key] = { confirm: 0, deny: 0, guidedVocal: 0, noGuidedVocal: 0 };
+
+  if (removeVote) {
+    votes[key][vote] = Math.max(0, (votes[key][vote] || 0) - 1);
+  } else {
+    if (previousVote && previousVote !== vote) {
+      votes[key][previousVote] = Math.max(0, (votes[key][previousVote] || 0) - 1);
+    }
+    votes[key][vote] = Math.max(0, (votes[key][vote] || 0) + 1);
+  }
+
+  await saveVotesStore(votes);
 
   const d = votes[key];
-  const confidence = getVoteConfidence(d.confirm, d.deny);
+  const confidence = getVoteConfidence(d.confirm || 0, d.deny || 0);
 
   // ── 自動共識引擎 (Auto-Consensus Engine) ──
   // 若否決票 >= 3 且 否決票超過確認票 2 倍，系統自動變更 catalog 廠牌狀態為未收錄 (false)
@@ -669,19 +729,68 @@ app.post('/api/vote', async (req, res) => {
 
   res.json({
     success: true, key,
-    confirm: d.confirm, deny: d.deny,
+    confirm: d.confirm || 0,
+    deny: d.deny || 0,
+    guidedVocal: d.guidedVocal || 0,
+    noGuidedVocal: d.noGuidedVocal || 0,
     confidence,
   });
 });
 
-app.get('/api/votes/:songId', (req, res) => {
+app.post('/api/vote/guided', async (req, res) => {
+  const { songId, brandId, vote, previousVote, removeVote } = req.body;
+  if (!songId || !brandId || !['guided', 'none'].includes(vote)) {
+    return res.status(400).json({ error: '缺少必要欄位' });
+  }
+  if (previousVote && !['guided', 'none'].includes(previousVote)) {
+    return res.status(400).json({ error: '無效的 previousVote' });
+  }
+
+  const votes = await loadVotesStore();
+  const key = `${songId}_${brandId}`;
+  if (!votes[key]) votes[key] = { confirm: 0, deny: 0, guidedVocal: 0, noGuidedVocal: 0 };
+  const voteKey = vote === 'guided' ? 'guidedVocal' : 'noGuidedVocal';
+
+  if (removeVote) {
+    votes[key][voteKey] = Math.max(0, (votes[key][voteKey] || 0) - 1);
+  } else {
+    if (previousVote && previousVote !== vote) {
+      const previousKey = previousVote === 'guided' ? 'guidedVocal' : 'noGuidedVocal';
+      votes[key][previousKey] = Math.max(0, (votes[key][previousKey] || 0) - 1);
+    }
+    votes[key][voteKey] = Math.max(0, (votes[key][voteKey] || 0) + 1);
+  }
+
+  await saveVotesStore(votes);
+
+  const d = votes[key];
+  res.json({
+    success: true,
+    key,
+    confirm: d.confirm || 0,
+    deny: d.deny || 0,
+    guidedVocal: d.guidedVocal || 0,
+    noGuidedVocal: d.noGuidedVocal || 0,
+    confidence: getVoteConfidence(d.confirm || 0, d.deny || 0),
+  });
+});
+
+app.get('/api/votes/:songId', async (req, res) => {
   const { songId } = req.params;
-  const votes = loadVotes();
+  const votes = await loadVotesStore();
   const result = {};
   for (const [key, data] of Object.entries(votes)) {
     if (key.startsWith(`${songId}_`)) {
       const brandId = key.slice(songId.length + 1);
-      result[brandId] = { ...data, confidence: getVoteConfidence(data.confirm, data.deny) };
+      result[brandId] = {
+        confirm: data.confirm || 0,
+        deny: data.deny || 0,
+        guidedVocal: data.guidedVocal || 0,
+        noGuidedVocal: data.noGuidedVocal || 0,
+        officialMv: data.officialMv || 0,
+        editedMv: data.editedMv || 0,
+        confidence: getVoteConfidence(data.confirm || 0, data.deny || 0),
+      };
     }
   }
   res.json({ songId, votes: result });
@@ -799,26 +908,26 @@ app.post('/api/admin/stats/reset', requireAdmin, (req, res) => {
 });
 
 // ── 查看爭議歌曲（deny 票多的）──
-app.get('/api/admin/disputed', requireAdmin, (req, res) => {
-  const votes = loadVotes();
+app.get('/api/admin/disputed', requireAdmin, async (req, res) => {
+  const votes = await loadVotesStore();
   const minVotes = parseInt(req.query.minVotes) || 3;
 
   const disputed = [];
   for (const [key, data] of Object.entries(votes)) {
-    const total = data.confirm + data.deny;
+    const total = (data.confirm || 0) + (data.deny || 0);
     if (total < minVotes) continue;
 
-    const confidence = getVoteConfidence(data.confirm, data.deny);
+    const confidence = getVoteConfidence(data.confirm || 0, data.deny || 0);
     if (confidence === 'disputed' || confidence === 'uncertain') {
-      const [songId, brandId] = key.split('_');
+      const { songId, brandId } = parseVoteKey(key);
       const song = songsDatabase.find(s => s.id === songId);
       disputed.push({
         key, songId, brandId,
         songTitle: song?.title || '(歌曲已不存在)',
         artist: song?.artist || '',
         currentStatus: song?.brands?.[brandId]?.available ?? null,
-        confirm: data.confirm,
-        deny: data.deny,
+        confirm: data.confirm || 0,
+        deny: data.deny || 0,
         confidence,
         total,
       });
@@ -831,20 +940,21 @@ app.get('/api/admin/disputed', requireAdmin, (req, res) => {
 });
 
 // ── 查看高度確認歌曲（confirm 票多的）──
-app.get('/api/admin/verified', requireAdmin, (req, res) => {
-  const votes = loadVotes();
+app.get('/api/admin/verified', requireAdmin, async (req, res) => {
+  const votes = await loadVotesStore();
   const verified = [];
 
   for (const [key, data] of Object.entries(votes)) {
-    if (getVoteConfidence(data.confirm, data.deny) !== 'verified') continue;
-    const [songId, brandId] = key.split('_');
+    if (getVoteConfidence(data.confirm || 0, data.deny || 0) !== 'verified') continue;
+    const { songId, brandId } = parseVoteKey(key);
     const song = songsDatabase.find(s => s.id === songId);
     verified.push({
       key, songId, brandId,
       songTitle: song?.title || '(歌曲已不存在)',
       artist: song?.artist || '',
       currentStatus: song?.brands?.[brandId]?.available ?? null,
-      confirm: data.confirm, deny: data.deny,
+      confirm: data.confirm || 0,
+      deny: data.deny || 0,
     });
   }
   verified.sort((a, b) => b.confirm - a.confirm);
@@ -897,9 +1007,9 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
 });
 
 // ── 管理員儀表板統計 ──
-app.get('/api/admin/stats', requireAdmin, (req, res) => {
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   const reports = loadReports();
-  const votes = loadVotes();
+  const votes = await loadVotesStore();
 
   const pendingReports = reports.filter(r => r.status === 'pending').length;
   const resolvedReports = reports.filter(r => r.status === 'resolved').length;
@@ -907,7 +1017,7 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
   let disputedCount = 0, verifiedCount = 0, totalVoteEntries = 0;
   for (const [, data] of Object.entries(votes)) {
     totalVoteEntries++;
-    const conf = getVoteConfidence(data.confirm, data.deny);
+    const conf = getVoteConfidence(data.confirm || 0, data.deny || 0);
     if (conf === 'disputed') disputedCount++;
     if (conf === 'verified') verifiedCount++;
   }
