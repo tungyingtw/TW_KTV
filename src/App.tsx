@@ -182,66 +182,6 @@ export function App() {
     });
   }, [allSongs]);
 
-  // Universal Intelligence Fallback Engine
-  const generateFallbackSong = (query: string): Song => {
-    const cleanQuery = query.trim();
-    const isArtistSearch = cleanQuery.length <= 4 && ['張', '周', '蔡', '林', '陳', '王', '李', '黃', '五', '告', '茄', '薛', '任', '七', '顏', '華'].some(s => cleanQuery.startsWith(s));
-    const title = isArtistSearch ? `${cleanQuery} 經典歡唱特輯` : cleanQuery;
-    const artist = isArtistSearch ? cleanQuery : '流行歡唱熱門單曲';
-
-    // 智慧分析關鍵字類型 (陸歌/獨立樂團 vs 主流國語)
-    const isMainlandKeywords = ['哪吒', '齊天', '飛鳥', '體面', '演員', '烏梅', '漠河', '踏山河', '華晨宇', '顏人中', '薛之謙', '任然', '毛不易', '周深', '抖音', '小紅書'].some(k => cleanQuery.includes(k));
-    const isIndieKeywords = ['草東', '美秀', '老王', '落日', 'deca', '滅火器', '獨立', '私房'].some(k => cleanQuery.includes(k));
-
-    const isSpecialCategory = isMainlandKeywords || isIndieKeywords;
-
-    let hash = 0;
-    for (let i = 0; i < cleanQuery.length; i++) {
-      hash = (hash << 5) - hash + cleanQuery.charCodeAt(i);
-      hash |= 0;
-    }
-
-    return {
-      id: `dyn_${Math.abs(hash)}`,
-      title: title,
-      artist: artist,
-      lyricist: artist,
-      composer: artist,
-      language: isMainlandKeywords ? '陸歌' : '國語',
-      zhuyin: 'AUTO',
-      pinyin: 'AUTO',
-      releaseYear: 2023,
-      popularRank: 99,
-      lyricsSnippet: `【${title}】全台各大 KTV 精準實況收錄對照。`,
-      youtubeUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanQuery)}`,
-      isMainlandViral: isMainlandKeywords,
-      isNiche: isSpecialCategory,
-      brands: isSpecialCategory ? {
-        cashbox: { available: false, note: '錢○未收錄' },
-        holiday: { available: false, note: '好○迪未收錄' },
-        watering_hole: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        starlight: { available: false },
-        singgo: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        vmix: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        superstar: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        yinyuan: { available: false },
-        golden_voice: { available: false },
-        hongyin: { available: false },
-      } : {
-        cashbox: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        holiday: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        watering_hole: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        starlight: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        singgo: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        vmix: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        superstar: { available: true, code: 'OK', audioType: 'original_vocal', mvType: 'official_mv' },
-        yinyuan: { available: true, code: 'OK', audioType: 'guided_vocal', mvType: 'reedited_mv' },
-        golden_voice: { available: true, code: 'OK', audioType: 'guided_vocal', mvType: 'reedited_mv' },
-        hongyin: { available: true, code: 'OK', audioType: 'guided_vocal', mvType: 'reedited_mv' },
-      },
-    };
-  };
-
   // Dynamic brand song count auditing
   const brandSongCounts = useMemo(() => {
     const counts: Record<BrandId, number> = {
@@ -292,11 +232,7 @@ export function App() {
         result = substringMatches;
       } else {
         const fuzzyResults = fuse.search(rawQuery);
-        if (fuzzyResults.length > 0) {
-          result = fuzzyResults.map(res => res.item);
-        } else {
-          result = [generateFallbackSong(rawQuery)];
-        }
+        result = fuzzyResults.map(res => res.item);
       }
     }
 
