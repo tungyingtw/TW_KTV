@@ -247,13 +247,42 @@ app.get('/sitemap.xml', (req, res) => {
 
 // ─────────────────────────────────────────────
 // 公開 API：真實訪客線上人數統計與心跳 (Real-Time Visitor Tracking)
+// 使用 Upstash Redis REST API 實現跨重啟持久化計數
+// 本機開發時自動 fallback 回 in-memory Map（無需額外 npm 套件）
 // ─────────────────────────────────────────────
 const activeVisitors = new Map();
-const visitorCooldowns = new Map(); // 12 小時重複造訪去重快取 (Unique Visitor Deduplication)
+
+// 本機 fallback 用（伺服器有 Redis 時不使用）
+const visitorCooldowns = new Map();
 const VISIT_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 小時冷卻期
 
 const STATS_PATH = path.join(__dirname, 'stats.json');
 const BASE_INITIAL_VISITS = 1;
+
+// ── Upstash Redis 環境設定 ──
+const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL;
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
+
+if (USE_REDIS) {
+  console.log('[Stats] Upstash Redis 已啟用：累積查詢人數將持久化儲存');
+} else {
+  console.log('[Stats] 未設定 Redis 環境變數，使用本機記憶體計數（僅限開發環境）');
+}
+
+/**
+ * 呼叫 Upstash Redis REST API（無需任何 SDK，純 fetch）
+ * 指令格式：GET {REDIS_URL}/{command}/{arg1}/{arg2}/...
+ */
+async function redisCmd(command, ...args) {
+  const urlParts = [REDIS_URL, command, ...args.map(a => encodeURIComponent(String(a)))];
+  const res = await fetch(urlParts.join('/'), {
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}` }
+  });
+  if (!res.ok) throw new Error(`Upstash Redis HTTP ${res.status}`);
+  const json = await res.json();
+  return json.result;
+}
 
 function loadStats() {
   try {
@@ -269,39 +298,94 @@ function saveStats(data) {
 
 let currentStats = loadStats();
 
-app.get('/api/stats/ping', (req, res) => {
+// ── 啟動時從 Redis 同步初始值（確保重啟後數字連續）──
+if (USE_REDIS) {
+  redisCmd('get', 'ktv:totalVisits').then(val => {
+    if (val !== null && val !== undefined) {
+      const n = parseInt(String(val), 10);
+      if (!isNaN(n) && n > currentStats.totalVisits) {
+        currentStats.totalVisits = n;
+        console.log(`[Stats] 從 Redis 同步累積人數：${n}`);
+      }
+    } else {
+      // 首次部署：把 stats.json 的基數寫入 Redis
+      redisCmd('set', 'ktv:totalVisits', currentStats.totalVisits)
+        .then(() => console.log(`[Stats] Redis 初始化累積人數基數：${currentStats.totalVisits}`))
+        .catch(e => console.error('[Stats] Redis 初始化失敗:', e.message));
+    }
+  }).catch(e => console.error('[Stats] Redis 啟動同步失敗:', e.message));
+}
+
+app.get('/api/stats/ping', async (req, res) => {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
   const visitorId = (req.query.vid && typeof req.query.vid === 'string') ? req.query.vid : clientIp;
   const now = Date.now();
-  
-  // 1. 即時線上人數心跳紀錄（以裝置 UUID 為 Key，支援同一 KTV 包廂 WiFi 多人同步在線）
-  activeVisitors.set(visitorId, now);
 
-  // 2. 12 小時內同一訪客/裝置反覆 F5 重新整理，絕不重複計入「總累積查詢人數」
-  const lastVisit = visitorCooldowns.get(visitorId);
-  if (!lastVisit || (now - lastVisit > VISIT_COOLDOWN_MS)) {
-    currentStats.totalVisits = (currentStats.totalVisits || 0) + 1;
-    visitorCooldowns.set(visitorId, now);
-    saveStats(currentStats);
-  }
+  // 1. 即時線上人數心跳紀錄（以裝置 UUID 為 Key）
+  activeVisitors.set(visitorId, now);
 
   // 清理超過 45 秒未發送心跳的離線 Session
   for (const [vId, lastPing] of activeVisitors.entries()) {
-    if (now - lastPing > 45000) {
-      activeVisitors.delete(vId);
-    }
+    if (now - lastPing > 45000) activeVisitors.delete(vId);
   }
 
-  // 清理過期的 Cooldown 快取避免 RAM 佔用
-  for (const [vId, time] of visitorCooldowns.entries()) {
-    if (now - time > VISIT_COOLDOWN_MS * 2) {
-      visitorCooldowns.delete(vId);
+  let totalVisits = currentStats.totalVisits;
+
+  if (USE_REDIS) {
+    // ── Redis 模式：原子化計數 + TTL 去重，完全持久化 ──
+    try {
+      const VISIT_KEY = `ktv:visit:${visitorId}`;
+      const TOTAL_KEY = 'ktv:totalVisits';
+      const COOLDOWN_SEC = 12 * 60 * 60; // 12 小時 TTL
+
+      // 檢查此訪客在 12 小時內是否已計算過（Redis key 有 TTL，自動過期）
+      const alreadyVisited = await redisCmd('exists', VISIT_KEY);
+
+      if (!alreadyVisited) {
+        // 新訪客（或冷卻已過）：原子遞增，並設定 12h TTL 去重 key
+        const newTotal = await redisCmd('incr', TOTAL_KEY);
+        await redisCmd('setex', VISIT_KEY, COOLDOWN_SEC, 1);
+        totalVisits = typeof newTotal === 'number' ? newTotal : parseInt(String(newTotal), 10);
+      } else {
+        // 已訪問過：只讀取當前累積值，不重複計數
+        const val = await redisCmd('get', TOTAL_KEY);
+        totalVisits = val !== null ? parseInt(String(val), 10) : currentStats.totalVisits;
+      }
+
+      // 同步本機快取（作為 Redis 短暫故障時的緊急 fallback）
+      if (!isNaN(totalVisits)) currentStats.totalVisits = totalVisits;
+
+    } catch (err) {
+      // Redis 暫時不可用：自動降級到記憶體計數
+      console.warn('[Stats] Redis 暫時不可用，降級到記憶體計數:', err.message);
+      const lastVisit = visitorCooldowns.get(visitorId);
+      if (!lastVisit || (now - lastVisit > VISIT_COOLDOWN_MS)) {
+        currentStats.totalVisits = (currentStats.totalVisits || 0) + 1;
+        visitorCooldowns.set(visitorId, now);
+        saveStats(currentStats);
+      }
+      totalVisits = currentStats.totalVisits;
+    }
+
+  } else {
+    // ── 本機開發模式：使用記憶體 Map 去重（伺服器重啟後重置屬正常）──
+    const lastVisit = visitorCooldowns.get(visitorId);
+    if (!lastVisit || (now - lastVisit > VISIT_COOLDOWN_MS)) {
+      currentStats.totalVisits = (currentStats.totalVisits || 0) + 1;
+      visitorCooldowns.set(visitorId, now);
+      saveStats(currentStats);
+    }
+    totalVisits = currentStats.totalVisits;
+
+    // 清理過期的 Cooldown 快取避免 RAM 佔用
+    for (const [vId, time] of visitorCooldowns.entries()) {
+      if (now - time > VISIT_COOLDOWN_MS * 2) visitorCooldowns.delete(vId);
     }
   }
 
   res.json({
     online: activeVisitors.size,
-    totalVisits: currentStats.totalVisits,
+    totalVisits: isNaN(totalVisits) ? 1 : totalVisits,
     timestamp: now
   });
 });
