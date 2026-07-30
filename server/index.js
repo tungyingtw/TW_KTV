@@ -175,7 +175,7 @@ function handleAdminPageServe(req, res) {
   if (!isLocalhostRequest(req)) {
     return res.status(403).send('Access Denied: Admin panel is strictly restricted to localhost connection.');
   }
-  const adminPath = path.join(__dirname, '../public/admin.html');
+  const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) {
     res.sendFile(adminPath);
   } else {
@@ -407,12 +407,16 @@ app.get('/api/songs', (req, res) => {
 
   if (query) {
     const q = String(query).toLowerCase();
-    results = results.filter(s =>
-      s.title.toLowerCase().includes(q) ||
-      s.artist.toLowerCase().includes(q) ||
-      (s.zhuyin || '').toLowerCase().includes(q) ||
-      (s.pinyin || '').toLowerCase().includes(q)
-    );
+    results = results.filter(s => {
+      const zhuyin = getSearchablePhonetic(s.zhuyin).toLowerCase();
+      const pinyin = getSearchablePhonetic(s.pinyin).toLowerCase();
+      return (
+        s.title.toLowerCase().includes(q) ||
+        s.artist.toLowerCase().includes(q) ||
+        (zhuyin && zhuyin.includes(q)) ||
+        (pinyin && pinyin.includes(q))
+      );
+    });
   }
   if (brand && brand !== 'all') {
     results = results.filter(s => s.brands[brand]?.available);
@@ -428,6 +432,11 @@ app.get('/api/songs', (req, res) => {
 
   res.json({ total: results.length, page: pageNum, limit: limitNum, songs: results.slice(start, start + limitNum) });
 });
+
+function getSearchablePhonetic(value) {
+  const normalized = String(value || '').trim();
+  return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : '';
+}
 
 app.get('/api/catalog-overrides', async (req, res) => {
   const overrides = await loadCatalogOverridesStore();
@@ -620,7 +629,17 @@ app.get('/api/stats/ping', async (req, res) => {
   res.json({
     online: activeVisitors.size,
     totalVisits: isNaN(totalVisits) ? 1 : totalVisits,
+    persistent: USE_REDIS,
     timestamp: now
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    storage: USE_REDIS ? 'redis' : 'local',
+    persistent: USE_REDIS,
+    timestamp: Date.now(),
   });
 });
 

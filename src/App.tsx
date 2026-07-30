@@ -24,6 +24,11 @@ import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
 import { Sparkles, Music, ChevronDown, Mail } from 'lucide-react';
 
+function getSearchablePhonetic(value?: string): string {
+  const normalized = (value || '').trim();
+  return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : '';
+}
+
 export function App() {
   const isMobile = useIsMobile();
 
@@ -171,8 +176,6 @@ export function App() {
         { name: 'title', weight: 0.35 },
         { name: 'artist', weight: 0.3 },
         { name: 'lyricsSnippet', weight: 0.25 },
-        { name: 'zhuyin', weight: 0.05 },
-        { name: 'pinyin', weight: 0.05 },
       ],
       threshold: 0.48,
       distance: 120,
@@ -212,6 +215,8 @@ export function App() {
         const cleanTitle = stripPunctuation(s.title);
         const cleanArtist = stripPunctuation(s.artist);
         const cleanLyrics = stripPunctuation(s.lyricsSnippet || '');
+        const zhuyin = getSearchablePhonetic(s.zhuyin).toLowerCase();
+        const pinyin = getSearchablePhonetic(s.pinyin).toLowerCase();
 
         return (
           s.title.includes(rawQuery) || 
@@ -223,8 +228,8 @@ export function App() {
           (normalizedQuery && normalizeText(s.title).includes(normalizedQuery)) ||
           (normalizedQuery && normalizeText(s.artist).includes(normalizedQuery)) ||
           (normalizedQuery && s.lyricsSnippet && normalizeText(s.lyricsSnippet).includes(normalizedQuery)) ||
-          s.zhuyin.toLowerCase().includes(rawQuery.toLowerCase()) ||
-          s.pinyin.toLowerCase().includes(rawQuery.toLowerCase())
+          (zhuyin && zhuyin.includes(rawQuery.toLowerCase())) ||
+          (pinyin && pinyin.includes(rawQuery.toLowerCase()))
         );
       });
 

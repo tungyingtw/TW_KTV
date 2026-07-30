@@ -8,13 +8,8 @@
   <script>
     (function() {
       var path = window.location.pathname;
-      if (path.includes('/admin') || path.includes('/sys-admin-panel')) {
-        var basePath = path.substring(0, path.lastIndexOf('/'));
-        window.location.replace((basePath ? basePath : '') + '/admin.html' + window.location.search + window.location.hash);
-      } else {
-        var basePath = path.substring(0, path.indexOf('/', 1));
-        window.location.replace((basePath ? basePath : '/') + '/' + window.location.search + window.location.hash);
-      }
+      var basePath = path.substring(0, path.indexOf('/', 1));
+      window.location.replace((basePath ? basePath : '/') + '/' + window.location.search + window.location.hash);
     })();
   </script>
 </head>
