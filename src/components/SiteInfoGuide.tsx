@@ -293,11 +293,11 @@ export const SiteInfoGuide: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700 }}>
                     <HelpCircle size={18} />
-                    <span>3. 眾包共識校對與回報</span>
+                    <span>3. 社群校對與回報</span>
                   </div>
                   <p style={{ margin: 0 }}>
-                    <strong>社群自癒與勘誤校對</strong>：<br />
-                    若現場點歌時發現門市歌曲收錄狀況有變更，歡迎點擊本站「無歌/補件回報」功能進行登記。共識演算法將即時彙整投票與社群回饋數據供大家參考。
+                    <strong>現場資訊校對</strong>：<br />
+                    若現場點歌時發現門市歌曲收錄狀況有變更，可透過本站回報功能提供線索。系統會彙整使用者回饋，作為後續資料校正參考。
                   </p>
                 </div>
               </div>
@@ -339,10 +339,10 @@ export const SiteInfoGuide: React.FC = () => {
                 <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(168, 85, 247, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a855f7', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Vote size={18} />
-                    <span>4. 社群共識投票與補件回報</span>
+                    <span>4. 社群投票與資料回報</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    找不到欲點唱的歌曲？可透過「提供建議」送出歌曲線索。若在門市現場發現收錄狀況有誤，亦可在歌曲詳情中對該廠牌點擊「確認/否決」參與社群共識校對。
+                    找不到欲點唱的歌曲？可透過「提供建議」送出歌曲線索。若在門市現場發現收錄狀況有誤，亦可在歌曲詳情中對該廠牌點擊「確認/否決」協助校對。
                   </p>
                 </div>
               </div>
@@ -452,7 +452,7 @@ export const SiteInfoGuide: React.FC = () => {
                     Q3：門市沒有收錄我想唱的歌曲該怎麼辦？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：您可利用本站的「無歌/補件回報」功能進行登記，共識演算法將即時彙整社群數據與投票供廣大歌友參考。
+                    答：您可透過本站的「提供建議」或歌曲詳情中的回報功能送出線索。使用者回饋會作為後續資料校正參考。
                   </p>
                 </div>
 

@@ -438,7 +438,7 @@ export function App() {
         showToast('已自歌本移除');
         return prev.filter(id => id !== songId);
       } else {
-        showToast('已加入我的歌本 ❤️');
+        showToast('已加入歌本');
         return [...prev, songId];
       }
     });

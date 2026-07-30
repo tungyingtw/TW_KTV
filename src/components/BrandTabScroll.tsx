@@ -308,7 +308,6 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
         )}
       </div>
 
-      {/* 🎯 廠牌複選比對列 (Multi-Brand Action Bar) */}
       {selectedBrands.length > 0 && (
         <div style={{
           display: 'flex',
@@ -356,9 +355,9 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                   fontWeight: 700,
                   cursor: 'pointer',
                 }}
-                title={brandFilterMode === 'all_of_them' ? '切換為：任一家有收錄 (OR)' : '切換為：全部廠牌均有收錄 (AND)'}
+                title={brandFilterMode === 'all_of_them' ? '切換為：任一家有收錄即可' : '切換為：選取廠牌都要有收錄'}
               >
-                {brandFilterMode === 'all_of_them' ? '🔗 全部都有收錄 (AND)' : '🔀 任一家有收錄 (OR)'}
+                {brandFilterMode === 'all_of_them' ? '全部都有收錄' : '任一家有收錄'}
               </button>
             )}
 
