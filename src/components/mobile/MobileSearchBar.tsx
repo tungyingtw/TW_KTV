@@ -31,6 +31,8 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   isSearching = false,
   onOpenSuggestSong,
 }) => {
+  const hasActiveFilters = filters.onlyOfficialMv || filters.onlyOriginalVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
+
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
   };
@@ -42,16 +44,20 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   const toggleLanguage = (lang: string) => {
     setFilters(prev => {
       if (lang === '全部') return { ...prev, selectedLanguages: [] };
+
       const exists = prev.selectedLanguages.includes(lang);
-      if (exists) return { ...prev, selectedLanguages: prev.selectedLanguages.filter(l => l !== lang) };
-      return { ...prev, selectedLanguages: [...prev.selectedLanguages, lang] };
+      return {
+        ...prev,
+        selectedLanguages: exists
+          ? prev.selectedLanguages.filter(item => item !== lang)
+          : [...prev.selectedLanguages, lang],
+      };
     });
   };
 
   return (
     <div style={{ padding: '10px 10px 6px', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0 }}>
       <div className="glass-panel" style={{ padding: '12px 14px', borderRadius: '14px', width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
-        {/* Row 1: Search Input & Mobile Filter Toggle Button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
           <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
             {isSearching ? (
@@ -63,16 +69,24 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               type="text"
               value={filters.searchQuery}
               onChange={handleQueryChange}
-              placeholder="搜尋歌名、歌手 (周傑倫、蔡依林)..."
+              placeholder="搜尋歌名或歌手"
               style={{
-                width: '100%', padding: '10px 32px 10px 36px',
+                width: '100%',
+                padding: '10px 32px 10px 36px',
                 background: 'var(--bg-input, rgba(15, 23, 42, 0.7))',
                 border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
-                borderRadius: '10px', color: 'var(--text-primary, #ffffff)', fontSize: '0.85rem', outline: 'none',
+                borderRadius: '10px',
+                color: 'var(--text-primary, #ffffff)',
+                fontSize: '0.85rem',
+                outline: 'none',
               }}
             />
             {filters.searchQuery && (
-              <button onClick={handleClearQuery} style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+              <button
+                onClick={handleClearQuery}
+                aria-label="清除搜尋文字"
+                style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+              >
                 <X size={16} />
               </button>
             )}
@@ -83,17 +97,13 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             className="btn-secondary"
             style={{ padding: '9px 12px', borderRadius: '10px', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
-            <SlidersHorizontal size={15} color={
-              (filters.onlyOfficialMv || filters.onlyOriginalVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all')
-                ? '#ec4899' : 'currentColor'
-            } />
-            <span>進階</span>
+            <SlidersHorizontal size={15} color={hasActiveFilters ? '#ec4899' : 'currentColor'} />
+            <span>篩選</span>
           </button>
         </div>
 
-        {/* Row 2: Language Scroll Pills */}
         <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>語種:</span>
+          <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>語種：</span>
           {LANGUAGES.map(lang => {
             const isSelected = lang === '全部' ? filters.selectedLanguages.length === 0 : filters.selectedLanguages.includes(lang);
             return (
@@ -104,7 +114,13 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
                   background: isSelected ? 'rgba(236, 72, 153, 0.22)' : 'rgba(255, 255, 255, 0.05)',
                   color: isSelected ? '#f472b6' : 'var(--text-secondary)',
                   border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.45)' : 'rgba(255, 255, 255, 0.08)'}`,
-                  padding: '3px 9px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+                  padding: '3px 9px',
+                  borderRadius: '20px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {lang}
@@ -113,22 +129,27 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           })}
         </div>
 
-        {/* Row 3: Word Count Scroll Pills */}
         <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
           <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '2px' }}>
-            <Hash size={12} color="var(--accent-purple)" />字數:
+            <Hash size={12} color="var(--accent-purple)" />字數：
           </span>
           {TITLE_LENGTHS.map(item => {
             const isSelected = filters.selectedTitleLength === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id as any }))}
+                onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id }))}
                 style={{
                   background: isSelected ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255, 255, 255, 0.05)',
                   color: isSelected ? '#c084fc' : 'var(--text-secondary)',
                   border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-                  padding: '3px 9px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+                  padding: '3px 9px',
+                  borderRadius: '20px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {item.label}
@@ -137,13 +158,12 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           })}
         </div>
 
-        {/* Row 4: Quality Checkboxes */}
         <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOfficialMv ? '#34d399' : '#cbd5e1', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
             <input
               type="checkbox"
               checked={filters.onlyOfficialMv}
-              onChange={(e) => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
+              onChange={e => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
               style={{ accentColor: '#10b981', cursor: 'pointer' }}
             />
             <Video size={13} /> 原版 MV
@@ -153,17 +173,16 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             <input
               type="checkbox"
               checked={filters.onlyOriginalVocal}
-              onChange={(e) => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
+              onChange={e => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
               style={{ accentColor: '#ec4899', cursor: 'pointer' }}
             />
             <Disc size={13} /> 原聲原唱
           </label>
         </div>
 
-        {/* Row 5: Results Count & Suggest Song Button (Dedicated Clean Row) */}
         <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
           <div style={{ fontSize: '0.78rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-            結果: <strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首
+            結果：<strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首
           </div>
 
           {onOpenSuggestSong && (
@@ -172,13 +191,20 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               style={{
                 background: 'rgba(251, 191, 36, 0.1)',
                 border: '1px solid rgba(251, 191, 36, 0.3)',
-                borderRadius: '6px', padding: '3px 8px', color: '#fbbf24',
-                fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap',
+                borderRadius: '6px',
+                padding: '3px 8px',
+                color: '#fbbf24',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                whiteSpace: 'nowrap',
               }}
             >
               <PlusCircle size={12} />
-              <span>建議追加</span>
+              <span>提供建議</span>
             </button>
           )}
         </div>

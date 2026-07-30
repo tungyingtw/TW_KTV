@@ -201,10 +201,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 color: '#fbbf24',
                 background: 'rgba(251, 191, 36, 0.1)',
               }}
-              title="建議追加新歌曲、KTV 伴唱機廠牌或系統對照"
+              title="提供新歌曲、KTV 廠牌或伴唱系統資料建議"
             >
               <PlusCircle size={16} />
-              <span>建議追加</span>
+              <span>提供建議</span>
             </button>
           )}
 
