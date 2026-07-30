@@ -7,6 +7,35 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function loadLocalEnv() {
+  const envPath = path.join(__dirname, '../.env');
+  if (!fs.existsSync(envPath)) return;
+
+  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const separatorIndex = trimmed.indexOf('=');
+    if (separatorIndex === -1) continue;
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    let value = trimmed.slice(separatorIndex + 1).trim();
+    if (!key || process.env[key] !== undefined) continue;
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    process.env[key] = value;
+  }
+}
+
+loadLocalEnv();
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -80,9 +109,12 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // ─────────────────────────────────────────────
 // Admin 密碼驗證與本機資安過濾 (Security & Localhost-Only Guard)
-// 密碼已更新為高強度金鑰: KtvAdmin@2026!SecureKey
 // ─────────────────────────────────────────────
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'KtvAdmin@2026!SecureKey';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+
+if (!ADMIN_TOKEN) {
+  console.warn('[Server] ADMIN_TOKEN 未設定，管理員 API 將拒絕所有請求。');
+}
 
 function isLocalhostRequest(req) {
   const forwarded = req.headers['x-forwarded-for'];
@@ -162,11 +194,11 @@ function saveVotes(data) {
   fs.writeFileSync(VOTES_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-function saveCatalog(catalog) {
+async function saveCatalog(catalog) {
   const dbPath = path.join(__dirname, 'database.json');
   fs.writeFileSync(dbPath, JSON.stringify(catalog, null, 2), 'utf8');
   try {
-    const { generateBinCatalog } = require('../scripts/buildCatalogBin.js');
+    const { generateBinCatalog } = await import('../scripts/buildCatalogBin.js');
     generateBinCatalog();
   } catch (e) {
     console.warn('[Server] 自動同步加密 songs_catalog.bin 警告:', e.message);
@@ -413,7 +445,7 @@ function sanitizeText(str) {
 // ─────────────────────────────────────────────
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
-app.post('/api/report', (req, res) => {
+app.post('/api/report', async (req, res) => {
   const { songId, songTitle, artist, brandId, issueType, lang, songCode, lyricist, composer, mvType, note, brandName, shortName, systemType, codeFormat, storeLocations } = req.body;
   if (!songId || !brandId || !issueType) return res.status(400).json({ error: '缺少必要欄位' });
 
@@ -512,7 +544,7 @@ app.post('/api/report', (req, res) => {
           };
         }
 
-        saveCatalog(songsDatabase);
+        await saveCatalog(songsDatabase);
         isAutoResolved = true;
         newReport.status = 'resolved';
         newReport.adminNote = `[自動共識觸發] 累積 ${totalMatching} 筆歸一化模糊相符建議 (Fingerprint: ${fingerprint})，系統已自動寫入全台歌庫！`;
@@ -532,7 +564,7 @@ app.post('/api/report', (req, res) => {
             available: false,
             note: `社群多人現場回報點不到歌 (Auto-Resolved: ${reportCount}筆回報)`,
           };
-          saveCatalog(songsDatabase);
+          await saveCatalog(songsDatabase);
           isAutoResolved = true;
           newReport.status = 'resolved';
           newReport.adminNote = '系統自動觸發：多位歌友回報現場無此歌，自動更正為未收錄';
@@ -544,7 +576,7 @@ app.post('/api/report', (req, res) => {
             available: true,
             note: `社群多人現場回報確認有歌 (Auto-Resolved: ${reportCount}筆回報)`,
           };
-          saveCatalog(songsDatabase);
+          await saveCatalog(songsDatabase);
           isAutoResolved = true;
           newReport.status = 'resolved';
           newReport.adminNote = '系統自動觸發：多位歌友回報現場有此歌，自動更正為有收錄';
@@ -562,7 +594,7 @@ app.post('/api/report', (req, res) => {
   res.json({ success: true, reportId: newReport.id, autoResolved: isAutoResolved });
 });
 
-app.get('/api/reports', (req, res) => {
+app.get('/api/reports', requireAdmin, (req, res) => {
   const reports = loadReports();
   const { status } = req.query;
   const filtered = status ? reports.filter(r => r.status === status) : reports;
@@ -572,7 +604,7 @@ app.get('/api/reports', (req, res) => {
 // ─────────────────────────────────────────────
 // 公開 API：眾包投票
 // ─────────────────────────────────────────────
-app.post('/api/vote', (req, res) => {
+app.post('/api/vote', async (req, res) => {
   const { songId, brandId, vote } = req.body;
   if (!songId || !brandId || !['confirm', 'deny'].includes(vote)) {
     return res.status(400).json({ error: '缺少必要欄位' });
@@ -601,7 +633,7 @@ app.post('/api/vote', (req, res) => {
           available: false,
           note: '社群現場多位回報點不到歌 (Auto-Updated)',
         };
-        saveCatalog(songsDatabase);
+        await saveCatalog(songsDatabase);
         console.log(`[Auto-Consensus] 《${songsDatabase[idx].title}》(${brandId}) 因社群眾包否決票達標，自動標記為未收錄`);
       } else if (confidence === 'verified' && currentAvailable !== true) {
         if (!songsDatabase[idx].brands) songsDatabase[idx].brands = {};
@@ -610,7 +642,7 @@ app.post('/api/vote', (req, res) => {
           available: true,
           note: '社群現場多位確認有收錄 (Auto-Updated)',
         };
-        saveCatalog(songsDatabase);
+        await saveCatalog(songsDatabase);
         console.log(`[Auto-Consensus] 《${songsDatabase[idx].title}》(${brandId}) 因社群眾包確認票達標，自動標記為有收錄`);
       }
     }
@@ -651,7 +683,7 @@ app.get('/api/admin/reports', requireAdmin, (req, res) => {
 });
 
 // ── 更新回報狀態（pending → reviewed / resolved）──
-app.patch('/api/admin/report/:reportId', requireAdmin, (req, res) => {
+app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
   const { reportId } = req.params;
   const { status, adminNote } = req.body;
   const validStatus = ['pending', 'reviewed', 'resolved', 'rejected'];
@@ -701,7 +733,7 @@ app.patch('/api/admin/report/:reportId', requireAdmin, (req, res) => {
             officialMv: report.mvType === 'official' || existingSong.brands[report.brandId]?.officialMv || false,
           };
         }
-        saveCatalog(songsDatabase);
+        await saveCatalog(songsDatabase);
         console.log(`[Admin Inject] 管理員審核完成，寫入新歌《${report.songTitle}》— ${report.artist}`);
       } else if (report.songId && songsDatabase.length > 0) {
         const sIdx = songsDatabase.findIndex(s => s.id === report.songId);
@@ -720,7 +752,7 @@ app.patch('/api/admin/report/:reportId', requireAdmin, (req, res) => {
               note: '管理員審核更正為有收錄',
             };
           }
-          saveCatalog(songsDatabase);
+          await saveCatalog(songsDatabase);
           console.log(`[Admin Update] 管理員審核更正《${report.songTitle}》(${report.brandId}) 收錄狀態`);
         }
       }
@@ -799,7 +831,7 @@ app.get('/api/admin/verified', requireAdmin, (req, res) => {
 // ── 套用廠牌收錄狀態修正（核心管理功能）──
 // PATCH /api/admin/song/:songId/brand
 // body: { brandId, available: true/false, note }
-app.patch('/api/admin/song/:songId/brand', requireAdmin, (req, res) => {
+app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
   const { songId } = req.params;
   const { brandId, available, audioType, mvType, note } = req.body;
 
@@ -823,7 +855,7 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, (req, res) => {
   };
 
   songsDatabase[idx] = song;
-  saveCatalog(songsDatabase);
+  await saveCatalog(songsDatabase);
 
   // 記錄管理員操作
   logAdminAction('FIX_BRAND_AVAILABILITY', {
@@ -879,6 +911,6 @@ app.get('/api/admin/logs', requireAdmin, (req, res) => {
 // ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`[Server] KTV Song API 服務啟動於: http://localhost:${PORT}`);
-  console.log(`[Server] 管理後台 API Token: ${ADMIN_TOKEN}`);
+  console.log(`[Server] 管理後台 API Token 狀態: ${ADMIN_TOKEN ? '已設定' : '未設定'}`);
   console.log(`[Server] Admin Panel: http://localhost:${PORT}/admin`);
 });
