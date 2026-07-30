@@ -772,65 +772,38 @@ export function App() {
           </div>
 
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setLegalNoticeTab('privacy')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#38bdf8',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                padding: 0,
-                textDecoration: 'underline',
-              }}
+            {/* 主連結：真實 <a href> 讓 Google 爬蟲可直接索引獨立靜態頁面 */}
+            <a
+              href="./privacy.html"
+              onClick={(e) => { e.preventDefault(); setLegalNoticeTab('privacy'); }}
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
               隱私權政策
-            </button>
+            </a>
 
-            <button
-              onClick={() => setLegalNoticeTab('terms')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#38bdf8',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                padding: 0,
-                textDecoration: 'underline',
-              }}
+            <a
+              href="./terms.html"
+              onClick={(e) => { e.preventDefault(); setLegalNoticeTab('terms'); }}
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
               免責聲明與條款
-            </button>
+            </a>
 
-            <button
-              onClick={() => setLegalNoticeTab('about')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#38bdf8',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                padding: 0,
-                textDecoration: 'underline',
-              }}
+            <a
+              href="./about.html"
+              onClick={(e) => { e.preventDefault(); setLegalNoticeTab('about'); }}
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
               關於本站
-            </button>
+            </a>
 
-            <button
-              onClick={() => setLegalNoticeTab('contact')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#38bdf8',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                padding: 0,
-                textDecoration: 'underline',
-              }}
+            <a
+              href="./contact.html"
+              onClick={(e) => { e.preventDefault(); setLegalNoticeTab('contact'); }}
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
               聯絡我們
-            </button>
+            </a>
 
             <a
               href="mailto:tyfunlab@gmail.com"
@@ -844,7 +817,7 @@ export function App() {
               }}
               title="點擊發送信件至 tyfunlab@gmail.com"
             >
-              <Mail size={14} color="#38bdf8" /> 聯絡信箱：tyfunlab@gmail.com
+              <Mail size={14} color="#38bdf8" /> tyfunlab@gmail.com
             </a>
 
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -853,13 +826,7 @@ export function App() {
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Music size={14} color="#ec4899" /> 原聲原唱對照
             </span>
-            <a 
-              href="./admin.html"
-              style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.78rem', opacity: 0.7 }}
-              title="管理後台 (僅限管理員 Token 登入)"
-            >
-              ⚙️ 管理後台
-            </a>
+            {/* 管理後台連結僅供內部使用，不公開顯示於正式網站 Footer */}
           </div>
         </div>
       </footer>
