@@ -486,7 +486,7 @@ export function App() {
         />
       )}
 
-      {/* 📢 【廣告位 #1 頂部黃金專區】 */}
+      {/* 頂部廣告區 */}
       <AdBannerSlot slotType="header" />
 
       {/* Horizontally Scrollable Brand Tabs */}
@@ -582,7 +582,7 @@ export function App() {
         />
       )}
 
-      {/* 📢 Google AdSense 廣告橫幅區域 */}
+      {/* 內容間廣告區 */}
       <AdBannerSlot slotType="in_feed" />
 
       {/* Main Content Area */}
@@ -609,10 +609,10 @@ export function App() {
             </div>
 
             <h3 style={{ fontSize: '1.3rem', color: '#f8fafc', fontWeight: 800, marginBottom: '8px' }}>
-              🎤 全台 KTV 歌庫同步中...
+              全台 KTV 歌庫同步中...
             </h3>
             <p style={{ fontSize: '0.88rem', color: '#94a3b8', marginBottom: '24px' }}>
-              {displayProgress >= 100 ? '✅ 歌庫載入完成！正在為您開啟唱將頁面...' : '正在載入全台各門市與 125,824 首歌曲收錄資料庫'}
+              {displayProgress >= 100 ? '歌庫載入完成，正在為您開啟查詢頁面...' : '正在載入全台各門市與 125,824 首歌曲收錄資料庫'}
             </p>
 
             {/* 進度條容器 */}
@@ -731,10 +731,10 @@ export function App() {
 
       <ToastNotification message={toastMessage} />
 
-      {/* 📖 【全台 KTV 歌曲對照與點歌攻略指南 (AdSense 爬蟲 & 導覽區塊)】 */}
+      {/* 站內導覽內容 */}
       <SiteInfoGuide />
 
-      {/* 📢 【廣告位 #4 頁尾專區】 */}
+      {/* 頁尾廣告區 */}
       <AdBannerSlot slotType="footer" />
 
       {/* Footer */}

@@ -88,6 +88,12 @@ app.get('/robots.txt', (req, res) => {
 // 目的：讓 Google PageRank 完全傳遞給正式網站，防止 Render 搶佔 SEO 排名
 // ─────────────────────────────────────────────
 const OFFICIAL_SITE = 'https://tungyingtw.github.io/TW_KTV/';
+const OFFICIAL_SITE_ORIGIN = new URL(OFFICIAL_SITE).origin;
+const ADMIN_ACCESS_MODE = process.env.ADMIN_ACCESS_MODE || 'official_site';
+const ADMIN_ALLOWED_ORIGINS = (process.env.ADMIN_ALLOWED_ORIGINS || OFFICIAL_SITE_ORIGIN)
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
 const BRAND_IDS = [
   'watering_hole',
   'golden_voice',
@@ -122,10 +128,6 @@ app.get('/contact.html', (req, res) => res.redirect(301, `${OFFICIAL_SITE}contac
 // /admin 與 /sys-admin-panel 僅限本機，不重導向（後面另有路由處理）
 // /api/* 路由也不重導向（後面另有 API 路由處理）
 
-// 靜態檔案服務（僅供本機開發用，Render 線上不再直接 serve 前端頁面）
-app.use(express.static(path.join(__dirname, '../public')));
-app.use(express.static(path.join(__dirname, '../dist')));
-
 // ─────────────────────────────────────────────
 // Admin 密碼驗證與本機資安過濾 (Security & Localhost-Only Guard)
 // ─────────────────────────────────────────────
@@ -147,6 +149,28 @@ function isLocalhostRequest(req) {
   return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip === 'localhost';
 }
 
+function getRequestSourceOrigin(req) {
+  const origin = req.headers.origin;
+  if (origin) return origin;
+
+  const referer = req.headers.referer;
+  if (!referer) return '';
+
+  try {
+    return new URL(referer).origin;
+  } catch {
+    return '';
+  }
+}
+
+function isAllowedAdminSource(req) {
+  if (isLocalhostRequest(req)) return true;
+  if (ADMIN_ACCESS_MODE === 'localhost') return false;
+
+  const sourceOrigin = getRequestSourceOrigin(req);
+  return Boolean(sourceOrigin && ADMIN_ALLOWED_ORIGINS.includes(sourceOrigin));
+}
+
 function handleAdminPageServe(req, res) {
   if (!isLocalhostRequest(req)) {
     return res.status(403).send('Access Denied: Admin panel is strictly restricted to localhost connection.');
@@ -162,11 +186,19 @@ function handleAdminPageServe(req, res) {
 // 隱密後台路由（支援 /sys-admin-panel 與 /admin）
 app.get('/sys-admin-panel', handleAdminPageServe);
 app.get('/admin', handleAdminPageServe);
+app.get('/admin.html', handleAdminPageServe);
+
+// 靜態檔案服務（僅供本機開發用，Render 線上不再直接 serve 前端頁面）
+app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 function requireAdmin(req, res, next) {
   const token = req.headers['x-admin-token'] || req.query.token;
   if (!token || token !== ADMIN_TOKEN) {
     return res.status(401).json({ error: '未授權：需要高強度管理員密碼 Token' });
+  }
+  if (!isAllowedAdminSource(req)) {
+    return res.status(403).json({ error: '未授權：此管理請求來源不被允許' });
   }
   next();
 }
@@ -324,7 +356,7 @@ app.get('/api/songs', (req, res) => {
   res.json({ total: results.length, page: pageNum, limit: limitNum, songs: results.slice(start, start + limitNum) });
 });
 
-// ── 字串模糊歸一化工具 (String Normalizer for Auto-Consensus) ──
+// ── 字串模糊歸一化工具 ──
 function normalizeString(str) {
   if (!str) return '';
   return String(str)
@@ -603,16 +635,13 @@ app.post('/api/report', async (req, res) => {
     status: 'pending',
   };
 
-  // ── 社群回報共識處理與資料同步 ──
   let isAutoResolved = false;
   try {
     if (issueType === 'missing_song' && songTitle) {
-      // 1. 對輸入字串進行模糊歸一化指紋比對
       const normTitle = normalizeString(songTitle);
       const normArtist = normalizeString(artist);
       const fingerprint = `${normTitle}__${normArtist}`;
 
-      // 2. 尋找歷史缺歌回報中指紋相符的記錄
       const matchingReports = reports.filter(r => {
         if (r.issueType !== 'missing_song') return false;
         const t = normalizeString(r.songTitle);
@@ -620,90 +649,17 @@ app.post('/api/report', async (req, res) => {
         return `${t}__${a}` === fingerprint;
       });
 
-      const totalMatching = matchingReports.length + 1; // 包含本次提交
-
-      // 3. 達標（≥ 2 筆相同建議）自動寫入全台歌庫 (songs_catalog.json)！
-      if (totalMatching >= 2) {
-        let existingSong = songsDatabase.find(s => {
-          return normalizeString(s.title) === normTitle && normalizeString(s.artist) === normArtist;
-        });
-
-        if (!existingSong) {
-          const autoSongId = `auto_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-          existingSong = {
-            id: autoSongId,
-            title: cleanTitle || songTitle.trim(),
-            artist: cleanArtist || artist.trim() || '未填寫',
-            lyricist: cleanLyricist,
-            composer: cleanComposer,
-            language: sanitizeText(lang) || '國語',
-            zhuyin: '',
-            pinyin: '',
-            releaseYear: new Date().getFullYear(),
-            lyricsSnippet: cleanLyricsSnippet,
-            youtubeUrl: cleanYoutubeUrl || undefined,
-            brands: {
-              [brandId]: {
-                available: true,
-                code: cleanCode || '',
-                audioType: hasOriginalVocal ? 'original_vocal' : undefined,
-                mvType: mvType === 'official' ? 'official_mv' : undefined,
-              }
-            },
-          };
-          songsDatabase.push(existingSong);
-        } else {
-          if (!existingSong.brands) existingSong.brands = {};
-          existingSong.brands[brandId] = {
-            available: true,
-            code: cleanCode || existingSong.brands[brandId]?.code || '',
-            audioType: hasOriginalVocal ? 'original_vocal' : existingSong.brands[brandId]?.audioType,
-            mvType: mvType === 'official' ? 'official_mv' : existingSong.brands[brandId]?.mvType,
-          };
-        }
-
-        await saveCatalog(songsDatabase);
-        isAutoResolved = true;
-        newReport.status = 'resolved';
-        newReport.adminNote = `[自動共識觸發] 累積 ${totalMatching} 筆歸一化模糊相符建議 (Fingerprint: ${fingerprint})，系統已自動寫入全台歌庫！`;
-        console.log(`[Auto-Consensus Inject] 歌名《${songTitle}》— ${artist} 累積 ${totalMatching} 筆相符建議，已自動寫入全台歌庫！`);
-      }
+      const totalMatching = matchingReports.length + 1;
+      if (totalMatching >= 2) newReport.adminNote = `累積 ${totalMatching} 筆相似新歌建議，建議優先人工審查。Fingerprint: ${fingerprint}`;
     } else {
-      // 既有歌曲修正共識
       const sameReports = reports.filter(r => r.songId === songId && r.brandId === brandId && r.issueType === issueType);
       const reportCount = sameReports.length + 1;
-
-      const idx = songsDatabase.findIndex(s => s.id === songId);
-      if (idx !== -1) {
-        if (issueType === 'no_song' && reportCount >= 2) {
-          if (!songsDatabase[idx].brands) songsDatabase[idx].brands = {};
-          songsDatabase[idx].brands[brandId] = {
-            ...songsDatabase[idx].brands[brandId],
-            available: false,
-            note: `社群多人現場回報點不到歌 (Auto-Resolved: ${reportCount}筆回報)`,
-          };
-          await saveCatalog(songsDatabase);
-          isAutoResolved = true;
-          newReport.status = 'resolved';
-          newReport.adminNote = '系統自動觸發：多位歌友回報現場無此歌，自動更正為未收錄';
-          console.log(`[Auto-Report] 《${songTitle}》(${brandId}) 累積 ${reportCount} 筆「無歌曲」回報，自動更正為未收錄！`);
-        } else if (issueType === 'has_song' && reportCount >= 2) {
-          if (!songsDatabase[idx].brands) songsDatabase[idx].brands = {};
-          songsDatabase[idx].brands[brandId] = {
-            ...songsDatabase[idx].brands[brandId],
-            available: true,
-            note: `社群多人現場回報確認有歌 (Auto-Resolved: ${reportCount}筆回報)`,
-          };
-          await saveCatalog(songsDatabase);
-          isAutoResolved = true;
-          newReport.status = 'resolved';
-          newReport.adminNote = '系統自動觸發：多位歌友回報現場有此歌，自動更正為有收錄';
-          console.log(`[Auto-Report] 《${songTitle}》(${brandId}) 累積 ${reportCount} 筆「有歌曲」回報，自動更正為有收錄！`);
-        }
+      if ((issueType === 'no_song' || issueType === 'has_song') && reportCount >= 2) {
+        newReport.adminNote = `累積 ${reportCount} 筆相同收錄狀態回報，建議優先人工驗證。`;
       }
     }
   } catch (e) {
-    console.error('[Auto-Report Resolution Error]', e);
+    console.error('[Report Consensus Check Error]', e);
   }
 
   reports.push(newReport);
@@ -748,37 +704,6 @@ app.post('/api/vote', async (req, res) => {
 
   const d = votes[key];
   const confidence = getVoteConfidence(d.confirm || 0, d.deny || 0);
-
-  // ── 自動共識引擎 (Auto-Consensus Engine) ──
-  // 若否決票 >= 3 且 否決票超過確認票 2 倍，系統自動變更 catalog 廠牌狀態為未收錄 (false)
-  // 若確認票 >= 3 且 確認票超過否決票 3 倍，系統自動變更 catalog 廠牌狀態為有收錄 (true)
-  try {
-    const idx = songsDatabase.findIndex(s => s.id === songId);
-    if (idx !== -1) {
-      const currentAvailable = songsDatabase[idx].brands?.[brandId]?.available;
-      if (confidence === 'disputed' && currentAvailable !== false) {
-        if (!songsDatabase[idx].brands) songsDatabase[idx].brands = {};
-        songsDatabase[idx].brands[brandId] = {
-          ...songsDatabase[idx].brands[brandId],
-          available: false,
-          note: '社群現場多位回報點不到歌 (Auto-Updated)',
-        };
-        await saveCatalog(songsDatabase);
-        console.log(`[Auto-Consensus] 《${songsDatabase[idx].title}》(${brandId}) 因社群眾包否決票達標，自動標記為未收錄`);
-      } else if (confidence === 'verified' && currentAvailable !== true) {
-        if (!songsDatabase[idx].brands) songsDatabase[idx].brands = {};
-        songsDatabase[idx].brands[brandId] = {
-          ...songsDatabase[idx].brands[brandId],
-          available: true,
-          note: '社群現場多位確認有收錄 (Auto-Updated)',
-        };
-        await saveCatalog(songsDatabase);
-        console.log(`[Auto-Consensus] 《${songsDatabase[idx].title}》(${brandId}) 因社群眾包確認票達標，自動標記為有收錄`);
-      }
-    }
-  } catch (e) {
-    console.error('[Auto-Consensus Error]', e);
-  }
 
   res.json({
     success: true, key,

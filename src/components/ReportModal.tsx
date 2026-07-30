@@ -10,11 +10,11 @@ interface ReportModalProps {
   defaultIssueType?: IssueType;
 }
 
-const ISSUE_OPTIONS: { value: IssueType; label: string; emoji: string }[] = [
-  { value: 'no_song',    label: '實際上沒有這首歌（系統誤標為收錄）', emoji: '❌' },
-  { value: 'has_song',   label: '實際上有這首歌（系統誤標為未收錄）', emoji: '✅' },
-  { value: 'wrong_info', label: '歌名 / 歌手 / 收錄狀態有誤', emoji: '✏️' },
-  { value: 'other',      label: '其他問題', emoji: '💬' },
+const ISSUE_OPTIONS: { value: IssueType; label: string }[] = [
+  { value: 'no_song',    label: '實際上沒有這首歌（系統誤標為收錄）' },
+  { value: 'has_song',   label: '實際上有這首歌（系統誤標為未收錄）' },
+  { value: 'wrong_info', label: '歌名 / 歌手 / 收錄狀態有誤' },
+  { value: 'other',      label: '其他問題' },
 ];
 
 export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, defaultIssueType }) => {
@@ -135,7 +135,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                       transition: 'all 0.15s ease',
                     }}
                   >
-                    {opt.emoji} {opt.label}
+                    {opt.label}
                   </button>
                 ))}
               </div>

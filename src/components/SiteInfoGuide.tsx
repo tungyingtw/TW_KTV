@@ -319,10 +319,10 @@ export const SiteInfoGuide: React.FC = () => {
                 <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <CheckCircle2 size={18} />
-                    <span>2. 辨識原唱與原版 MV 標示</span>
+                    <span>2. 辨識原唱與導唱標示</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    歌曲卡片上標示 <strong>綠色原唱標籤</strong> 代表該門市伴唱系統提供歌手原聲導唱音軌；標示 <strong>粉色 MV 標籤</strong> 代表門市播放畫面為唱片公司授權之官方原版拍攝 MV 影音。
+                    歌曲卡片上標示 <strong>原唱</strong> 代表該伴唱系統保留歌手原聲音軌；標示 <strong>導唱</strong> 代表該系統可提供人聲導唱輔助。若未顯示標籤，代表目前資料尚未確認，實際狀態仍以現場設備為準。
                   </p>
                 </div>
 

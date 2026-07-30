@@ -79,7 +79,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           </button>
         </div>
 
-        {/* 📢 廣告位（歌冊專用） */}
+        {/* 歌冊廣告區 */}
         <AdBannerSlot slotType="modal" />
 
         {/* Favorite Songs List */}
