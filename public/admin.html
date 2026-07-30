@@ -598,6 +598,8 @@ async function loadGuidedVotes() {
         </div>
         <div class="card-actions">
           <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後再調整資料</span>
+          <button class="btn btn-green" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'guided_vocal')">標記導唱</button>
+          <button class="btn btn-yellow" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'backing_track')">標記純伴奏</button>
         </div>
       </div>
     </div>
@@ -607,11 +609,37 @@ async function loadGuidedVotes() {
 function audioTypeLabel(type) {
   const labels = {
     original_vocal: '原聲原唱',
-    guide_vocal: '導唱',
-    instrumental: '純伴奏',
+    guided_vocal: '導唱',
+    backing_track: '純伴奏',
     unknown: '未標記',
   };
   return labels[type] || type || '未標記';
+}
+
+async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
+  const songId = decodeURIComponent(songIdValue);
+  const brandId = decodeURIComponent(brandIdValue);
+  const label = audioTypeLabel(audioType);
+  if (!confirm(`確定要將此廠牌音訊標記為「${label}」嗎？`)) return;
+
+  const res = await apiFetch(`/api/admin/song/${songId}/brand`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      brandId,
+      available: true,
+      audioType,
+      note: `依導唱票選人工確認：${label}`,
+    }),
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    showToast(`已更新音訊標記：${label}`, 'success');
+    loadGuidedVotes();
+    loadStats();
+  } else {
+    showToast(data.error || '套用導唱修正失敗', 'error');
+  }
 }
 
 // ── 操作日誌 ──

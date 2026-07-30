@@ -1066,19 +1066,48 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
     return res.status(400).json({ error: '缺少必要欄位：brandId, available (boolean)' });
   }
 
+  const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track', ''];
+  const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv', ''];
+  if (audioType !== undefined && !validAudioTypes.includes(audioType)) {
+    return res.status(400).json({ error: '音訊類型不正確' });
+  }
+  if (mvType !== undefined && !validMvTypes.includes(mvType)) {
+    return res.status(400).json({ error: 'MV 類型不正確' });
+  }
+
   const idx = songsDatabase.findIndex(s => s.id === songId);
   if (idx === -1) return res.status(404).json({ error: `找不到歌曲 ID: ${songId}` });
 
   const song = songsDatabase[idx];
   const before = song.brands?.[brandId] ?? null;
 
-  // 更新廠牌狀態
   if (!song.brands) song.brands = {};
-  song.brands[brandId] = {
+  const nextBrandStatus = {
+    ...before,
     available,
-    code: available ? 'OK' : 'N/A',
-    audioType: audioType || (available ? 'original_vocal' : undefined),
-    mvType: mvType || (available ? 'official_mv' : undefined),
+    code: before?.code || (available ? 'OK' : 'N/A'),
+  };
+
+  if (audioType !== undefined) {
+    nextBrandStatus.audioType = audioType || undefined;
+  } else if (available && before?.audioType) {
+    nextBrandStatus.audioType = before.audioType;
+  }
+
+  if (mvType !== undefined) {
+    nextBrandStatus.mvType = mvType || undefined;
+  } else if (available && before?.mvType) {
+    nextBrandStatus.mvType = before.mvType;
+  }
+
+  if (!available) {
+    nextBrandStatus.code = before?.code || 'N/A';
+    delete nextBrandStatus.audioType;
+    delete nextBrandStatus.mvType;
+  }
+
+  song.brands[brandId] = {
+    ...nextBrandStatus,
   };
 
   songsDatabase[idx] = song;
