@@ -16,6 +16,9 @@ dist-ssr
 ADMIN_CREDENTIALS.txt
 *.bat
 
+# Local source assets already exported to public/
+LOGO/
+
 # AI Agent Guides & Rules (Keep Local Only)
 .agents/
 .agents
