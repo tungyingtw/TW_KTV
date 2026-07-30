@@ -188,6 +188,11 @@ app.get('/sys-admin-panel', handleAdminPageServe);
 app.get('/admin', handleAdminPageServe);
 app.get('/admin.html', handleAdminPageServe);
 
+// Render sitemap requests should point crawlers to the official GitHub Pages sitemap.
+app.get('/sitemap.xml', (req, res) => {
+  res.redirect(301, `${OFFICIAL_SITE}sitemap.xml`);
+});
+
 // 靜態檔案服務（僅供本機開發用，Render 線上不再直接 serve 前端頁面）
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -370,13 +375,6 @@ function normalizeString(str) {
     .replace(/[《》〈〉『』「」()（）[\]【】\s\-_.,!?]/g, '')
     .trim();
 }
-
-// ─────────────────────────────────────────────
-// Render sitemap requests should point crawlers to the official GitHub Pages sitemap.
-// ─────────────────────────────────────────────
-app.get('/sitemap.xml', (req, res) => {
-  res.redirect(301, `${OFFICIAL_SITE}sitemap.xml`);
-});
 
 // ─────────────────────────────────────────────
 // 公開 API：真實訪客線上人數統計與心跳 (Real-Time Visitor Tracking)
