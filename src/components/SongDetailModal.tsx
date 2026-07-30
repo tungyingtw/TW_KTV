@@ -154,7 +154,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                   }}
-                  title={isFav ? '已加入最愛' : '加入最愛'}
+                  title={isFav ? '已加入歌本' : '加入歌本'}
                 >
                   <Heart size={24} fill={isFav ? 'var(--accent-pink, #ec4899)' : 'none'} />
                 </button>

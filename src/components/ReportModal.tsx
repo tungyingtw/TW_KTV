@@ -48,7 +48,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
       setSubmitted(true);
       setTimeout(onClose, 2000);
     } else {
-      setError('送出失敗，請確認後端服務已開啟');
+      setError('送出失敗，請稍後再試');
     }
   };
 
@@ -78,6 +78,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
       >
         <button
           onClick={onClose}
+          aria-label="關閉回報表單"
           style={{
             position: 'absolute', top: '16px', right: '16px',
             background: 'var(--bg-glass, rgba(255,255,255,0.08))', border: 'none', borderRadius: '50%',
@@ -89,7 +90,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
         </button>
 
         {submitted ? (
-          /* 送出成功視窗 */
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
             <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>已收到您的回報</div>
@@ -111,7 +111,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               </div>
             </div>
 
-            {/* 問題類型選擇 */}
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '8px', fontWeight: 600 }}>
                 異常類型 <span style={{ color: '#f87171' }}>*</span>
@@ -142,7 +141,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               </div>
             </div>
 
-            {/* 廠牌選擇 */}
             {issueType !== 'other' && (
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
@@ -172,7 +170,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               </div>
             )}
 
-            {/* 補充說明 */}
             <div style={{ marginBottom: '18px' }}>
               <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
                 補充說明
@@ -198,7 +195,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               />
             </div>
 
-            {/* 錯誤訊息 */}
             {error && (
               <div style={{
                 background: 'rgba(248,113,113,0.15)',
@@ -209,11 +205,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 fontSize: '0.85rem',
                 marginBottom: '14px',
               }}>
-                ⚠️ {error}
+                {error}
               </div>
             )}
 
-            {/* 送出按鈕 */}
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -235,7 +230,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               }}
             >
               <Send size={16} />
-              <span>{isSubmitting ? '傳送中...' : '送出資料異常回報'}</span>
+              <span>{isSubmitting ? '送出中...' : '送出資料修正回報'}</span>
             </button>
           </>
         )}

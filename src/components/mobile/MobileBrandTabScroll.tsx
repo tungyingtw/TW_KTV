@@ -131,7 +131,6 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   return (
     <div style={{ padding: '0 10px 10px', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0, position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
-        {/* Left Arrow Button */}
         {canScrollLeft && (
           <button
             onClick={() => handleScroll('left')}
@@ -160,7 +159,6 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
             flex: 1, minWidth: 0, userSelect: 'none', touchAction: 'pan-x',
           }}
         >
-          {/* 全部廠牌 Tab */}
           <button
             onClick={handleAllClick}
             style={{
@@ -182,7 +180,6 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
             全部廠牌 (10){formatCount(totalSongCount)}
           </button>
 
-          {/* 10大 KTV 廠牌按鈕 - 動態依【收錄歌曲數量】由多至少優先排序！ */}
           {displayedBrands.map(brand => {
             const isSingleSelected = !isMultiSelecting && selectedBrand === brand.id;
             const isMultiSelected = selectedBrands.includes(brand.id);
@@ -216,7 +213,6 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           })}
         </div>
 
-        {/* Right Arrow Button */}
         {canScrollRight && (
           <button
             onClick={() => handleScroll('right')}
@@ -228,7 +224,6 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
         )}
       </div>
 
-      {/* 🎯 手機端廠牌複選比對列 (Multi-Brand Action Bar) */}
       {selectedBrands.length > 0 && (
         <div style={{
           display: 'flex',
@@ -283,9 +278,9 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                 }}
-                title={brandFilterMode === 'all_of_them' ? '切換為：任一家有收錄 (OR)' : '切換為：全部廠牌均有收錄 (AND)'}
+                title={brandFilterMode === 'all_of_them' ? '切換為：任一家有收錄即可' : '切換為：選取廠牌都要有收錄'}
               >
-                {brandFilterMode === 'all_of_them' ? '🔗 全都有(AND)' : '🔀 任一家(OR)'}
+                {brandFilterMode === 'all_of_them' ? '全都有' : '任一家'}
               </button>
             )}
 

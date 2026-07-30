@@ -233,13 +233,13 @@
       </div>
 
       <div class="card" style="margin-top:20px; border-color:rgba(96,165,250,0.2)">
-        <h3 style="margin-bottom:12px; font-size:0.95rem;">🔄 管理員工作流程</h3>
+        <h3 style="margin-bottom:12px; font-size:0.95rem;">🔄 維護工作流程</h3>
         <ol style="color:var(--muted); line-height:2; padding-left:18px; font-size:0.88rem;">
           <li>前往「<b style="color:var(--yellow)">⚑ 使用者回報</b>」查看使用者提交的資料錯誤回報</li>
           <li>點擊「<b style="color:var(--blue)">套用修正</b>」按鈕，選擇正確收錄狀態，直接更新資料庫</li>
           <li>將回報標記為「<b style="color:var(--green)">已解決</b>」完成處理</li>
           <li>前往「<b style="color:var(--red)">⚠️ 爭議投票</b>」查看否定票 ≥ 5 的歌曲</li>
-          <li>實際驗證後套用修正，資料庫即時生效（下次使用者重新整理即可看到更新）</li>
+          <li>實際驗證後套用修正，資料會於使用者重新整理頁面後更新</li>
         </ol>
       </div>
 
@@ -486,7 +486,7 @@ async function loadReports() {
           ${r.issueType !== 'missing_song' && r.issueType !== 'other' ? `
             <button class="btn btn-blue" onclick="openFix('${r.songId}', '${r.songTitle}', '${r.artist}', '${r.brandId}', '${r.issueType}')">🔧 套用修正</button>
           ` : ''}
-          <button class="btn btn-green" onclick="updateReport('${r.id}', 'resolved')">✅ 已解決 / 寫入</button>
+          <button class="btn btn-green" onclick="updateReport('${r.id}', 'resolved')">✅ 標記已解決</button>
           <button class="btn btn-yellow" onclick="updateReport('${r.id}', 'reviewed')">👁 已審查</button>
           <button class="btn btn-ghost" onclick="updateReport('${r.id}', 'rejected')">✗ 拒絕</button>
         </div>
@@ -497,7 +497,7 @@ async function loadReports() {
 
 async function updateReport(id, status) {
   await apiFetch(`/api/admin/report/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
-  showToast(`✅ 回報狀態已更新為：${status}`, 'success');
+  showToast(`回報狀態已更新為：${status}`, 'success');
   loadReports();
   loadStats();
 }
@@ -515,7 +515,7 @@ async function loadDisputed() {
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
-          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前 catalog 標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '✅ 有收錄' : '❌ 未收錄'}</b></div>
+          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '✅ 有收錄' : '❌ 未收錄'}</b></div>
           <div class="vote-bar">
             <span class="vote-confirm">👍 ${d.confirm}</span>
             <span class="vote-deny">👎 ${d.deny}</span>
@@ -544,7 +544,7 @@ async function loadVerified() {
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
-          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; catalog 標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '✅ 有收錄' : '❌ 未收錄'}</b></div>
+          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '✅ 有收錄' : '❌ 未收錄'}</b></div>
           <div class="vote-bar">
             <span class="vote-confirm">👍 ${d.confirm}</span>
             <span class="vote-deny">👎 ${d.deny}</span>
@@ -552,7 +552,7 @@ async function loadVerified() {
           </div>
         </div>
         <div class="card-actions">
-          ${!d.currentStatus ? `<button class="btn btn-green" onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'has_song')">✅ 套用社群驗證（標記為有收錄）</button>` : `<span style="color:var(--muted);font-size:0.82rem;">✓ catalog 資料已正確</span>`}
+          ${!d.currentStatus ? `<button class="btn btn-green" onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'has_song')">✅ 套用社群驗證（標記為有收錄）</button>` : `<span style="color:var(--muted);font-size:0.82rem;">✓ 目前資料已正確</span>`}
         </div>
       </div>
     </div>
@@ -605,11 +605,11 @@ async function applyFix() {
   const data = await res.json();
 
   if (data.success) {
-    showToast(`✅ 修正完成：《${data.songTitle}》${brandId} → ${available ? '有收錄' : '未收錄'}`, 'success');
+    showToast(`修正完成：《${data.songTitle}》${brandId} → ${available ? '有收錄' : '未收錄'}`, 'success');
     closeFix();
     loadStats();
   } else {
-    showToast(`❌ 修正失敗：${data.error}`, 'error');
+    showToast(`修正失敗：${data.error}`, 'error');
   }
 }
 
@@ -625,13 +625,13 @@ async function resetStatsCounter() {
     });
     const data = await res.json();
     if (data.success) {
-      showToast(`✅ 已成功將累積訪客查詢人數重置為 ${data.totalVisits} 人次！`, 'success');
+      showToast(`已將累積訪客查詢人數設定為 ${data.totalVisits} 人次`, 'success');
       try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
     } else {
-      showToast('❌ 重置失敗：' + (data.error || '未知錯誤'), 'error');
+      showToast('設定失敗：' + (data.error || '請稍後再試'), 'error');
     }
   } catch (e) {
-    showToast('❌ 網路請求失敗：' + e.message, 'error');
+    showToast('操作失敗，請稍後再試', 'error');
   }
 }
 
