@@ -364,6 +364,7 @@ const BASE_INITIAL_VISITS = 1;
 const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
+const STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits';
 const VOTES_REDIS_KEY = 'ktv:votes';
 const REPORTS_REDIS_KEY = 'ktv:reports';
 
@@ -401,9 +402,32 @@ function saveStats(data) {
 
 let currentStats = loadStats();
 
+async function initializeJsonStoreInRedis(redisKey, localData, label) {
+  if (!USE_REDIS) return;
+
+  try {
+    const existing = await redisCmd('get', redisKey);
+    if (existing !== null && existing !== undefined) return;
+
+    const hasLocalData = Array.isArray(localData)
+      ? localData.length > 0
+      : localData && typeof localData === 'object' && Object.keys(localData).length > 0;
+
+    if (!hasLocalData) return;
+
+    await redisCmd('set', redisKey, JSON.stringify(localData));
+    console.log(`[${label}] Redis 初始化：已從本機 JSON 匯入既有資料`);
+  } catch (err) {
+    console.warn(`[${label}] Redis 初始化同步失敗:`, err.message);
+  }
+}
+
 // ── 啟動時從 Redis 同步初始值（確保重啟後數字連續）──
 if (USE_REDIS) {
-  redisCmd('get', 'ktv:totalVisits').then(val => {
+  initializeJsonStoreInRedis(REPORTS_REDIS_KEY, loadReports(), 'Reports');
+  initializeJsonStoreInRedis(VOTES_REDIS_KEY, loadVotes(), 'Votes');
+
+  redisCmd('get', STATS_REDIS_TOTAL_KEY).then(val => {
     if (val !== null && val !== undefined) {
       const n = parseInt(String(val), 10);
       if (!isNaN(n) && n > currentStats.totalVisits) {
@@ -412,7 +436,7 @@ if (USE_REDIS) {
       }
     } else {
       // 首次部署：把 stats.json 的基數寫入 Redis
-      redisCmd('set', 'ktv:totalVisits', currentStats.totalVisits)
+      redisCmd('set', STATS_REDIS_TOTAL_KEY, currentStats.totalVisits)
         .then(() => console.log(`[Stats] Redis 初始化累積人數基數：${currentStats.totalVisits}`))
         .catch(e => console.error('[Stats] Redis 初始化失敗:', e.message));
     }
@@ -438,7 +462,7 @@ app.get('/api/stats/ping', async (req, res) => {
     // ── Redis 模式：原子化計數 + TTL 去重，完全持久化 ──
     try {
       const VISIT_KEY = `ktv:visit:${visitorId}`;
-      const TOTAL_KEY = 'ktv:totalVisits';
+      const TOTAL_KEY = STATS_REDIS_TOTAL_KEY;
       const COOLDOWN_SEC = 12 * 60 * 60; // 12 小時 TTL
 
       // 檢查此訪客在 12 小時內是否已計算過（Redis key 有 TTL，自動過期）
@@ -928,10 +952,19 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
 });
 
 // ── 後台管理 API：一鍵重置 / 自訂累積訪客計數器 ──
-app.post('/api/admin/stats/reset', requireAdmin, (req, res) => {
+app.post('/api/admin/stats/reset', requireAdmin, async (req, res) => {
   const newCount = (typeof req.body.count === 'number' && req.body.count >= 0) ? req.body.count : 1;
   currentStats.totalVisits = newCount;
   saveStats(currentStats);
+
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', STATS_REDIS_TOTAL_KEY, newCount);
+    } catch (err) {
+      console.warn('[Stats] Redis reset sync failed:', err.message);
+    }
+  }
+
   logAdminAction('RESET_STATS', { newCount, adminIp: req.ip });
   res.json({ success: true, totalVisits: currentStats.totalVisits });
 });
