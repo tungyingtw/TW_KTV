@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /TW_KTV/admin.html
+Disallow: /TW_KTV/sys-admin-panel
+Disallow: /admin.html
+Disallow: /sys-admin-panel
 
 Sitemap: https://tungyingtw.github.io/TW_KTV/sitemap.xml
