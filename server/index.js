@@ -265,24 +265,10 @@ function normalizeString(str) {
 }
 
 // ─────────────────────────────────────────────
-// Google Search Console / Sitemap.xml 動態生成 (Google Indexing Engine)
+// Render sitemap requests should point crawlers to the official GitHub Pages sitemap.
 // ─────────────────────────────────────────────
 app.get('/sitemap.xml', (req, res) => {
-  const baseUrl = 'https://tw-ktv.onrender.com';
-  const today = new Date().toISOString().split('T')[0];
-  const brands = ['cashbox', 'holiday', 'watering_hole', 'starlight', 'singgo', 'vmix', 'superstar', 'yinyuan', 'golden_voice', 'hongyin'];
-
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-  xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-  xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
-
-  brands.forEach(b => {
-    xml += `  <url>\n    <loc>${baseUrl}/?brand=${b}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
-  });
-
-  xml += `</urlset>`;
-  res.header('Content-Type', 'application/xml');
-  res.send(xml);
+  res.redirect(301, `${OFFICIAL_SITE}sitemap.xml`);
 });
 
 // ─────────────────────────────────────────────
