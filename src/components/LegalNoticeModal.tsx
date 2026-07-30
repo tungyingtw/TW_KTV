@@ -14,6 +14,9 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="legal-notice-title"
       style={{
         position: 'fixed',
         top: 0,
@@ -37,7 +40,9 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           borderRadius: 'var(--radius-lg, 16px)',
           width: '100%',
           maxWidth: '780px',
-          maxHeight: '85vh',
+          height: 'min(760px, calc(100vh - 32px))',
+          maxHeight: 'calc(100vh - 32px)',
+          minHeight: 'min(620px, calc(100vh - 32px))',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: 'var(--shadow-lg, 0 20px 50px rgba(0, 0, 0, 0.4))',
@@ -48,15 +53,17 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
       >
         <div
           style={{
-            padding: '20px 24px',
+            padding: '18px 24px',
             borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: '16px',
+            flexShrink: 0,
           }}
         >
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary, #ffffff)' }}>
+            <h3 id="legal-notice-title" style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary, #ffffff)' }}>
               關於本站與法律條款 (Terms & Privacy Policy)
             </h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary, #94a3b8)' }}>
@@ -64,6 +71,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             </p>
           </div>
           <button
+            aria-label="關閉"
             onClick={onClose}
             style={{
               background: 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
@@ -76,6 +84,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
             <X size={18} />
@@ -90,6 +99,8 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             backgroundColor: 'var(--bg-glass, rgba(15, 23, 42, 0.2))',
             padding: '0 16px',
             overflowX: 'auto',
+            minHeight: '48px',
+            flexShrink: 0,
           }}
         >
           <button
@@ -178,6 +189,8 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           style={{
             padding: '24px',
             overflowY: 'auto',
+            flex: '1 1 auto',
+            minHeight: 0,
             fontSize: '0.92rem',
             lineHeight: 1.7,
             color: 'var(--text-secondary, #cbd5e1)',
@@ -352,6 +365,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             backgroundColor: 'var(--bg-glass, rgba(15, 23, 42, 0.6))',
             display: 'flex',
             justifyContent: 'flex-end',
+            flexShrink: 0,
           }}
         >
           <button
