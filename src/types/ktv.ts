@@ -62,8 +62,11 @@ export interface VoteData {
   officialMv?: number;   // 實測「原版 MV」票數
   editedMv?: number;     // 實測「非原版/剪輯 MV」票數
   confidence: VoteConfidence;
+  guidedVocal?: number;
+  noGuidedVocal?: number;
   userVote?: 'confirm' | 'deny';
   userMvVote?: 'official' | 'edited';
+  userGuideVote?: 'guided' | 'none';
 }
 
 /** 一首歌所有廠牌的投票集合 */
