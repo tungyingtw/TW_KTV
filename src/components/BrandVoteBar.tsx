@@ -90,6 +90,10 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
           noGuidedVocal: result.noGuidedVocal ?? prev.noGuidedVocal ?? 0,
           confidence: result.confidence,
         }));
+      } else {
+        setUserVote(vote);
+        setVoteData(prev => ({ ...prev, [vote]: prev[vote] + 1 }));
+        try { localStorage.setItem(LS_KEY_SONG(songId, brandId), vote); } catch {}
       }
       setIsVoting(false);
       return;
@@ -113,9 +117,20 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
         confirm: result.confirm,
         deny: result.deny,
         guidedVocal: result.guidedVocal ?? prev.guidedVocal ?? 0,
-        noGuidedVocal: result.noGuidedVocal ?? prev.noGuidedVocal ?? 0,
-        confidence: result.confidence,
-      }));
+          noGuidedVocal: result.noGuidedVocal ?? prev.noGuidedVocal ?? 0,
+          confidence: result.confidence,
+        }));
+    } else {
+      setUserVote(previousVote);
+      setVoteData(prev => {
+        const next = { ...prev, [vote]: Math.max(0, prev[vote] - 1) };
+        if (previousVote) next[previousVote] += 1;
+        return next;
+      });
+      try {
+        if (previousVote) localStorage.setItem(LS_KEY_SONG(songId, brandId), previousVote);
+        else localStorage.removeItem(LS_KEY_SONG(songId, brandId));
+      } catch {}
     }
 
     setIsVoting(false);
@@ -142,6 +157,10 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
           noGuidedVocal: result.noGuidedVocal ?? 0,
           confidence: result.confidence,
         }));
+      } else {
+        setUserGuideVote(guideVote);
+        setVoteData(prev => ({ ...prev, [voteKey]: (prev[voteKey] || 0) + 1 }));
+        try { localStorage.setItem(LS_KEY_GUIDE(songId, brandId), guideVote); } catch {}
       }
       setIsGuideVoting(false);
       return;
@@ -165,9 +184,20 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
         confirm: result.confirm,
         deny: result.deny,
         guidedVocal: result.guidedVocal ?? 0,
-        noGuidedVocal: result.noGuidedVocal ?? 0,
-        confidence: result.confidence,
-      }));
+          noGuidedVocal: result.noGuidedVocal ?? 0,
+          confidence: result.confidence,
+        }));
+    } else {
+      setUserGuideVote(previousGuideVote);
+      setVoteData(prev => {
+        const next = { ...prev, [voteKey]: Math.max(0, (prev[voteKey] || 0) - 1) };
+        if (previousGuideVote) next[previousKey] = (next[previousKey] || 0) + 1;
+        return next;
+      });
+      try {
+        if (previousGuideVote) localStorage.setItem(LS_KEY_GUIDE(songId, brandId), previousGuideVote);
+        else localStorage.removeItem(LS_KEY_GUIDE(songId, brandId));
+      } catch {}
     }
     setIsGuideVoting(false);
   }, [brandId, isGuideVoting, songId, userGuideVote]);
