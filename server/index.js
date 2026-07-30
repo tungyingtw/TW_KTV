@@ -63,6 +63,14 @@ app.get('/', (req, res) => {
   res.redirect(301, OFFICIAL_SITE);
 });
 
+// 所有前端 HTML 靜態頁面存取一律 301 重導向到正式 GitHub Pages（含 index.html 直接存取）
+// 這樣 Google 就不會索引 Render 備份站的任何頁面
+app.get('/index.html', (req, res) => res.redirect(301, OFFICIAL_SITE));
+app.get('/privacy.html', (req, res) => res.redirect(301, `${OFFICIAL_SITE}privacy.html`));
+app.get('/terms.html', (req, res) => res.redirect(301, `${OFFICIAL_SITE}terms.html`));
+app.get('/about.html', (req, res) => res.redirect(301, `${OFFICIAL_SITE}about.html`));
+app.get('/contact.html', (req, res) => res.redirect(301, `${OFFICIAL_SITE}contact.html`));
+
 // /admin 與 /sys-admin-panel 僅限本機，不重導向（後面另有路由處理）
 // /api/* 路由也不重導向（後面另有 API 路由處理）
 
