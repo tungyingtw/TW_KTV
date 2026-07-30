@@ -79,7 +79,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           padding: '24px',
           maxHeight: '85vh',
           overflowY: 'auto',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          border: '1px solid var(--border-color)',
         }}
       >
         <div style={{
@@ -88,13 +88,13 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           justifyContent: 'space-between',
           marginBottom: '20px',
         }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             進階條件過濾與排序
           </h3>
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.08)',
+              background: 'var(--bg-card-hover)',
               border: 'none',
               borderRadius: '50%',
               width: '32px',
@@ -129,9 +129,9 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                 style={{
                   padding: '10px 12px',
                   borderRadius: 'var(--radius-md)',
-                  background: filters.sortBy === item.id ? 'var(--accent-pink)' : 'rgba(255, 255, 255, 0.05)',
+                  background: filters.sortBy === item.id ? 'var(--accent-pink)' : 'var(--bg-card-hover)',
                   color: filters.sortBy === item.id ? '#fff' : 'var(--text-secondary)',
-                  border: `1px solid ${filters.sortBy === item.id ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                  border: `1px solid ${filters.sortBy === item.id ? 'transparent' : 'var(--border-color)'}`,
                   fontWeight: 600,
                   fontSize: '0.82rem',
                   cursor: 'pointer',
@@ -159,9 +159,9 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                   style={{
                     padding: '8px 4px',
                     borderRadius: 'var(--radius-md)',
-                    background: isSelected ? 'rgba(168, 85, 247, 0.3)' : 'rgba(255, 255, 255, 0.05)',
+                    background: isSelected ? 'rgba(168, 85, 247, 0.3)' : 'var(--bg-card-hover)',
                     color: isSelected ? '#c084fc' : 'var(--text-secondary)',
-                    border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.6)' : 'rgba(255, 255, 255, 0.1)'}`,
+                    border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.6)' : 'var(--border-color)'}`,
                     fontWeight: 600,
                     fontSize: '0.8rem',
                     cursor: 'pointer',
@@ -186,10 +186,10 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               justifyContent: 'space-between',
               padding: '12px',
               borderRadius: 'var(--radius-md)',
-              background: 'rgba(255, 255, 255, 0.04)',
+              background: 'var(--bg-card-hover)',
               cursor: 'pointer',
             }}>
-              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
                 僅顯示官方原版 MV (Official MV)
               </span>
               <input
@@ -206,10 +206,10 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               justifyContent: 'space-between',
               padding: '12px',
               borderRadius: 'var(--radius-md)',
-              background: 'rgba(255, 255, 255, 0.04)',
+              background: 'var(--bg-card-hover)',
               cursor: 'pointer',
             }}>
-              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
                 僅顯示原聲原唱 (Original Vocal)
               </span>
               <input
@@ -238,9 +238,9 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                   style={{
                     padding: '10px',
                     borderRadius: 'var(--radius-md)',
-                    background: isSelected ? 'rgba(236, 72, 153, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    background: isSelected ? 'rgba(236, 72, 153, 0.2)' : 'var(--bg-card-hover)',
                     color: isSelected ? '#f472b6' : 'var(--text-secondary)',
-                    border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
+                    border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.4)' : 'var(--border-color)'}`,
                     fontWeight: 600,
                     fontSize: '0.85rem',
                     cursor: 'pointer',

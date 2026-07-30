@@ -103,7 +103,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
         </div>
 
         <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>語種：</span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>語種：</span>
           {LANGUAGES.map(lang => {
             const isSelected = lang === '全部' ? filters.selectedLanguages.length === 0 : filters.selectedLanguages.includes(lang);
             return (
@@ -111,9 +111,9 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
                 key={lang}
                 onClick={() => toggleLanguage(lang)}
                 style={{
-                  background: isSelected ? 'rgba(236, 72, 153, 0.22)' : 'rgba(255, 255, 255, 0.05)',
+                  background: isSelected ? 'rgba(236, 72, 153, 0.22)' : 'var(--bg-card-hover)',
                   color: isSelected ? '#f472b6' : 'var(--text-secondary)',
-                  border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.45)' : 'rgba(255, 255, 255, 0.08)'}`,
+                  border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.45)' : 'var(--border-color)'}`,
                   padding: '3px 9px',
                   borderRadius: '20px',
                   fontSize: '0.75rem',
@@ -140,9 +140,9 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
                 key={item.id}
                 onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id }))}
                 style={{
-                  background: isSelected ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                  background: isSelected ? 'rgba(168, 85, 247, 0.25)' : 'var(--bg-card-hover)',
                   color: isSelected ? '#c084fc' : 'var(--text-secondary)',
-                  border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
+                  border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.5)' : 'var(--border-color)'}`,
                   padding: '3px 9px',
                   borderRadius: '20px',
                   fontSize: '0.75rem',
@@ -158,8 +158,8 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           })}
         </div>
 
-        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOfficialMv ? '#34d399' : '#cbd5e1', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
+        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOfficialMv ? '#34d399' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
             <input
               type="checkbox"
               checked={filters.onlyOfficialMv}
@@ -169,7 +169,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             <Video size={13} /> 原版 MV
           </label>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOriginalVocal ? '#f472b6' : '#cbd5e1', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOriginalVocal ? '#f472b6' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
             <input
               type="checkbox"
               checked={filters.onlyOriginalVocal}
@@ -181,7 +181,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
         </div>
 
         <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
-          <div style={{ fontSize: '0.78rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
             結果：<strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首
           </div>
 

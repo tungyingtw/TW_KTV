@@ -170,9 +170,9 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
               justifyContent: 'center',
               background: !isMultiSelecting && selectedBrand === 'all'
                 ? 'linear-gradient(135deg, #ec4899, #8b5cf6)'
-                : 'rgba(30, 41, 59, 0.75)',
-              color: '#fff',
-              border: `1px solid ${!isMultiSelecting && selectedBrand === 'all' ? 'transparent' : 'rgba(255, 255, 255, 0.12)'}`,
+                : 'var(--bg-card)',
+              color: !isMultiSelecting && selectedBrand === 'all' ? '#fff' : 'var(--text-primary)',
+              border: `1px solid ${!isMultiSelecting && selectedBrand === 'all' ? 'transparent' : 'var(--border-color)'}`,
               padding: '0 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
               cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, boxSizing: 'border-box',
             }}
@@ -199,7 +199,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                   justifyContent: 'center',
                   background: isSelected
                     ? `linear-gradient(135deg, ${brand.color}, #8b5cf6)`
-                    : 'rgba(30, 41, 59, 0.75)',
+                    : 'var(--bg-card)',
                   color: isSelected ? '#ffffff' : brand.color,
                   border: `1px solid ${isSelected ? 'transparent' : `${brand.color}44`}`,
                   padding: '0 10px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
@@ -229,7 +229,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(30, 41, 59, 0.85)',
+          background: 'var(--bg-card)',
           border: '1px solid rgba(236, 72, 153, 0.3)',
           borderRadius: '10px',
           padding: '6px 10px',
@@ -239,7 +239,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           gap: '6px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
-            <span style={{ color: '#94a3b8', fontWeight: 600 }}>複選 ({selectedBrands.length}):</span>
+            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>複選 ({selectedBrands.length}):</span>
             {selectedBrands.map(bId => {
               const b = BRAND_LIST.find(x => x.id === bId);
               return (
@@ -268,8 +268,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
               <button
                 onClick={onToggleFilterMode}
                 style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'var(--bg-card-hover)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '6px',
                   padding: '2px 6px',
                   color: brandFilterMode === 'all_of_them' ? '#4ade80' : '#38bdf8',
