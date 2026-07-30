@@ -1,0 +1,85 @@
+html {
+  min-width: 320px;
+  scrollbar-gutter: stable;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+header,
+footer {
+  flex-shrink: 0;
+}
+
+header {
+  min-height: 65px;
+}
+
+main {
+  width: min(100%, 828px);
+  flex: 1 0 auto;
+  margin: 40px auto !important;
+  padding: 0 24px 72px !important;
+}
+
+.breadcrumb {
+  min-height: 24px;
+}
+
+h1 {
+  min-height: 42px;
+}
+
+.meta {
+  min-height: 22px;
+}
+
+.note,
+.feature-card,
+.email-card {
+  width: 100%;
+}
+
+.feature-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+footer {
+  min-height: 104px;
+}
+
+footer a {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  header {
+    min-height: 82px;
+    align-items: flex-start !important;
+  }
+
+  main {
+    margin: 28px auto !important;
+    padding: 0 18px 56px !important;
+  }
+
+  h1 {
+    min-height: auto;
+    font-size: 1.45rem !important;
+    line-height: 1.35;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .email-card {
+    align-items: flex-start !important;
+  }
+}
