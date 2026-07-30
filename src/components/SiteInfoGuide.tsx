@@ -82,7 +82,6 @@ export const SiteInfoGuide: React.FC = () => {
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
         }}
       >
-        {/* Title Header with Expand/Collapse Button */}
         <div
           style={{
             display: 'flex',

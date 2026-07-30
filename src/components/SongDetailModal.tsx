@@ -87,7 +87,6 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               boxSizing: 'border-box',
             }}
           >
-            {/* Close Button */}
             <button
               onClick={onClose}
               style={{
@@ -110,7 +109,6 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               <X size={18} />
             </button>
 
-            {/* Song Header Section */}
             <div style={{ paddingRight: '44px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <span

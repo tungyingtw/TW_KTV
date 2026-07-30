@@ -491,7 +491,7 @@ app.post('/api/report', async (req, res) => {
     status: 'pending',
   };
 
-  // ── 自動處理回報單與缺歌自動上架機制 (Auto-Consensus & Auto-Inject Engine) ──
+  // ── 社群回報共識處理與資料同步 ──
   let isAutoResolved = false;
   try {
     if (issueType === 'missing_song' && songTitle) {
@@ -911,6 +911,6 @@ app.get('/api/admin/logs', requireAdmin, (req, res) => {
 // ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`[Server] KTV Song API 服務啟動於: http://localhost:${PORT}`);
-  console.log(`[Server] 管理後台 API Token 狀態: ${ADMIN_TOKEN ? '已設定' : '未設定'}`);
+  console.log(`[Server] Maintenance API token status: ${ADMIN_TOKEN ? 'set' : 'unset'}`);
   console.log(`[Server] Admin Panel: http://localhost:${PORT}/admin`);
 });

@@ -43,7 +43,7 @@ export function generateBinCatalog() {
     } catch (e) {}
   }
 
-  // 創建混淆二進位 Buffer (Header + Obfuscated Bytes)
+  // Create the obfuscated binary payload.
   const outputBuffer = Buffer.alloc(MAGIC_HEADER.length + jsonBytes.length);
   MAGIC_HEADER.copy(outputBuffer, 0);
 

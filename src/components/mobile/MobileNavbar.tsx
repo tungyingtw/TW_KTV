@@ -83,7 +83,6 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
       boxSizing: 'border-box', width: '100%',
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-        {/* Row 1: Brand & Counters */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
@@ -121,7 +120,6 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
           </div>
         </div>
 
-        {/* Row 2: Actions Bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <button

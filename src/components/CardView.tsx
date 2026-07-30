@@ -128,7 +128,6 @@ export const CardView: React.FC<CardViewProps> = ({
               transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
             }}
           >
-            {/* Header: Title & Favorite Button */}
             <div>
               <div style={{
                 display: 'flex',
