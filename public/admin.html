@@ -54,12 +54,22 @@
   }
   header h1 { font-size: 1.15rem; font-weight: 800; }
   header h1 span { color: var(--accent); }
-  .header-stats { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; }
+  .header-stats { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; align-items: center; }
   .stat-chip {
     background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
     padding: 4px 12px; font-size: 0.8rem; color: var(--muted);
   }
   .stat-chip b { color: var(--text); }
+  .btn-logout {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.35);
+    color: var(--red); border-radius: 20px; padding: 5px 14px;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .btn-logout:hover {
+    background: rgba(248,113,113,0.22); border-color: rgba(248,113,113,0.6);
+  }
 
   nav {
     background: var(--surface); border-bottom: 1px solid var(--border);
@@ -184,6 +194,10 @@
     <div class="header-stats" id="stats-bar">
       <div class="stat-chip">載入中...</div>
     </div>
+    <button class="btn-logout" onclick="doLogout()" title="登出管理後台並返回首頁">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      登出並返回首頁
+    </button>
   </header>
 
   <nav>
@@ -348,6 +362,18 @@ function doLogin() {
 document.getElementById('token-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
+
+// ── 登出並返回首頁 ──
+function doLogout() {
+  if (!confirm('確定要登出管理後台並返回首頁嗎？')) return;
+  sessionStorage.removeItem('ktv_admin_token');
+  adminToken = '';
+  // 導向首頁（自動判斷本機 or GitHub Pages）
+  const homeUrl = isLocalEnv
+    ? `${window.location.protocol}//${window.location.hostname}:5173/`
+    : 'https://tungyingtw.github.io/TW_KTV/';
+  window.location.href = homeUrl;
+}
 
 async function verifyLogin() {
   const errEl = document.getElementById('login-err');
