@@ -346,14 +346,14 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                           {b.shortName}
                         </div>
                         <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                          {status.mvType === 'official_mv' && (
-                            <span className="badge badge-official-mv" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
-                              MV
-                            </span>
-                          )}
                           {status.audioType === 'original_vocal' && (
                             <span className="badge badge-original-vocal" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
                               原唱
+                            </span>
+                          )}
+                          {status.audioType === 'guided_vocal' && (
+                            <span className="badge badge-guided-vocal" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
+                              導唱
                             </span>
                           )}
                         </div>

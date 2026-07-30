@@ -264,14 +264,14 @@ export const CardView: React.FC<CardViewProps> = ({
                       <span style={{ fontWeight: 700, color: b.color, fontSize: '0.85rem' }}>
                         {b.shortName}
                       </span>
-                      {status.mvType === 'official_mv' && (
-                        <span className="badge badge-official-mv" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
-                          MV
-                        </span>
-                      )}
                       {status.audioType === 'original_vocal' && (
                         <span className="badge badge-original-vocal" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
                           原唱
+                        </span>
+                      )}
+                      {status.audioType === 'guided_vocal' && (
+                        <span className="badge badge-guided-vocal" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                          導唱
                         </span>
                       )}
                     </div>

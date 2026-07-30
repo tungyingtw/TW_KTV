@@ -59,6 +59,15 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
     };
   };
 
+  const getCompactVocalLabel = (song: Song) => {
+    const hasOriginal = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.audioType === 'original_vocal');
+    const hasGuided = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.audioType === 'guided_vocal');
+
+    if (hasOriginal) return { label: '原唱', color: 'var(--accent-pink, #ec4899)' };
+    if (hasGuided) return { label: '導唱', color: '#22d3ee' };
+    return { label: '-', color: 'var(--text-muted, #64748b)' };
+  };
+
   if (songs.length === 0) {
     return (
       <div style={{ padding: '0 20px' }}>
@@ -148,7 +157,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                 <th style={{ padding: '10px 6px', width: '38px', textAlign: 'center' }}></th>
                 <th style={{ padding: '10px 8px' }}>歌曲</th>
                 <th style={{ padding: '10px 6px', width: '76px', textAlign: 'center' }}>收錄</th>
-                <th style={{ padding: '10px 6px', width: '48px', textAlign: 'center' }}>MV</th>
+                <th style={{ padding: '10px 6px', width: '54px', textAlign: 'center' }}>導唱</th>
               </tr>
             </thead>
             <tbody>
@@ -156,6 +165,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                 const isFav = favorites.includes(song.id);
                 const isSelected = selectedSongId === song.id;
                 const availability = getCompactAvailability(song);
+                const vocalStatus = getCompactVocalLabel(song);
 
                 return (
                   <tr
@@ -235,21 +245,14 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ textAlign: 'center', padding: '10px 4px' }}>
-                      {song.youtubeUrl ? (
-                        <a
-                          href={song.youtubeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-secondary"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ padding: '6px 8px', borderRadius: '8px', color: '#f87171' }}
-                          title="開啟 MV"
-                        >
-                          <Video size={15} />
-                        </a>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted, #64748b)' }}>-</span>
-                      )}
+                      <span style={{
+                        color: vocalStatus.color,
+                        fontWeight: 800,
+                        fontSize: '0.74rem',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {vocalStatus.label}
+                      </span>
                     </td>
                   </tr>
                 );
@@ -428,8 +431,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       );
                     }
 
-                    const isOfficialMv = status.mvType === 'official_mv';
                     const isOriginalVocal = status.audioType === 'original_vocal';
+                    const hasGuidedVocal = status.audioType === 'guided_vocal';
 
                     if (isSingleBrand) {
                       return (
@@ -482,14 +485,14 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             </div>
                             
                             <div style={{ display: 'flex', gap: '5px' }}>
-                              {isOfficialMv && (
-                                <span className="badge badge-official-mv" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
-                                  官方原版 MV
-                                </span>
-                              )}
                               {isOriginalVocal && (
                                 <span className="badge badge-original-vocal" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
                                   原聲原唱
+                                </span>
+                              )}
+                              {hasGuidedVocal && (
+                                <span className="badge badge-guided-vocal" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                  導唱
                                 </span>
                               )}
                             </div>
@@ -538,14 +541,14 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           </div>
                           
                           <div style={{ display: 'flex', gap: '2px', minHeight: '12px', alignItems: 'center' }}>
-                            {isOfficialMv && (
-                              <span className="badge badge-official-mv" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
-                                MV
-                              </span>
-                            )}
                             {isOriginalVocal && (
                               <span className="badge badge-original-vocal" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
                                 原唱
+                              </span>
+                            )}
+                            {hasGuidedVocal && (
+                              <span className="badge badge-guided-vocal" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
+                                導唱
                               </span>
                             )}
                           </div>
