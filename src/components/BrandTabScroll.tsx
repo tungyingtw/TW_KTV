@@ -324,7 +324,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           gap: '8px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#c084fc', fontWeight: 700 }}>🎯 已複選 {selectedBrands.length} 家廠牌比對：</span>
+            <span style={{ color: '#c084fc', fontWeight: 700 }}>已複選 {selectedBrands.length} 家廠牌比對：</span>
             {selectedBrands.map(bId => {
               const b = BRAND_LIST.find(x => x.id === bId);
               return (
