@@ -11,7 +11,7 @@ import {
   ThumbsUp,
 } from 'lucide-react';
 import type { BrandId, VoteConfidence, VoteData } from '../types/ktv';
-import { submitReport, submitVote } from '../services/communityService';
+import { submitGuidedVote, submitVote } from '../services/communityService';
 
 interface BrandVoteBarProps {
   songId: string;
@@ -57,6 +57,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
     }
   });
   const [isVoting, setIsVoting] = useState(false);
+  const [isGuideVoting, setIsGuideVoting] = useState(false);
 
   useEffect(() => {
     if (!initialVote) return;
@@ -75,12 +76,26 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
     if (isVoting) return;
 
     if (userVote === vote) {
+      setIsVoting(true);
       setUserVote(null);
       setVoteData(prev => ({ ...prev, [vote]: Math.max(0, prev[vote] - 1) }));
       try { localStorage.removeItem(LS_KEY_SONG(songId, brandId)); } catch {}
+      const result = await submitVote(songId, brandId, vote, { removeVote: true });
+      if (result) {
+        setVoteData(prev => ({
+          ...prev,
+          confirm: result.confirm,
+          deny: result.deny,
+          guidedVocal: result.guidedVocal ?? prev.guidedVocal ?? 0,
+          noGuidedVocal: result.noGuidedVocal ?? prev.noGuidedVocal ?? 0,
+          confidence: result.confidence,
+        }));
+      }
+      setIsVoting(false);
       return;
     }
 
+    const previousVote = userVote;
     if (userVote !== null) {
       setVoteData(prev => ({ ...prev, [userVote]: Math.max(0, prev[userVote] - 1) }));
     }
@@ -91,12 +106,14 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
 
     try { localStorage.setItem(LS_KEY_SONG(songId, brandId), vote); } catch {}
 
-    const result = await submitVote(songId, brandId, vote);
+    const result = await submitVote(songId, brandId, vote, { previousVote });
     if (result) {
       setVoteData(prev => ({
         ...prev,
         confirm: result.confirm,
         deny: result.deny,
+        guidedVocal: result.guidedVocal ?? prev.guidedVocal ?? 0,
+        noGuidedVocal: result.noGuidedVocal ?? prev.noGuidedVocal ?? 0,
         confidence: result.confidence,
       }));
     }
@@ -104,35 +121,56 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
     setIsVoting(false);
   }, [brandId, isVoting, songId, userVote]);
 
-  const handleGuideVote = useCallback((guideVote: 'guided' | 'none') => {
+  const handleGuideVote = useCallback(async (guideVote: 'guided' | 'none') => {
+    if (isGuideVoting) return;
+
     const voteKey = guideVote === 'guided' ? 'guidedVocal' : 'noGuidedVocal';
     const previousKey = userGuideVote === 'guided' ? 'guidedVocal' : 'noGuidedVocal';
 
     if (userGuideVote === guideVote) {
+      setIsGuideVoting(true);
       setUserGuideVote(null);
       setVoteData(prev => ({ ...prev, [voteKey]: Math.max(0, (prev[voteKey] || 0) - 1) }));
       try { localStorage.removeItem(LS_KEY_GUIDE(songId, brandId)); } catch {}
+      const result = await submitGuidedVote(songId, brandId, guideVote, { removeVote: true });
+      if (result) {
+        setVoteData(prev => ({
+          ...prev,
+          confirm: result.confirm,
+          deny: result.deny,
+          guidedVocal: result.guidedVocal ?? 0,
+          noGuidedVocal: result.noGuidedVocal ?? 0,
+          confidence: result.confidence,
+        }));
+      }
+      setIsGuideVoting(false);
       return;
     }
 
+    const previousGuideVote = userGuideVote;
     if (userGuideVote !== null) {
       setVoteData(prev => ({ ...prev, [previousKey]: Math.max(0, (prev[previousKey] || 0) - 1) }));
     }
 
+    setIsGuideVoting(true);
     setUserGuideVote(guideVote);
     setVoteData(prev => ({ ...prev, [voteKey]: (prev[voteKey] || 0) + 1 }));
 
     try { localStorage.setItem(LS_KEY_GUIDE(songId, brandId), guideVote); } catch {}
 
-    submitReport({
-      songId,
-      songTitle: '',
-      artist: '',
-      brandId,
-      issueType: 'other',
-      note: `[導唱功能回報] 現場回報為: ${guideVote === 'guided' ? '有導唱' : '無導唱'}`,
-    });
-  }, [brandId, songId, userGuideVote]);
+    const result = await submitGuidedVote(songId, brandId, guideVote, { previousVote: previousGuideVote });
+    if (result) {
+      setVoteData(prev => ({
+        ...prev,
+        confirm: result.confirm,
+        deny: result.deny,
+        guidedVocal: result.guidedVocal ?? 0,
+        noGuidedVocal: result.noGuidedVocal ?? 0,
+        confidence: result.confidence,
+      }));
+    }
+    setIsGuideVoting(false);
+  }, [brandId, isGuideVoting, songId, userGuideVote]);
 
   const conf = CONFIDENCE_CONFIG[voteData.confidence];
   const songTotal = voteData.confirm + voteData.deny;
