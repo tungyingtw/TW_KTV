@@ -121,7 +121,7 @@ export function App() {
       }
       setTargetProgress(100);
     }).catch(() => {
-      setCatalogLoadError('歌庫暫時無法載入，請稍後重新整理。');
+      setCatalogLoadError('歌庫資料暫時無法載入，請稍後重新整理頁面。');
       setTargetProgress(100);
     });
   }, []);
@@ -613,10 +613,10 @@ export function App() {
             </div>
 
             <h3 style={{ fontSize: '1.3rem', color: '#f8fafc', fontWeight: 800, marginBottom: '8px' }}>
-              全台 KTV 歌庫同步中...
+              正在載入全台 KTV 歌庫資料
             </h3>
             <p style={{ fontSize: '0.88rem', color: '#94a3b8', marginBottom: '24px' }}>
-              {catalogLoadError || (displayProgress >= 100 ? '歌庫載入完成，正在為您開啟查詢頁面...' : '正在載入全台各門市與 125,824 首歌曲收錄資料庫')}
+              {catalogLoadError || (displayProgress >= 100 ? '歌庫資料已準備完成' : '正在讀取歌曲、廠牌收錄與點歌代碼資料')}
             </p>
 
             {/* 進度條容器 */}
@@ -665,7 +665,7 @@ export function App() {
             margin: '24px auto',
             maxWidth: '560px',
           }}>
-            <h3 style={{ color: '#f8fafc', fontSize: '1.1rem', marginBottom: '8px' }}>歌庫暫時無法載入</h3>
+            <h3 style={{ color: '#f8fafc', fontSize: '1.1rem', marginBottom: '8px' }}>歌庫資料暫時無法載入</h3>
             <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem' }}>{catalogLoadError}</p>
           </div>
         ) : filters.viewMode === 'matrix' ? (
