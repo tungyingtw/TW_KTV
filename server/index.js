@@ -634,13 +634,33 @@ app.get('/api/stats/ping', async (req, res) => {
   });
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    ok: true,
-    storage: USE_REDIS ? 'redis' : 'local',
-    persistent: USE_REDIS,
-    timestamp: Date.now(),
-  });
+app.get('/api/health', async (req, res) => {
+  if (!USE_REDIS) {
+    return res.json({
+      ok: true,
+      storage: 'local',
+      persistent: false,
+      timestamp: Date.now(),
+    });
+  }
+
+  try {
+    await redisCmd('ping');
+    return res.json({
+      ok: true,
+      storage: 'redis',
+      persistent: true,
+      timestamp: Date.now(),
+    });
+  } catch {
+    return res.status(503).json({
+      ok: false,
+      storage: 'redis_unavailable',
+      persistent: false,
+      error: 'Redis connection or authentication failed',
+      timestamp: Date.now(),
+    });
+  }
 });
 
 // XSS 與 HTML 注入安全過濾器 (Anti-XSS & Injection Guard)
