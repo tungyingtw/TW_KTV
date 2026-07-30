@@ -206,6 +206,34 @@ function saveReports(data) {
   fs.writeFileSync(REPORTS_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
+async function loadReportsStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', REPORTS_REDIS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (err) {
+      console.warn('[Reports] Redis read failed, fallback to local JSON:', err.message);
+    }
+  }
+  return loadReports();
+}
+
+async function saveReportsStore(data) {
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', REPORTS_REDIS_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.warn('[Reports] Redis write failed, fallback to local JSON:', err.message);
+      saveReports(data);
+      return;
+    }
+  }
+
+  try { saveReports(data); } catch (err) {
+    console.warn('[Reports] Local JSON backup write failed:', err.message);
+  }
+}
+
 function loadVotes() {
   try { return JSON.parse(fs.readFileSync(VOTES_PATH, 'utf8')); } catch { return {}; }
 }
@@ -337,6 +365,7 @@ const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
 const VOTES_REDIS_KEY = 'ktv:votes';
+const REPORTS_REDIS_KEY = 'ktv:reports';
 
 if (USE_REDIS) {
   console.log('[Stats] Upstash Redis 已啟用：累積查詢人數將持久化儲存');
@@ -507,7 +536,7 @@ app.post('/api/report', async (req, res) => {
   if (!validTypes.includes(issueType)) return res.status(400).json({ error: '無效的 issueType' });
 
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-  const reports = loadReports();
+  const reports = await loadReportsStore();
 
   // 100% 進行 XSS 與惡意 script 安全清處過濾
   const cleanTitle = sanitizeText(songTitle);
@@ -654,13 +683,13 @@ app.post('/api/report', async (req, res) => {
   }
 
   reports.push(newReport);
-  saveReports(reports);
+  await saveReportsStore(reports);
   console.log(`[回報] ${songTitle} (${brandId}) - ${issueType} (AutoResolved: ${isAutoResolved})`);
   res.json({ success: true, reportId: newReport.id, autoResolved: isAutoResolved });
 });
 
-app.get('/api/reports', requireAdmin, (req, res) => {
-  const reports = loadReports();
+app.get('/api/reports', requireAdmin, async (req, res) => {
+  const reports = await loadReportsStore();
   const { status } = req.query;
   const filtered = status ? reports.filter(r => r.status === status) : reports;
   res.json({ total: filtered.length, reports: filtered.slice(-200).reverse() });
@@ -801,8 +830,8 @@ app.get('/api/votes/:songId', async (req, res) => {
 // ═══════════════════════════════════════════════════════
 
 // ── 查看所有回報 ──
-app.get('/api/admin/reports', requireAdmin, (req, res) => {
-  const reports = loadReports();
+app.get('/api/admin/reports', requireAdmin, async (req, res) => {
+  const reports = await loadReportsStore();
   const { status } = req.query;
   const filtered = status ? reports.filter(r => r.status === status) : reports;
   res.json({ total: filtered.length, reports: filtered.reverse() });
@@ -815,7 +844,7 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
   const validStatus = ['pending', 'reviewed', 'resolved', 'rejected'];
   if (!validStatus.includes(status)) return res.status(400).json({ error: '無效的 status' });
 
-  const reports = loadReports();
+  const reports = await loadReportsStore();
   const idx = reports.findIndex(r => r.id === reportId);
   if (idx === -1) return res.status(404).json({ error: '找不到此回報' });
 
@@ -893,7 +922,7 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
     }
   }
 
-  saveReports(reports);
+  await saveReportsStore(reports);
   logAdminAction('UPDATE_REPORT_STATUS', { reportId, status, adminNote });
   res.json({ success: true, report: reports[idx] });
 });
@@ -1008,7 +1037,7 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
 
 // ── 管理員儀表板統計 ──
 app.get('/api/admin/stats', requireAdmin, async (req, res) => {
-  const reports = loadReports();
+  const reports = await loadReportsStore();
   const votes = await loadVotesStore();
 
   const pendingReports = reports.filter(r => r.status === 'pending').length;
