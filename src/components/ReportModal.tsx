@@ -76,7 +76,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
           position: 'relative',
         }}
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
           style={{
@@ -100,7 +99,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
           </div>
         ) : (
           <>
-            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
               <AlertTriangle size={22} color="#f87171" />
               <div>

@@ -46,7 +46,6 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           flexDirection: 'column',
         }}
       >
-        {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',

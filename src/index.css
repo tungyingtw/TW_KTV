@@ -506,7 +506,7 @@ html, body {
     font-size: 1.05rem !important;
   }
 
-  /* 3. 廣告招商 Banner 手機垂直自動折行 */
+  /* 3. 贊助內容區塊手機垂直自動折行 */
   .ad-slot-container {
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -574,7 +574,7 @@ html, body {
     box-sizing: border-box !important;
   }
 
-  /* 7. 手機版右側歌本抽屜自適應寬度 */
+  /* 7. 手機版歌本抽屜自適應寬度 */
   .drawer-content {
     width: 90vw !important;
     max-width: 360px !important;

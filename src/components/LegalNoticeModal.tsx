@@ -46,7 +46,6 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal Header */}
         <div
           style={{
             padding: '20px 24px',

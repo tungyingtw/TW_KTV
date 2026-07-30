@@ -826,7 +826,6 @@ export function App() {
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Music size={14} color="#ec4899" /> 原聲原唱對照
             </span>
-            {/* 管理後台連結僅供內部使用，不公開顯示於正式網站 Footer */}
           </div>
         </div>
       </footer>
