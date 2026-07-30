@@ -6,54 +6,14 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=cashbox</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://tungyingtw.github.io/TW_KTV/about.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=holiday</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=watering_hole</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=starlight</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=singgo</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=vmix</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=superstar</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=yinyuan</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=golden_voice</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/?brand=hongyin</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://tungyingtw.github.io/TW_KTV/contact.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://tungyingtw.github.io/TW_KTV/privacy.html</loc>
@@ -62,16 +22,6 @@
   </url>
   <url>
     <loc>https://tungyingtw.github.io/TW_KTV/terms.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/about.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tungyingtw.github.io/TW_KTV/contact.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
