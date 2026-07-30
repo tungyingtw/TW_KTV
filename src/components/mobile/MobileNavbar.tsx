@@ -147,7 +147,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 }}
               >
                 <PlusCircle size={14} />
-                <span>追加</span>
+                <span>建議</span>
               </button>
             )}
 

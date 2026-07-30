@@ -93,9 +93,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
           /* 送出成功視窗 */
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>回報已成功送出！</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>已收到您的回報</div>
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
-              管理後台已收到您的回報，我們會盡快審查更正。
+              感謝協助校對資料。我們會完成確認後更新網站內容。
             </div>
           </div>
         ) : (
