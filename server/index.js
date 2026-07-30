@@ -1023,6 +1023,38 @@ app.get('/api/admin/verified', requireAdmin, async (req, res) => {
   res.json({ total: verified.length, verified });
 });
 
+app.get('/api/admin/guided-votes', requireAdmin, async (req, res) => {
+  const votes = await loadVotesStore();
+  const guidedVotes = [];
+
+  for (const [key, data] of Object.entries(votes)) {
+    const guided = data.guidedVocal || 0;
+    const noGuided = data.noGuidedVocal || 0;
+    const total = guided + noGuided;
+    if (!total) continue;
+
+    const { songId, brandId } = parseVoteKey(key);
+    const song = songsDatabase.find(s => s.id === songId);
+    const brandData = song?.brands?.[brandId] || null;
+
+    guidedVotes.push({
+      key,
+      songId,
+      brandId,
+      songTitle: song?.title || '(歌曲已不存在)',
+      artist: song?.artist || '',
+      currentAudioType: brandData?.audioType || 'unknown',
+      guided,
+      noGuided,
+      guidedPct: Math.round((guided / total) * 100),
+      total,
+    });
+  }
+
+  guidedVotes.sort((a, b) => (b.total - a.total) || (b.guided - a.guided));
+  res.json({ total: guidedVotes.length, guidedVotes });
+});
+
 // ── 套用廠牌收錄狀態修正（核心管理功能）──
 // PATCH /api/admin/song/:songId/brand
 // body: { brandId, available: true/false, note }

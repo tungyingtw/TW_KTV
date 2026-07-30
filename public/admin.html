@@ -206,6 +206,7 @@
     <button onclick="showTab('tab-reports')">⚑ 使用者回報</button>
     <button onclick="showTab('tab-disputed')">⚠️ 爭議投票</button>
     <button onclick="showTab('tab-verified')">✅ 已驗證</button>
+    <button onclick="showTab('tab-guided')">🎙️ 導唱票</button>
     <button onclick="showTab('tab-logs')">📋 操作日誌</button>
   </nav>
 
@@ -293,6 +294,17 @@
         確認票 ≥ 5 且確認票 > 否定票 × 3 的歌曲，社群已高度確認該廠牌確實收錄此歌。
       </p>
       <div id="verified-list"><div class="empty">載入中...</div></div>
+    </div>
+
+    <div id="tab-guided" class="tab">
+      <div class="filter-row">
+        <h2 style="font-size:1.05rem;">🎙️ 導唱票選清單</h2>
+        <button class="btn btn-ghost" onclick="loadGuidedVotes()">🔄 重新整理</button>
+      </div>
+      <p style="color:var(--muted); font-size:0.82rem; margin-bottom:14px;">
+        這裡彙整使用者回報的導唱資訊，僅供維護判斷；目前不會自動改寫歌曲資料。
+      </p>
+      <div id="guided-list"><div class="empty">載入中...</div></div>
     </div>
 
     <!-- ── 操作日誌 ── -->
@@ -430,6 +442,7 @@ function showTab(id) {
   if (id === 'tab-reports') loadReports();
   if (id === 'tab-disputed') loadDisputed();
   if (id === 'tab-verified') loadVerified();
+  if (id === 'tab-guided') loadGuidedVotes();
   if (id === 'tab-logs') loadLogs();
 }
 
@@ -561,6 +574,44 @@ async function loadVerified() {
       </div>
     </div>
   `).join('');
+}
+
+// ── 導唱票選 ──
+async function loadGuidedVotes() {
+  const res = await apiFetch('/api/admin/guided-votes');
+  const data = await res.json();
+  const el = document.getElementById('guided-list');
+
+  if (!data.guidedVotes?.length) { el.innerHTML = '<div class="empty">目前沒有導唱票選資料</div>'; return; }
+
+  el.innerHTML = data.guidedVotes.map(d => `
+    <div class="card" style="border-color:rgba(236,72,153,0.2)">
+      <div class="card-row">
+        <div class="card-meta">
+          <div class="title">《${d.songTitle}》— ${d.artist}</div>
+          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前音訊標記：<b>${audioTypeLabel(d.currentAudioType)}</b></div>
+          <div class="vote-bar">
+            <span class="vote-confirm">🎙️ 有導唱 ${d.guided}</span>
+            <span class="vote-deny">純伴奏 ${d.noGuided}</span>
+            <span class="badge badge-verified">導唱比例 ${d.guidedPct}%</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後再調整資料</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function audioTypeLabel(type) {
+  const labels = {
+    original_vocal: '原聲原唱',
+    guide_vocal: '導唱',
+    instrumental: '純伴奏',
+    unknown: '未標記',
+  };
+  return labels[type] || type || '未標記';
 }
 
 // ── 操作日誌 ──
