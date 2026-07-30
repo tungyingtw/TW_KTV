@@ -25,6 +25,9 @@ export interface ReportPayload {
   composer?: string;
   mvType?: 'official' | 'edited' | 'unknown';
   note?: string;
+  hasOriginalVocal?: boolean;
+  lyricsSnippet?: string;
+  youtubeUrl?: string;
   // 新廠牌建議特有欄位
   brandName?: string;
   shortName?: string;
@@ -43,8 +46,8 @@ export async function submitReport(payload: ReportPayload): Promise<{ success: b
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
-    console.warn('[CommunityService] submitReport fallback to local success state:', err);
-    return { success: true, reportId: `local_${Date.now()}` };
+    console.warn('[CommunityService] submitReport failed:', err);
+    return { success: false, error: '回報送出失敗，請稍後再試。' };
   }
 }
 
@@ -66,10 +69,15 @@ export async function submitSuggestSong(payload: {
     songTitle: payload.title,
     artist: payload.artist,
     brandId: payload.brandId || 'cashbox',
-    issueType: 'other',
+    issueType: 'suggest_song',
+    lang: payload.language,
     songCode: payload.songCode,
     lyricist: payload.lyricist,
     composer: payload.composer,
+    mvType: payload.hasOfficialMv ? 'official' : 'unknown',
+    hasOriginalVocal: payload.hasOriginalVocal,
+    lyricsSnippet: payload.lyricsSnippet,
+    youtubeUrl: payload.youtubeUrl,
     note: `[新歌建議] 語種:${payload.language} | MV:${payload.hasOfficialMv ? '有' : '無'} | 原唱:${payload.hasOriginalVocal ? '有' : '無'} | 歌詞:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
   });
 }
@@ -87,7 +95,7 @@ export async function submitSuggestBrand(payload: {
     songTitle: payload.brandName,
     artist: payload.shortName,
     brandId: 'cashbox',
-    issueType: 'other',
+    issueType: 'suggest_new_brand',
     brandName: payload.brandName,
     shortName: payload.shortName,
     systemType: payload.systemType,

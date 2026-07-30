@@ -432,10 +432,30 @@ function sanitizeText(str) {
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
 app.post('/api/report', async (req, res) => {
-  const { songId, songTitle, artist, brandId, issueType, lang, songCode, lyricist, composer, mvType, note, brandName, shortName, systemType, codeFormat, storeLocations } = req.body;
+  const {
+    songId,
+    songTitle,
+    artist,
+    brandId,
+    issueType,
+    lang,
+    songCode,
+    lyricist,
+    composer,
+    mvType,
+    note,
+    hasOriginalVocal,
+    lyricsSnippet,
+    youtubeUrl,
+    brandName,
+    shortName,
+    systemType,
+    codeFormat,
+    storeLocations,
+  } = req.body;
   if (!songId || !brandId || !issueType) return res.status(400).json({ error: '缺少必要欄位' });
 
-  const validTypes = ['no_song', 'has_song', 'missing_song', 'suggest_new_brand', 'wrong_info', 'other'];
+  const validTypes = ['no_song', 'has_song', 'missing_song', 'suggest_song', 'suggest_new_brand', 'wrong_info', 'other'];
   if (!validTypes.includes(issueType)) return res.status(400).json({ error: '無效的 issueType' });
 
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
@@ -453,6 +473,8 @@ app.post('/api/report', async (req, res) => {
   const cleanCodeFormat = sanitizeText(codeFormat);
   const cleanStoreLocations = sanitizeText(storeLocations);
   const cleanNote = sanitizeText(note).slice(0, 500);
+  const cleanLyricsSnippet = sanitizeText(lyricsSnippet).slice(0, 500);
+  const cleanYoutubeUrl = sanitizeText(youtubeUrl).slice(0, 500);
 
   const newReport = {
     id: `rpt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -466,6 +488,9 @@ app.post('/api/report', async (req, res) => {
     lyricist: cleanLyricist,
     composer: cleanComposer,
     mvType: mvType || 'unknown',
+    hasOriginalVocal: !!hasOriginalVocal,
+    lyricsSnippet: cleanLyricsSnippet,
+    youtubeUrl: cleanYoutubeUrl,
     brandName: cleanBrandName,
     shortName: cleanShortName,
     systemType: cleanSystemType,
@@ -506,27 +531,33 @@ app.post('/api/report', async (req, res) => {
           const autoSongId = `auto_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
           existingSong = {
             id: autoSongId,
-            title: songTitle.trim(),
-            artist: artist.trim() || '未填寫',
-            lang: lang || '國語',
-            lyricist: lyricist || '',
-            composer: composer || '',
+            title: cleanTitle || songTitle.trim(),
+            artist: cleanArtist || artist.trim() || '未填寫',
+            lyricist: cleanLyricist,
+            composer: cleanComposer,
+            language: sanitizeText(lang) || '國語',
+            zhuyin: '',
+            pinyin: '',
+            releaseYear: new Date().getFullYear(),
+            lyricsSnippet: cleanLyricsSnippet,
+            youtubeUrl: cleanYoutubeUrl || undefined,
             brands: {
               [brandId]: {
                 available: true,
-                code: songCode || '',
-                officialMv: mvType === 'official',
+                code: cleanCode || '',
+                audioType: hasOriginalVocal ? 'original_vocal' : undefined,
+                mvType: mvType === 'official' ? 'official_mv' : undefined,
               }
             },
-            confidence: 'verified',
           };
           songsDatabase.push(existingSong);
         } else {
           if (!existingSong.brands) existingSong.brands = {};
           existingSong.brands[brandId] = {
             available: true,
-            code: songCode || existingSong.brands[brandId]?.code || '',
-            officialMv: mvType === 'official' || existingSong.brands[brandId]?.officialMv || false,
+            code: cleanCode || existingSong.brands[brandId]?.code || '',
+            audioType: hasOriginalVocal ? 'original_vocal' : existingSong.brands[brandId]?.audioType,
+            mvType: mvType === 'official' ? 'official_mv' : existingSong.brands[brandId]?.mvType,
           };
         }
 
@@ -687,7 +718,7 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
   // ── 管理員審核動態寫入連通 (Admin Manual Approval -> Live Catalog Injection) ──
   if (status === 'resolved') {
     try {
-      if (report.issueType === 'missing_song' && report.songTitle) {
+      if ((report.issueType === 'missing_song' || report.issueType === 'suggest_song') && report.songTitle) {
         const normTitle = normalizeString(report.songTitle);
         const normArtist = normalizeString(report.artist);
         let existingSong = songsDatabase.find(s => normalizeString(s.title) === normTitle && normalizeString(s.artist) === normArtist);
@@ -698,17 +729,22 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
             id: autoSongId,
             title: report.songTitle.trim(),
             artist: report.artist.trim() || '未填寫',
-            lang: report.lang || '國語',
             lyricist: report.lyricist || '',
             composer: report.composer || '',
+            language: report.lang || '國語',
+            zhuyin: '',
+            pinyin: '',
+            releaseYear: new Date().getFullYear(),
+            lyricsSnippet: report.lyricsSnippet || '',
+            youtubeUrl: report.youtubeUrl || undefined,
             brands: {
               [report.brandId]: {
                 available: true,
                 code: report.songCode || '',
-                officialMv: report.mvType === 'official',
+                audioType: report.hasOriginalVocal ? 'original_vocal' : undefined,
+                mvType: report.mvType === 'official' ? 'official_mv' : undefined,
               }
             },
-            confidence: 'verified',
           };
           songsDatabase.push(existingSong);
         } else {
@@ -716,7 +752,8 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
           existingSong.brands[report.brandId] = {
             available: true,
             code: report.songCode || existingSong.brands[report.brandId]?.code || '',
-            officialMv: report.mvType === 'official' || existingSong.brands[report.brandId]?.officialMv || false,
+            audioType: report.hasOriginalVocal ? 'original_vocal' : existingSong.brands[report.brandId]?.audioType,
+            mvType: report.mvType === 'official' ? 'official_mv' : existingSong.brands[report.brandId]?.mvType,
           };
         }
         await saveCatalog(songsDatabase);
