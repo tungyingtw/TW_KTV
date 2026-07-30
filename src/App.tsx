@@ -751,8 +751,8 @@ export function App() {
 
       {/* Footer */}
       <footer style={{
-        background: 'rgba(15, 23, 42, 0.95)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        background: 'var(--bg-glass)',
+        borderTop: '1px solid var(--border-color)',
         padding: '20px',
         color: 'var(--text-secondary)',
         fontSize: '0.85rem',
@@ -767,7 +767,7 @@ export function App() {
           flexWrap: 'wrap',
           gap: '12px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontWeight: 700 }}>
             台灣KTV歌曲索引
           </div>
 
@@ -808,7 +808,7 @@ export function App() {
             <a
               href="mailto:tyfunlab@gmail.com"
               style={{
-                color: '#cbd5e1',
+                color: 'var(--text-secondary)',
                 fontSize: '0.8rem',
                 textDecoration: 'none',
                 display: 'flex',
