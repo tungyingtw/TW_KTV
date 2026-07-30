@@ -215,6 +215,7 @@ const CATALOG_PATH = path.join(__dirname, '../public/songs_catalog.json');
 const REPORTS_PATH = path.join(__dirname, 'reports.json');
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
 const ADMIN_LOG_PATH = path.join(__dirname, 'admin_actions.log');
+const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 
 // ─────────────────────────────────────────────
 // 資料讀寫工具
@@ -249,7 +250,7 @@ async function loadReportsStore() {
       const raw = await redisCmd('get', REPORTS_REDIS_KEY);
       if (raw) return JSON.parse(raw);
     } catch (err) {
-      console.warn('[Reports] Redis read failed, fallback to local JSON:', err.message);
+      throw new Error(`Reports persistent read failed: ${err.message}`);
     }
   }
   return loadReports();
@@ -259,10 +260,15 @@ async function saveReportsStore(data) {
   if (USE_REDIS) {
     try {
       await redisCmd('set', REPORTS_REDIS_KEY, JSON.stringify(data));
-    } catch (err) {
-      console.warn('[Reports] Redis write failed, fallback to local JSON:', err.message);
-      saveReports(data);
+      try { saveReports(data); } catch (err) {
+        console.warn('[Reports] Local JSON backup write failed:', err.message);
+      }
       return;
+    } catch (err) {
+      try { saveReports(data); } catch (localErr) {
+        console.warn('[Reports] Local JSON backup write failed:', localErr.message);
+      }
+      throw new Error(`Reports persistent write failed: ${err.message}`);
     }
   }
 
@@ -278,13 +284,20 @@ function saveVotes(data) {
   fs.writeFileSync(VOTES_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
+function loadCatalogOverrides() {
+  try { return JSON.parse(fs.readFileSync(CATALOG_OVERRIDES_PATH, 'utf8')); } catch { return { songs: {} }; }
+}
+function saveCatalogOverrides(data) {
+  fs.writeFileSync(CATALOG_OVERRIDES_PATH, JSON.stringify(data, null, 2), 'utf8');
+}
+
 async function loadVotesStore() {
   if (USE_REDIS) {
     try {
       const raw = await redisCmd('get', VOTES_REDIS_KEY);
       if (raw) return JSON.parse(raw);
     } catch (err) {
-      console.warn('[Votes] Redis read failed, fallback to local JSON:', err.message);
+      throw new Error(`Votes persistent read failed: ${err.message}`);
     }
   }
   return loadVotes();
@@ -294,16 +307,61 @@ async function saveVotesStore(data) {
   if (USE_REDIS) {
     try {
       await redisCmd('set', VOTES_REDIS_KEY, JSON.stringify(data));
-    } catch (err) {
-      console.warn('[Votes] Redis write failed, fallback to local JSON:', err.message);
-      saveVotes(data);
+      try { saveVotes(data); } catch (err) {
+        console.warn('[Votes] Local JSON backup write failed:', err.message);
+      }
       return;
+    } catch (err) {
+      try { saveVotes(data); } catch (localErr) {
+        console.warn('[Votes] Local JSON backup write failed:', localErr.message);
+      }
+      throw new Error(`Votes persistent write failed: ${err.message}`);
     }
   }
 
   try { saveVotes(data); } catch (err) {
     console.warn('[Votes] Local JSON backup write failed:', err.message);
   }
+}
+
+async function loadCatalogOverridesStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', CATALOG_OVERRIDES_REDIS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (err) {
+      throw new Error(`Catalog overrides persistent read failed: ${err.message}`);
+    }
+  }
+  return loadCatalogOverrides();
+}
+
+async function saveCatalogOverridesStore(data) {
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', CATALOG_OVERRIDES_REDIS_KEY, JSON.stringify(data));
+      try { saveCatalogOverrides(data); } catch (err) {
+        console.warn('[CatalogOverrides] Local JSON backup write failed:', err.message);
+      }
+      return;
+    } catch (err) {
+      try { saveCatalogOverrides(data); } catch (localErr) {
+        console.warn('[CatalogOverrides] Local JSON backup write failed:', localErr.message);
+      }
+      throw new Error(`Catalog overrides persistent write failed: ${err.message}`);
+    }
+  }
+
+  try { saveCatalogOverrides(data); } catch (err) {
+    console.warn('[CatalogOverrides] Local JSON write failed:', err.message);
+  }
+}
+
+async function saveCatalogOverrideSong(song) {
+  const overrides = await loadCatalogOverridesStore();
+  if (!overrides.songs || typeof overrides.songs !== 'object') overrides.songs = {};
+  overrides.songs[song.id] = song;
+  await saveCatalogOverridesStore(overrides);
 }
 
 async function saveCatalog(catalog) {
@@ -319,7 +377,17 @@ async function saveCatalog(catalog) {
 
 function logAdminAction(action, detail) {
   const line = `[${new Date().toISOString()}] ${action}: ${JSON.stringify(detail)}\n`;
-  fs.appendFileSync(ADMIN_LOG_PATH, line, 'utf8');
+  try {
+    fs.appendFileSync(ADMIN_LOG_PATH, line, 'utf8');
+  } catch (err) {
+    console.warn('[AdminLog] Local log write failed:', err.message);
+  }
+
+  if (USE_REDIS) {
+    redisCmd('lpush', ADMIN_LOG_REDIS_KEY, line.trim())
+      .then(() => redisCmd('ltrim', ADMIN_LOG_REDIS_KEY, 0, 499))
+      .catch(err => console.warn('[AdminLog] Redis log write failed:', err.message));
+  }
 }
 
 function getVoteConfidence(confirm, deny) {
@@ -361,6 +429,14 @@ app.get('/api/songs', (req, res) => {
   res.json({ total: results.length, page: pageNum, limit: limitNum, songs: results.slice(start, start + limitNum) });
 });
 
+app.get('/api/catalog-overrides', async (req, res) => {
+  const overrides = await loadCatalogOverridesStore();
+  const songs = overrides?.songs && typeof overrides.songs === 'object'
+    ? Object.values(overrides.songs)
+    : [];
+  res.json({ songs });
+});
+
 // ── 字串模糊歸一化工具 ──
 function normalizeString(str) {
   if (!str) return '';
@@ -397,6 +473,8 @@ const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
 const STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits';
 const VOTES_REDIS_KEY = 'ktv:votes';
 const REPORTS_REDIS_KEY = 'ktv:reports';
+const ADMIN_LOG_REDIS_KEY = 'ktv:adminLogs';
+const CATALOG_OVERRIDES_REDIS_KEY = 'ktv:catalogOverrides';
 
 if (USE_REDIS) {
   console.log('[Stats] Upstash Redis 已啟用：累積查詢人數將持久化儲存');
@@ -456,6 +534,7 @@ async function initializeJsonStoreInRedis(redisKey, localData, label) {
 if (USE_REDIS) {
   initializeJsonStoreInRedis(REPORTS_REDIS_KEY, loadReports(), 'Reports');
   initializeJsonStoreInRedis(VOTES_REDIS_KEY, loadVotes(), 'Votes');
+  initializeJsonStoreInRedis(CATALOG_OVERRIDES_REDIS_KEY, loadCatalogOverrides(), 'CatalogOverrides');
 
   redisCmd('get', STATS_REDIS_TOTAL_KEY).then(val => {
     if (val !== null && val !== undefined) {
@@ -513,15 +592,13 @@ app.get('/api/stats/ping', async (req, res) => {
       if (!isNaN(totalVisits)) currentStats.totalVisits = totalVisits;
 
     } catch (err) {
-      // Redis 暫時不可用：自動降級到記憶體計數
-      console.warn('[Stats] Redis 暫時不可用，降級到記憶體計數:', err.message);
-      const lastVisit = visitorCooldowns.get(visitorId);
-      if (!lastVisit || (now - lastVisit > VISIT_COOLDOWN_MS)) {
-        currentStats.totalVisits = (currentStats.totalVisits || 0) + 1;
-        visitorCooldowns.set(visitorId, now);
-        saveStats(currentStats);
-      }
-      totalVisits = currentStats.totalVisits;
+      console.warn('[Stats] Redis 暫時不可用，拒絕產生非持久化累積數字:', err.message);
+      return res.status(503).json({
+        error: '累積查詢人數暫時無法更新',
+        onlineVisitors: activeVisitors.size,
+        totalVisits: currentStats.totalVisits,
+        persistent: false,
+      });
     }
 
   } else {
@@ -661,7 +738,12 @@ app.post('/api/report', async (req, res) => {
   }
 
   reports.push(newReport);
-  await saveReportsStore(reports);
+  try {
+    await saveReportsStore(reports);
+  } catch (err) {
+    console.error('[Reports] Persistent save failed:', err);
+    return res.status(503).json({ error: '回報資料暫時無法儲存，請稍後再試' });
+  }
   console.log(`[回報] ${songTitle} (${brandId}) - ${issueType} (AutoResolved: ${isAutoResolved})`);
   res.json({ success: true, reportId: newReport.id, autoResolved: isAutoResolved });
 });
@@ -698,7 +780,12 @@ app.post('/api/vote', async (req, res) => {
     votes[key][vote] = Math.max(0, (votes[key][vote] || 0) + 1);
   }
 
-  await saveVotesStore(votes);
+  try {
+    await saveVotesStore(votes);
+  } catch (err) {
+    console.error('[Votes] Persistent save failed:', err);
+    return res.status(503).json({ error: '投票資料暫時無法儲存，請稍後再試' });
+  }
 
   const d = votes[key];
   const confidence = getVoteConfidence(d.confirm || 0, d.deny || 0);
@@ -737,7 +824,12 @@ app.post('/api/vote/guided', async (req, res) => {
     votes[key][voteKey] = Math.max(0, (votes[key][voteKey] || 0) + 1);
   }
 
-  await saveVotesStore(votes);
+  try {
+    await saveVotesStore(votes);
+  } catch (err) {
+    console.error('[Votes] Guided persistent save failed:', err);
+    return res.status(503).json({ error: '導唱投票資料暫時無法儲存，請稍後再試' });
+  }
 
   const d = votes[key];
   res.json({
@@ -842,6 +934,7 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
           };
         }
         await saveCatalog(songsDatabase);
+        await saveCatalogOverrideSong(existingSong);
         console.log(`[Admin Inject] 管理員審核完成，寫入新歌《${report.songTitle}》— ${report.artist}`);
       } else if (report.songId && songsDatabase.length > 0) {
         const sIdx = songsDatabase.findIndex(s => s.id === report.songId);
@@ -861,15 +954,22 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
             };
           }
           await saveCatalog(songsDatabase);
+          await saveCatalogOverrideSong(songsDatabase[sIdx]);
           console.log(`[Admin Update] 管理員審核更正《${report.songTitle}》(${report.brandId}) 收錄狀態`);
         }
       }
     } catch (err) {
       console.error('[Admin Report Approval Error]', err);
+      return res.status(503).json({ error: '審核修正無法持久化儲存，請稍後再試' });
     }
   }
 
-  await saveReportsStore(reports);
+  try {
+    await saveReportsStore(reports);
+  } catch (err) {
+    console.error('[Admin Reports] Persistent save failed:', err);
+    return res.status(503).json({ error: '回報狀態暫時無法持久化儲存，請稍後再試' });
+  }
   logAdminAction('UPDATE_REPORT_STATUS', { reportId, status, adminNote });
   res.json({ success: true, report: reports[idx] });
 });
@@ -885,6 +985,7 @@ app.post('/api/admin/stats/reset', requireAdmin, async (req, res) => {
       await redisCmd('set', STATS_REDIS_TOTAL_KEY, newCount);
     } catch (err) {
       console.warn('[Stats] Redis reset sync failed:', err.message);
+      return res.status(503).json({ error: '累積查詢人數持久化儲存失敗，請稍後再試' });
     }
   }
 
@@ -1034,7 +1135,13 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
   };
 
   songsDatabase[idx] = song;
-  await saveCatalog(songsDatabase);
+  try {
+    await saveCatalog(songsDatabase);
+    await saveCatalogOverrideSong(song);
+  } catch (err) {
+    console.error('[Admin Catalog Override Save Error]', err);
+    return res.status(503).json({ error: '歌庫修正暫時無法持久化儲存，請稍後再試' });
+  }
 
   // 記錄管理員操作
   logAdminAction('FIX_BRAND_AVAILABILITY', {
@@ -1076,18 +1183,30 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 });
 
 // ── 管理員操作日誌 ──
-app.get('/api/admin/logs', requireAdmin, (req, res) => {
+app.get('/api/admin/logs', requireAdmin, async (req, res) => {
   try {
+    if (USE_REDIS) {
+      const redisLogs = await redisCmd('lrange', ADMIN_LOG_REDIS_KEY, 0, 99);
+      if (Array.isArray(redisLogs)) return res.json({ logs: redisLogs });
+    }
+
     const log = fs.existsSync(ADMIN_LOG_PATH)
       ? fs.readFileSync(ADMIN_LOG_PATH, 'utf8').trim().split('\n').slice(-100).reverse()
       : [];
     res.json({ logs: log });
-  } catch {
-    res.json({ logs: [] });
+  } catch (err) {
+    console.error('[AdminLog] Read failed:', err);
+    res.status(503).json({ error: '管理操作日誌暫時無法讀取' });
   }
 });
 
 // ─────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('[Unhandled API Error]', err);
+  if (res.headersSent) return next(err);
+  res.status(503).json({ error: '資料服務暫時無法使用，請稍後再試' });
+});
+
 app.listen(PORT, () => {
   console.log(`[Server] KTV Song API 服務啟動於: http://localhost:${PORT}`);
   console.log(`[Server] Maintenance API token status: ${ADMIN_TOKEN ? 'set' : 'unset'}`);

@@ -1,5 +1,4 @@
 import type { Song } from '../types/ktv';
-import { MOCK_SONGS } from '../data/mockSongs';
 
 const DB_NAME = 'KtvCatalogDB';
 const STORE_NAME = 'catalog_store';
@@ -7,6 +6,8 @@ const KEY_NAME = 'full_catalog_v18';
 
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
 const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTVBIN"
+const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -76,7 +77,7 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
         }
       });
     }
-    return cached;
+    return mergeCatalogOverrides(cached);
   }
 
   // 2. 若無快取，開始真實 HTTP 二進位串流下載解密與進度計算
@@ -85,11 +86,35 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
   if (fresh && fresh.length > 0) {
     setCachedCatalog(fresh);
     try { localStorage.setItem(TIME_KEY, String(Date.now())); } catch {}
-    return fresh;
+    return mergeCatalogOverrides(fresh);
   }
 
   onProgress?.(100);
-  return MOCK_SONGS;
+  throw new Error('正式歌庫載入失敗');
+}
+
+async function mergeCatalogOverrides(catalog: Song[]): Promise<Song[]> {
+  const overrides = await fetchCatalogOverrides();
+  if (!overrides.length) return catalog;
+
+  const byId = new Map(catalog.map(song => [song.id, song]));
+  for (const overrideSong of overrides) {
+    byId.set(overrideSong.id, overrideSong);
+  }
+
+  return Array.from(byId.values());
+}
+
+async function fetchCatalogOverrides(): Promise<Song[]> {
+  try {
+    const response = await fetch(`${API_BASE}/api/catalog-overrides?t=${Date.now()}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return Array.isArray(data.songs) ? data.songs : [];
+  } catch (err) {
+    console.warn('[API Service] 讀取歌庫覆寫資料失敗，僅使用靜態歌庫:', err);
+    return [];
+  }
 }
 
 async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promise<Song[] | null> {
