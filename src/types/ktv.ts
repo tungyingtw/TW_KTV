@@ -77,6 +77,7 @@ export type IssueType =
   | 'no_song'            // 實際上沒有此歌
   | 'has_song'           // 實際上有此歌（系統標為未收錄）
   | 'missing_song'       // 資料庫根本缺少這首歌
+  | 'suggest_song'       // 使用者建議新增歌曲，需後台審核
   | 'suggest_new_brand'  // KTV 新廠牌或新系統建議
   | 'wrong_info'         // 歌名/歌手/年分等資訊有誤
   | 'other';             // 其他

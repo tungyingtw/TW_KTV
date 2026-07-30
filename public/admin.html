@@ -438,6 +438,7 @@ const ISSUE_LABEL = {
   no_song:           '❌ 實際沒有此歌（系統誤標收錄）',
   has_song:          '✅ 實際有此歌（系統誤標未收錄）',
   missing_song:      '➕ 資料庫缺少此歌',
+  suggest_song:      '➕ 新歌建議',
   suggest_new_brand: '🏪 KTV 新廠牌/新系統建議',
   wrong_info:        '✏️ 歌名/歌手/資訊有誤',
   other:             '💬 其他問題',
@@ -457,7 +458,7 @@ async function loadReports() {
       <div class="card-row">
         <div class="card-meta">
           <div class="title" style="font-size:1.05rem;color:#f8fafc">
-            ${r.issueType === 'suggest_new_brand' ? `🏪 新廠牌建議：<span style="color:#38bdf8">${r.brandName || r.songTitle}</span>` : `《${r.songTitle || '(未知)'}》— <span style="color:#fbbf24">${r.artist || ''}</span>`}
+            ${r.issueType === 'suggest_new_brand' ? `🏪 新廠牌建議：<span style="color:#38bdf8">${r.brandName || r.songTitle}</span>` : (r.issueType === 'suggest_song' ? `➕ 新歌建議：《${r.songTitle || '(未知)'}》— <span style="color:#fbbf24">${r.artist || ''}</span>` : `《${r.songTitle || '(未知)'}》— <span style="color:#fbbf24">${r.artist || ''}</span>`)}
           </div>
           <div class="sub">廠牌/對象：<b>${r.brandId}</b> &nbsp;|&nbsp; ${ISSUE_LABEL[r.issueType] || r.issueType}</div>
           
@@ -470,20 +471,23 @@ async function loadReports() {
           ` : ''}
 
           ${r.songCode ? `<div class="sub" style="margin-top:4px;color:#fbbf24;font-size:0.9rem">🔢 建議點歌編號：<b style="background:rgba(251,191,36,0.15);padding:2px 6px;border-radius:4px;border:1px solid rgba(251,191,36,0.3)">${r.songCode}</b></div>` : ''}
-          ${(r.lang || r.lyricist || r.composer || (r.mvType && r.mvType !== 'unknown')) ? `
+          ${(r.lang || r.lyricist || r.composer || r.hasOriginalVocal || (r.mvType && r.mvType !== 'unknown')) ? `
             <div class="sub" style="margin-top:4px;color:#cbd5e1">
               ${r.lang ? `🌐 語種: <b>${r.lang}</b> &nbsp;` : ''}
               ${r.mvType === 'official' ? `<span style="color:#38bdf8">🎬 官方原版 MV</span> &nbsp;` : (r.mvType === 'edited' ? `<span style="color:#fb923c">🎬 剪輯 MV</span> &nbsp;` : '')}
+              ${r.hasOriginalVocal ? `<span style="color:#ec4899">🎙️ 原聲原唱</span> &nbsp;` : ''}
               ${r.lyricist ? `✍️ 作詞: <b>${r.lyricist}</b> &nbsp;` : ''}
               ${r.composer ? `🎼 作曲: <b>${r.composer}</b>` : ''}
             </div>
           ` : ''}
+          ${r.lyricsSnippet ? `<div class="sub" style="margin-top:4px;color:#cbd5e1">📄 歌詞片段：${r.lyricsSnippet}</div>` : ''}
+          ${r.youtubeUrl ? `<div class="sub" style="margin-top:4px;color:#60a5fa">🔗 參考連結：${r.youtubeUrl}</div>` : ''}
           ${r.note ? `<div class="sub" style="margin-top:4px;color:#94a3b8">💬 備註：${r.note}</div>` : ''}
           <div class="sub" style="margin-top:4px;font-size:0.75rem;color:#64748b">${r.timestamp?.slice(0,16).replace('T',' ')} &nbsp;|&nbsp; IP: ${r.ip}</div>
         </div>
         <div class="card-actions">
           <span class="badge badge-${r.status}">${r.status}</span>
-          ${r.issueType !== 'missing_song' && r.issueType !== 'other' ? `
+          ${r.issueType !== 'missing_song' && r.issueType !== 'suggest_song' && r.issueType !== 'other' ? `
             <button class="btn btn-blue" onclick="openFix('${r.songId}', '${r.songTitle}', '${r.artist}', '${r.brandId}', '${r.issueType}')">🔧 套用修正</button>
           ` : ''}
           <button class="btn btn-green" onclick="updateReport('${r.id}', 'resolved')">✅ 標記已解決</button>
