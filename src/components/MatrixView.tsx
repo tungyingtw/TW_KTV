@@ -9,6 +9,7 @@ interface MatrixViewProps {
   songs: Song[];
   selectedBrand: BrandId | 'all';
   selectedBrands?: BrandId[];
+  compact?: boolean;
   favorites: string[];
   onToggleFavorite: (songId: string) => void;
   onSelectSongDetail: (song: Song) => void;
@@ -19,6 +20,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   songs,
   selectedBrand,
   selectedBrands = [],
+  compact = false,
   favorites,
   onToggleFavorite,
   onSelectSongDetail,
@@ -36,6 +38,26 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   const currentBrandInfo = isSingleBrand ? BRANDS[selectedBrand] : null;
 
   const isFewBrands = activeBrands.length > 0 && activeBrands.length <= 4;
+
+  const getCompactAvailability = (song: Song) => {
+    const availableBrands = activeBrands.filter(b => song.brands[b.id]?.available);
+    const totalBrands = activeBrands.length || BRAND_LIST.length;
+
+    if (isSingleBrand && currentBrandInfo) {
+      const status = song.brands[currentBrandInfo.id];
+      if (!status?.available) {
+        return { label: '未收錄', color: 'var(--text-muted, #94a3b8)' };
+      }
+
+      const codeText = status.code && status.code !== 'OK' ? ` ${status.code}` : '';
+      return { label: `有收錄${codeText}`, color: currentBrandInfo.color };
+    }
+
+    return {
+      label: `${availableBrands.length}/${totalBrands} 家`,
+      color: availableBrands.length > 0 ? '#34d399' : 'var(--text-muted, #94a3b8)',
+    };
+  };
 
   if (songs.length === 0) {
     return (
@@ -105,6 +127,143 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
   // 計算表格最小總寬度，防止響應式擠壓與動態偏移
   const tableMinWidth = isSingleBrand ? '780px' : (isFewBrands ? '880px' : '1180px');
+
+  if (compact) {
+    return (
+      <div className="matrix-view-container" style={{ padding: '0 10px' }}>
+        <div className="glass-panel" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+          <table style={{
+            width: '100%',
+            tableLayout: 'fixed',
+            borderCollapse: 'collapse',
+            textAlign: 'left',
+            fontSize: '0.84rem',
+          }}>
+            <thead>
+              <tr style={{
+                background: 'var(--bg-glass, rgba(15, 23, 42, 0.9))',
+                borderBottom: '2px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                color: 'var(--text-secondary, #cbd5e1)',
+              }}>
+                <th style={{ padding: '10px 6px', width: '38px', textAlign: 'center' }}></th>
+                <th style={{ padding: '10px 8px' }}>歌曲</th>
+                <th style={{ padding: '10px 6px', width: '76px', textAlign: 'center' }}>收錄</th>
+                <th style={{ padding: '10px 6px', width: '48px', textAlign: 'center' }}>MV</th>
+              </tr>
+            </thead>
+            <tbody>
+              {songs.map((song, index) => {
+                const isFav = favorites.includes(song.id);
+                const isSelected = selectedSongId === song.id;
+                const availability = getCompactAvailability(song);
+
+                return (
+                  <tr
+                    key={song.id}
+                    onClick={() => onSelectSongDetail(song)}
+                    style={{
+                      background: isSelected
+                        ? 'rgba(236, 72, 153, 0.12)'
+                        : index % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.02)',
+                      borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
+                      borderLeft: isSelected ? '3px solid var(--accent-pink, #ec4899)' : '3px solid transparent',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
+                        className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: isFav ? 'var(--accent-pink, #ec4899)' : 'var(--text-muted, #64748b)',
+                          padding: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        title={isFav ? '移出歌本' : '加入歌本'}
+                      >
+                        <Heart size={17} fill={isFav ? 'var(--accent-pink, #ec4899)' : 'none'} />
+                      </button>
+                    </td>
+
+                    <td style={{ padding: '10px 8px', overflow: 'hidden' }}>
+                      <div style={{
+                        color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)',
+                        fontWeight: 800,
+                        fontSize: '0.92rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {song.title}
+                      </div>
+                      <div style={{
+                        color: 'var(--text-muted, #94a3b8)',
+                        fontSize: '0.76rem',
+                        marginTop: '2px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        <span style={{ color: 'var(--text-secondary, #cbd5e1)', fontWeight: 600 }}>{song.artist}</span>
+                        <span style={{ marginLeft: '6px' }}>{song.language}</span>
+                      </div>
+                    </td>
+
+                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: '58px',
+                        minHeight: '28px',
+                        padding: '3px 6px',
+                        borderRadius: '8px',
+                        background: 'var(--bg-glass, rgba(255, 255, 255, 0.06))',
+                        color: availability.color,
+                        fontWeight: 800,
+                        fontSize: '0.73rem',
+                        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {availability.label}
+                      </span>
+                    </td>
+
+                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                      {song.youtubeUrl ? (
+                        <a
+                          href={song.youtubeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-secondary"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ padding: '6px 8px', borderRadius: '8px', color: '#f87171' }}
+                          title="開啟 MV"
+                        >
+                          <Video size={15} />
+                        </a>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted, #64748b)' }}>-</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {reportingSong && (
+          <ReportModal song={reportingSong} onClose={() => setReportingSong(null)} />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="matrix-view-container" style={{ padding: '0 20px', overflowX: 'auto', scrollbarGutter: 'stable' }}>

@@ -39,10 +39,9 @@ export function App() {
     let initialViewMode: 'matrix' | 'cards' = 'matrix';
     try {
       const savedMode = localStorage.getItem('ktv_view_mode');
-      if (savedMode === 'matrix' || savedMode === 'cards') {
+      const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= 768;
+      if (!isMobileViewport && (savedMode === 'matrix' || savedMode === 'cards')) {
         initialViewMode = savedMode;
-      } else if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-        initialViewMode = 'cards';
       }
     } catch {}
 
@@ -160,18 +159,6 @@ export function App() {
   useEffect(() => {
     localStorage.setItem('ktv_favorites', JSON.stringify(favorites));
   }, [favorites]);
-
-  // Handle window resize auto-detect viewMode preference
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setFilters(prev => ({ ...prev, viewMode: 'cards' }));
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Fuse.js Fuzzy Search Setup (歌詞與歌名高權重比對)
   const fuse = useMemo(() => {
@@ -672,6 +659,7 @@ export function App() {
             onToggleFavorite={handleToggleFavorite}
             onSelectSongDetail={(song) => setSelectedSongDetail(song)}
             selectedSongId={selectedSongDetail?.id ?? null}
+            compact={isMobile}
           />
         ) : (
           <CardView
