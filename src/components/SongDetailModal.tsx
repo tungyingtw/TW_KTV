@@ -4,7 +4,6 @@ import { BRAND_LIST } from '../data/brands';
 import { X, Heart, Video, Sparkles, CheckCircle2, Flag } from 'lucide-react';
 import { BrandVoteBar } from './BrandVoteBar';
 import { ReportModal } from './ReportModal';
-import { AdBannerSlot } from './AdBannerSlot';
 import { fetchSongVotes } from '../services/communityService';
 
 interface SongDetailModalProps {
@@ -407,11 +406,6 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   （幫助我們讓資料更準確）
                 </span>
               </button>
-            </div>
-
-            {/* 廣告位專區 */}
-            <div style={{ marginTop: '16px' }}>
-              <AdBannerSlot slotType="modal" />
             </div>
           </div>
         </div>
