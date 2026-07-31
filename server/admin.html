@@ -134,6 +134,41 @@
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 7px; padding: 7px 12px; color: var(--text); font-size: 0.85rem;
   }
+  .song-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .song-editor-grid .wide { grid-column: span 2; }
+  .song-editor-grid .full { grid-column: 1 / -1; }
+  .song-editor-grid label {
+    display: block; color: var(--muted); font-size: 0.78rem; font-weight: 700; margin-bottom: 4px;
+  }
+  .song-editor-grid input, .song-editor-grid select, .song-editor-grid textarea {
+    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px 10px; color: var(--text); font-size: 0.86rem; font-family: inherit;
+  }
+  .song-editor-grid textarea { min-height: 58px; resize: vertical; }
+  .brand-editor-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin-top: 10px;
+  }
+  .brand-editor-card {
+    background: rgba(255,255,255,0.035); border: 1px solid var(--border); border-radius: 8px; padding: 10px;
+  }
+  .brand-editor-card .brand-title { font-weight: 800; font-size: 0.82rem; margin-bottom: 8px; color: #cbd5e1; }
+  .brand-editor-card input, .brand-editor-card select {
+    width: 100%; margin-top: 5px; background: #0f172a; border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 8px; color: var(--text); font-size: 0.78rem;
+  }
+  .song-result-row {
+    display: grid; grid-template-columns: minmax(180px, 1fr) 130px 150px auto; gap: 10px; align-items: center;
+    border-bottom: 1px solid var(--border); padding: 10px 0;
+  }
+  @media (max-width: 760px) {
+    .song-editor-grid { grid-template-columns: 1fr; }
+    .song-editor-grid .wide, .song-editor-grid .full { grid-column: 1; }
+    .song-result-row { grid-template-columns: 1fr; }
+  }
 
   /* ── Empty ── */
   .empty { color: var(--muted); text-align: center; padding: 40px; }
@@ -205,6 +240,7 @@
     <button onclick="showTab('tab-disputed')">爭議投票</button>
     <button onclick="showTab('tab-verified')">已驗證</button>
     <button onclick="showTab('tab-guided')">導唱票</button>
+    <button onclick="showTab('tab-songs')">歌曲管理</button>
     <button onclick="showTab('tab-logs')">操作日誌</button>
   </nav>
 
@@ -305,6 +341,33 @@
       <div id="guided-list"><div class="empty">載入中...</div></div>
     </div>
 
+    <div id="tab-songs" class="tab">
+      <div class="filter-row">
+        <h2 style="font-size:1.05rem;">歌曲資料管理</h2>
+        <input id="song-admin-query" placeholder="搜尋歌名、歌手或 ID" style="min-width:260px;" />
+        <select id="song-admin-language">
+          <option value="">全部語種</option>
+          <option value="國語">國語</option>
+          <option value="陸歌">陸歌</option>
+          <option value="台語">台語</option>
+          <option value="粵語">粵語</option>
+          <option value="英語">英語</option>
+          <option value="日語">日語</option>
+          <option value="韓語">韓語</option>
+          <option value="客語">客語</option>
+          <option value="兒歌">兒歌</option>
+          <option value="原住民語">原住民語</option>
+          <option value="藏語">藏語</option>
+        </select>
+        <button class="btn btn-blue" onclick="loadAdminSongs()">搜尋</button>
+        <button class="btn btn-green" onclick="openSongEditor()">新增歌曲</button>
+      </div>
+      <div class="card">
+        <div id="song-admin-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">尚未搜尋</div>
+        <div id="song-admin-list"><div class="empty">請輸入條件搜尋，或直接按搜尋載入最新歌曲。</div></div>
+      </div>
+    </div>
+
     <!-- ── 操作日誌 ── -->
     <div id="tab-logs" class="tab">
       <div class="filter-row">
@@ -344,6 +407,72 @@
   </div>
 </div>
 
+<div id="song-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:220;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal-box" style="width:960px;max-height:90vh;overflow:auto;">
+    <h3 id="song-editor-title">編輯歌曲</h3>
+    <input type="hidden" id="song-editor-id" />
+    <div class="song-editor-grid">
+      <div class="wide">
+        <label>歌名</label>
+        <input id="song-title" />
+      </div>
+      <div class="wide">
+        <label>歌手</label>
+        <input id="song-artist" />
+      </div>
+      <div>
+        <label>語種</label>
+        <select id="song-language">
+          <option value="國語">國語</option>
+          <option value="陸歌">陸歌</option>
+          <option value="台語">台語</option>
+          <option value="粵語">粵語</option>
+          <option value="英語">英語</option>
+          <option value="日語">日語</option>
+          <option value="韓語">韓語</option>
+          <option value="客語">客語</option>
+          <option value="兒歌">兒歌</option>
+          <option value="原住民語">原住民語</option>
+          <option value="藏語">藏語</option>
+        </select>
+      </div>
+      <div>
+        <label>年份</label>
+        <input id="song-release-year" type="number" />
+      </div>
+      <div>
+        <label>作詞</label>
+        <input id="song-lyricist" />
+      </div>
+      <div>
+        <label>作曲</label>
+        <input id="song-composer" />
+      </div>
+      <div class="wide">
+        <label>YouTube URL</label>
+        <input id="song-youtube-url" />
+      </div>
+      <div class="full">
+        <label>摘要 / 歌詞片段</label>
+        <textarea id="song-lyrics-snippet"></textarea>
+      </div>
+      <div>
+        <label><input id="song-mainland-viral" type="checkbox" style="width:auto;margin-right:6px;" />陸歌/大陸熱歌標記</label>
+      </div>
+      <div>
+        <label><input id="song-niche" type="checkbox" style="width:auto;margin-right:6px;" />冷門歌標記</label>
+      </div>
+    </div>
+    <h4 style="margin-top:16px;font-size:0.95rem;">廠牌收錄</h4>
+    <div id="song-brand-editor" class="brand-editor-grid"></div>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="saveSongEditor()" style="flex:1;">儲存歌曲</button>
+      <button class="btn btn-red" onclick="deleteSongFromEditor()">刪除歌曲</button>
+      <button class="btn btn-ghost" onclick="closeSongEditor()">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ Toast ══ -->
 <div id="toast"></div>
 
@@ -355,6 +484,21 @@ const API = isLocalEnv
   : (isGitHubPages ? 'https://tw-ktv.onrender.com' : window.location.origin);
 
 let adminToken = sessionStorage.getItem('ktv_admin_token') || '';
+let currentSongEditorMode = 'create';
+let currentSongEditorData = null;
+const ADMIN_BRANDS = [
+  ['watering_hole', '享○馨'],
+  ['golden_voice', '金○'],
+  ['superstar', '超○巨星'],
+  ['starlight', '星○點'],
+  ['cashbox', '錢○'],
+  ['holiday', '好○迪'],
+  ['singgo', 'Sing○'],
+  ['vmix', 'V-M○X'],
+  ['silver_cabinet', '銀○'],
+  ['yinyuan', '音○'],
+  ['hongyin', '弘○'],
+];
 
 if (adminToken) {
   verifyLogin();
@@ -441,6 +585,7 @@ function showTab(id) {
   if (id === 'tab-disputed') loadDisputed();
   if (id === 'tab-verified') loadVerified();
   if (id === 'tab-guided') loadGuidedVotes();
+  if (id === 'tab-songs') loadAdminSongs();
   if (id === 'tab-logs') loadLogs();
 }
 
@@ -638,6 +783,202 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
   } else {
     showToast(data.error || '套用導唱修正失敗', 'error');
   }
+}
+
+async function loadAdminSongs() {
+  const query = encodeURIComponent(document.getElementById('song-admin-query').value.trim());
+  const language = encodeURIComponent(document.getElementById('song-admin-language').value);
+  const res = await apiFetch(`/api/admin/songs?query=${query}&language=${language}&limit=80`);
+  const data = await res.json();
+  const list = document.getElementById('song-admin-list');
+  document.getElementById('song-admin-summary').textContent = `共 ${Number(data.total || 0).toLocaleString()} 筆，顯示前 ${data.songs?.length || 0} 筆`;
+
+  if (!data.songs?.length) {
+    list.innerHTML = '<div class="empty">沒有符合條件的歌曲</div>';
+    return;
+  }
+
+  list.innerHTML = data.songs.map(song => `
+    <div class="song-result-row">
+      <div>
+        <div style="font-weight:800;color:#f8fafc;">${escapeHtml(song.title)}</div>
+        <div style="color:var(--muted);font-size:0.78rem;">${escapeHtml(song.artist)} · ${escapeHtml(song.id)}</div>
+      </div>
+      <div><span class="badge badge-reviewed">${escapeHtml(song.language || '')}</span></div>
+      <div style="color:var(--muted);font-size:0.78rem;">${countAvailableBrands(song)} 家收錄</div>
+      <div class="card-actions">
+        <button class="btn btn-blue" onclick="openSongEditor('${encodeURIComponent(song.id)}')">編輯</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function openSongEditor(songIdValue = '') {
+  currentSongEditorMode = songIdValue ? 'edit' : 'create';
+  currentSongEditorData = null;
+  const modal = document.getElementById('song-editor-modal');
+  document.getElementById('song-editor-title').textContent = songIdValue ? '編輯歌曲' : '新增歌曲';
+
+  if (songIdValue) {
+    const songId = decodeURIComponent(songIdValue);
+    const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`);
+    const data = await res.json();
+    if (!data.song) {
+      showToast(data.error || '讀取歌曲失敗', 'error');
+      return;
+    }
+    currentSongEditorData = data.song;
+  } else {
+    currentSongEditorData = {
+      id: '',
+      title: '',
+      artist: '',
+      lyricist: '',
+      composer: '',
+      language: '國語',
+      releaseYear: new Date().getFullYear(),
+      lyricsSnippet: '',
+      youtubeUrl: '',
+      isMainlandViral: false,
+      isNiche: false,
+      brands: {},
+    };
+  }
+
+  fillSongEditor(currentSongEditorData);
+  modal.style.display = 'flex';
+}
+
+function closeSongEditor() {
+  document.getElementById('song-editor-modal').style.display = 'none';
+}
+
+function fillSongEditor(song) {
+  document.getElementById('song-editor-id').value = song.id || '';
+  document.getElementById('song-title').value = song.title || '';
+  document.getElementById('song-artist').value = song.artist || '';
+  document.getElementById('song-language').value = song.language || '國語';
+  document.getElementById('song-release-year').value = song.releaseYear || new Date().getFullYear();
+  document.getElementById('song-lyricist').value = song.lyricist || '';
+  document.getElementById('song-composer').value = song.composer || '';
+  document.getElementById('song-youtube-url').value = song.youtubeUrl || '';
+  document.getElementById('song-lyrics-snippet').value = song.lyricsSnippet || '';
+  document.getElementById('song-mainland-viral').checked = Boolean(song.isMainlandViral);
+  document.getElementById('song-niche').checked = Boolean(song.isNiche);
+
+  document.getElementById('song-brand-editor').innerHTML = ADMIN_BRANDS.map(([brandId, label]) => {
+    const status = song.brands?.[brandId] || { available: false };
+    return `
+      <div class="brand-editor-card" data-brand-id="${brandId}">
+        <div class="brand-title">${label}</div>
+        <label style="display:flex;align-items:center;gap:6px;color:#cbd5e1;">
+          <input class="brand-available" type="checkbox" ${status.available ? 'checked' : ''} style="width:auto;" />有收錄
+        </label>
+        <input class="brand-code" placeholder="點歌碼" value="${escapeAttr(status.code || '')}" />
+        <select class="brand-audio">
+          <option value="">音訊類型</option>
+          <option value="original_vocal" ${status.audioType === 'original_vocal' ? 'selected' : ''}>原聲原唱</option>
+          <option value="guided_vocal" ${status.audioType === 'guided_vocal' ? 'selected' : ''}>導唱</option>
+          <option value="backing_track" ${status.audioType === 'backing_track' ? 'selected' : ''}>伴奏</option>
+        </select>
+        <select class="brand-mv">
+          <option value="">MV 類型</option>
+          <option value="official_mv" ${status.mvType === 'official_mv' ? 'selected' : ''}>官方 MV</option>
+          <option value="live_mv" ${status.mvType === 'live_mv' ? 'selected' : ''}>Live MV</option>
+          <option value="reedited_mv" ${status.mvType === 'reedited_mv' ? 'selected' : ''}>剪輯 MV</option>
+          <option value="anime_mv" ${status.mvType === 'anime_mv' ? 'selected' : ''}>動畫 MV</option>
+        </select>
+        <input class="brand-note" placeholder="備註" value="${escapeAttr(status.note || '')}" />
+      </div>
+    `;
+  }).join('');
+}
+
+function collectSongEditorPayload() {
+  const brands = {};
+  document.querySelectorAll('.brand-editor-card').forEach(card => {
+    const brandId = card.dataset.brandId;
+    brands[brandId] = {
+      available: card.querySelector('.brand-available').checked,
+      code: card.querySelector('.brand-code').value.trim(),
+      audioType: card.querySelector('.brand-audio').value,
+      mvType: card.querySelector('.brand-mv').value,
+      note: card.querySelector('.brand-note').value.trim(),
+    };
+  });
+
+  return {
+    title: document.getElementById('song-title').value.trim(),
+    artist: document.getElementById('song-artist').value.trim(),
+    language: document.getElementById('song-language').value,
+    releaseYear: Number(document.getElementById('song-release-year').value || new Date().getFullYear()),
+    lyricist: document.getElementById('song-lyricist').value.trim(),
+    composer: document.getElementById('song-composer').value.trim(),
+    youtubeUrl: document.getElementById('song-youtube-url').value.trim(),
+    lyricsSnippet: document.getElementById('song-lyrics-snippet').value.trim(),
+    isMainlandViral: document.getElementById('song-mainland-viral').checked,
+    isNiche: document.getElementById('song-niche').checked,
+    brands,
+  };
+}
+
+async function saveSongEditor() {
+  const payload = collectSongEditorPayload();
+  if (!payload.title || !payload.artist) {
+    showToast('歌名與歌手必填', 'error');
+    return;
+  }
+
+  const songId = document.getElementById('song-editor-id').value;
+  const path = currentSongEditorMode === 'edit'
+    ? `/api/admin/song/${encodeURIComponent(songId)}`
+    : '/api/admin/song';
+  const method = currentSongEditorMode === 'edit' ? 'PUT' : 'POST';
+  const res = await apiFetch(path, { method, body: JSON.stringify(payload) });
+  const data = await res.json();
+
+  if (!data.success) {
+    showToast(data.error || '儲存失敗', 'error');
+    return;
+  }
+
+  showToast('歌曲資料已儲存', 'success');
+  closeSongEditor();
+  loadAdminSongs();
+  loadStats();
+}
+
+async function deleteSongFromEditor() {
+  if (currentSongEditorMode !== 'edit') {
+    closeSongEditor();
+    return;
+  }
+  const songId = document.getElementById('song-editor-id').value;
+  const title = document.getElementById('song-title').value;
+  if (!confirm(`確定刪除「${title}」？這會寫入前台刪除覆寫。`)) return;
+
+  const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (!data.success) {
+    showToast(data.error || '刪除失敗', 'error');
+    return;
+  }
+  showToast('歌曲已刪除', 'success');
+  closeSongEditor();
+  loadAdminSongs();
+  loadStats();
+}
+
+function countAvailableBrands(song) {
+  return Object.values(song.brands || {}).filter(status => status?.available).length;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value);
 }
 
 // ── 操作日誌 ──

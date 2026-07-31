@@ -286,7 +286,14 @@ function saveVotes(data) {
 }
 
 function loadCatalogOverrides() {
-  try { return JSON.parse(fs.readFileSync(CATALOG_OVERRIDES_PATH, 'utf8')); } catch { return { songs: {} }; }
+  try {
+    const data = JSON.parse(fs.readFileSync(CATALOG_OVERRIDES_PATH, 'utf8'));
+    if (!data.songs || typeof data.songs !== 'object') data.songs = {};
+    if (!Array.isArray(data.deletedIds)) data.deletedIds = [];
+    return data;
+  } catch {
+    return { songs: {}, deletedIds: [] };
+  }
 }
 function saveCatalogOverrides(data) {
   fs.writeFileSync(CATALOG_OVERRIDES_PATH, JSON.stringify(data, null, 2), 'utf8');
@@ -361,13 +368,24 @@ async function saveCatalogOverridesStore(data) {
 async function saveCatalogOverrideSong(song) {
   const overrides = await loadCatalogOverridesStore();
   if (!overrides.songs || typeof overrides.songs !== 'object') overrides.songs = {};
+  if (!Array.isArray(overrides.deletedIds)) overrides.deletedIds = [];
+  overrides.deletedIds = overrides.deletedIds.filter(id => id !== song.id);
   overrides.songs[song.id] = song;
+  await saveCatalogOverridesStore(overrides);
+}
+
+async function saveCatalogDeletedSong(songId) {
+  const overrides = await loadCatalogOverridesStore();
+  if (!overrides.songs || typeof overrides.songs !== 'object') overrides.songs = {};
+  if (!Array.isArray(overrides.deletedIds)) overrides.deletedIds = [];
+  delete overrides.songs[songId];
+  if (!overrides.deletedIds.includes(songId)) overrides.deletedIds.push(songId);
   await saveCatalogOverridesStore(overrides);
 }
 
 async function saveCatalog(catalog) {
   const dbPath = path.join(__dirname, 'database.json');
-  fs.writeFileSync(dbPath, JSON.stringify(catalog, null, 2), 'utf8');
+  fs.writeFileSync(dbPath, JSON.stringify(catalog), 'utf8');
   try {
     const { generateBinCatalog } = await import('../scripts/buildCatalogBin.js');
     generateBinCatalog();
@@ -444,7 +462,8 @@ app.get('/api/catalog-overrides', async (req, res) => {
   const songs = overrides?.songs && typeof overrides.songs === 'object'
     ? Object.values(overrides.songs)
     : [];
-  res.json({ songs });
+  const deletedIds = Array.isArray(overrides?.deletedIds) ? overrides.deletedIds : [];
+  res.json({ songs, deletedIds });
 });
 
 // ── 字串模糊歸一化工具 ──
@@ -1117,6 +1136,166 @@ app.get('/api/admin/guided-votes', requireAdmin, async (req, res) => {
 
   guidedVotes.sort((a, b) => (b.total - a.total) || (b.guided - a.guided));
   res.json({ total: guidedVotes.length, guidedVotes });
+});
+
+function createEmptyBrandStatuses() {
+  return BRAND_IDS.reduce((acc, brandId) => {
+    acc[brandId] = { available: false };
+    return acc;
+  }, {});
+}
+
+function normalizeAdminSongPayload(body, existingSong = null) {
+  const validLanguages = ['國語', '台語', '粵語', '英語', '日語', '韓語', '陸歌', '客語', '兒歌', '原住民語', '藏語', 'MV', '樂'];
+  const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track'];
+  const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv'];
+
+  const title = String(body.title || '').trim();
+  const artist = String(body.artist || '').trim();
+  if (!title) throw new Error('title is required');
+  if (!artist) throw new Error('artist is required');
+
+  const language = String(body.language || existingSong?.language || '國語').trim();
+  if (!validLanguages.includes(language)) throw new Error('invalid language');
+
+  const brands = {
+    ...createEmptyBrandStatuses(),
+    ...(existingSong?.brands || {}),
+  };
+
+  if (body.brands && typeof body.brands === 'object') {
+    for (const brandId of BRAND_IDS) {
+      const incoming = body.brands[brandId];
+      if (!incoming || typeof incoming !== 'object') continue;
+      const status = {
+        ...(brands[brandId] || { available: false }),
+        available: Boolean(incoming.available),
+      };
+
+      const code = String(incoming.code || '').trim();
+      if (code) status.code = code;
+      else delete status.code;
+
+      if (validAudioTypes.includes(incoming.audioType)) status.audioType = incoming.audioType;
+      else delete status.audioType;
+
+      if (validMvTypes.includes(incoming.mvType)) status.mvType = incoming.mvType;
+      else delete status.mvType;
+
+      const note = String(incoming.note || '').trim();
+      if (note) status.note = note;
+      else delete status.note;
+
+      brands[brandId] = status;
+    }
+  }
+
+  return {
+    ...(existingSong || {}),
+    id: existingSong?.id || String(body.id || `admin_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`).trim(),
+    title,
+    artist,
+    lyricist: String(body.lyricist || '').trim(),
+    composer: String(body.composer || '').trim(),
+    language,
+    zhuyin: String(body.zhuyin || existingSong?.zhuyin || 'AUTO').trim() || 'AUTO',
+    pinyin: String(body.pinyin || existingSong?.pinyin || 'AUTO').trim() || 'AUTO',
+    releaseYear: Number.parseInt(String(body.releaseYear || existingSong?.releaseYear || new Date().getFullYear()), 10) || new Date().getFullYear(),
+    popularRank: body.popularRank ? Number.parseInt(String(body.popularRank), 10) : existingSong?.popularRank,
+    lyricsSnippet: String(body.lyricsSnippet || '').trim(),
+    youtubeUrl: String(body.youtubeUrl || '').trim() || undefined,
+    isMainlandViral: Boolean(body.isMainlandViral),
+    isNiche: Boolean(body.isNiche),
+    brands,
+  };
+}
+
+app.get('/api/admin/songs', requireAdmin, (req, res) => {
+  const { query = '', language = '', page = 1, limit = 50 } = req.query;
+  const q = String(query).trim().toLowerCase();
+  const selectedLanguage = String(language).trim();
+  let results = songsDatabase;
+
+  if (q) {
+    results = results.filter(song => (
+      String(song.id || '').toLowerCase().includes(q) ||
+      String(song.title || '').toLowerCase().includes(q) ||
+      String(song.artist || '').toLowerCase().includes(q)
+    ));
+  }
+
+  if (selectedLanguage) {
+    results = results.filter(song => song.language === selectedLanguage);
+  }
+
+  const pageNum = Math.max(1, Number.parseInt(String(page), 10) || 1);
+  const limitNum = Math.min(200, Math.max(10, Number.parseInt(String(limit), 10) || 50));
+  const start = (pageNum - 1) * limitNum;
+
+  res.json({
+    total: results.length,
+    page: pageNum,
+    limit: limitNum,
+    songs: results.slice(start, start + limitNum),
+  });
+});
+
+app.get('/api/admin/song/:songId', requireAdmin, (req, res) => {
+  const song = songsDatabase.find(s => s.id === req.params.songId);
+  if (!song) return res.status(404).json({ error: 'Song not found' });
+  res.json({ song });
+});
+
+app.post('/api/admin/song', requireAdmin, async (req, res) => {
+  try {
+    const song = normalizeAdminSongPayload(req.body);
+    if (songsDatabase.some(item => item.id === song.id)) {
+      return res.status(409).json({ error: 'Song id already exists' });
+    }
+    songsDatabase.push(song);
+    await saveCatalog(songsDatabase);
+    await saveCatalogOverrideSong(song);
+    logAdminAction('CREATE_SONG', { songId: song.id, title: song.title, artist: song.artist });
+    res.json({ success: true, song });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put('/api/admin/song/:songId', requireAdmin, async (req, res) => {
+  try {
+    const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
+    if (idx === -1) return res.status(404).json({ error: 'Song not found' });
+    const before = songsDatabase[idx];
+    const song = normalizeAdminSongPayload(req.body, before);
+    song.id = before.id;
+    songsDatabase[idx] = song;
+    await saveCatalog(songsDatabase);
+    await saveCatalogOverrideSong(song);
+    logAdminAction('UPDATE_SONG', {
+      songId: song.id,
+      before: { title: before.title, artist: before.artist },
+      after: { title: song.title, artist: song.artist },
+    });
+    res.json({ success: true, song });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/song/:songId', requireAdmin, async (req, res) => {
+  const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
+  if (idx === -1) return res.status(404).json({ error: 'Song not found' });
+  const [deleted] = songsDatabase.splice(idx, 1);
+  try {
+    await saveCatalog(songsDatabase);
+    await saveCatalogDeletedSong(deleted.id);
+    logAdminAction('DELETE_SONG', { songId: deleted.id, title: deleted.title, artist: deleted.artist });
+    res.json({ success: true, deleted });
+  } catch (err) {
+    console.error('[Admin Song Delete Error]', err);
+    res.status(503).json({ error: 'Failed to delete song' });
+  }
 });
 
 // ── 套用廠牌收錄狀態修正（核心管理功能）──
