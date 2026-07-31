@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import type { FilterOptions, Language, TitleLengthFilter } from '../types/ktv';
 import { X, Check, RotateCcw, SortAsc, Hash } from 'lucide-react';
 
@@ -26,6 +27,18 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
   filters,
   setFilters,
 }) => {
+  // 支援 Esc 鍵關閉抽屜
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleReset = () => {
@@ -58,7 +71,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 100,
+        zIndex: 1500,
         background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
         backdropFilter: 'blur(8px)',
         display: 'flex',

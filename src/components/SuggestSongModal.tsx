@@ -14,6 +14,17 @@ const languageOptions = ['國語', '台語', '粵語', '英語', '日語', '韓�
 export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, defaultTab = 'song' }) => {
   const [activeTab, setActiveTab] = useState<'song' | 'brand'>(defaultTab);
 
+  // 支援 Esc 鍵關閉彈窗
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [lyricist, setLyricist] = useState('');
@@ -99,7 +110,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 220,
+        zIndex: 9100,
         background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
         backdropFilter: 'blur(12px)',
         display: 'flex',

@@ -25,6 +25,18 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
+  // 支援 Esc 鍵優先關閉此二級彈窗
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [onClose]);
+
   const handleSubmit = async () => {
     if (!issueType) { setError('請選擇問題類型'); return; }
     if (!selectedBrand && issueType !== 'other') {
@@ -56,8 +68,8 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
+        position: 'fixed', inset: 0, zIndex: 10500,
+        background: 'var(--bg-overlay, rgba(15, 23, 42, 0.82))',
         backdropFilter: 'blur(10px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px',

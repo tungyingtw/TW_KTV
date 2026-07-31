@@ -16,6 +16,18 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
   favoriteSongs,
   onToggleFavorite,
 }) => {
+  // 支援 Esc 鍵關閉抽屜
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -24,7 +36,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 100,
+        zIndex: 1000,
         background: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
         backdropFilter: 'blur(12px)',
         display: 'flex',

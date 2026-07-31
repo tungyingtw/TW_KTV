@@ -31,6 +31,18 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
     });
   }, [song]);
 
+  // 支援 Esc 鍵關閉（當子彈窗 showReport 未開啟時關閉）
+  useEffect(() => {
+    if (!song) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !showReport) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [song, onClose, showReport]);
+
   if (!song) return null;
 
   const isFav = favorites.includes(song.id);
@@ -51,7 +63,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.65)',
           backdropFilter: 'blur(8px)',
-          zIndex: 9999,
+          zIndex: 9900,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
