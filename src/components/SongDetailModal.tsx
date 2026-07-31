@@ -173,7 +173,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               )}
             </div>
 
-            {/* Lyrics Snippet Section */}
+            {/* Song identification hint */}
             {song.lyricsSnippet && !song.lyricsSnippet.includes('全台 10 大 KTV') ? (
               <div
                 style={{
@@ -191,7 +191,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   lineHeight: 1.6,
                 }}
               >
-                "{song.lyricsSnippet}"
+                <span style={{ fontWeight: 700, color: 'var(--accent-pink, #ec4899)', fontStyle: 'normal' }}>歌曲辨識提示：</span> {song.lyricsSnippet}
               </div>
             ) : (
               <div
@@ -208,7 +208,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   justifyContent: 'space-between',
                 }}
               >
-                <span>歌詞導引：可點擊下方按鈕進行官方原唱 / MV 歌詞預覽</span>
+                <span>歌曲導引：可前往公開影音平台參考官方版本資訊</span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--accent-blue, #38bdf8)', fontWeight: 600 }}>[即時對照]</span>
               </div>
             )}
@@ -279,7 +279,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   transition: 'all 0.2s ease',
                 }}
               >
-                <Video size={18} /> 在 YouTube 播放全曲及官方 MV 預覽
+                <Video size={18} /> 前往 YouTube 參考官方版本
               </a>
             )}
 

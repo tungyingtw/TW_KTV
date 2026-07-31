@@ -1,7 +1,7 @@
 {
   "name": "台灣 KTV 歌曲對照查詢網",
   "short_name": "台灣 KTV",
-  "description": "查詢台灣常見 KTV 系統的歌曲收錄、點歌碼與原聲原唱資訊。",
+  "description": "查詢台灣常見 KTV 系統的歌曲收錄、原聲原唱、導唱與官方 MV 資訊。",
   "lang": "zh-TW",
   "start_url": "/TW_KTV/",
   "scope": "/TW_KTV/",

@@ -78,7 +78,7 @@ export async function submitSuggestSong(payload: {
     hasOriginalVocal: payload.hasOriginalVocal,
     lyricsSnippet: payload.lyricsSnippet,
     youtubeUrl: payload.youtubeUrl,
-    note: `[新歌建議] 語種:${payload.language} | MV:${payload.hasOfficialMv ? '有' : '無'} | 原唱:${payload.hasOriginalVocal ? '有' : '無'} | 歌詞:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
+    note: `[新歌建議] 語種:${payload.language} | MV:${payload.hasOfficialMv ? '有' : '無'} | 原唱:${payload.hasOriginalVocal ? '有' : '無'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
   });
 }
 
@@ -101,7 +101,7 @@ export async function submitSuggestBrand(payload: {
     systemType: payload.systemType,
     codeFormat: payload.codeFormat,
     storeLocations: payload.storeLocations,
-    note: `[新廠牌建議] 系統:${payload.systemType || ''} | 格式:${payload.codeFormat || ''} | 據點:${payload.storeLocations || ''} | 備註:${payload.note || ''}`,
+    note: `[新廠牌建議] 系統:${payload.systemType || ''} | 曲庫/版本線索:${payload.codeFormat || ''} | 據點:${payload.storeLocations || ''} | 備註:${payload.note || ''}`,
   });
 }
 
