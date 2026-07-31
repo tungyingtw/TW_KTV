@@ -160,14 +160,44 @@
     width: 100%; margin-top: 5px; background: #0f172a; border: 1px solid var(--border);
     border-radius: 6px; padding: 6px 8px; color: var(--text); font-size: 0.78rem;
   }
+  .song-editor-actions {
+    margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .btn-editor-save {
+    flex: 2.2; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff;
+    border: 1px solid rgba(52,211,153,0.4); border-radius: 9px; padding: 11px 20px;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.25); transition: all 0.2s ease;
+  }
+  .btn-editor-save:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 6px 18px rgba(16,185,129,0.4); transform: translateY(-1px);
+  }
+  .btn-editor-delete {
+    flex: 1; background: rgba(248,113,113,0.12); color: #f87171;
+    border: 1px solid rgba(248,113,113,0.35); border-radius: 9px; padding: 11px 16px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-editor-delete:hover {
+    background: rgba(248,113,113,0.25); border-color: rgba(248,113,113,0.6); color: #fca5a5;
+  }
+  .btn-editor-cancel {
+    flex: 1; background: rgba(255,255,255,0.06); color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 9px; padding: 11px 16px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-editor-cancel:hover {
+    background: rgba(255,255,255,0.12); color: #f1f5f9; border-color: rgba(255,255,255,0.25);
+  }
   .song-result-row {
-    display: grid; grid-template-columns: minmax(180px, 1fr) 130px 150px auto; gap: 10px; align-items: center;
-    border-bottom: 1px solid var(--border); padding: 10px 0;
+    display: grid; grid-template-columns: 105px minmax(180px, 1fr) 110px 130px; gap: 14px; align-items: center;
+    border-bottom: 1px solid var(--border); padding: 12px 0;
   }
   @media (max-width: 760px) {
     .song-editor-grid { grid-template-columns: 1fr; }
     .song-editor-grid .wide, .song-editor-grid .full { grid-column: 1; }
-    .song-result-row { grid-template-columns: 1fr; }
+    .song-result-row { grid-template-columns: auto 1fr; }
   }
 
   /* ── Empty ── */
@@ -478,10 +508,10 @@
     </div>
     <h4 style="margin-top:16px;font-size:0.95rem;">廠牌收錄</h4>
     <div id="song-brand-editor" class="brand-editor-grid"></div>
-    <div class="modal-actions">
-      <button class="btn btn-green" onclick="saveSongEditor()" style="flex:1;">儲存歌曲</button>
-      <button class="btn btn-red" onclick="deleteSongFromEditor()">刪除歌曲</button>
-      <button class="btn btn-ghost" onclick="closeSongEditor()">取消</button>
+    <div class="song-editor-actions">
+      <button class="btn-editor-save" onclick="saveSongEditor()">儲存歌曲</button>
+      <button class="btn-editor-delete" onclick="deleteSongFromEditor()">刪除歌曲</button>
+      <button class="btn-editor-cancel" onclick="closeSongEditor()">取消</button>
     </div>
   </div>
 </div>
@@ -830,15 +860,15 @@ async function loadAdminSongs(pageTarget = 1) {
 
     list.innerHTML = songs.map(song => `
       <div class="song-result-row">
+        <div class="card-actions">
+          <button class="btn btn-blue" onclick="openSongEditor('${encodeURIComponent(song.id)}')">編輯歌曲</button>
+        </div>
         <div>
           <div style="font-weight:800;color:#f8fafc;">${escapeHtml(song.title)}</div>
           <div style="color:var(--muted);font-size:0.78rem;">${escapeHtml(song.artist)} · ID: ${escapeHtml(song.id)}</div>
         </div>
         <div><span class="badge badge-reviewed">${escapeHtml(song.language || '未分類')}</span></div>
         <div style="color:var(--muted);font-size:0.78rem;">${countAvailableBrands(song)} 家收錄</div>
-        <div class="card-actions">
-          <button class="btn btn-blue" onclick="openSongEditor('${encodeURIComponent(song.id)}')">編輯歌曲</button>
-        </div>
       </div>
     `).join('');
 
@@ -856,6 +886,18 @@ async function loadAdminSongs(pageTarget = 1) {
     list.innerHTML = '<div class="empty" style="color:var(--red);">載入歌曲失敗，請稍後再試</div>';
     pagination.innerHTML = '';
   }
+}
+
+let initialSongEditorSnapshot = null;
+
+function captureSongEditorSnapshot() {
+  initialSongEditorSnapshot = JSON.stringify(collectSongEditorPayload());
+}
+
+function isSongEditorModified() {
+  if (!initialSongEditorSnapshot) return false;
+  const currentSnapshot = JSON.stringify(collectSongEditorPayload());
+  return initialSongEditorSnapshot !== currentSnapshot;
 }
 
 async function openSongEditor(songIdValue = '') {
@@ -891,11 +933,19 @@ async function openSongEditor(songIdValue = '') {
   }
 
   fillSongEditor(currentSongEditorData);
+  captureSongEditorSnapshot();
   modal.style.display = 'flex';
 }
 
-function closeSongEditor() {
+function closeSongEditor(force = false) {
+  if (!force && isSongEditorModified()) {
+    if (!confirm('⚠️ 您有尚未儲存的修改資料，確定要放棄修改並關閉嗎？')) {
+      return false;
+    }
+  }
   document.getElementById('song-editor-modal').style.display = 'none';
+  initialSongEditorSnapshot = null;
+  return true;
 }
 
 function fillSongEditor(song) {
@@ -989,7 +1039,7 @@ async function saveSongEditor() {
     }
 
     showToast(`✅ 歌曲《${payload.title}》資料已儲存成功！`, 'success');
-    closeSongEditor();
+    closeSongEditor(true);
     loadAdminSongs(currentAdminSongsPage);
     loadStats();
   } catch (err) {
@@ -1000,7 +1050,7 @@ async function saveSongEditor() {
 
 async function deleteSongFromEditor() {
   if (currentSongEditorMode !== 'edit') {
-    closeSongEditor();
+    closeSongEditor(true);
     return;
   }
   const songId = document.getElementById('song-editor-id').value;
@@ -1015,7 +1065,7 @@ async function deleteSongFromEditor() {
       return;
     }
     showToast(`✅ 歌曲「${title}」已安全刪除！`, 'success');
-    closeSongEditor();
+    closeSongEditor(true);
     loadAdminSongs(currentAdminSongsPage);
     loadStats();
   } catch (err) {
@@ -1023,6 +1073,23 @@ async function deleteSongFromEditor() {
     showToast('刪除失敗：' + (err.message || '網路連線異常'), 'error');
   }
 }
+
+// 點擊歌曲編輯視窗背景關閉（觸發未儲存資料檢查）
+document.getElementById('song-editor-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) {
+    closeSongEditor(false);
+  }
+});
+
+// 按下 ESC 鍵關閉歌曲編輯視窗（觸發未儲存資料檢查）
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const editorModal = document.getElementById('song-editor-modal');
+    if (editorModal && editorModal.style.display !== 'none') {
+      closeSongEditor(false);
+    }
+  }
+});
 
 function countAvailableBrands(song) {
   return Object.values(song.brands || {}).filter(status => status?.available).length;
