@@ -23,7 +23,7 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
   customBannerUrl,
   targetUrl,
 }) => {
-  const isRealAdSlot = Boolean(adClient && adSlot && adSlot !== 'auto' && /^\d+$/.test(adSlot));
+  const isRealAdSlot = Boolean(adClient && adSlot);
   const bannerLink = targetUrl || '#';
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
           className="adsbygoogle"
           style={{ display: 'block', minHeight: '80px' }}
           data-ad-client={adClient}
-          data-ad-slot={adSlot}
+          {...(adSlot && adSlot !== 'auto' ? { 'data-ad-slot': adSlot } : {})}
           data-ad-format={adFormat}
           data-full-width-responsive="true"
         />
