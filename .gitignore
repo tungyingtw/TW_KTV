@@ -33,6 +33,9 @@ scripts/
 !scripts/checkBrandMasking.js
 
 # Internal Data & Raw JSON Catalogs (Strict Isolation)
+exported_csv_batches/
+exported_csv_batches/*
+exported_csv_batches/**/*.csv
 爬蟲資料/
 public/artists_registry.csv
 public/artists_registry.json
