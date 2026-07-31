@@ -4,6 +4,7 @@ import { BRANDS } from '../data/brands';
 import { Heart, Video, Disc, ChevronRight, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
+import { getLanguageStyle } from '../utils/languageStyle';
 
 interface CardViewProps {
   songs: Song[];
@@ -148,16 +149,23 @@ export const CardView: React.FC<CardViewProps> = ({
                     >
                       {song.title}
                     </h3>
-                    <span style={{
-                      fontSize: '0.7rem',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      color: 'var(--text-secondary)',
-                      fontWeight: 600,
-                    }}>
-                      {song.language}
-                    </span>
+                    {(() => {
+                      const langStyle = getLanguageStyle(song.language);
+                      return (
+                        <span style={{
+                          fontSize: '0.72rem',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          background: langStyle.bg,
+                          color: langStyle.color,
+                          border: `1px solid ${langStyle.border}`,
+                          fontWeight: 700,
+                          letterSpacing: '0.02em',
+                        }}>
+                          {song.language}
+                        </span>
+                      );
+                    })()}
                   </div>
 
                   <p style={{ 

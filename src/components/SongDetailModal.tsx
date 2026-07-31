@@ -5,6 +5,7 @@ import { X, Heart, Video, Sparkles, CheckCircle2, Flag } from 'lucide-react';
 import { BrandVoteBar } from './BrandVoteBar';
 import { ReportModal } from './ReportModal';
 import { fetchSongVotes } from '../services/communityService';
+import { getLanguageStyle } from '../utils/languageStyle';
 
 interface SongDetailModalProps {
   song: Song | null;
@@ -122,19 +123,25 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
             <div style={{ paddingRight: '44px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <span
-                  style={{
-                    background: 'rgba(56, 189, 248, 0.15)',
-                    color: 'var(--accent-blue, #38bdf8)',
-                    border: '1px solid rgba(56, 189, 248, 0.3)',
-                    padding: '2px 8px',
-                    borderRadius: '6px',
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  {displayLanguage}
-                </span>
+                {(() => {
+                  const langStyle = getLanguageStyle(displayLanguage);
+                  return (
+                    <span
+                      style={{
+                        background: langStyle.bg,
+                        color: langStyle.color,
+                        border: `1px solid ${langStyle.border}`,
+                        padding: '3px 10px',
+                        borderRadius: '12px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.02em',
+                      }}
+                    >
+                      {displayLanguage}
+                    </span>
+                  );
+                })()}
                 {song.releaseYear && (
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)' }}>
                     {song.releaseYear} 年發行
