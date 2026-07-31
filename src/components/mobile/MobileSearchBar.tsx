@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Search, X, SlidersHorizontal, Video, Disc, Hash, Loader2, PlusCircle } from 'lucide-react';
-import type { FilterOptions, TitleLengthFilter } from '../../types/ktv';
+import type { FilterOptions, Language, TitleLengthFilter } from '../../types/ktv';
 
 interface MobileSearchBarProps {
   filters: FilterOptions;
@@ -12,7 +12,7 @@ interface MobileSearchBarProps {
   onSearchComplete?: () => void;
 }
 
-const LANGUAGES = ['全部', '國語', '台語', '粵語', '陸歌', '日語', '韓語', '英語'];
+const LANGUAGES: Array<Language | '全部'> = ['全部', '國語', '台語', '粵語', '客語', '兒歌', '原住民語', '陸歌', '日語', '韓語', '英語'];
 const TITLE_LENGTHS: { id: TitleLengthFilter; label: string }[] = [
   { id: 'all', label: '全部' },
   { id: '1', label: '1字' },
@@ -59,7 +59,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
     }
   };
 
-  const toggleLanguage = (lang: string) => {
+  const toggleLanguage = (lang: Language | '全部') => {
     setFilters(prev => {
       if (lang === '全部') return { ...prev, selectedLanguages: [] };
 
@@ -68,7 +68,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
         ...prev,
         selectedLanguages: exists
           ? prev.selectedLanguages.filter(item => item !== lang)
-          : [...prev.selectedLanguages, lang],
+          : [...prev.selectedLanguages, lang as Language],
       };
     });
   };

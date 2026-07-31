@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Fuse from 'fuse.js';
-import type { Song, FilterOptions, BrandId } from './types/ktv';
+import type { Song, FilterOptions, BrandId, Language } from './types/ktv';
 import { Navbar } from './components/Navbar';
 import { SearchBar } from './components/SearchBar';
 import { BrandTabScroll } from './components/BrandTabScroll';
@@ -263,20 +263,30 @@ export function App() {
       });
     }
 
-    // 3. Language Filter (對應語種標籤：如「國語」<->「國」、「台語」<->「台」、「粵語」<->「粵」)
+    // 3. Language Filter
     if (filters.selectedLanguages.length > 0) {
-      const isLanguageMatch = (songLang: string, selectedLangs: string[], isMainlandViral?: boolean) => {
+      const normalizeLanguage = (songLang: string): Language | string => {
+        const languageMap: Record<string, Language> = {
+          國: '國語',
+          台: '台語',
+          粵: '粵語',
+          英: '英語',
+          日: '日語',
+          韓: '韓語',
+          客: '客語',
+          兒: '兒歌',
+          山: '原住民語',
+          藏: '藏語',
+        };
+        return languageMap[songLang] || songLang;
+      };
+
+      const isLanguageMatch = (songLang: string, selectedLangs: Language[], isMainlandViral?: boolean) => {
         if (selectedLangs.length === 0) return true;
+        const normalizedSongLang = normalizeLanguage(songLang);
         return selectedLangs.some(sel => {
-          if (sel === '國語' && (songLang === '國語' || songLang === '國')) return true;
-          if (sel === '台語' && (songLang === '台語' || songLang === '台')) return true;
-          if (sel === '粵語' && (songLang === '粵語' || songLang === '粵')) return true;
-          if (sel === '英語' && (songLang === '英語' || songLang === '英')) return true;
-          if (sel === '日語' && (songLang === '日語' || songLang === '日')) return true;
-          if (sel === '韓語' && (songLang === '韓語' || songLang === '韓')) return true;
           if (sel === '陸歌' && (songLang === '陸歌' || isMainlandViral)) return true;
-          if (songLang && (songLang === sel || songLang.startsWith(sel.substring(0, 1)))) return true;
-          return false;
+          return normalizedSongLang === sel;
         });
       };
       result = result.filter(song => isLanguageMatch(song.language, filters.selectedLanguages, song.isMainlandViral));

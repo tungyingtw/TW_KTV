@@ -22,6 +22,18 @@ export interface BrandInfo {
 
 export type AudioType = 'original_vocal' | 'guided_vocal' | 'backing_track';
 export type MvType = 'official_mv' | 'live_mv' | 'reedited_mv' | 'anime_mv';
+export type Language =
+  | '國語'
+  | '台語'
+  | '粵語'
+  | '英語'
+  | '日語'
+  | '韓語'
+  | '陸歌'
+  | '客語'
+  | '兒歌'
+  | '原住民語'
+  | '藏語';
 
 export interface BrandSongStatus {
   available: boolean;
@@ -37,7 +49,7 @@ export interface Song {
   artist: string;
   lyricist: string;
   composer: string;
-  language: '國語' | '台語' | '粵語' | '英語' | '日語' | '韓語' | '陸歌';
+  language: Language;
   zhuyin: string;
   pinyin: string;
   releaseYear: number;
@@ -90,7 +102,7 @@ export interface FilterOptions {
   selectedBrand: BrandId | 'all';
   selectedBrands: BrandId[]; // 支援複選多家廠牌比對
   brandFilterMode: 'any' | 'all_of_them'; // 'any'=任一家有收錄，'all_of_them'=所選廠牌全部都有收錄
-  selectedLanguages: string[];
+  selectedLanguages: Language[];
   selectedTitleLength: TitleLengthFilter;
   onlyOfficialMv: boolean;
   onlyOriginalVocal: boolean;
