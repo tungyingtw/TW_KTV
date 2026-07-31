@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Fuse from 'fuse.js';
 import type { Song, FilterOptions, BrandId } from './types/ktv';
 import { Navbar } from './components/Navbar';
@@ -31,6 +31,11 @@ function getSearchablePhonetic(value?: string): string {
 
 export function App() {
   const isMobile = useIsMobile();
+  const resultsRegionRef = useRef<HTMLElement>(null);
+  const latestSearchStateRef = useRef({
+    query: '',
+    resultCount: 0,
+  });
 
   // Main Catalog State
   const [allSongs, setAllSongs] = useState<Song[]>([]);
@@ -362,6 +367,13 @@ export function App() {
     return filteredSongs.slice(0, displayedCount);
   }, [filteredSongs, displayedCount]);
 
+  useEffect(() => {
+    latestSearchStateRef.current = {
+      query: filters.searchQuery,
+      resultCount: filteredSongs.length,
+    };
+  }, [filters.searchQuery, filteredSongs.length]);
+
   // Favorite Toggle
   const handleToggleFavorite = (songId: string) => {
     setFavorites(prev => {
@@ -382,6 +394,31 @@ export function App() {
     setTimeout(() => {
       setToastMessage(prev => prev === msg ? null : prev);
     }, 2800);
+  };
+
+  const handleMobileSearchComplete = () => {
+    if (!isMobile) return;
+    const settleDelay = isSearching ? 360 : 120;
+
+    window.setTimeout(() => {
+      const resultsRegion = resultsRegionRef.current;
+      if (!resultsRegion) return;
+
+      const top = resultsRegion.getBoundingClientRect().top + window.scrollY - 12;
+      window.scrollTo({
+        top: Math.max(0, top),
+        behavior: 'smooth',
+      });
+    }, settleDelay);
+
+    window.setTimeout(() => {
+      const { query, resultCount } = latestSearchStateRef.current;
+      if (query.trim()) {
+        showToast(`已顯示 ${resultCount.toLocaleString()} 首相關歌曲`);
+      } else {
+        showToast(`目前顯示 ${resultCount.toLocaleString()} 首歌曲`);
+      }
+    }, settleDelay);
   };
 
   // Favorite Songs list objects
@@ -419,6 +456,7 @@ export function App() {
           resultCount={filteredSongs.length}
           isSearching={isSearching}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
+          onSearchComplete={handleMobileSearchComplete}
         />
       ) : (
         <SearchBar
@@ -531,7 +569,7 @@ export function App() {
       <AdBannerSlot slotType="in_feed" />
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, paddingBottom: '60px' }}>
+      <main ref={resultsRegionRef} style={{ flex: 1, paddingBottom: '60px', scrollMarginTop: isMobile ? '12px' : '24px' }}>
         {isLoadingCatalog ? (
           <div style={{
             textAlign: 'center',
