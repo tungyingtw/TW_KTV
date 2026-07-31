@@ -1074,11 +1074,19 @@ async function deleteSongFromEditor() {
   }
 }
 
-// 點擊歌曲編輯視窗背景關閉（觸發未儲存資料檢查）
-document.getElementById('song-editor-modal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) {
+// 點擊歌曲編輯視窗背景關閉（含滑鼠選取文字 Drag-Selection 防誤關閉保護）
+let songEditorMouseDownTarget = null;
+const songEditorModalEl = document.getElementById('song-editor-modal');
+
+songEditorModalEl.addEventListener('mousedown', e => {
+  songEditorMouseDownTarget = e.target;
+});
+
+songEditorModalEl.addEventListener('click', e => {
+  if (e.target === e.currentTarget && songEditorMouseDownTarget === e.currentTarget) {
     closeSongEditor(false);
   }
+  songEditorMouseDownTarget = null;
 });
 
 // 按下 ESC 鍵關閉歌曲編輯視窗（觸發未儲存資料檢查）
@@ -1112,6 +1120,7 @@ async function loadLogs() {
   el.innerHTML = data.logs.map(l => `
     <div style="border-bottom:1px solid var(--border); padding:8px 0; font-family:monospace; font-size:0.8rem; color:var(--muted);">${l}</div>
   `).join('');
+
 }
 
 // ── Fix Modal ──
@@ -1120,9 +1129,7 @@ function openFix(songId, songTitle, artist, brandId, issueType) {
   document.getElementById('fix-brand-id').value = brandId;
   document.getElementById('fix-song-info').innerHTML =
     `《${songTitle}》— ${artist}<br><small>Song ID: ${songId}</small>`;
-  // 根據問題類型預設選項
-  document.getElementById('fix-available').value =
-    (issueType === 'has_song') ? 'true' : 'false';
+  document.getElementById('fix-available').value = (issueType === 'has_song') ? 'true' : 'false';
   document.getElementById('fix-note').value = '';
   document.getElementById('fix-modal').classList.add('open');
 }
@@ -1131,9 +1138,18 @@ function closeFix() {
   document.getElementById('fix-modal').classList.remove('open');
 }
 
-// 點擊背景關閉
-document.getElementById('fix-modal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeFix();
+let fixModalMouseDownTarget = null;
+const fixModalEl = document.getElementById('fix-modal');
+
+fixModalEl.addEventListener('mousedown', e => {
+  fixModalMouseDownTarget = e.target;
+});
+
+fixModalEl.addEventListener('click', e => {
+  if (e.target === e.currentTarget && fixModalMouseDownTarget === e.currentTarget) {
+    closeFix();
+  }
+  fixModalMouseDownTarget = null;
 });
 
 async function applyFix() {
@@ -1147,14 +1163,12 @@ async function applyFix() {
     body: JSON.stringify({ brandId, available, note }),
   });
   const data = await res.json();
-
   if (data.success) {
     showToast(`修正完成：《${data.songTitle}》${brandId} → ${available ? '有收錄' : '未收錄'}`, 'success');
     closeFix();
     loadStats();
   } else {
     showToast(`修正失敗：${data.error}`, 'error');
-  }
 }
 
 async function resetStatsCounter() {
