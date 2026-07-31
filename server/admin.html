@@ -358,6 +358,12 @@
           <option value="兒歌">兒歌</option>
           <option value="原住民語">原住民語</option>
           <option value="藏語">藏語</option>
+        <select id="song-admin-sort" onchange="loadAdminSongs(1)">
+          <option value="relevance_len_asc" selected>相關度 + 字數 (短到長)</option>
+          <option value="title_len_asc">歌名字數 (短到長)</option>
+          <option value="title_len_desc">歌名字數 (長到短)</option>
+          <option value="release_year_desc">發行年份 (新到舊)</option>
+          <option value="brands_desc">收錄門市數 (多到少)</option>
         </select>
         <select id="song-admin-limit" onchange="loadAdminSongs(1)">
           <option value="20">每頁 20 筆</option>
@@ -798,7 +804,8 @@ async function loadAdminSongs(pageTarget = 1) {
   currentAdminSongsPage = Math.max(1, Number(pageTarget) || 1);
   const query = encodeURIComponent(document.getElementById('song-admin-query').value.trim());
   const language = encodeURIComponent(document.getElementById('song-admin-language').value);
-  const limit = encodeURIComponent(document.getElementById('song-admin-limit').value || '50');
+  const limit = encodeURIComponent(document.getElementById('song-admin-limit')?.value || '50');
+  const sort = encodeURIComponent(document.getElementById('song-admin-sort')?.value || 'relevance_len_asc');
 
   const list = document.getElementById('song-admin-list');
   const summary = document.getElementById('song-admin-summary');
@@ -806,7 +813,7 @@ async function loadAdminSongs(pageTarget = 1) {
   list.innerHTML = '<div class="empty">資料載入中...</div>';
 
   try {
-    const res = await apiFetch(`/api/admin/songs?query=${query}&language=${language}&page=${currentAdminSongsPage}&limit=${limit}`);
+    const res = await apiFetch(`/api/admin/songs?query=${query}&language=${language}&page=${currentAdminSongsPage}&limit=${limit}&sort=${sort}`);
     const data = await res.json();
     const songs = data.songs || [];
     const total = Number(data.total || 0);
