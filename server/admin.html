@@ -666,10 +666,8 @@ function showTab(id, btnEl) {
   const tabEl = document.getElementById(id);
   if (tabEl) tabEl.classList.add('active');
 
-  const targetBtn = btnEl || (typeof window !== 'undefined' && window.event && window.event.currentTarget);
-  if (targetBtn && targetBtn.classList) {
-    targetBtn.classList.add('active');
-  }
+  const navBtn = btnEl || document.querySelector(`nav button[onclick*="${id}"]`);
+  if (navBtn) navBtn.classList.add('active');
 
   if (id === 'tab-reports') loadReports();
   if (id === 'tab-disputed') loadDisputed();
