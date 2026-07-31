@@ -265,14 +265,14 @@
   </header>
 
   <nav>
-    <button class="active" onclick="showTab('tab-overview')">總覽</button>
-    <button onclick="showTab('tab-reports')">使用者回報</button>
-    <button onclick="showTab('tab-disputed')">爭議投票</button>
-    <button onclick="showTab('tab-verified')">已驗證</button>
-    <button onclick="showTab('tab-guided')">導唱票</button>
-    <button onclick="showTab('tab-songs')">歌曲管理</button>
-    <button onclick="showTab('tab-aliases')">歌手別名維護</button>
-    <button onclick="showTab('tab-logs')">操作日誌</button>
+    <button class="active" onclick="showTab('tab-overview', this)">總覽</button>
+    <button onclick="showTab('tab-reports', this)">使用者回報</button>
+    <button onclick="showTab('tab-disputed', this)">爭議投票</button>
+    <button onclick="showTab('tab-verified', this)">已驗證</button>
+    <button onclick="showTab('tab-guided', this)">導唱票</button>
+    <button onclick="showTab('tab-songs', this)">歌曲管理</button>
+    <button onclick="showTab('tab-aliases', this)">歌手別名維護</button>
+    <button onclick="showTab('tab-logs', this)">操作日誌</button>
   </nav>
 
   <main>
@@ -624,6 +624,7 @@ async function verifyLogin() {
       document.getElementById('app').style.display = 'block';
       loadStats();
       loadReports();
+      loadAdminAliases();
     } else {
       const data = await res.json().catch(() => ({}));
       if (errEl) errEl.textContent = data.error || '憑證不正確，請重新確認';
@@ -659,11 +660,17 @@ async function loadStats() {
 }
 
 // ── Tab 切換 ──
-function showTab(id) {
+function showTab(id, btnEl) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  event.currentTarget.classList.add('active');
+  const tabEl = document.getElementById(id);
+  if (tabEl) tabEl.classList.add('active');
+
+  const targetBtn = btnEl || (typeof window !== 'undefined' && window.event && window.event.currentTarget);
+  if (targetBtn && targetBtn.classList) {
+    targetBtn.classList.add('active');
+  }
+
   if (id === 'tab-reports') loadReports();
   if (id === 'tab-disputed') loadDisputed();
   if (id === 'tab-verified') loadVerified();
