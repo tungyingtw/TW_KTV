@@ -1,4 +1,4 @@
-import type { FilterOptions, TitleLengthFilter } from '../types/ktv';
+import type { FilterOptions, Language, TitleLengthFilter } from '../types/ktv';
 import { X, Check, RotateCcw, SortAsc, Hash } from 'lucide-react';
 
 interface BottomSheetFilterProps {
@@ -8,7 +8,7 @@ interface BottomSheetFilterProps {
   setFilters: React.Dispatch<React.SetStateAction<FilterOptions>>;
 }
 
-const LANGUAGES = ['國語', '台語', '粵語', '陸歌', '日語', '韓語', '英語'];
+const LANGUAGES: Language[] = ['國語', '台語', '粵語', '客語', '兒歌', '原住民語', '陸歌', '日語', '韓語', '英語'];
 const TITLE_LENGTHS: { id: TitleLengthFilter; label: string }[] = [
   { id: 'all', label: '全部字數' },
   { id: '1', label: '1字歌' },
@@ -41,7 +41,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
     }));
   };
 
-  const toggleLanguage = (lang: string) => {
+  const toggleLanguage = (lang: Language) => {
     setFilters(prev => {
       const exists = prev.selectedLanguages.includes(lang);
       if (exists) {
