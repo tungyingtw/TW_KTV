@@ -1300,9 +1300,10 @@ function normalizeAdminSongPayload(body, existingSong = null) {
 }
 
 app.get('/api/admin/songs', requireAdmin, (req, res) => {
-  const { query = '', language = '', page = 1, limit = 50 } = req.query;
+  const { query = '', language = '', page = 1, limit = 50, sort = 'relevance_len_asc' } = req.query;
   const q = String(query).trim().toLowerCase();
   const selectedLanguage = String(language).trim();
+  const sortMode = String(sort).trim();
   let results = songsDatabase;
 
   if (q) {
@@ -1318,6 +1319,49 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
   if (selectedLanguage) {
     results = results.filter(song => song.language === selectedLanguage);
   }
+
+  // 排序邏輯（支援字數、相關度、發行年份與廠牌數排序）
+  results = [...results].sort((a, b) => {
+    const titleA = String(a.title || '');
+    const titleB = String(b.title || '');
+
+    if (sortMode === 'title_len_asc') {
+      if (titleA.length !== titleB.length) return titleA.length - titleB.length;
+      return titleA.localeCompare(titleB, 'zh-TW');
+    }
+    if (sortMode === 'title_len_desc') {
+      if (titleA.length !== titleB.length) return titleB.length - titleA.length;
+      return titleA.localeCompare(titleB, 'zh-TW');
+    }
+    if (sortMode === 'release_year_desc') {
+      return (Number(b.releaseYear) || 0) - (Number(a.releaseYear) || 0);
+    }
+    if (sortMode === 'brands_desc') {
+      const brandsA = Object.values(a.brands || {}).filter(s => s?.available).length;
+      const brandsB = Object.values(b.brands || {}).filter(s => s?.available).length;
+      return brandsB - brandsA;
+    }
+
+    // 預設 (relevance_len_asc)：關鍵字精確度 ➔ 歌名字數 (短到長) ➔ 筆劃/字母
+    if (q) {
+      const getRelevance = (s) => {
+        const t = String(s.title || '').toLowerCase();
+        const art = String(s.artist || '').toLowerCase();
+        const idStr = String(s.id || '').toLowerCase();
+
+        if (t === q || art === q || idStr === q) return 1;
+        if (t.startsWith(q) || art.startsWith(q)) return 2;
+        return 3;
+      };
+
+      const relA = getRelevance(a);
+      const relB = getRelevance(b);
+      if (relA !== relB) return relA - relB;
+    }
+
+    if (titleA.length !== titleB.length) return titleA.length - titleB.length;
+    return titleA.localeCompare(titleB, 'zh-TW');
+  });
 
   const pageNum = Math.max(1, Number.parseInt(String(page), 10) || 1);
   const limitNum = Math.min(500, Math.max(5, Number.parseInt(String(limit), 10) || 50));
