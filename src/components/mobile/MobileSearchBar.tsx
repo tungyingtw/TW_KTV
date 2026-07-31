@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Search, X, SlidersHorizontal, Video, Disc, Hash, Loader2, PlusCircle } from 'lucide-react';
 import type { FilterOptions, Language, TitleLengthFilter } from '../../types/ktv';
+import { getLanguageStyle } from '../../utils/languageStyle';
 
 interface MobileSearchBarProps {
   filters: FilterOptions;
@@ -152,22 +153,24 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
         <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>語種：</span>
           {LANGUAGES.map(lang => {
-            const isSelected = lang === '全部' ? filters.selectedLanguages.length === 0 : filters.selectedLanguages.includes(lang);
+            const isSelected = lang === '全部' ? filters.selectedLanguages.length === 0 : filters.selectedLanguages.includes(lang as Language);
+            const lStyle = getLanguageStyle(lang);
             return (
               <button
                 key={lang}
                 onClick={() => toggleLanguage(lang)}
                 style={{
-                  background: isSelected ? 'rgba(236, 72, 153, 0.22)' : 'var(--bg-card-hover)',
-                  color: isSelected ? '#f472b6' : 'var(--text-secondary)',
-                  border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.45)' : 'var(--border-color)'}`,
+                  background: isSelected ? lStyle.bg : 'var(--bg-card-hover)',
+                  color: isSelected ? lStyle.color : 'var(--text-secondary)',
+                  border: `1px solid ${isSelected ? lStyle.border : 'var(--border-color)'}`,
                   padding: '3px 9px',
                   borderRadius: '20px',
                   fontSize: '0.75rem',
-                  fontWeight: 600,
+                  fontWeight: isSelected ? 700 : 500,
                   cursor: 'pointer',
                   flexShrink: 0,
                   whiteSpace: 'nowrap',
+                  boxShadow: isSelected ? `0 0 8px ${lStyle.border}` : 'none',
                 }}
               >
                 {lang}

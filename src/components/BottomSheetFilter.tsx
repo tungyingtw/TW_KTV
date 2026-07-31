@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import type { FilterOptions, Language, TitleLengthFilter } from '../types/ktv';
 import { X, Check, RotateCcw, SortAsc, Hash } from 'lucide-react';
+import { getLanguageStyle } from '../utils/languageStyle';
 
 interface BottomSheetFilterProps {
   isOpen: boolean;
@@ -243,6 +244,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {LANGUAGES.map(lang => {
               const isSelected = filters.selectedLanguages.includes(lang);
+              const lStyle = getLanguageStyle(lang);
 
               return (
                 <button
@@ -251,19 +253,20 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                   style={{
                     padding: '10px',
                     borderRadius: 'var(--radius-md)',
-                    background: isSelected ? 'rgba(236, 72, 153, 0.2)' : 'var(--bg-card-hover)',
-                    color: isSelected ? '#f472b6' : 'var(--text-secondary)',
-                    border: `1px solid ${isSelected ? 'rgba(236, 72, 153, 0.4)' : 'var(--border-color)'}`,
-                    fontWeight: 600,
+                    background: isSelected ? lStyle.bg : 'var(--bg-card-hover)',
+                    color: isSelected ? lStyle.color : 'var(--text-secondary)',
+                    border: `1px solid ${isSelected ? lStyle.border : 'var(--border-color)'}`,
+                    fontWeight: isSelected ? 700 : 500,
                     fontSize: '0.85rem',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '4px',
+                    boxShadow: isSelected ? `0 0 10px ${lStyle.border}` : 'none',
                   }}
                 >
-                  {isSelected && <Check size={14} />}
+                  {isSelected && <Check size={14} color={lStyle.color} />}
                   {lang}
                 </button>
               );

@@ -4,6 +4,7 @@ import { BRAND_LIST, BRANDS } from '../data/brands';
 import { Heart, Video, Disc, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
+import { getLanguageStyle } from '../utils/languageStyle';
 
 interface MatrixViewProps {
   songs: Song[];
@@ -220,7 +221,24 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         whiteSpace: 'nowrap',
                       }}>
                         <span style={{ color: 'var(--text-secondary, #cbd5e1)', fontWeight: 600 }}>{song.artist}</span>
-                        <span style={{ marginLeft: '6px' }}>{song.language}</span>
+                        {(() => {
+                          const langStyle = getLanguageStyle(song.language);
+                          return (
+                            <span style={{
+                              marginLeft: '6px',
+                              fontSize: '0.7rem',
+                              padding: '1px 6px',
+                              borderRadius: '10px',
+                              background: langStyle.bg,
+                              color: langStyle.color,
+                              border: `1px solid ${langStyle.border}`,
+                              fontWeight: 700,
+                              display: 'inline-block',
+                            }}>
+                              {song.language}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </td>
 
@@ -398,16 +416,22 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
                   {/* Language Tag */}
                   <td style={{ textAlign: 'center', padding: '12px 8px' }}>
-                    <span style={{
-                      fontSize: '0.78rem',
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      background: 'var(--bg-glass, rgba(255, 255, 255, 0.06))',
-                      color: 'var(--text-secondary, #cbd5e1)',
-                      fontWeight: 600,
-                    }}>
-                      {song.language}
-                    </span>
+                    {(() => {
+                      const langStyle = getLanguageStyle(song.language);
+                      return (
+                        <span style={{
+                          fontSize: '0.74rem',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          background: langStyle.bg,
+                          color: langStyle.color,
+                          border: `1px solid ${langStyle.border}`,
+                          fontWeight: 700,
+                        }}>
+                          {song.language}
+                        </span>
+                      );
+                    })()}
                   </td>
 
                   {/* KTV Brand Status Cells */}

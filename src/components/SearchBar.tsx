@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, X, SlidersHorizontal, Video, Disc, Hash, Loader2, PlusCircle } from 'lucide-react';
 import type { FilterOptions, Language, TitleLengthFilter } from '../types/ktv';
+import { getLanguageStyle } from '../utils/languageStyle';
 
 interface SearchBarProps {
   filters: FilterOptions;
@@ -158,27 +159,25 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               {LANGUAGES.map(lang => {
                 const isSelected = lang === '全部'
                   ? filters.selectedLanguages.length === 0
-                  : filters.selectedLanguages.includes(lang);
+                  : filters.selectedLanguages.includes(lang as Language);
+                const lStyle = getLanguageStyle(lang);
 
                 return (
                   <button
                     key={lang}
                     onClick={() => toggleLanguage(lang)}
                     style={{
-                      background: isSelected
-                        ? (lang === '陸歌' ? 'rgba(249, 115, 22, 0.25)' : 'rgba(236, 72, 153, 0.2)')
-                        : 'rgba(255, 255, 255, 0.05)',
-                      color: isSelected
-                        ? (lang === '陸歌' ? '#fb923c' : '#f472b6')
-                        : 'var(--text-secondary)',
-                      border: `1px solid ${isSelected ? (lang === '陸歌' ? 'rgba(249, 115, 22, 0.5)' : 'rgba(236, 72, 153, 0.4)') : 'rgba(255, 255, 255, 0.08)'}`,
+                      background: isSelected ? lStyle.bg : 'rgba(255, 255, 255, 0.04)',
+                      color: isSelected ? lStyle.color : 'var(--text-secondary)',
+                      border: `1px solid ${isSelected ? lStyle.border : 'rgba(255, 255, 255, 0.08)'}`,
                       padding: '4px 10px',
                       borderRadius: 'var(--radius-full)',
                       fontSize: '0.78rem',
-                      fontWeight: 600,
+                      fontWeight: isSelected ? 700 : 500,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
                       flexShrink: 0,
+                      boxShadow: isSelected ? `0 0 10px ${lStyle.border}` : 'none',
                     }}
                   >
                     {lang}
