@@ -2,7 +2,7 @@ import type { Song } from '../types/ktv';
 
 const DB_NAME = 'KtvCatalogDB';
 const STORE_NAME = 'catalog_store';
-const KEY_NAME = 'full_catalog_v22';
+const KEY_NAME = 'full_catalog_v23';
 
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
 const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTVBIN"
@@ -29,7 +29,7 @@ export async function getCachedCatalog(): Promise<Song[] | null> {
     // 清理舊版本快取鍵值
     const txClear = db.transaction(STORE_NAME, 'readwrite');
     const storeClear = txClear.objectStore(STORE_NAME);
-    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9', 'full_catalog_v17', 'full_catalog_v18', 'full_catalog_v19', 'full_catalog_v20', 'full_catalog_v21'].forEach(k => storeClear.delete(k));
+    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9', 'full_catalog_v17', 'full_catalog_v18', 'full_catalog_v19', 'full_catalog_v20', 'full_catalog_v21', 'full_catalog_v22'].forEach(k => storeClear.delete(k));
     
     return new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
@@ -54,7 +54,7 @@ export async function setCachedCatalog(catalog: Song[]): Promise<void> {
   }
 }
 
-const TIME_KEY = 'full_catalog_timestamp_v22';
+const TIME_KEY = 'full_catalog_timestamp_v23';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小時快取效期 (避免重複浪費頻寬)
 
 export async function fetchFullCatalog(onProgress?: (percent: number) => void): Promise<Song[]> {
