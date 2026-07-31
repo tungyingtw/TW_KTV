@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, FileText, Info, Mail, X } from 'lucide-react';
 
+type LegalTab = 'privacy' | 'terms' | 'about' | 'contact';
+
 interface LegalNoticeModalProps {
-  initialTab?: 'privacy' | 'terms' | 'about' | 'contact';
+  initialTab?: LegalTab;
   onClose: () => void;
 }
 
 export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
-  initialTab = 'privacy',
+  initialTab = 'terms',
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'privacy' | 'terms' | 'about' | 'contact'>(initialTab);
+  const [activeTab, setActiveTab] = useState<LegalTab>(initialTab);
+
+  // 支援 Esc 鍵關閉彈窗
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
     <div
@@ -25,7 +38,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         bottom: 0,
         backgroundColor: 'var(--bg-overlay, rgba(15, 23, 42, 0.75))',
         backdropFilter: 'blur(8px)',
-        zIndex: 9999,
+        zIndex: 9000,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
