@@ -344,8 +344,8 @@
     <div id="tab-songs" class="tab">
       <div class="filter-row">
         <h2 style="font-size:1.05rem;">歌曲資料管理</h2>
-        <input id="song-admin-query" placeholder="搜尋歌名、歌手或 ID" style="min-width:260px;" />
-        <select id="song-admin-language">
+        <input id="song-admin-query" placeholder="搜尋歌名、歌手、ID 或拼音" style="min-width:260px;" onkeydown="if(event.key==='Enter') loadAdminSongs(1)" />
+        <select id="song-admin-language" onchange="loadAdminSongs(1)">
           <option value="">全部語種</option>
           <option value="國語">國語</option>
           <option value="陸歌">陸歌</option>
@@ -359,12 +359,19 @@
           <option value="原住民語">原住民語</option>
           <option value="藏語">藏語</option>
         </select>
-        <button class="btn btn-blue" onclick="loadAdminSongs()">搜尋</button>
+        <select id="song-admin-limit" onchange="loadAdminSongs(1)">
+          <option value="20">每頁 20 筆</option>
+          <option value="50" selected>每頁 50 筆</option>
+          <option value="100">每頁 100 筆</option>
+          <option value="200">每頁 200 筆</option>
+        </select>
+        <button class="btn btn-blue" onclick="loadAdminSongs(1)">搜尋</button>
         <button class="btn btn-green" onclick="openSongEditor()">新增歌曲</button>
       </div>
       <div class="card">
-        <div id="song-admin-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">尚未搜尋</div>
+        <div id="song-admin-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">點擊「搜尋」開始檢索歌曲資料庫</div>
         <div id="song-admin-list"><div class="empty">請輸入條件搜尋，或直接按搜尋載入最新歌曲。</div></div>
+        <div id="song-admin-pagination" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;"></div>
       </div>
     </div>
 
@@ -785,32 +792,63 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
   }
 }
 
-async function loadAdminSongs() {
+let currentAdminSongsPage = 1;
+
+async function loadAdminSongs(pageTarget = 1) {
+  currentAdminSongsPage = Math.max(1, Number(pageTarget) || 1);
   const query = encodeURIComponent(document.getElementById('song-admin-query').value.trim());
   const language = encodeURIComponent(document.getElementById('song-admin-language').value);
-  const res = await apiFetch(`/api/admin/songs?query=${query}&language=${language}&limit=80`);
-  const data = await res.json();
+  const limit = encodeURIComponent(document.getElementById('song-admin-limit').value || '50');
+
   const list = document.getElementById('song-admin-list');
-  document.getElementById('song-admin-summary').textContent = `共 ${Number(data.total || 0).toLocaleString()} 筆，顯示前 ${data.songs?.length || 0} 筆`;
+  const summary = document.getElementById('song-admin-summary');
+  const pagination = document.getElementById('song-admin-pagination');
+  list.innerHTML = '<div class="empty">資料載入中...</div>';
 
-  if (!data.songs?.length) {
-    list.innerHTML = '<div class="empty">沒有符合條件的歌曲</div>';
-    return;
+  try {
+    const res = await apiFetch(`/api/admin/songs?query=${query}&language=${language}&page=${currentAdminSongsPage}&limit=${limit}`);
+    const data = await res.json();
+    const songs = data.songs || [];
+    const total = Number(data.total || 0);
+    const totalPages = Number(data.totalPages || 1);
+    const currentPage = Number(data.page || currentAdminSongsPage);
+
+    summary.textContent = `共 ${total.toLocaleString()} 筆符合結果（頁次 ${currentPage} / ${totalPages}，每頁 ${limit} 筆）`;
+
+    if (!songs.length) {
+      list.innerHTML = '<div class="empty">沒有符合條件的歌曲</div>';
+      pagination.innerHTML = '';
+      return;
+    }
+
+    list.innerHTML = songs.map(song => `
+      <div class="song-result-row">
+        <div>
+          <div style="font-weight:800;color:#f8fafc;">${escapeHtml(song.title)}</div>
+          <div style="color:var(--muted);font-size:0.78rem;">${escapeHtml(song.artist)} · ID: ${escapeHtml(song.id)}</div>
+        </div>
+        <div><span class="badge badge-reviewed">${escapeHtml(song.language || '未分類')}</span></div>
+        <div style="color:var(--muted);font-size:0.78rem;">${countAvailableBrands(song)} 家收錄</div>
+        <div class="card-actions">
+          <button class="btn btn-blue" onclick="openSongEditor('${encodeURIComponent(song.id)}')">編輯歌曲</button>
+        </div>
+      </div>
+    `).join('');
+
+    // 渲染分頁導覽按鈕
+    let paginationHtml = '';
+    paginationHtml += `<button class="btn btn-ghost" ${currentPage <= 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''} onclick="loadAdminSongs(1)">« 首頁</button>`;
+    paginationHtml += `<button class="btn btn-ghost" ${currentPage <= 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''} onclick="loadAdminSongs(${currentPage - 1})">‹ 上一頁</button>`;
+    paginationHtml += `<span style="font-size:0.85rem;color:var(--muted);padding:0 8px;">第 <b>${currentPage}</b> / <b>${totalPages}</b> 頁</span>`;
+    paginationHtml += `<button class="btn btn-ghost" ${currentPage >= totalPages ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''} onclick="loadAdminSongs(${currentPage + 1})">下一頁 ›</button>`;
+    paginationHtml += `<button class="btn btn-ghost" ${currentPage >= totalPages ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''} onclick="loadAdminSongs(${totalPages})">末頁 »</button>`;
+    pagination.innerHTML = paginationHtml;
+
+  } catch (err) {
+    console.error('[Admin Songs Load Error]', err);
+    list.innerHTML = '<div class="empty" style="color:var(--red);">載入歌曲失敗，請稍後再試</div>';
+    pagination.innerHTML = '';
   }
-
-  list.innerHTML = data.songs.map(song => `
-    <div class="song-result-row">
-      <div>
-        <div style="font-weight:800;color:#f8fafc;">${escapeHtml(song.title)}</div>
-        <div style="color:var(--muted);font-size:0.78rem;">${escapeHtml(song.artist)} · ${escapeHtml(song.id)}</div>
-      </div>
-      <div><span class="badge badge-reviewed">${escapeHtml(song.language || '')}</span></div>
-      <div style="color:var(--muted);font-size:0.78rem;">${countAvailableBrands(song)} 家收錄</div>
-      <div class="card-actions">
-        <button class="btn btn-blue" onclick="openSongEditor('${encodeURIComponent(song.id)}')">編輯</button>
-      </div>
-    </div>
-  `).join('');
 }
 
 async function openSongEditor(songIdValue = '') {

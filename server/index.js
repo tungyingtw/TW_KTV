@@ -219,22 +219,113 @@ const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 // ─────────────────────────────────────────────
 // 資料讀寫工具
 // ─────────────────────────────────────────────
-let songsDatabase = [];
-try {
-  // 載入資料庫（優先讀取 public/songs_catalog.json，較新）
-  if (fs.existsSync(CATALOG_PATH)) {
-    songsDatabase = JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf8'));
-    console.log(`[Server] 成功載入 ${songsDatabase.length} 首 KTV 歌曲資料庫`);
-  } else {
-    const dbPath = path.join(__dirname, 'database.json');
-    if (fs.existsSync(dbPath)) {
-      songsDatabase = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-      console.log(`[Server] 使用 database.json，共 ${songsDatabase.length} 首`);
+function safeAtomicWriteJson(filePath, data) {
+  const tempPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
+  try {
+    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tempPath, filePath);
+  } catch {
+    if (fs.existsSync(tempPath)) {
+      try { fs.unlinkSync(tempPath); } catch {}
+    }
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  }
+}
+
+function decodeBinaryCatalog(binPath) {
+  try {
+    const buffer = fs.readFileSync(binPath);
+    const MAGIC_HEADER = Buffer.from([0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]);
+    const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
+
+    if (buffer.length <= MAGIC_HEADER.length) return null;
+    const header = buffer.subarray(0, MAGIC_HEADER.length);
+    if (!header.equals(MAGIC_HEADER)) return null;
+
+    const payload = buffer.subarray(MAGIC_HEADER.length);
+    const jsonBytes = Buffer.alloc(payload.length);
+    for (let i = 0; i < payload.length; i++) {
+      jsonBytes[i] = payload[i] ^ XOR_KEY[i % XOR_KEY.length];
+    }
+    const parsed = JSON.parse(jsonBytes.toString('utf8'));
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (err) {
+    console.error(`[Server Error] 解密二進位檔 ${path.basename(binPath)} 失敗:`, err.message);
+    return null;
+  }
+}
+
+function loadInitialSongsDatabase() {
+  let songs = null;
+
+  // 1. 嘗試優先載入明文 JSON（本機開發環境）
+  const jsonPaths = [
+    CATALOG_PATH,
+    path.join(__dirname, 'database.json'),
+    path.join(process.cwd(), 'public/songs_catalog.json'),
+    path.join(process.cwd(), 'server/database.json'),
+  ];
+
+  for (const jp of jsonPaths) {
+    if (fs.existsSync(jp) && fs.statSync(jp).size > 1000) {
+      try {
+        songs = JSON.parse(fs.readFileSync(jp, 'utf8'));
+        console.log(`[Server] 成功由明文 JSON (${path.basename(jp)}) 載入 ${songs.length} 首歌曲`);
+        break;
+      } catch {}
     }
   }
-} catch (err) {
-  console.error('[Server Error] 讀取資料庫失敗:', err);
+
+  // 2. 若無可用明文 JSON，針對二進位加密檔進行五重路徑尋檢與 XOR 串流解密
+  if (!songs || songs.length === 0) {
+    const binPaths = [
+      path.join(__dirname, '../public/songs_catalog.bin'),
+      path.join(__dirname, '../dist/songs_catalog.bin'),
+      path.join(process.cwd(), 'public/songs_catalog.bin'),
+      path.join(process.cwd(), 'dist/songs_catalog.bin'),
+      path.join(__dirname, 'songs_catalog.bin'),
+    ];
+
+    for (const bp of binPaths) {
+      if (fs.existsSync(bp) && fs.statSync(bp).size > 1000) {
+        songs = decodeBinaryCatalog(bp);
+        if (songs && songs.length > 0) {
+          console.log(`[Server] 成功由二進位加密檔 (${path.basename(bp)}) 解密加載 ${songs.length} 首歌曲`);
+          break;
+        }
+      }
+    }
+  }
+
+  if (!Array.isArray(songs)) songs = [];
+
+  // 3. 疊加套用管理員持久化覆寫 (catalog_overrides.json)
+  try {
+    const overridesData = loadCatalogOverrides();
+    const deletedSet = new Set(overridesData.deletedIds || []);
+    const overridesMap = overridesData.songs || {};
+
+    if (deletedSet.size > 0 || Object.keys(overridesMap).length > 0) {
+      songs = songs.filter(s => !deletedSet.has(s.id));
+      const existingMap = new Map(songs.map(s => [s.id, s]));
+
+      for (const [id, overrideSong] of Object.entries(overridesMap)) {
+        if (overrideSong && overrideSong.id) {
+          const current = existingMap.get(id) || {};
+          existingMap.set(id, { ...current, ...overrideSong });
+        }
+      }
+      songs = Array.from(existingMap.values());
+      console.log(`[Server] 已成功套用覆寫與刪除紀錄（共 ${songs.length} 首可用歌曲）`);
+    }
+  } catch (err) {
+    console.warn('[Server] 套用 catalog_overrides 失敗:', err.message);
+  }
+
+  return songs;
 }
+
+let songsDatabase = loadInitialSongsDatabase();
 
 function loadReports() {
   try { return JSON.parse(fs.readFileSync(REPORTS_PATH, 'utf8')); } catch { return []; }
@@ -294,7 +385,7 @@ function loadCatalogOverrides() {
   }
 }
 function saveCatalogOverrides(data) {
-  fs.writeFileSync(CATALOG_OVERRIDES_PATH, JSON.stringify(data, null, 2), 'utf8');
+  safeAtomicWriteJson(CATALOG_OVERRIDES_PATH, data);
 }
 
 async function loadVotesStore() {
@@ -1218,7 +1309,9 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
     results = results.filter(song => (
       String(song.id || '').toLowerCase().includes(q) ||
       String(song.title || '').toLowerCase().includes(q) ||
-      String(song.artist || '').toLowerCase().includes(q)
+      String(song.artist || '').toLowerCase().includes(q) ||
+      String(song.pinyin || '').toLowerCase().includes(q) ||
+      String(song.zhuyin || '').toLowerCase().includes(q)
     ));
   }
 
@@ -1227,13 +1320,17 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
   }
 
   const pageNum = Math.max(1, Number.parseInt(String(page), 10) || 1);
-  const limitNum = Math.min(200, Math.max(10, Number.parseInt(String(limit), 10) || 50));
-  const start = (pageNum - 1) * limitNum;
+  const limitNum = Math.min(500, Math.max(5, Number.parseInt(String(limit), 10) || 50));
+  const total = results.length;
+  const totalPages = Math.ceil(total / limitNum) || 1;
+  const validPage = Math.min(pageNum, totalPages);
+  const start = (validPage - 1) * limitNum;
 
   res.json({
-    total: results.length,
-    page: pageNum,
+    total,
+    page: validPage,
     limit: limitNum,
+    totalPages,
     songs: results.slice(start, start + limitNum),
   });
 });
