@@ -1281,24 +1281,45 @@ function renderAdminAliases() {
   }
 
   listEl.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:12px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));gap:14px;">
       ${entries.map(([artist, aliases]) => `
-        <div class="card" style="border-color:rgba(168,85,247,0.25);margin-bottom:0;display:flex;flex-direction:column;justify-content:space-between;">
+        <div class="card" style="border-color:rgba(168,85,247,0.3);margin-bottom:0;display:flex;flex-direction:column;justify-space:between;cursor:pointer;transition:border-color 0.2s;" onclick="if(event.target.tagName!=='BUTTON'&&!event.target.closest('button')) openAliasEditor('${escapeAttr(artist)}')">
           <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-              <div style="font-weight:800;font-size:1.05rem;color:#f8fafc;">🎤 ${escapeHtml(artist)}</div>
-              <button class="btn btn-blue" style="padding:4px 10px;font-size:0.78rem;" onclick="openAliasEditor('${escapeAttr(artist)}')">編輯別名</button>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="font-weight:800;font-size:1.08rem;color:#f8fafc;">🎤 ${escapeHtml(artist)}</div>
+              <div style="font-size:0.75rem;color:var(--muted);">${aliases.length} 個對照標籤</div>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
               ${aliases.length ? aliases.map(a => `
-                <span class="badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);">${escapeHtml(a)}</span>
-              `).join('') : '<span style="color:var(--muted);font-size:0.78rem;">尚未設定別名</span>'}
+                <span class="badge" title="點擊編輯此別名" style="background:rgba(168,85,247,0.18);color:#d8b4fe;border:1px solid rgba(168,85,247,0.35);cursor:pointer;padding:4px 8px;font-size:0.8rem;border-radius:6px;" onclick="event.stopPropagation(); openAliasEditor('${escapeAttr(artist)}')">${escapeHtml(a)}</span>
+              `).join('') : '<span style="color:var(--muted);font-size:0.8rem;">尚未設定別名標籤</span>'}
             </div>
+          </div>
+          <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);margin-top:auto;">
+            <button class="btn btn-blue" style="flex:1;padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); openAliasEditor('${escapeAttr(artist)}')">✏️ 編輯別名</button>
+            <button class="btn btn-green" style="flex:1;padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); openAliasEditor('${escapeAttr(artist)}')">➕ 新增標籤</button>
+            <button class="btn btn-ghost" style="color:var(--red);padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); quickDeleteAlias('${escapeAttr(artist)}')">🗑️ 刪除</button>
           </div>
         </div>
       `).join('')}
     </div>
   `;
+}
+
+async function quickDeleteAlias(artist) {
+  if (!confirm(`確定要刪除《${artist}》的別名條目嗎？`)) return;
+  try {
+    const res = await apiFetch(`/api/admin/alias/${encodeURIComponent(artist)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`✅ 已刪除《${artist}》的別名字典條目`, 'success');
+      loadAdminAliases();
+    } else {
+      showToast('刪除失敗：' + (data.error || '無法刪除'), 'error');
+    }
+  } catch (err) {
+    showToast('刪除失敗：' + err.message, 'error');
+  }
 }
 
 function openAliasEditor(artistName = '') {
