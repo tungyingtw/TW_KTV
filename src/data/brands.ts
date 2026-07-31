@@ -57,6 +57,14 @@ export const BRANDS: Record<BrandId, BrandInfo> = {
     badgeBg: 'rgba(251, 146, 60, 0.16)',
     description: '超○巨星 門市系統歌曲收錄',
   },
+  silver_cabinet: {
+    id: 'silver_cabinet',
+    name: '銀○ KTV 收錄',
+    shortName: '銀○',
+    color: '#eab308',
+    badgeBg: 'rgba(234, 179, 8, 0.16)',
+    description: '銀○ 門市系統歌曲收錄',
+  },
   yinyuan: {
     id: 'yinyuan',
     name: '音○ 收錄',

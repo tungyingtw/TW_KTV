@@ -6,6 +6,7 @@ export type BrandId =
   | 'singgo' 
   | 'vmix' 
   | 'superstar' 
+  | 'silver_cabinet'
   | 'yinyuan' 
   | 'golden_voice' 
   | 'hongyin';

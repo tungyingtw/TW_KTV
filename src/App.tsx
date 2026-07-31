@@ -194,7 +194,7 @@ export function App() {
   const brandSongCounts = useMemo(() => {
     const counts: Record<BrandId, number> = {
       cashbox: 0, holiday: 0, watering_hole: 0, starlight: 0, singgo: 0,
-      vmix: 0, superstar: 0, yinyuan: 0, golden_voice: 0, hongyin: 0
+      vmix: 0, superstar: 0, silver_cabinet: 0, yinyuan: 0, golden_voice: 0, hongyin: 0
     };
     allSongs.forEach(song => {
       if (!song.brands) return;
