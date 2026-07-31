@@ -169,7 +169,7 @@ export function App() {
     localStorage.setItem('ktv_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // Fuse.js Fuzzy Search Setup (歌詞與歌名高權重比對)
+  // Fuse.js Fuzzy Search Setup (歌名、歌手與歌曲導引資訊比對)
   const fuse = useMemo(() => {
     return new Fuse(allSongs, {
       keys: [
@@ -557,7 +557,7 @@ export function App() {
               正在載入全台 KTV 歌庫資料
             </h3>
             <p style={{ fontSize: '0.88rem', color: '#94a3b8', marginBottom: '24px' }}>
-              {catalogLoadError || (displayProgress >= 100 ? '歌庫資料已準備完成' : '正在讀取歌曲、廠牌收錄與點歌代碼資料')}
+              {catalogLoadError || (displayProgress >= 100 ? '歌庫資料已準備完成' : '正在讀取歌曲收錄、原唱導唱與 MV 標示資料')}
             </p>
 
             {/* 進度條容器 */}
@@ -750,6 +750,34 @@ export function App() {
               style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
               聯絡我們
+            </a>
+
+            <a
+              href="./how-to-use.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              使用教學
+            </a>
+
+            <a
+              href="./data-source.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              資料來源
+            </a>
+
+            <a
+              href="./ktv-audio-types.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              版本說明
+            </a>
+
+            <a
+              href="./faq.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              常見問題
             </a>
 
             <a

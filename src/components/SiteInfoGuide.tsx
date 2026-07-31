@@ -47,8 +47,8 @@ export const SiteInfoGuide: React.FC = () => {
       id: 'party-songs-guide',
       title: '熱門歡唱情境與合唱歌單分類推薦',
       icon: BookOpen,
-      tag: '點歌指南',
-      summary: '包廂破冰開嗓、男女對唱金曲、飆高音紓壓等情境點歌心法。',
+      tag: '歡唱指南',
+      summary: '包廂破冰開嗓、男女對唱金曲、飆高音紓壓等情境歌單心法。',
       content: [
         '歡唱聚會的成功關鍵在於氣氛的鋪陳與歌單的輪替。建議將歡唱過程分為三個階段：',
         '1. 【開嗓破冰期】：選擇節奏明快、傳唱度高的中速流行歌或台語經典，讓包廂全員快速進入歡唱狀態。',
@@ -249,6 +249,42 @@ export const SiteInfoGuide: React.FC = () => {
               </button>
             </div>
 
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '10px',
+                marginBottom: '20px',
+              }}
+            >
+              {[
+                { href: './how-to-use.html', label: '使用教學', desc: '搜尋、篩選與歌單整理方式' },
+                { href: './data-source.html', label: '資料來源', desc: '公開資訊、回報與人工校對' },
+                { href: './ktv-audio-types.html', label: '版本說明', desc: '原唱、導唱與 MV 標示差異' },
+                { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
+              ].map(link => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  style={{
+                    display: 'block',
+                    textDecoration: 'none',
+                    background: 'var(--bg-glass, rgba(15, 23, 42, 0.45))',
+                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                    borderRadius: '8px',
+                    padding: '10px 12px',
+                  }}
+                >
+                  <div style={{ color: '#38bdf8', fontSize: '0.86rem', fontWeight: 700, marginBottom: '2px' }}>
+                    {link.label}
+                  </div>
+                  <div style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.76rem', lineHeight: 1.45 }}>
+                    {link.desc}
+                  </div>
+                </a>
+              ))}
+            </div>
+
             {/* Tab 1: Overview */}
             {activeTab === 'overview' && (
               <div
@@ -264,10 +300,10 @@ export const SiteInfoGuide: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
                     <Music2 size={18} />
-                    <span>1. 跨廠牌點歌系統與伴唱機對照說明</span>
+                    <span>1. 跨廠牌收錄狀態與伴唱系統對照說明</span>
                   </div>
                   <p style={{ margin: 0 }}>
-                    全台連鎖門市與自助式伴唱系統採用的點歌系統主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
+                    全台連鎖門市與自助式伴唱系統採用的曲庫與影音版本各不相同，主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
                   </p>
                   <p style={{ margin: 0 }}>
                     本網站透過大眾共識校對與數據彙整，為歌友提供動態擴充的跨廠牌門市收錄對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
@@ -312,7 +348,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>1. 快速搜尋與門市對照</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌詞片段</strong>，系統將自動即時比對各大 KTV 門市與伴唱系統之收錄狀態。您亦可點擊頂部廠牌頁籤快速篩選特定門市或伴唱機系統查看發行狀況。
+                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌曲辨識線索</strong>，系統將自動即時比對各大 KTV 門市與伴唱系統之收錄狀態。您亦可點擊頂部廠牌頁籤快速篩選特定門市或伴唱機系統查看收錄狀況。
                   </p>
                 </div>
 
@@ -332,7 +368,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>3. 我的最愛口袋歌單</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單，方便您在歡唱時快速瀏覽個人專屬愛歌與比對各大門市點歌代碼。
+                    點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單，方便您在歡唱時快速瀏覽個人專屬愛歌與比對各大門市收錄狀態。
                   </p>
                 </div>
 

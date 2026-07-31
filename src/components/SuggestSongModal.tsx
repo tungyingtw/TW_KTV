@@ -19,7 +19,6 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [lyricist, setLyricist] = useState('');
   const [composer, setComposer] = useState('');
   const [language, setLanguage] = useState('國語');
-  const [songCode, setSongCode] = useState('');
   const [brandId, setBrandId] = useState<BrandId>('cashbox');
   const [hasOfficialMv, setHasOfficialMv] = useState(true);
   const [hasOriginalVocal, setHasOriginalVocal] = useState(true);
@@ -53,7 +52,6 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         lyricist: lyricist.trim(),
         composer: composer.trim(),
         language,
-        songCode: songCode.trim(),
         brandId,
         hasOfficialMv,
         hasOriginalVocal,
@@ -80,8 +78,8 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
     const res = await submitSuggestBrand({
       brandName: brandName.trim(),
       shortName: shortName.trim() || brandName.trim().substring(0, 4),
-      systemType: systemType.trim() || '通用點歌系統',
-      codeFormat: codeFormat.trim() || '常見數字點歌碼',
+      systemType: systemType.trim() || '通用伴唱系統',
+      codeFormat: codeFormat.trim() || '未提供',
       storeLocations: storeLocations.trim() || '未提供',
       note: brandNote.trim(),
     });
@@ -267,20 +265,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.83rem', color: '#fbbf24', marginBottom: '5px', fontWeight: 700 }}>
-                      點歌碼（選填）
-                    </label>
-                    <input
-                      type="text"
-                      value={songCode}
-                      onChange={event => setSongCode(event.target.value)}
-                      placeholder="例：45678 或 門市:45678"
-                      style={inputStyle('rgba(251, 191, 36, 0.35)', '#fbbf24', 600)}
-                    />
-                  </div>
-
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '5px', fontWeight: 600 }}>
                       對應 KTV 廠牌
@@ -339,12 +324,12 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 </div>
 
                 <div>
-                  <label style={smallLabelStyle()}>歌詞片段（選填）</label>
+                  <label style={smallLabelStyle()}>歌曲辨識提示（選填）</label>
                   <textarea
                     value={lyricsSnippet}
                     onChange={event => setLyricsSnippet(event.target.value)}
                     maxLength={200}
-                    placeholder="可填寫副歌或容易辨識的片段"
+                    placeholder="可填寫容易辨識的歌曲線索，請勿貼上歌詞正文"
                     rows={2}
                     style={textareaStyle()}
                   />
@@ -374,7 +359,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   color: 'var(--text-primary, #e0f2fe)',
                   lineHeight: 1.5,
                 }}>
-                  發現未收錄的連鎖 KTV、獨立歡唱門市或伴唱系統時，可提供名稱、點歌碼格式與主要據點，方便後續整理。
+                  發現未收錄的連鎖 KTV、獨立歡唱門市或伴唱系統時，可提供名稱、系統類型與主要據點，方便後續整理。
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
@@ -400,8 +385,8 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   </div>
 
                   <div>
-                    <label style={smallLabelStyle()}>點歌碼格式範例</label>
-                    <input type="text" value={codeFormat} onChange={event => setCodeFormat(event.target.value)} placeholder="例：6位數，如 581234" style={inputStyle()} />
+                    <label style={smallLabelStyle()}>曲庫 / 版本線索</label>
+                    <input type="text" value={codeFormat} onChange={event => setCodeFormat(event.target.value)} placeholder="例：原版 MV 較多、導唱版本完整" style={inputStyle()} />
                   </div>
                 </div>
 

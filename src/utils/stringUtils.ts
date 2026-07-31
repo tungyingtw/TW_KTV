@@ -1,5 +1,5 @@
 /**
- * 移除標點符號與多餘空白，便於模糊歌詞比對
+ * 移除標點符號與多餘空白，便於歌曲資訊模糊比對
  */
 export function stripPunctuation(str: string): string {
   if (!str) return '';

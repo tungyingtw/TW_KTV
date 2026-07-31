@@ -78,7 +78,7 @@ export const CardView: React.FC<CardViewProps> = ({
               }}
             >
               <Flag size={16} />
-              <span>協助提供 / 回報【{currentBrandInfo?.shortName}】點歌資料</span>
+              <span>協助提供 / 回報【{currentBrandInfo?.shortName}】收錄資料</span>
             </button>
           )}
           <div style={{ marginTop: '20px' }}>
@@ -211,7 +211,7 @@ export const CardView: React.FC<CardViewProps> = ({
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}>
-                    "{song.lyricsSnippet}"
+                    辨識提示：{song.lyricsSnippet}
                   </p>
                 )}
               </div>
@@ -316,7 +316,7 @@ export const CardView: React.FC<CardViewProps> = ({
                       fontWeight: 600,
                     }}
                   >
-                    <Video size={14} /> 線上預覽
+                    <Video size={14} /> 版本參考
                   </a>
                 ) : null}
 
