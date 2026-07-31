@@ -24,7 +24,7 @@ LOGO/
 .agents
 
 # Internal planning documents (Keep Local Only)
-docs/copywriting-review-plan.md
+docs/
 
 # Internal Maintenance & Scratch Scripts (Strict Isolation)
 scratch/
@@ -33,6 +33,7 @@ scripts/
 !scripts/checkBrandMasking.js
 
 # Internal Data & Raw JSON Catalogs (Strict Isolation)
+爬蟲資料/
 public/artists_registry.csv
 public/artists_registry.json
 public/songs_catalog.json
