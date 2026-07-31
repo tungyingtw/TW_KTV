@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Search, X, SlidersHorizontal, Video, Disc, Hash, Loader2, PlusCircle } from 'lucide-react';
 import type { FilterOptions, TitleLengthFilter } from '../../types/ktv';
 
@@ -9,6 +9,7 @@ interface MobileSearchBarProps {
   resultCount: number;
   isSearching?: boolean;
   onOpenSuggestSong?: () => void;
+  onSearchComplete?: () => void;
 }
 
 const LANGUAGES = ['全部', '國語', '台語', '粵語', '陸歌', '日語', '韓語', '英語'];
@@ -30,8 +31,11 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   resultCount,
   isSearching = false,
   onOpenSuggestSong,
+  onSearchComplete,
 }) => {
   const hasActiveFilters = filters.onlyOfficialMv || filters.onlyOriginalVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
@@ -39,6 +43,20 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
 
   const handleClearQuery = () => {
     setFilters(prev => ({ ...prev, searchQuery: '' }));
+    inputRef.current?.focus();
+  };
+
+  const handleSearchComplete = () => {
+    inputRef.current?.blur();
+    setIsInputFocused(false);
+    onSearchComplete?.();
+  };
+
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSearchComplete();
+    }
   };
 
   const toggleLanguage = (lang: string) => {
@@ -66,9 +84,15 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               <Search size={16} color="var(--text-secondary)" style={{ position: 'absolute', left: '12px' }} />
             )}
             <input
+              ref={inputRef}
               type="text"
+              inputMode="search"
+              enterKeyHint="search"
               value={filters.searchQuery}
               onChange={handleQueryChange}
+              onKeyDown={handleInputKeyDown}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
               placeholder="搜尋歌名或歌手"
               style={{
                 width: '100%',
@@ -79,6 +103,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
                 color: 'var(--text-primary, #ffffff)',
                 fontSize: '0.85rem',
                 outline: 'none',
+                borderColor: isInputFocused ? 'var(--accent-pink, #ec4899)' : 'var(--border-color, rgba(255, 255, 255, 0.12))',
               }}
             />
             {filters.searchQuery && (
@@ -91,6 +116,28 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               </button>
             )}
           </div>
+
+          <button
+            onClick={handleSearchComplete}
+            aria-label="完成搜尋並查看結果"
+            style={{
+              padding: '9px 11px',
+              borderRadius: '10px',
+              border: '1px solid rgba(236, 72, 153, 0.42)',
+              background: filters.searchQuery
+                ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.95), rgba(168, 85, 247, 0.92))'
+                : 'rgba(255, 255, 255, 0.06)',
+              color: filters.searchQuery ? '#ffffff' : 'var(--text-secondary, #cbd5e1)',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+              cursor: 'pointer',
+              flexShrink: 0,
+              minWidth: '48px',
+            }}
+          >
+            完成
+          </button>
 
           <button
             onClick={onOpenMobileFilters}
@@ -181,8 +228,17 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
         </div>
 
         <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-            結果：<strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首
+          <div
+            aria-live="polite"
+            style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'normal', lineHeight: 1.45 }}
+          >
+            {isSearching ? (
+              <>正在即時比對...</>
+            ) : filters.searchQuery.trim() ? (
+              <>已找到 <strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首，點完成查看結果</>
+            ) : (
+              <>結果：<strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首</>
+            )}
           </div>
 
           {onOpenSuggestSong && (
