@@ -961,29 +961,34 @@ function collectSongEditorPayload() {
 }
 
 async function saveSongEditor() {
-  const payload = collectSongEditorPayload();
-  if (!payload.title || !payload.artist) {
-    showToast('歌名與歌手必填', 'error');
-    return;
+  try {
+    const payload = collectSongEditorPayload();
+    if (!payload.title || !payload.artist) {
+      showToast('歌名與歌手必填', 'error');
+      return;
+    }
+
+    const songId = document.getElementById('song-editor-id').value;
+    const path = currentSongEditorMode === 'edit'
+      ? `/api/admin/song/${encodeURIComponent(songId)}`
+      : '/api/admin/song';
+    const method = currentSongEditorMode === 'edit' ? 'PUT' : 'POST';
+    const res = await apiFetch(path, { method, body: JSON.stringify(payload) });
+    const data = await res.json().catch(() => ({ error: '伺服器回應格式異常' }));
+
+    if (!data.success) {
+      showToast(data.error || '儲存失敗', 'error');
+      return;
+    }
+
+    showToast(`✅ 歌曲《${payload.title}》資料已儲存成功！`, 'success');
+    closeSongEditor();
+    loadAdminSongs(currentAdminSongsPage);
+    loadStats();
+  } catch (err) {
+    console.error('[Save Song Error]', err);
+    showToast('儲存失敗：' + (err.message || '網路連線異常'), 'error');
   }
-
-  const songId = document.getElementById('song-editor-id').value;
-  const path = currentSongEditorMode === 'edit'
-    ? `/api/admin/song/${encodeURIComponent(songId)}`
-    : '/api/admin/song';
-  const method = currentSongEditorMode === 'edit' ? 'PUT' : 'POST';
-  const res = await apiFetch(path, { method, body: JSON.stringify(payload) });
-  const data = await res.json();
-
-  if (!data.success) {
-    showToast(data.error || '儲存失敗', 'error');
-    return;
-  }
-
-  showToast('歌曲資料已儲存', 'success');
-  closeSongEditor();
-  loadAdminSongs();
-  loadStats();
 }
 
 async function deleteSongFromEditor() {
@@ -995,16 +1000,21 @@ async function deleteSongFromEditor() {
   const title = document.getElementById('song-title').value;
   if (!confirm(`確定刪除「${title}」？這會寫入前台刪除覆寫。`)) return;
 
-  const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`, { method: 'DELETE' });
-  const data = await res.json();
-  if (!data.success) {
-    showToast(data.error || '刪除失敗', 'error');
-    return;
+  try {
+    const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({ error: '伺服器回應格式異常' }));
+    if (!data.success) {
+      showToast(data.error || '刪除失敗', 'error');
+      return;
+    }
+    showToast(`✅ 歌曲「${title}」已安全刪除！`, 'success');
+    closeSongEditor();
+    loadAdminSongs(currentAdminSongsPage);
+    loadStats();
+  } catch (err) {
+    console.error('[Delete Song Error]', err);
+    showToast('刪除失敗：' + (err.message || '網路連線異常'), 'error');
   }
-  showToast('歌曲已刪除', 'success');
-  closeSongEditor();
-  loadAdminSongs();
-  loadStats();
 }
 
 function countAvailableBrands(song) {
