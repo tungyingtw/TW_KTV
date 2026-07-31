@@ -213,15 +213,23 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
                 <b>English Summary:</b> We highly respect your privacy. This website does not require mandatory account registration and does not collect personally identifiable information (PII).
               </div>
 
-              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>2. Cookies 與本機快取技術 (Cookies & Local Storage)</h5>
+              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>2. Cookies、本機快取與廣告技術 (Cookies, Local Storage & Ads)</h5>
               <p>
-                為了提供秒開與快取搜尋體驗，本網站會使用 HTML5 LocalStorage 與 IndexedDB 在您的本機瀏覽器中儲存歌曲快取與「我的最愛」歌單。本網站配合 Google AdSense 聯播網廣告，第三方廣告商可能使用 Cookie 記錄瀏覽資訊以提供適當廣告服務。
+                為了提供秒開與快取搜尋體驗，本網站會使用 HTML5 LocalStorage 與 IndexedDB 在您的本機瀏覽器中儲存歌曲快取與「我的最愛」歌單。本網站配合 Google AdSense 聯播網廣告；Google 與第三方廣告技術供應商可能會使用 Cookie、網路信標、IP 位址或其他識別碼，依使用者造訪本網站與其他網站或應用程式的情形提供、衡量及改善廣告服務。
+              </p>
+              <p>
+                關於 Google 如何使用合作夥伴網站或應用程式中的資料，請參閱 <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8' }}>Google 合作夥伴網站資料使用說明</a>。使用者亦可透過 Google 廣告設定或瀏覽器設定管理個人化廣告、Cookie 與追蹤偏好。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #38bdf8' }}>
-                <b>English Summary:</b> We use HTML5 LocalStorage and IndexedDB strictly for local caching and offline song catalog indexing. Third-party vendors (such as Google AdSense) may use cookies to serve ads based on user visits.
+                <b>English Summary:</b> We use HTML5 LocalStorage and IndexedDB for local caching and song catalog indexing. Google and third-party ad technology providers may use cookies, web beacons, IP addresses, or other identifiers to serve, measure, and improve ads.
               </div>
 
-              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>3. 外部連結與第三方宣告 (Third-Party Links)</h5>
+              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>3. 訪客統計與資料用途 (Analytics & Data Use)</h5>
+              <p>
+                本網站使用自建伺服器端匿名訪客統計（以裝置 UUID 識別，不關聯個人身份），以了解網站使用人數。統計資料僅用於網站營運優化，不作為個人身份辨識用途。
+              </p>
+
+              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>4. 外部連結與第三方宣告 (Third-Party Links)</h5>
               <p>
                 本網站包含導向第三方公開平台（如 YouTube 官方頻道）之超連結。第三方網站擁有獨立之隱私權政策，本網站不承擔外部網站之連帶責任。
               </p>
