@@ -2,7 +2,6 @@ import React from 'react';
 import type { Song } from '../types/ktv';
 import { BRAND_LIST } from '../data/brands';
 import { X, Heart, Trash2, Mic2, CheckCircle2 } from 'lucide-react';
-import { AdBannerSlot } from './AdBannerSlot';
 
 interface FavoritesDrawerProps {
   isOpen: boolean;
@@ -78,9 +77,6 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
             <X size={18} />
           </button>
         </div>
-
-        {/* 歌冊廣告區 */}
-        <AdBannerSlot slotType="modal" />
 
         {/* Favorite Songs List */}
         {favoriteSongs.length === 0 ? (
