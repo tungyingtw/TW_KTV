@@ -877,7 +877,8 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
 
 let currentAdminSongsPage = 1;
 
-async function loadAdminSongs(pageTarget = 1) {
+async function loadAdminSongs(pageTarget = 1, options = {}) {
+  const { silent = false } = options;
   currentAdminSongsPage = Math.max(1, Number(pageTarget) || 1);
   const query = encodeURIComponent(document.getElementById('song-admin-query').value.trim());
   const language = encodeURIComponent(document.getElementById('song-admin-language').value);
@@ -887,7 +888,9 @@ async function loadAdminSongs(pageTarget = 1) {
   const list = document.getElementById('song-admin-list');
   const summary = document.getElementById('song-admin-summary');
   const pagination = document.getElementById('song-admin-pagination');
-  list.innerHTML = '<div class="empty">資料載入中...</div>';
+  if (!silent) {
+    list.innerHTML = '<div class="empty">資料載入中...</div>';
+  }
 
   try {
     const res = await apiFetch(`/api/admin/songs?query=${query}&language=${language}&page=${currentAdminSongsPage}&limit=${limit}&sort=${sort}`);
@@ -906,16 +909,16 @@ async function loadAdminSongs(pageTarget = 1) {
     }
 
     list.innerHTML = songs.map(song => `
-      <div class="song-result-row">
+      <div class="song-result-row" data-song-id="${escapeAttr(song.id)}">
         <div class="card-actions">
           <button class="btn btn-blue" onclick="openSongEditor('${encodeURIComponent(song.id)}')">編輯歌曲</button>
         </div>
         <div>
-          <div style="font-weight:800;color:#f8fafc;">${escapeHtml(song.title)}</div>
-          <div style="color:var(--muted);font-size:0.78rem;">${escapeHtml(song.artist)} · ID: ${escapeHtml(song.id)}</div>
+          <div class="song-row-title" style="font-weight:800;color:#f8fafc;">${escapeHtml(song.title)}</div>
+          <div class="song-row-artist" style="color:var(--muted);font-size:0.78rem;">${escapeHtml(song.artist)} · ID: ${escapeHtml(song.id)}</div>
         </div>
-        <div><span class="badge badge-reviewed">${escapeHtml(song.language || '未分類')}</span></div>
-        <div style="color:var(--muted);font-size:0.78rem;">${countAvailableBrands(song)} 家收錄</div>
+        <div><span class="badge badge-reviewed song-row-lang">${escapeHtml(song.language || '未分類')}</span></div>
+        <div class="song-row-brands" style="color:var(--muted);font-size:0.78rem;">${countAvailableBrands(song)} 家收錄</div>
       </div>
     `).join('');
 
@@ -932,6 +935,34 @@ async function loadAdminSongs(pageTarget = 1) {
     console.error('[Admin Songs Load Error]', err);
     list.innerHTML = '<div class="empty" style="color:var(--red);">載入歌曲失敗，請稍後再試</div>';
     pagination.innerHTML = '';
+  }
+}
+
+function updateSingleSongRowInDOM(songId, payload) {
+  const list = document.getElementById('song-admin-list');
+  if (!list) return;
+  const rows = list.querySelectorAll('.song-result-row');
+  let targetRow = null;
+  for (const r of rows) {
+    if (r.dataset.songId === songId) {
+      targetRow = r;
+      break;
+    }
+  }
+  if (!targetRow) return;
+
+  const titleEl = targetRow.querySelector('.song-row-title');
+  const artistEl = targetRow.querySelector('.song-row-artist');
+  const langEl = targetRow.querySelector('.song-row-lang');
+  const brandsEl = targetRow.querySelector('.song-row-brands');
+
+  if (titleEl) titleEl.textContent = payload.title || '';
+  if (artistEl) artistEl.textContent = `${payload.artist || ''} · ID: ${songId}`;
+  if (langEl) langEl.textContent = payload.language || '未分類';
+
+  if (brandsEl && payload.brands) {
+    const availableCount = Object.values(payload.brands).filter(b => b?.available).length;
+    brandsEl.textContent = `${availableCount} 家收錄`;
   }
 }
 
@@ -1073,10 +1104,11 @@ async function saveSongEditor() {
     }
 
     const songId = document.getElementById('song-editor-id').value;
-    const path = currentSongEditorMode === 'edit'
+    const isEditMode = (currentSongEditorMode === 'edit');
+    const path = isEditMode
       ? `/api/admin/song/${encodeURIComponent(songId)}`
       : '/api/admin/song';
-    const method = currentSongEditorMode === 'edit' ? 'PUT' : 'POST';
+    const method = isEditMode ? 'PUT' : 'POST';
     const res = await apiFetch(path, { method, body: JSON.stringify(payload) });
     const data = await res.json().catch(() => ({ error: '伺服器回應格式異常' }));
 
@@ -1086,8 +1118,11 @@ async function saveSongEditor() {
     }
 
     showToast(`✅ 歌曲《${payload.title}》資料已儲存成功！`, 'success');
+    if (isEditMode && songId) {
+      updateSingleSongRowInDOM(songId, payload);
+    }
     closeSongEditor(true);
-    loadAdminSongs(currentAdminSongsPage);
+    loadAdminSongs(isEditMode ? currentAdminSongsPage : 1, { silent: true });
     loadStats();
   } catch (err) {
     console.error('[Save Song Error]', err);
@@ -1112,8 +1147,12 @@ async function deleteSongFromEditor() {
       return;
     }
     showToast(`✅ 歌曲「${title}」已安全刪除！`, 'success');
+    if (songId) {
+      const row = document.querySelector(`.song-result-row[data-song-id="${escapeAttr(songId)}"]`);
+      if (row) row.remove();
+    }
     closeSongEditor(true);
-    loadAdminSongs(currentAdminSongsPage);
+    loadAdminSongs(currentAdminSongsPage, { silent: true });
     loadStats();
   } catch (err) {
     console.error('[Delete Song Error]', err);
@@ -1319,7 +1358,8 @@ async function quickDeleteAlias(artist) {
     const data = await res.json();
     if (data.success) {
       showToast(`✅ 已刪除《${artist}》的別名字典條目`, 'success');
-      loadAdminAliases();
+      delete allAdminAliases[artist];
+      renderAdminAliases();
     } else {
       showToast('刪除失敗：' + (data.error || '無法刪除'), 'error');
     }
@@ -1390,7 +1430,9 @@ async function saveAliasEditor() {
     }
     showToast(`✅ 已成功更新《${artist}》的別名字典！`, 'success');
     closeAliasEditor(true);
-    loadAdminAliases();
+    const parsedAliases = rawTags ? rawTags.split(/[,，\n]/).map(s => s.trim()).filter(Boolean) : [];
+    allAdminAliases[artist] = parsedAliases;
+    renderAdminAliases();
   } catch (err) {
     showToast('儲存失敗：' + (err.message || '網路連線異常'), 'error');
   }
@@ -1410,7 +1452,8 @@ async function deleteAliasFromEditor() {
     }
     showToast(`✅ 已刪除《${artist}》的別名字典條目`, 'success');
     closeAliasEditor(true);
-    loadAdminAliases();
+    delete allAdminAliases[artist];
+    renderAdminAliases();
   } catch (err) {
     showToast('刪除失敗：' + (err.message || '網路連線異常'), 'error');
   }
