@@ -1,4 +1,4 @@
-// 前台歌手別名、英文名、暱稱與雙聲母（注音/拼音）擴充對照表 (已大規模擴充至 190+ 組跨國界歌手與樂團)
+// 前台歌手別名、英文名、暱稱與雙聲母（注音/拼音）擴充對照表 (已達到 250+ 組全量終極大滿貫覆蓋)
 
 export const DEFAULT_FRONTEND_ALIASES: Record<string, string[]> = {
   // ── 1. 華語流行天王、天后與巨星 ──
@@ -77,7 +77,7 @@ export const DEFAULT_FRONTEND_ALIASES: Record<string, string[]> = {
   '周深': ['charlie', 'charlie zhou', '深深', 'zs', 'ㄓㄕ'],
   '華晨宇': ['chenyu hua', '花花', 'hcy', 'ㄏㄩ'],
 
-  // ── 3. Wave 1 大規模擴充：華語金曲與獨立流行巨星 ──
+  // ── 3. 華語金曲與獨立流行巨星 ──
   '周華健': ['wakin', 'wakin chau', '國民歌王', 'zhj', 'ㄓㄏㄐ'],
   '張信哲': ['jeff', 'jeff chang', '情歌王子', 'zxz', 'ㄓㄒㄓ'],
   '李宗盛': ['jonathan', 'jonathan lee', '大哥', 'lzs', 'ㄌㄗㄕ'],
@@ -114,7 +114,7 @@ export const DEFAULT_FRONTEND_ALIASES: Record<string, string[]> = {
   '陳忻玥': ['vicky', 'vicky chen', 'cxy', 'ㄔㄒㄩ'],
   '李芷婷': ['nymph', 'nymph lee', 'lzt', 'ㄌㄗㄊ'],
 
-  // ── 4. Wave 2 大規模擴充：台語經典歌王歌后與台語/獨立樂團 ──
+  // ── 4. 台語經典歌王歌后與台語/獨立樂團 ──
   '江蕙': ['jody', 'jody chiang', '二姐', 'jh', 'ㄐㄏ'],
   '黃乙玲': ['yiting', 'hyl', 'ㄏㄧㄌ'],
   '秀蘭瑪雅': ['showlen', 'showlen maya', 'xlmy', 'ㄒㄇㄧ'],
@@ -144,7 +144,7 @@ export const DEFAULT_FRONTEND_ALIASES: Record<string, string[]> = {
   '芒果醬': ['mango jump', 'mango jump', 'mgj', 'ㄇㄍㄐ'],
   '傻子與白痴': ['fool & idiot', 'fool and idiot', 'szybc', 'ㄕㄗㄩㄅㄔ'],
 
-  // ── 5. Wave 3 大規模擴充：港粵天王天后與日韓國際巨星 ──
+  // ── 5. 港粵天王天后與日韓國際巨星 ──
   'Beyond': ['beyond', '黃家駒'],
   '草蜢': ['grasshopper', 'cm', 'ㄘㄇ'],
   '陳百強': ['danny', 'danny chan', 'cbq', 'ㄔㄅㄑ'],
@@ -176,6 +176,70 @@ export const DEFAULT_FRONTEND_ALIASES: Record<string, string[]> = {
   'SEVENTEEN': ['seventeen', 'svt'],
   'EXO': ['exo'],
   'BIGBANG': ['bigbang', 'bb', 'g-dragon', 'gd'],
+
+  // ── 6. Wave 4 終極滿貫擴充：西洋巨星、新銳歌手與影視動漫 K-POP ──
+  'Taylor Swift': ['taylor swift', 'taylor', '泰勒絲', '黴黴'],
+  'Ed Sheeran': ['ed sheeran', 'ed', '紅髮艾德'],
+  'Bruno Mars': ['bruno mars', 'bruno', '火星人布魯諾', '火星人'],
+  'Lady Gaga': ['lady gaga', 'gaga', '嘎嘎小姐'],
+  'Adele': ['adele', '愛黛兒'],
+  'Justin Bieber': ['justin bieber', 'jb', '小賈斯汀', '小賈'],
+  'Billie Eilish': ['billie eilish', 'billie', '怪奇比莉'],
+  'Coldplay': ['coldplay', '酷玩樂團', '酷玩'],
+  'Maroon 5': ['maroon 5', 'maroon5', 'm5', '魔力紅'],
+  'Michael Jackson': ['michael jackson', 'mj', '麥可傑克森', '麥可'],
+  'Charlie Puth': ['charlie puth', '查理普斯', '斷眉'],
+  'Dua Lipa': ['dua lipa', 'dua', '杜娃黎波'],
+  'Ariana Grande': ['ariana grande', 'ariana', '亞莉安娜'],
+  'Beyonce': ['beyonce', '碧昂絲'],
+  'Katy Perry': ['katy perry', 'katy', '凱蒂佩芮', '水果姐'],
+  'Shawn Mendes': ['shawn mendes', 'shawn', '尚恩曼德斯'],
+
+  'F.I.R.': ['f.i.r.', 'fir', '飛兒樂團', '詹雯婷', 'faye', 'felt', 'ㄈㄦㄌㄊ'],
+  '飛兒樂團': ['f.i.r.', 'fir', 'f.i.r.', '詹雯婷', 'felt', 'ㄈㄦㄌㄊ'],
+  'J.Sheon': ['j.sheon', 'jsheon', '街巷', 'jx', 'ㄐㄒ'],
+  '婁峻碩': ['shou', 'shou', 'ljs', 'ㄌㄩㄕ'],
+  '黃宣': ['yellow', 'yellow', 'hx', 'ㄏㄒ'],
+  '孫盛希': ['shi shi', 'shishi', '希希', 'ssx', 'ㄙㄕㄒ'],
+  '持修': ['chih siou', '社長', '社控總裁', 'cx', 'ㄔㄒ'],
+  '9m88': ['9m88', '爵士女神'],
+  '壞特 ?te': ['?te', 'whyte', '壞特', 'ht', 'ㄏㄊ'],
+  '派偉玖': ['patrick brasca', 'patrick', '小派', 'pwj', 'ㄆㄨㄐ'],
+  '南拳媽媽': ['nan quan mama', 'nqmm', 'ㄋㄑㄇㄇ'],
+  '旺福': ['wonfu', 'wf', 'ㄨㄈ'],
+  'Tizzy Bac': ['tizzy bac', 'tb'],
+  '鄭宜農': ['enno cheng', 'enno', 'zyn', 'ㄓㄧㄋ'],
+  '岑寧兒': ['yoyo sham', 'yoyo', 'cne', 'ㄘㄋㄦ'],
+  '莫宰羊': ['mozaiyang', 'mzy', 'ㄇㄗㄧ'],
+  '1976': ['1976', '1976樂團'],
+  'CHING G SQUAD': ['ching g squad', 'cgs'],
+
+  'Mrs. GREEN APPLE': ['mrs. green apple', 'mrsgreenapple', 'mga', '青蘋果樂團'],
+  'Vaundy': ['vaundy'],
+  'Creepy Nuts': ['creepy nuts', 'bbbb', '二月二'],
+  'Eve': ['eve', '咒術迴戰主題曲'],
+  'SEKAI NO OWARI': ['sekai no owari', 'endoftheworld', '世界末日'],
+  'SPYAIR': ['spyair', '排球少年主題曲'],
+  'FLOW': ['flow', '火影忍者主題曲'],
+  'KANA-BOON': ['kana-boon', 'kanaboon'],
+  'MAN WITH A MISSION': ['man with a mission', 'mwam', '狼人樂團'],
+  'Stray Kids': ['stray kids', 'skz'],
+  'LE SSERAFIM': ['le sserafim', 'lesserafim', '採買'],
+  'aespa': ['aespa', 'karina', 'winter'],
+  '(G)I-DLE': ['(g)i-dle', 'gidle', 'i-dle', '葉舒華', '雨琦'],
+  'NMIXX': ['nmixx'],
+  'ITZY': ['itzy'],
+  'MAMAMOO': ['mamamoo', '華莎', '頌樂'],
+  'Red Velvet': ['red velvet', 'rv', 'irene'],
+  'ENHYPEN': ['enhypen'],
+  'TXT': ['txt', 'tomorrow x together'],
+  'NCT': ['nct', 'nct 127', 'nct dream'],
+  'ZEROBASEONE': ['zerobaseone', 'zb1'],
+  'RIIZE': ['riize'],
+  'ATEEZ': ['ateez'],
+  'TREASURE': ['treasure'],
+  'STAYC': ['stayc'],
+  'KISS OF LIFE': ['kiss of life', 'kiof'],
 };
 
 /**

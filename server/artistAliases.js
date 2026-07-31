@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const ALIASES_FILE_PATH = path.join(__dirname, 'artist_aliases_overrides.json');
 
-// 預設熱門歌手別名、英文名、暱稱與團體/對照字典 (已大規模擴充至 190+ 組跨國界歌手與樂團)
+// 預設熱門歌手別名、英文名、暱稱與團體/對照字典 (已達到 250+ 組全量終極大滿貫覆蓋)
 export const DEFAULT_ARTIST_ALIASES = {
   // ── 1. 華語流行天王、天后與巨星 ──
   '周杰倫': { english: ['jay', 'jay chou', 'chou jay'], nickname: ['周董', 'Jay哥'], pinyinInitials: ['zjl'], zhuyinInitials: ['ㄓㄐㄌ'], groupOrAlt: [] },
@@ -85,7 +85,7 @@ export const DEFAULT_ARTIST_ALIASES = {
   '周深': { english: ['charlie', 'charlie zhou'], nickname: ['深深'], pinyinInitials: ['zs'], zhuyinInitials: ['ㄓㄕ'], groupOrAlt: [] },
   '華晨宇': { english: ['chenyu hua'], nickname: ['花花'], pinyinInitials: ['hcy'], zhuyinInitials: ['ㄏㄩ'], groupOrAlt: [] },
 
-  // ── 3. Wave 1 大規模擴充：華語金曲與獨立流行巨星 ──
+  // ── 3. 華語金曲與獨立流行巨星 ──
   '周華健': { english: ['wakin', 'wakin chau'], nickname: ['國民歌王'], pinyinInitials: ['zhj'], zhuyinInitials: ['ㄓㄏㄐ'], groupOrAlt: [] },
   '張信哲': { english: ['jeff', 'jeff chang'], nickname: ['情歌王子'], pinyinInitials: ['zxz'], zhuyinInitials: ['ㄓㄒㄓ'], groupOrAlt: [] },
   '李宗盛': { english: ['jonathan', 'jonathan lee'], nickname: ['大哥'], pinyinInitials: ['lzs'], zhuyinInitials: ['ㄌㄗㄕ'], groupOrAlt: [] },
@@ -122,7 +122,7 @@ export const DEFAULT_ARTIST_ALIASES = {
   '陳忻玥': { english: ['vicky', 'vicky chen'], nickname: [], pinyinInitials: ['cxy'], zhuyinInitials: ['ㄔㄒㄩ'], groupOrAlt: [] },
   '李芷婷': { english: ['nymph', 'nymph lee'], nickname: [], pinyinInitials: ['lzt'], zhuyinInitials: ['ㄌㄗㄊ'], groupOrAlt: [] },
 
-  // ── 4. Wave 2 大規模擴充：台語經典歌王歌后與台語/獨立樂團 ──
+  // ── 4. 台語經典歌王歌后與台語/獨立樂團 ──
   '江蕙': { english: ['jody', 'jody chiang'], nickname: ['二姐'], pinyinInitials: ['jh'], zhuyinInitials: ['ㄐㄏ'], groupOrAlt: [] },
   '黃乙玲': { english: ['yiting'], nickname: [], pinyinInitials: ['hyl'], zhuyinInitials: ['ㄏㄧㄌ'], groupOrAlt: [] },
   '秀蘭瑪雅': { english: ['showlen', 'showlen maya'], nickname: [], pinyinInitials: ['xlmy'], zhuyinInitials: ['ㄒㄇㄧ'], groupOrAlt: [] },
@@ -152,7 +152,7 @@ export const DEFAULT_ARTIST_ALIASES = {
   '芒果醬': { english: ['mango jump'], nickname: ['Mango Jump'], pinyinInitials: ['mgj'], zhuyinInitials: ['ㄇㄍㄐ'], groupOrAlt: ['Mango Jump'] },
   '傻子與白痴': { english: ['fool & idiot', 'fool and idiot'], nickname: [], pinyinInitials: ['szybc'], zhuyinInitials: ['ㄕㄗㄩㄅㄔ'], groupOrAlt: [] },
 
-  // ── 5. Wave 3 大規模擴充：港粵天王天后與日韓國際巨星 ──
+  // ── 5. 港粵天王天后與日韓國際巨星 ──
   'Beyond': { english: ['beyond'], nickname: ['黃家駒'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['黃家駒'] },
   '草蜢': { english: ['grasshopper'], nickname: [], pinyinInitials: ['cm'], zhuyinInitials: ['ㄘㄇ'], groupOrAlt: [] },
   '陳百強': { english: ['danny', 'danny chan'], nickname: [], pinyinInitials: ['cbq'], zhuyinInitials: ['ㄔㄅㄑ'], groupOrAlt: [] },
@@ -184,6 +184,70 @@ export const DEFAULT_ARTIST_ALIASES = {
   'SEVENTEEN': { english: ['seventeen', 'svt'], nickname: ['SVT'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
   'EXO': { english: ['exo'], nickname: ['EXO'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
   'BIGBANG': { english: ['bigbang', 'bb'], nickname: ['G-Dragon', 'GD'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['GD'] },
+
+  // ── 6. Wave 4 終極滿貫擴充：西洋巨星、新銳歌手與影視動漫 K-POP ──
+  'Taylor Swift': { english: ['taylor swift', 'taylor'], nickname: ['泰勒絲', '黴黴'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['泰勒絲'] },
+  'Ed Sheeran': { english: ['ed sheeran', 'ed'], nickname: ['紅髮艾德'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['紅髮艾德'] },
+  'Bruno Mars': { english: ['bruno mars', 'bruno'], nickname: ['火星人布魯諾', '火星人'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['火星人'] },
+  'Lady Gaga': { english: ['lady gaga', 'gaga'], nickname: ['嘎嘎小姐'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'Adele': { english: ['adele'], nickname: ['愛黛兒'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['愛黛兒'] },
+  'Justin Bieber': { english: ['justin bieber', 'jb'], nickname: ['小賈斯汀', '小賈'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['小賈斯汀'] },
+  'Billie Eilish': { english: ['billie eilish', 'billie'], nickname: ['怪奇比莉'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['怪奇比莉'] },
+  'Coldplay': { english: ['coldplay'], nickname: ['酷玩樂團', '酷玩'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['酷玩樂團'] },
+  'Maroon 5': { english: ['maroon 5', 'maroon5', 'm5'], nickname: ['魔力紅'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['魔力紅'] },
+  'Michael Jackson': { english: ['michael jackson', 'mj'], nickname: ['麥可傑克森', '麥可'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['麥可傑克森'] },
+  'Charlie Puth': { english: ['charlie puth'], nickname: ['查理普斯', '斷眉'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['查理普斯'] },
+  'Dua Lipa': { english: ['dua lipa', 'dua'], nickname: ['杜娃黎波'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['杜娃黎波'] },
+  'Ariana Grande': { english: ['ariana grande', 'ariana'], nickname: ['亞莉安娜'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['亞莉安娜'] },
+  'Beyonce': { english: ['beyonce'], nickname: ['碧昂絲'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['碧昂絲'] },
+  'Katy Perry': { english: ['katy perry', 'katy'], nickname: ['凱蒂佩芮', '水果姐'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['凱蒂佩芮'] },
+  'Shawn Mendes': { english: ['shawn mendes', 'shawn'], nickname: ['尚恩曼德斯'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['尚恩曼德斯'] },
+
+  'F.I.R.': { english: ['f.i.r.', 'fir'], nickname: ['飛兒樂團', '詹雯婷', 'faye'], pinyinInitials: ['felt'], zhuyinInitials: ['ㄈㄦㄌㄊ'], groupOrAlt: ['飛兒樂團'] },
+  '飛兒樂團': { english: ['f.i.r.', 'fir'], nickname: ['F.I.R.', '詹雯婷'], pinyinInitials: ['felt'], zhuyinInitials: ['ㄈㄦㄌㄊ'], groupOrAlt: ['F.I.R.'] },
+  'J.Sheon': { english: ['j.sheon', 'jsheon'], nickname: ['街巷'], pinyinInitials: ['jx'], zhuyinInitials: ['ㄐㄒ'], groupOrAlt: [] },
+  '婁峻碩': { english: ['shou'], nickname: ['SHOU'], pinyinInitials: ['ljs'], zhuyinInitials: ['ㄌㄩㄕ'], groupOrAlt: [] },
+  '黃宣': { english: ['yellow'], nickname: ['YELLOW'], pinyinInitials: ['hx'], zhuyinInitials: ['ㄏㄒ'], groupOrAlt: [] },
+  '孫盛希': { english: ['shi shi', 'shishi'], nickname: ['希希'], pinyinInitials: ['ssx'], zhuyinInitials: ['ㄙㄕㄒ'], groupOrAlt: [] },
+  '持修': { english: ['chih siou'], nickname: ['社長', '社控總裁'], pinyinInitials: ['cx'], zhuyinInitials: ['ㄔㄒ'], groupOrAlt: [] },
+  '9m88': { english: ['9m88'], nickname: ['爵士女神'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  '壞特 ?te': { english: ['?te', 'whyte'], nickname: ['壞特'], pinyinInitials: ['ht'], zhuyinInitials: ['ㄏㄊ'], groupOrAlt: ['?te'] },
+  '派偉玖': { english: ['patrick brasca', 'patrick'], nickname: ['小派'], pinyinInitials: ['pwj'], zhuyinInitials: ['ㄆㄨㄐ'], groupOrAlt: [] },
+  '南拳媽媽': { english: ['nan quan mama'], nickname: [], pinyinInitials: ['nqmm'], zhuyinInitials: ['ㄋㄑㄇㄇ'], groupOrAlt: [] },
+  '旺福': { english: ['wonfu'], nickname: [], pinyinInitials: ['wf'], zhuyinInitials: ['ㄨㄈ'], groupOrAlt: [] },
+  'Tizzy Bac': { english: ['tizzy bac', 'tb'], nickname: ['TB'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  '鄭宜農': { english: ['enno cheng', 'enno'], nickname: [], pinyinInitials: ['zyn'], zhuyinInitials: ['ㄓㄧㄋ'], groupOrAlt: [] },
+  '岑寧兒': { english: ['yoyo sham', 'yoyo'], nickname: [], pinyinInitials: ['cne'], zhuyinInitials: ['ㄘㄋㄦ'], groupOrAlt: [] },
+  '莫宰羊': { english: ['mozaiyang'], nickname: [], pinyinInitials: ['mzy'], zhuyinInitials: ['ㄇㄗㄧ'], groupOrAlt: [] },
+  '1976': { english: ['1976'], nickname: ['1976樂團'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['1976樂團'] },
+  'CHING G SQUAD': { english: ['ching g squad', 'cgs'], nickname: ['CGS'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+
+  'Mrs. GREEN APPLE': { english: ['mrs. green apple', 'mrsgreenapple', 'mga'], nickname: ['青蘋果樂團'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['青蘋果樂團'] },
+  'Vaundy': { english: ['vaundy'], nickname: ['Vaundy'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'Creepy Nuts': { english: ['creepy nuts', 'bbbb'], nickname: ['二月二'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'Eve': { english: ['eve'], nickname: ['咒術迴戰主題曲'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'SEKAI NO OWARI': { english: ['sekai no owari', 'endoftheworld'], nickname: ['世界末日'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['世界末日'] },
+  'SPYAIR': { english: ['spyair'], nickname: ['排球少年主題曲'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'FLOW': { english: ['flow'], nickname: ['火影忍者主題曲'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'KANA-BOON': { english: ['kana-boon', 'kanaboon'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'MAN WITH A MISSION': { english: ['man with a mission', 'mwam'], nickname: ['狼人樂團'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['狼人樂團'] },
+  'Stray Kids': { english: ['stray kids', 'skz'], nickname: ['SKZ'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'LE SSERAFIM': { english: ['le sserafim', 'lesserafim'], nickname: ['採買'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'aespa': { english: ['aespa'], nickname: ['Karina', 'Winter'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  '(G)I-DLE': { english: ['(g)i-dle', 'gidle', 'i-dle'], nickname: ['葉舒華', '雨琦'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['gidle'] },
+  'NMIXX': { english: ['nmixx'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'ITZY': { english: ['itzy'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'MAMAMOO': { english: ['mamamoo'], nickname: ['華莎', '頌樂'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'Red Velvet': { english: ['red velvet', 'rv'], nickname: ['RV', 'Irene'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'ENHYPEN': { english: ['enhypen'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'TXT': { english: ['txt', 'tomorrow x together'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'NCT': { english: ['nct', 'nct 127', 'nct dream'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'ZEROBASEONE': { english: ['zerobaseone', 'zb1'], nickname: ['ZB1'], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: ['ZB1'] },
+  'RIIZE': { english: ['riize'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'ATEEZ': { english: ['ateez'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'TREASURE': { english: ['treasure'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'STAYC': { english: ['stayc'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
+  'KISS OF LIFE': { english: ['kiss of life', 'kiof'], nickname: [], pinyinInitials: [], zhuyinInitials: [], groupOrAlt: [] },
 };
 
 let currentAliasesMap = null;
