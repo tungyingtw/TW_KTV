@@ -22,6 +22,7 @@ import { fetchFullCatalog } from './services/apiService';
 import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
+import { expandFrontendQuery } from './utils/artistAliases';
 import { Sparkles, Music, ChevronDown, Mail } from 'lucide-react';
 
 function getSearchablePhonetic(value?: string): string {
@@ -215,6 +216,7 @@ export function App() {
     if (rawQuery) {
       const cleanQuery = stripPunctuation(rawQuery);
       const normalizedQuery = normalizeText(rawQuery);
+      const { matchedArtists, expandedTerms } = expandFrontendQuery(rawQuery);
 
       const substringMatches = allSongs.filter(s => {
         const cleanTitle = stripPunctuation(s.title);
@@ -222,6 +224,8 @@ export function App() {
         const cleanLyrics = stripPunctuation(s.lyricsSnippet || '');
         const zhuyin = getSearchablePhonetic(s.zhuyin).toLowerCase();
         const pinyin = getSearchablePhonetic(s.pinyin).toLowerCase();
+
+        if (matchedArtists.has(s.artist)) return true;
 
         return (
           s.title.includes(rawQuery) || 
@@ -234,12 +238,23 @@ export function App() {
           (normalizedQuery && normalizeText(s.artist).includes(normalizedQuery)) ||
           (normalizedQuery && s.lyricsSnippet && normalizeText(s.lyricsSnippet).includes(normalizedQuery)) ||
           (zhuyin && zhuyin.includes(rawQuery.toLowerCase())) ||
-          (pinyin && pinyin.includes(rawQuery.toLowerCase()))
+          (pinyin && pinyin.includes(rawQuery.toLowerCase())) ||
+          expandedTerms.some(term => (
+            s.title.toLowerCase().includes(term) ||
+            s.artist.toLowerCase().includes(term)
+          ))
         );
       });
 
       if (substringMatches.length > 0) {
-        result = substringMatches;
+        // 別名或關鍵字精確相符排序置頂 (Rank-1 Artist Matching)
+        result = [...substringMatches].sort((a, b) => {
+          const isAArtistMatch = matchedArtists.has(a.artist);
+          const isBArtistMatch = matchedArtists.has(b.artist);
+          if (isAArtistMatch && !isBArtistMatch) return -1;
+          if (!isAArtistMatch && isBArtistMatch) return 1;
+          return 0;
+        });
       } else {
         const fuzzyResults = fuse.search(rawQuery);
         result = fuzzyResults.map(res => res.item);

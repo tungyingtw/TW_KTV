@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { loadArtistAliases, saveArtistAlias, deleteArtistAlias, expandArtistQuery } from './artistAliases.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1306,14 +1307,28 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
   const sortMode = String(sort).trim();
   let results = songsDatabase;
 
+  const aliasExpansion = q ? expandArtistQuery(q) : { matchedArtists: [], expandedTerms: [] };
+  const matchedArtists = new Set(aliasExpansion.matchedArtists.map(a => a.toLowerCase()));
+  const expandedTerms = aliasExpansion.expandedTerms;
+
   if (q) {
-    results = results.filter(song => (
-      String(song.id || '').toLowerCase().includes(q) ||
-      String(song.title || '').toLowerCase().includes(q) ||
-      String(song.artist || '').toLowerCase().includes(q) ||
-      String(song.pinyin || '').toLowerCase().includes(q) ||
-      String(song.zhuyin || '').toLowerCase().includes(q)
-    ));
+    results = results.filter(song => {
+      const art = String(song.artist || '').toLowerCase();
+      if (matchedArtists.has(art)) return true;
+
+      const title = String(song.title || '').toLowerCase();
+      const idStr = String(song.id || '').toLowerCase();
+      const pinyin = String(song.pinyin || '').toLowerCase();
+      const zhuyin = String(song.zhuyin || '').toLowerCase();
+
+      return expandedTerms.some(term => (
+        idStr.includes(term) ||
+        title.includes(term) ||
+        art.includes(term) ||
+        pinyin.includes(term) ||
+        zhuyin.includes(term)
+      ));
+    });
   }
 
   if (selectedLanguage) {
@@ -1342,13 +1357,14 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
       return brandsB - brandsA;
     }
 
-    // 預設 (relevance_len_asc)：關鍵字精確度 ➔ 歌名字數 (短到長) ➔ 筆劃/字母
+    // 預設 (relevance_len_asc)：歌手別名精確度 (Rank 1) ➔ 歌名開頭 (Rank 2) ➔ 歌名字數 (短到長) ➔ 筆劃/字母
     if (q) {
       const getRelevance = (s) => {
         const t = String(s.title || '').toLowerCase();
         const art = String(s.artist || '').toLowerCase();
         const idStr = String(s.id || '').toLowerCase();
 
+        if (matchedArtists.has(art)) return 1;
         if (t === q || art === q || idStr === q) return 1;
         if (t.startsWith(q) || art.startsWith(q)) return 2;
         return 3;
@@ -1377,6 +1393,40 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
     totalPages,
     songs: results.slice(start, start + limitNum),
   });
+});
+
+// ── 歌手別名字典管理 API ──
+app.get('/api/admin/aliases', requireAdmin, (req, res) => {
+  res.json({ aliases: loadArtistAliases() });
+});
+
+app.post('/api/admin/alias', requireAdmin, (req, res) => {
+  try {
+    const { artist, aliases } = req.body;
+    if (!artist) return res.status(400).json({ error: '缺少歌手名稱' });
+    const saved = saveArtistAlias(artist, aliases);
+    logAdminAction('UPDATE_ARTIST_ALIAS', { artist, aliases: saved });
+    res.json({ success: true, artist, aliases: saved });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/alias/:artistName', requireAdmin, (req, res) => {
+  try {
+    const artist = decodeURIComponent(req.params.artistName);
+    deleteArtistAlias(artist);
+    logAdminAction('DELETE_ARTIST_ALIAS', { artist });
+    res.json({ success: true, artist });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/alias/test', requireAdmin, (req, res) => {
+  const q = String(req.query.q || '').trim();
+  const resolution = expandArtistQuery(q);
+  res.json(resolution);
 });
 
 app.get('/api/admin/song/:songId', requireAdmin, (req, res) => {

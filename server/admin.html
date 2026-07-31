@@ -254,6 +254,13 @@
 <!-- ══ App ══ -->
 <div id="app">
   <header>
+    <div id="login-err" class="login-err"></div>
+  </div>
+</div>
+
+<!-- ══ App ══ -->
+<div id="app">
+  <header>
     <h1>台灣 KTV 歌曲索引 — <span>維護工具</span></h1>
     <div class="header-stats" id="stats-bar">
       <div class="stat-chip">載入中...</div>
@@ -271,11 +278,11 @@
     <button onclick="showTab('tab-verified')">已驗證</button>
     <button onclick="showTab('tab-guided')">導唱票</button>
     <button onclick="showTab('tab-songs')">歌曲管理</button>
+    <button onclick="showTab('tab-aliases')">歌手別名維護</button>
     <button onclick="showTab('tab-logs')">操作日誌</button>
   </nav>
 
   <main>
-    <!-- ── 總覽 ── -->
     <div id="tab-overview" class="tab active">
       <h2 style="margin-bottom:20px; font-size:1.1rem;">系統統計總覽</h2>
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px;" id="overview-cards">
@@ -408,7 +415,24 @@
         <div id="song-admin-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">點擊「搜尋」開始檢索歌曲資料庫</div>
         <div id="song-admin-list"><div class="empty">請輸入條件搜尋，或直接按搜尋載入最新歌曲。</div></div>
         <div id="song-admin-pagination" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;"></div>
+    </div>
+
+    <!-- ── 歌手別名與雙聲母維護 ── -->
+    <div id="tab-aliases" class="tab">
+      <div class="filter-row">
+        <h2 style="font-size:1.05rem;">歌手別名與同義詞維護 (英文名/暱稱/注音拼音聲母)</h2>
+        <input id="alias-search-input" placeholder="搜尋歌手本名或別名 (如: jay, ㄓㄐㄌ, zjl)" style="min-width:260px;" oninput="renderAdminAliases()" />
+        <button class="btn btn-green" onclick="openAliasEditor()">+ 新增歌手別名</button>
+        <button class="btn btn-blue" onclick="testAliasResolutionPrompt()">即時測試別名解析</button>
+        <button class="btn btn-ghost" onclick="loadAdminAliases()">重新整理</button>
       </div>
+      <div class="card" style="border-color:rgba(168,85,247,0.3);margin-bottom:16px;">
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.6;">
+          💡 <b>別名與雙聲母對照說明：</b>在此維護的別名包含 <b>常用英文名</b>（如 Jay）、<b>熱門暱稱</b>（如 周董）、<b>台灣注音聲母</b>（如 ㄓㄐㄌ）與 <b>拼音聲母</b>（如 zjl）。<br>
+          前台與後台搜尋引擎皆會自動聯想擴充，輸入別名或聲母即可直達對應歌手的所有歌曲！
+        </div>
+      </div>
+      <div id="aliases-list"><div class="empty">載入中...</div></div>
     </div>
 
     <!-- ── 操作日誌 ── -->
@@ -512,6 +536,29 @@
       <button class="btn-editor-save" onclick="saveSongEditor()">儲存歌曲</button>
       <button class="btn-editor-delete" onclick="deleteSongFromEditor()">刪除歌曲</button>
       <button class="btn-editor-cancel" onclick="closeSongEditor()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Alias Editor Modal ══ -->
+<div id="alias-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:230;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal-box" style="width:540px;max-height:90vh;overflow:auto;">
+    <h3 id="alias-editor-title">編輯歌手別名</h3>
+    <div class="form-group">
+      <label>歌手本名 (例：周杰倫 / 蔡依林)</label>
+      <input id="alias-artist-name" placeholder="輸入歌手名稱..." />
+    </div>
+    <div class="form-group">
+      <label>別名 / 英文名 / 暱稱 / 雙聲母 (請用半形逗號隔開)</label>
+      <textarea id="alias-tags-input" placeholder="例如: jay, jay chou, 周董, zjl, ㄓㄐㄌ" style="min-height:90px;"></textarea>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">
+        提示：您可以一次填入多個英文名、暱稱、聲母，用半形逗號隔開。<br>例：<code>jay, jay chou, 周董, zjl, ㄓㄐㄌ</code>
+      </div>
+    </div>
+    <div class="song-editor-actions">
+      <button class="btn-editor-save" onclick="saveAliasEditor()">儲存歌手別名</button>
+      <button class="btn-editor-delete" id="btn-delete-alias" onclick="deleteAliasFromEditor()">刪除別名條目</button>
+      <button class="btn-editor-cancel" onclick="closeAliasEditor()">取消</button>
     </div>
   </div>
 </div>
@@ -629,6 +676,7 @@ function showTab(id) {
   if (id === 'tab-verified') loadVerified();
   if (id === 'tab-guided') loadGuidedVotes();
   if (id === 'tab-songs') loadAdminSongs();
+  if (id === 'tab-aliases') loadAdminAliases();
   if (id === 'tab-logs') loadLogs();
 }
 
@@ -1195,6 +1243,11 @@ async function resetStatsCounter() {
 
 // ── Toast ──
 let toastTimer;
+  }
+}
+
+// ── Toast ──
+let toastTimer;
 function showToast(msg, type = 'success') {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -1202,7 +1255,182 @@ function showToast(msg, type = 'success') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.className = '', 3500);
 }
+
+// ── 歌手別名字典維護 ──
+let allAdminAliases = {};
+let initialAliasEditorSnapshot = null;
+
+async function loadAdminAliases() {
+  const listEl = document.getElementById('aliases-list');
+  if (listEl) listEl.innerHTML = '<div class="empty">別名字典載入中...</div>';
+
+  try {
+    const res = await apiFetch('/api/admin/aliases');
+    const data = await res.json();
+    allAdminAliases = data.aliases || {};
+    renderAdminAliases();
+  } catch (err) {
+    console.error('[Load Aliases Error]', err);
+    if (listEl) listEl.innerHTML = '<div class="empty" style="color:var(--red);">載入歌手別名失敗</div>';
+  }
+}
+
+function renderAdminAliases() {
+  const listEl = document.getElementById('aliases-list');
+  if (!listEl) return;
+
+  const query = (document.getElementById('alias-search-input')?.value || '').trim().toLowerCase();
+  const entries = Object.entries(allAdminAliases).filter(([artist, aliases]) => {
+    if (!query) return true;
+    if (artist.toLowerCase().includes(query)) return true;
+    return aliases.some(a => String(a).toLowerCase().includes(query));
+  });
+
+  if (!entries.length) {
+    listEl.innerHTML = '<div class="empty">沒有符合條件的歌手別名條目</div>';
+    return;
+  }
+
+  listEl.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:12px;">
+      ${entries.map(([artist, aliases]) => `
+        <div class="card" style="border-color:rgba(168,85,247,0.25);margin-bottom:0;display:flex;flex-direction:column;justify-content:space-between;">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-weight:800;font-size:1.05rem;color:#f8fafc;">🎤 ${escapeHtml(artist)}</div>
+              <button class="btn btn-blue" style="padding:4px 10px;font-size:0.78rem;" onclick="openAliasEditor('${escapeAttr(artist)}')">編輯別名</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+              ${aliases.length ? aliases.map(a => `
+                <span class="badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);">${escapeHtml(a)}</span>
+              `).join('') : '<span style="color:var(--muted);font-size:0.78rem;">尚未設定別名</span>'}
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function openAliasEditor(artistName = '') {
+  const modal = document.getElementById('alias-editor-modal');
+  const nameInput = document.getElementById('alias-artist-name');
+  const tagsInput = document.getElementById('alias-tags-input');
+  const titleEl = document.getElementById('alias-editor-title');
+  const delBtn = document.getElementById('btn-delete-alias');
+
+  if (artistName && allAdminAliases[artistName]) {
+    titleEl.textContent = `編輯歌手別名：《${artistName}》`;
+    nameInput.value = artistName;
+    nameInput.readOnly = true;
+    nameInput.style.opacity = '0.7';
+    tagsInput.value = (allAdminAliases[artistName] || []).join(', ');
+    if (delBtn) delBtn.style.display = 'inline-block';
+  } else {
+    titleEl.textContent = '新增歌手別名';
+    nameInput.value = artistName || '';
+    nameInput.readOnly = false;
+    nameInput.style.opacity = '1';
+    tagsInput.value = '';
+    if (delBtn) delBtn.style.display = 'none';
+  }
+
+  initialAliasEditorSnapshot = JSON.stringify({ artist: nameInput.value, tags: tagsInput.value });
+  modal.style.display = 'flex';
+}
+
+function closeAliasEditor(force = false) {
+  const nameInput = document.getElementById('alias-artist-name');
+  const tagsInput = document.getElementById('alias-tags-input');
+  const currentSnapshot = JSON.stringify({ artist: nameInput.value, tags: tagsInput.value });
+
+  if (!force && initialAliasEditorSnapshot && initialAliasEditorSnapshot !== currentSnapshot) {
+    if (!confirm('⚠️ 您有尚未儲存的別名修改，確定要取消嗎？')) return false;
+  }
+
+  document.getElementById('alias-editor-modal').style.display = 'none';
+  initialAliasEditorSnapshot = null;
+  return true;
+}
+
+async function saveAliasEditor() {
+  const artist = document.getElementById('alias-artist-name').value.trim();
+  const rawTags = document.getElementById('alias-tags-input').value.trim();
+
+  if (!artist) {
+    showToast('請輸入歌手名稱', 'error');
+    return;
+  }
+
+  try {
+    const res = await apiFetch('/api/admin/alias', {
+      method: 'POST',
+      body: JSON.stringify({ artist, aliases: rawTags }),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || '儲存別名失敗', 'error');
+      return;
+    }
+    showToast(`✅ 已成功更新《${artist}》的別名字典！`, 'success');
+    closeAliasEditor(true);
+    loadAdminAliases();
+  } catch (err) {
+    showToast('儲存失敗：' + (err.message || '網路連線異常'), 'error');
+  }
+}
+
+async function deleteAliasFromEditor() {
+  const artist = document.getElementById('alias-artist-name').value.trim();
+  if (!artist) return;
+  if (!confirm(`確定刪除《${artist}》的別名對照條目嗎？`)) return;
+
+  try {
+    const res = await apiFetch(`/api/admin/alias/${encodeURIComponent(artist)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || '刪除別名失敗', 'error');
+      return;
+    }
+    showToast(`✅ 已刪除《${artist}》的別名字典條目`, 'success');
+    closeAliasEditor(true);
+    loadAdminAliases();
+  } catch (err) {
+    showToast('刪除失敗：' + (err.message || '網路連線異常'), 'error');
+  }
+}
+
+async function testAliasResolutionPrompt() {
+  const query = prompt('請輸入要測試的別名或聲母 (例如: jay, ㄓㄐㄌ, zjl, jolin, mayday):', 'jay');
+  if (!query) return;
+
+  try {
+    const res = await apiFetch(`/api/admin/alias/test?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    const matchedStr = data.matchedArtists?.length ? data.matchedArtists.join('、') : '無命中歌手';
+    const termsStr = data.expandedTerms?.length ? data.expandedTerms.join(', ') : '無擴充詞';
+    alert(`🔍【即時測試結果】\n輸入字詞: "${query}"\n\n🎯 命中歌手: ${matchedStr}\n🌐 擴充關聯關鍵字: ${termsStr}`);
+  } catch (err) {
+    alert('測試別名解析失敗：' + err.message);
+  }
+}
+
+// 別名編輯視窗 Drag-selection 防誤關閉保護
+let aliasEditorMouseDownTarget = null;
+const aliasEditorModalEl = document.getElementById('alias-editor-modal');
+
+if (aliasEditorModalEl) {
+  aliasEditorModalEl.addEventListener('mousedown', e => {
+    aliasEditorMouseDownTarget = e.target;
+  });
+
+  aliasEditorModalEl.addEventListener('click', e => {
+    if (e.target === e.currentTarget && aliasEditorMouseDownTarget === e.currentTarget) {
+      closeAliasEditor(false);
+    }
+    aliasEditorMouseDownTarget = null;
+  });
+}
 </script>
 </body>
 </html>
-
