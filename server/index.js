@@ -103,6 +103,7 @@ const BRAND_IDS = [
   'holiday',
   'singgo',
   'vmix',
+  'silver_cabinet',
   'yinyuan',
   'hongyin',
 ];
