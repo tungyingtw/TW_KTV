@@ -2,7 +2,7 @@ import type { Song } from '../types/ktv';
 
 const DB_NAME = 'KtvCatalogDB';
 const STORE_NAME = 'catalog_store';
-const KEY_NAME = 'full_catalog_v20';
+const KEY_NAME = 'full_catalog_v21';
 
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
 const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTVBIN"
@@ -29,7 +29,7 @@ export async function getCachedCatalog(): Promise<Song[] | null> {
     // 清理舊版本快取鍵值
     const txClear = db.transaction(STORE_NAME, 'readwrite');
     const storeClear = txClear.objectStore(STORE_NAME);
-    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9', 'full_catalog_v17', 'full_catalog_v18', 'full_catalog_v19'].forEach(k => storeClear.delete(k));
+    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9', 'full_catalog_v17', 'full_catalog_v18', 'full_catalog_v19', 'full_catalog_v20'].forEach(k => storeClear.delete(k));
     
     return new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
@@ -54,7 +54,7 @@ export async function setCachedCatalog(catalog: Song[]): Promise<void> {
   }
 }
 
-const TIME_KEY = 'full_catalog_timestamp_v20';
+const TIME_KEY = 'full_catalog_timestamp_v21';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小時快取效期 (避免重複浪費頻寬)
 
 export async function fetchFullCatalog(onProgress?: (percent: number) => void): Promise<Song[]> {
@@ -95,25 +95,30 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
 
 async function mergeCatalogOverrides(catalog: Song[]): Promise<Song[]> {
   const overrides = await fetchCatalogOverrides();
-  if (!overrides.length) return catalog;
+  if (!overrides.songs.length && !overrides.deletedIds.length) return catalog;
 
-  const byId = new Map(catalog.map(song => [song.id, song]));
-  for (const overrideSong of overrides) {
+  const deletedIds = new Set(overrides.deletedIds);
+  const byId = new Map(catalog.filter(song => !deletedIds.has(song.id)).map(song => [song.id, song]));
+  for (const overrideSong of overrides.songs) {
+    if (deletedIds.has(overrideSong.id)) continue;
     byId.set(overrideSong.id, overrideSong);
   }
 
   return Array.from(byId.values());
 }
 
-async function fetchCatalogOverrides(): Promise<Song[]> {
+async function fetchCatalogOverrides(): Promise<{ songs: Song[]; deletedIds: string[] }> {
   try {
     const response = await fetch(`${API_BASE}/api/catalog-overrides?t=${Date.now()}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    return Array.isArray(data.songs) ? data.songs : [];
+    return {
+      songs: Array.isArray(data.songs) ? data.songs : [],
+      deletedIds: Array.isArray(data.deletedIds) ? data.deletedIds : [],
+    };
   } catch (err) {
     console.warn('[API Service] 讀取歌庫覆寫資料失敗，僅使用靜態歌庫:', err);
-    return [];
+    return { songs: [], deletedIds: [] };
   }
 }
 
