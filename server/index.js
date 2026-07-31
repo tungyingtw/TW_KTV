@@ -1392,7 +1392,6 @@ app.post('/api/admin/song', requireAdmin, async (req, res) => {
       return res.status(409).json({ error: 'Song id already exists' });
     }
     songsDatabase.push(song);
-    await saveCatalog(songsDatabase);
     await saveCatalogOverrideSong(song);
     logAdminAction('CREATE_SONG', { songId: song.id, title: song.title, artist: song.artist });
     res.json({ success: true, song });
@@ -1409,7 +1408,6 @@ app.put('/api/admin/song/:songId', requireAdmin, async (req, res) => {
     const song = normalizeAdminSongPayload(req.body, before);
     song.id = before.id;
     songsDatabase[idx] = song;
-    await saveCatalog(songsDatabase);
     await saveCatalogOverrideSong(song);
     logAdminAction('UPDATE_SONG', {
       songId: song.id,
@@ -1427,7 +1425,6 @@ app.delete('/api/admin/song/:songId', requireAdmin, async (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Song not found' });
   const [deleted] = songsDatabase.splice(idx, 1);
   try {
-    await saveCatalog(songsDatabase);
     await saveCatalogDeletedSong(deleted.id);
     logAdminAction('DELETE_SONG', { songId: deleted.id, title: deleted.title, artist: deleted.artist });
     res.json({ success: true, deleted });
@@ -1494,7 +1491,6 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
 
   songsDatabase[idx] = song;
   try {
-    await saveCatalog(songsDatabase);
     await saveCatalogOverrideSong(song);
   } catch (err) {
     console.error('[Admin Catalog Override Save Error]', err);
