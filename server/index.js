@@ -90,7 +90,8 @@ app.get('/robots.txt', (req, res) => {
 const OFFICIAL_SITE = 'https://tungyingtw.github.io/TW_KTV/';
 const OFFICIAL_SITE_ORIGIN = new URL(OFFICIAL_SITE).origin;
 const ADMIN_ACCESS_MODE = process.env.ADMIN_ACCESS_MODE || 'official_site';
-const ADMIN_ALLOWED_ORIGINS = (process.env.ADMIN_ALLOWED_ORIGINS || OFFICIAL_SITE_ORIGIN)
+const DEFAULT_ALLOWED_ORIGINS = `${OFFICIAL_SITE_ORIGIN},https://tw-ktv.onrender.com`;
+const ADMIN_ALLOWED_ORIGINS = (process.env.ADMIN_ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS)
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean);
