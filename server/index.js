@@ -508,6 +508,136 @@ function getVoteConfidence(confirm, deny) {
 }
 
 // ─────────────────────────────────────────────
+// 自動滾動備份與容量極限控管引擎 (Rolling Backup & Storage Quota Guard)
+// ─────────────────────────────────────────────
+const BACKUPS_DIR = path.join(__dirname, 'backups');
+const MAX_BACKUP_RETENTION_COUNT = 7;
+const MAX_BACKUPS_TOTAL_BYTES = 10 * 1024 * 1024; // 10 MB 硬上限
+
+function ensureBackupsDirExists() {
+  if (!fs.existsSync(BACKUPS_DIR)) {
+    try { fs.mkdirSync(BACKUPS_DIR, { recursive: true }); } catch {}
+  }
+}
+
+function cleanupOldBackups() {
+  ensureBackupsDirExists();
+  try {
+    const files = fs.readdirSync(BACKUPS_DIR)
+      .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
+      .map(f => {
+        const fullPath = path.join(BACKUPS_DIR, f);
+        const stat = fs.statSync(fullPath);
+        return { name: f, fullPath, mtime: stat.mtimeMs, size: stat.size };
+      })
+      .sort((a, b) => b.mtime - a.mtime); // 由新到舊
+
+    // 1. 保留最新 7 份，超過的刪除
+    if (files.length > MAX_BACKUP_RETENTION_COUNT) {
+      const toDelete = files.slice(MAX_BACKUP_RETENTION_COUNT);
+      for (const item of toDelete) {
+        try { fs.unlinkSync(item.fullPath); } catch {}
+      }
+    }
+
+    // 2. 容量硬上限檢查 (<= 10 MB)
+    const remainingFiles = fs.readdirSync(BACKUPS_DIR)
+      .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
+      .map(f => {
+        const fullPath = path.join(BACKUPS_DIR, f);
+        const stat = fs.statSync(fullPath);
+        return { name: f, fullPath, mtime: stat.mtimeMs, size: stat.size };
+      })
+      .sort((a, b) => a.mtime - b.mtime); // 由舊到新
+
+    let totalBytes = remainingFiles.reduce((acc, cur) => acc + cur.size, 0);
+    while (totalBytes > MAX_BACKUPS_TOTAL_BYTES && remainingFiles.length > 1) {
+      const oldest = remainingFiles.shift();
+      try {
+        fs.unlinkSync(oldest.fullPath);
+        totalBytes -= oldest.size;
+      } catch {
+        break;
+      }
+    }
+  } catch (err) {
+    console.warn('[Backup] Cleanup failed:', err.message);
+  }
+}
+
+async function triggerAutoRollingBackup() {
+  ensureBackupsDirExists();
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayBackupFile = path.join(BACKUPS_DIR, `backup_${todayStr}.json`);
+
+  if (fs.existsSync(todayBackupFile)) return;
+
+  try {
+    const overrides = await loadCatalogOverridesStore();
+    const reports = await loadReportsStore();
+    const votes = await loadVotesStore();
+
+    const snapshotPayload = {
+      version: '1.0',
+      createdAt: new Date().toISOString(),
+      catalogOverrides: overrides,
+      reportsCount: Array.isArray(reports) ? reports.length : 0,
+      votesCount: Object.keys(votes || {}).length,
+      snapshotData: {
+        overrides,
+        reports,
+        votes
+      }
+    };
+
+    safeAtomicWriteJson(todayBackupFile, snapshotPayload);
+    console.log(`[Backup] 每日自動快照已生成: backup_${todayStr}.json`);
+    cleanupOldBackups();
+  } catch (err) {
+    console.warn('[Backup] Auto rolling backup failed:', err.message);
+  }
+}
+
+function getQuotaUsageStats() {
+  ensureBackupsDirExists();
+  let backupFiles = [];
+  let totalBackupBytes = 0;
+  try {
+    backupFiles = fs.readdirSync(BACKUPS_DIR)
+      .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
+      .map(f => {
+        const fullPath = path.join(BACKUPS_DIR, f);
+        const stat = fs.statSync(fullPath);
+        return { name: f, size: stat.size, mtime: stat.mtimeMs };
+      })
+      .sort((a, b) => b.mtime - a.mtime);
+    totalBackupBytes = backupFiles.reduce((acc, f) => acc + f.size, 0);
+  } catch {}
+
+  const currentOverridesSize = fs.existsSync(CATALOG_OVERRIDES_PATH)
+    ? fs.statSync(CATALOG_OVERRIDES_PATH).size
+    : 0;
+
+  const usagePercent = Number(((totalBackupBytes + currentOverridesSize) / (10 * 1024 * 1024) * 100).toFixed(2));
+  let status = 'healthy';
+  if (usagePercent > 80) status = 'warning';
+  if (usagePercent > 95) status = 'critical';
+
+  return {
+    storageType: USE_REDIS ? 'Upstash Redis + Local Snapshot' : 'Local File System',
+    redisConfigured: USE_REDIS,
+    currentOverridesSizeBytes: currentOverridesSize,
+    totalBackupFilesCount: backupFiles.length,
+    totalBackupBytes: totalBackupBytes,
+    backupRetentionLimit: MAX_BACKUP_RETENTION_COUNT,
+    maxBackupSizeCapMB: 10,
+    usagePercent,
+    status,
+    backups: backupFiles.map(b => ({ name: b.name, size: b.size, date: new Date(b.mtime).toISOString() }))
+  };
+}
+
+// ─────────────────────────────────────────────
 // 公開 API：歌曲搜尋
 // ─────────────────────────────────────────────
 app.get('/api/songs', (req, res) => {
@@ -1604,6 +1734,67 @@ app.get('/api/admin/logs', requireAdmin, async (req, res) => {
   }
 });
 
+// ── 系統容量配額與健康狀態 ──
+app.get('/api/admin/quota-status', requireAdmin, (req, res) => {
+  res.json(getQuotaUsageStats());
+});
+
+// ── 一鍵匯出全站 JSON 備份包 ──
+app.get('/api/admin/backup/export', requireAdmin, async (req, res) => {
+  try {
+    const overrides = await loadCatalogOverridesStore();
+    const reports = await loadReportsStore();
+    const votes = await loadVotesStore();
+
+    const exportPayload = {
+      app: 'TW_KTV_CATALOG_SYSTEM',
+      exportVersion: '1.0',
+      exportedAt: new Date().toISOString(),
+      data: {
+        catalogOverrides: overrides,
+        reports,
+        votes
+      }
+    };
+
+    const filename = `ktv_system_backup_${new Date().toISOString().slice(0,10)}.json`;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(JSON.stringify(exportPayload));
+  } catch (err) {
+    console.error('[Admin Backup Export Error]', err);
+    res.status(503).json({ error: '備份匯出失敗：' + err.message });
+  }
+});
+
+// ── 一鍵還原全站 JSON 備份包 ──
+app.post('/api/admin/backup/import', requireAdmin, async (req, res) => {
+  try {
+    const payload = req.body;
+    if (!payload || !payload.data) {
+      return res.status(400).json({ error: '無效的備份檔案內容' });
+    }
+
+    const { catalogOverrides, reports, votes } = payload.data;
+    if (catalogOverrides) {
+      await saveCatalogOverridesStore(catalogOverrides);
+      songsDatabase = loadInitialSongsDatabase();
+    }
+    if (reports && Array.isArray(reports)) {
+      await saveReportsStore(reports);
+    }
+    if (votes && typeof votes === 'object') {
+      await saveVotesStore(votes);
+    }
+
+    logAdminAction('IMPORT_SYSTEM_BACKUP', { exportedAt: payload.exportedAt || 'unknown' });
+    res.json({ success: true, message: '系統備份資料已成功還原！' });
+  } catch (err) {
+    console.error('[Admin Backup Import Error]', err);
+    res.status(500).json({ error: '備份還原失敗：' + err.message });
+  }
+});
+
 // ─────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('[Unhandled API Error]', err);
@@ -1615,4 +1806,5 @@ app.listen(PORT, () => {
   console.log(`[Server] KTV Song API 服務啟動於: http://localhost:${PORT}`);
   console.log(`[Server] Maintenance API token status: ${ADMIN_TOKEN ? 'set' : 'unset'}`);
   console.log(`[Server] Admin Panel: http://localhost:${PORT}/admin`);
+  triggerAutoRollingBackup();
 });

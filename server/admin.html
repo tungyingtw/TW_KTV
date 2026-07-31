@@ -272,6 +272,7 @@
     <button onclick="showTab('tab-guided', this)">導唱票</button>
     <button onclick="showTab('tab-songs', this)">歌曲管理</button>
     <button onclick="showTab('tab-aliases', this)">歌手別名維護</button>
+    <button onclick="showTab('tab-backup', this)">備份與容量管理</button>
     <button onclick="showTab('tab-logs', this)">操作日誌</button>
   </nav>
 
@@ -427,6 +428,50 @@
         </div>
       </div>
       <div id="aliases-list"><div class="empty">載入中...</div></div>
+    </div>
+
+    <!-- ── 備份與極限容量管理 ── -->
+    <div id="tab-backup" class="tab">
+      <div class="filter-row">
+        <h2 style="font-size:1.05rem;">系統資料備份與免費容量健康監控</h2>
+        <button class="btn btn-blue" onclick="exportSystemBackup()">📥 一鍵下載全站 JSON 備份包</button>
+        <button class="btn btn-green" onclick="triggerImportBackup()">📤 上傳還原系統備份</button>
+        <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="handleImportBackup(event)" />
+        <button class="btn btn-ghost" onclick="loadQuotaStatus()">重新整理容量狀態</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-bottom:16px;" id="quota-cards">
+        <div class="card" style="border-color:rgba(74,222,128,0.3)">
+          <div style="font-size:1.4rem;font-weight:800;color:var(--green)" id="quota-health-status">🟢 綠色健康</div>
+          <div style="color:var(--muted);margin-top:4px;font-size:0.8rem;">容量狀態 (配額 10 MB 上限)</div>
+        </div>
+        <div class="card" style="border-color:rgba(96,165,250,0.3)">
+          <div style="font-size:1.4rem;font-weight:800;color:var(--blue)" id="quota-usage-percent">0.00 %</div>
+          <div style="color:var(--muted);margin-top:4px;font-size:0.8rem;">快照總容量佔用率</div>
+        </div>
+        <div class="card" style="border-color:rgba(168,85,247,0.3)">
+          <div style="font-size:1.4rem;font-weight:800;color:#c084fc" id="quota-snapshot-count">0 份</div>
+          <div style="color:var(--muted);margin-top:4px;font-size:0.8rem;">7-Day 滾動自動快照數</div>
+        </div>
+        <div class="card" style="border-color:rgba(251,191,36,0.3)">
+          <div style="font-size:1.0rem;font-weight:700;color:var(--yellow);" id="quota-storage-type">Upstash Redis</div>
+          <div style="color:var(--muted);margin-top:4px;font-size:0.8rem;">持久化儲存媒介類型</div>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(96,165,250,0.2);margin-bottom:16px;">
+        <h3 style="margin-bottom:8px; font-size:0.95rem;">免費空間安全防護與自動清理規範說明</h3>
+        <ul style="color:var(--muted); line-height:1.8; padding-left:18px; font-size:0.84rem;">
+          <li><b>7-Day 滾動保留 (Rolling Retention)</b>：伺服器最多保持 7 份最新每日備份，超過 7 天之舊備份自動刪除，防止檔案積累。</li>
+          <li><b>10 MB 硬上限保護 (Quota Guard)</b>：當快照資料夾總容量達到 10 MB 上限時，系統自動搶先剔除最舊檔案，確保絕不出界。</li>
+          <li><b>寫入熔斷保護 (Try-Catch Fallback)</b>：若遇 Upstash Redis 滿額或連線失敗，系統自動熔斷降級至記憶體運作，Server 100% 絕不當機。</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-color:rgba(255,255,255,0.08);">
+        <h3 style="margin-bottom:12px; font-size:0.95rem;">伺服器自動快照清單 (7-Day Rolling Snapshots)</h3>
+        <div id="quota-backups-list"><div class="empty">資料載入中...</div></div>
+      </div>
     </div>
 
     <!-- ── 操作日誌 ── -->
@@ -676,7 +721,124 @@ function showTab(id, btnEl) {
   if (id === 'tab-guided') loadGuidedVotes();
   if (id === 'tab-songs') loadAdminSongs();
   if (id === 'tab-aliases') loadAdminAliases();
+  if (id === 'tab-backup') loadQuotaStatus();
   if (id === 'tab-logs') loadLogs();
+}
+
+// ── 備份與容量健康監控 ──
+async function loadQuotaStatus() {
+  const backupsListEl = document.getElementById('quota-backups-list');
+  if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">容量狀態檢測中...</div>';
+
+  try {
+    const res = await apiFetch('/api/admin/quota-status');
+    const data = await res.json();
+
+    const healthEl = document.getElementById('quota-health-status');
+    const usageEl = document.getElementById('quota-usage-percent');
+    const countEl = document.getElementById('quota-snapshot-count');
+    const storageEl = document.getElementById('quota-storage-type');
+
+    if (healthEl) {
+      if (data.status === 'healthy') {
+        healthEl.innerHTML = '<span style="color:var(--green)">🟢 綠色健康</span>';
+      } else if (data.status === 'warning') {
+        healthEl.innerHTML = '<span style="color:var(--yellow)">🟡 容量警告 (>80%)</span>';
+      } else {
+        healthEl.innerHTML = '<span style="color:var(--red)">🔴 容量極限 (>95%)</span>';
+      }
+    }
+
+    if (usageEl) usageEl.textContent = `${data.usagePercent || 0} %`;
+    if (countEl) countEl.textContent = `${data.totalBackupFilesCount || 0} 份`;
+    if (storageEl) storageEl.textContent = data.storageType || 'Local File';
+
+    if (!data.backups?.length) {
+      if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">尚無每日自動快照備份</div>';
+      return;
+    }
+
+    if (backupsListEl) {
+      backupsListEl.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--muted);">
+              <th style="padding:8px;">快照檔名</th>
+              <th style="padding:8px;">大小</th>
+              <th style="padding:8px;">建立時間</th>
+              <th style="padding:8px;">狀態</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.backups.map(b => `
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:8px;font-family:monospace;color:#38bdf8;">📦 ${escapeHtml(b.name)}</td>
+                <td style="padding:8px;color:var(--muted);">${(b.size / 1024).toFixed(1)} KB</td>
+                <td style="padding:8px;color:var(--muted);">${new Date(b.date).toLocaleString('zh-TW')}</td>
+                <td style="padding:8px;"><span class="badge badge-reviewed" style="background:rgba(74,222,128,0.15);color:var(--green);">已保護</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+  } catch (err) {
+    console.error('[Load Quota Error]', err);
+    if (backupsListEl) backupsListEl.innerHTML = '<div class="empty" style="color:var(--red);">容量狀態載入失敗</div>';
+  }
+}
+
+function exportSystemBackup() {
+  const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token') || '';
+  if (!token) {
+    showToast('請先進行管理員登入', 'error');
+    return;
+  }
+  showToast('📥 正在匯出全站 JSON 備份包...', 'success');
+  window.open(`/api/admin/backup/export?token=${encodeURIComponent(token)}`, '_blank');
+}
+
+function triggerImportBackup() {
+  const input = document.getElementById('backup-file-input');
+  if (input) input.click();
+}
+
+async function handleImportBackup(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!confirm(`⚠️ 確定要從檔案「${file.name}」還原系統備份嗎？\n這將會覆寫現有的歌庫修正與回報投票資料！`)) {
+    e.target.value = '';
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    if (!payload || !payload.data) {
+      showToast('無效的備份 JSON 檔案結構', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    const res = await apiFetch('/api/admin/backup/import', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ ' + data.message, 'success');
+      loadQuotaStatus();
+      loadStats();
+    } else {
+      showToast('還原失敗：' + (data.error || '無法還原'), 'error');
+    }
+  } catch (err) {
+    console.error('[Import Backup Error]', err);
+    showToast('還原失敗：' + err.message, 'error');
+  } finally {
+    e.target.value = '';
+  }
 }
 
 // ── 使用者回報 ──
