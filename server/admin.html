@@ -505,8 +505,13 @@
 
     <!-- ── 備份與容量管理 ── -->
     <div id="tab-backup" class="tab">
-      <h2 style="font-size:1.05rem; margin-bottom:12px;">系統資料備份與免費容量健康監控</h2>
-      <p class="tab-help"><b>用途：</b>檢查儲存狀態、匯出備份與必要時匯入還原。<b>完成標準：</b>確認備份時間、容量狀態與匯入來源正確。</p>
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">七日每日自動備份與免費容量健康監控</h2>
+      <p class="tab-help"><b>用途：</b>檢查七日每日自動備份狀態、儲存位置與歷史快照。<b>完成標準：</b>系統每天自動建立 1 份快照，最多保留最近 7 份。</p>
+
+      <div id="alert-backup-warning" style="display:none; padding:10px 14px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; border-radius:6px; margin-bottom:14px; font-size:0.85rem;">
+        ⚠️ <span id="alert-backup-warning-text"></span>
+      </div>
+
       <div class="filter-row">
         <button class="btn btn-blue" id="btn-export-backup" onclick="exportSystemBackup()">下載全站備份</button>
         <button class="btn btn-green" id="btn-trigger-import-backup" onclick="triggerImportBackup()">匯入備份</button>
@@ -536,14 +541,14 @@
       <div class="card" style="border-color:rgba(96,165,250,0.2);margin-bottom:16px;">
         <h3 style="margin-bottom:8px; font-size:0.95rem;">免費空間安全防護與自動清理規範說明</h3>
         <ul style="color:var(--muted); line-height:1.8; padding-left:18px; font-size:0.84rem;">
-          <li><b>7-Day 滾動保留 (Rolling Retention)</b>：伺服器最多保持 7 份最新每日備份，超過 7 天之舊備份自動刪除，防止檔案積累。</li>
-          <li><b>10 MB 硬上限保護 (Quota Guard)</b>：當快照資料夾總容量達到 10 MB 上限時，系統自動搶先剔除最舊檔案，確保絕不出界。</li>
-          <li><b>寫入熔斷保護 (Try-Catch Fallback)</b>：若遇 Upstash Redis 滿額或連線失敗，系統自動熔斷降級至記憶體運作，Server 100% 絕不當機。</li>
+          <li><b>7-Day 滾動保留 (Rolling Retention)</b>：伺服器每天自動建立 1 份快照，最多保持 7 份最新每日備份，超過 7 天之舊備份自動刪除。</li>
+          <li><b>Upstash Redis 跨重啟保護</b>：若設定 Upstash Redis，七日備份將持久化存於 Redis，跨 Render 重啟與重新部署永不遺失。</li>
+          <li><b>10 MB 硬上限保護 (Quota Guard)</b>：當快照總容量達到 10 MB 上限時，系統自動剔除最舊檔案，確保絕不出界。</li>
         </ul>
       </div>
 
       <div class="card" style="border-color:rgba(255,255,255,0.08);">
-        <h3 style="margin-bottom:12px; font-size:0.95rem;">伺服器自動快照清單 (7-Day Rolling Snapshots)</h3>
+        <h3 style="margin-bottom:12px; font-size:0.95rem;">七日每日自動備份清單 (7-Day Rolling Snapshots)</h3>
         <div id="quota-backups-list"><div class="empty">正在載入資料...</div></div>
       </div>
     </div>
@@ -1245,6 +1250,8 @@ async function saveResetAdminPassword() {
 // ── 備份與容量健康監控 ──
 async function loadQuotaStatus() {
   const backupsListEl = document.getElementById('quota-backups-list');
+  const alertWarnEl = document.getElementById('alert-backup-warning');
+  const alertTextEl = document.getElementById('alert-backup-warning-text');
   if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">正在載入資料...</div>';
 
   try {
@@ -1255,6 +1262,15 @@ async function loadQuotaStatus() {
     const usageEl = document.getElementById('quota-usage-percent');
     const countEl = document.getElementById('quota-snapshot-count');
     const storageEl = document.getElementById('quota-storage-type');
+
+    if (data.warning) {
+      if (alertWarnEl && alertTextEl) {
+        alertWarnEl.style.display = 'block';
+        alertTextEl.textContent = data.warning;
+      }
+    } else {
+      if (alertWarnEl) alertWarnEl.style.display = 'none';
+    }
 
     if (healthEl) {
       if (data.status === 'healthy') {
@@ -1268,7 +1284,15 @@ async function loadQuotaStatus() {
 
     if (usageEl) usageEl.textContent = `${data.usagePercent || 0} %`;
     if (countEl) countEl.textContent = `${data.totalBackupFilesCount || 0} 份`;
-    if (storageEl) storageEl.textContent = data.storageLabel || data.storageType || 'Local File';
+    if (storageEl) {
+      if (data.snapshotStorage === 'redis') {
+        storageEl.innerHTML = '<span style="color:var(--green)">Upstash Redis 持久化</span>';
+      } else if (data.snapshotStorage === 'local_fallback') {
+        storageEl.innerHTML = '<span style="color:var(--yellow)">本機 Fallback (Redis 不可用)</span>';
+      } else {
+        storageEl.innerHTML = '<span style="color:var(--muted)">本機檔案 (重啟可能遺失)</span>';
+      }
+    }
 
     if (!data.backups?.length) {
       if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">目前尚無每日自動備份快照</div>';
@@ -1280,21 +1304,34 @@ async function loadQuotaStatus() {
         <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
           <thead>
             <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--muted);">
-              <th style="padding:8px;">快照檔名</th>
-              <th style="padding:8px;">大小</th>
-              <th style="padding:8px;">建立時間</th>
-              <th style="padding:8px;">狀態</th>
+              <th style="padding:10px 8px;">快照檔名</th>
+              <th style="padding:10px 8px;">日期</th>
+              <th style="padding:10px 8px;">大小</th>
+              <th style="padding:10px 8px;">保存位置</th>
+              <th style="padding:10px 8px;">來源</th>
+              <th style="padding:10px 8px;">建立時間</th>
+              <th style="padding:10px 8px;text-align:right;">操作</th>
             </tr>
           </thead>
           <tbody>
-            ${data.backups.map(b => `
+            ${data.backups.map(b => {
+              const storageLabel = b.storage === 'redis' ? 'Redis 持久化' : (b.storage === 'local_fallback' ? '本機 Fallback' : '本機檔案');
+              const storageClass = b.storage === 'redis' ? 'badge-resolved' : 'badge-rejected';
+              const sourceLabel = b.source === 'scheduled_daily' ? '每日自動' : '手動匯出';
+              const formattedDate = b.createdAt ? new Date(b.createdAt).toLocaleString('zh-TW') : (b.date || '-');
+              return `
               <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                <td style="padding:8px;font-family:monospace;color:#38bdf8;">${escapeHtml(b.name)}</td>
-                <td style="padding:8px;color:var(--muted);">${(b.size / 1024).toFixed(1)} KB</td>
-                <td style="padding:8px;color:var(--muted);">${new Date(b.date).toLocaleString('zh-TW')}</td>
-                <td style="padding:8px;"><span class="badge badge-reviewed" style="background:rgba(74,222,128,0.15);color:var(--green);">已保護</span></td>
+                <td style="padding:10px 8px;font-family:monospace;color:#38bdf8;">${escapeHtml(b.name)}</td>
+                <td style="padding:10px 8px;color:var(--text);font-weight:600;">${escapeHtml(b.date || '-')}</td>
+                <td style="padding:10px 8px;color:var(--muted);">${(b.size / 1024).toFixed(1)} KB</td>
+                <td style="padding:10px 8px;"><span class="badge ${storageClass}">${storageLabel}</span></td>
+                <td style="padding:10px 8px;color:var(--muted);">${sourceLabel}</td>
+                <td style="padding:10px 8px;color:var(--muted);">${formattedDate}</td>
+                <td style="padding:10px 8px;text-align:right;">
+                  <button class="btn btn-ghost" onclick="downloadSnapshot('${escapeHtml(b.name)}')" style="padding:4px 8px;font-size:0.75rem;">下載快照</button>
+                </td>
               </tr>
-            `).join('')}
+            `;}).join('')}
           </tbody>
         </table>
       `;
@@ -1302,6 +1339,28 @@ async function loadQuotaStatus() {
   } catch (err) {
     console.error('[Load Quota Error]', err);
     if (backupsListEl) backupsListEl.innerHTML = '<div class="empty" style="color:var(--red);">容量狀態載入失敗，請重新整理</div>';
+  }
+}
+
+async function downloadSnapshot(name) {
+  try {
+    const res = await apiFetch(`/api/admin/backup/snapshots/${encodeURIComponent(name)}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('下載失敗：' + (err.error || res.statusText));
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('下載過程發生異常：' + err.message);
   }
 }
 

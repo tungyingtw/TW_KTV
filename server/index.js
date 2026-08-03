@@ -137,7 +137,7 @@ app.get('/contact.html', (req, res) => res.redirect(301, `${OFFICIAL_SITE}contac
 // ─────────────────────────────────────────────
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || ADMIN_TOKEN;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const SINGLE_ADMIN_ID = 'single_admin';
 
 if (!ADMIN_TOKEN) {
@@ -737,130 +737,244 @@ function getVoteConfidence(confirm, deny) {
 // ─────────────────────────────────────────────
 // 自動滾動備份與容量極限控管引擎 (Rolling Backup & Storage Quota Guard)
 // ─────────────────────────────────────────────
-const BACKUPS_DIR = path.join(__dirname, 'backups');
+function isBackupTestModeEnabled() {
+  return process.env.NODE_ENV === 'test' || process.env.BACKUP_TEST_MODE === 'true';
+}
+
+function getBackupsDir(req = null) {
+  if (isBackupTestModeEnabled() && req?.headers?.['x-test-backups-dir']) {
+    return path.resolve(decodeURIComponent(req.headers['x-test-backups-dir']));
+  }
+  return process.env.BACKUPS_DIR_PATH
+    ? path.resolve(process.env.BACKUPS_DIR_PATH)
+    : path.join(__dirname, 'backups');
+}
+
 const MAX_BACKUP_RETENTION_COUNT = 7;
 const MAX_BACKUPS_TOTAL_BYTES = 10 * 1024 * 1024; // 10 MB 硬上限
+const REDIS_BACKUP_KEY = 'ktv:backup:snapshots';
 
-function ensureBackupsDirExists() {
-  if (!fs.existsSync(BACKUPS_DIR)) {
-    try { fs.mkdirSync(BACKUPS_DIR, { recursive: true }); } catch {}
+function ensureBackupsDirExists(dirPath = getBackupsDir()) {
+  if (!fs.existsSync(dirPath)) {
+    try { fs.mkdirSync(dirPath, { recursive: true }); } catch {}
   }
 }
 
-function cleanupOldBackups() {
-  ensureBackupsDirExists();
-  try {
-    const files = fs.readdirSync(BACKUPS_DIR)
-      .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
-      .map(f => {
-        const fullPath = path.join(BACKUPS_DIR, f);
-        const stat = fs.statSync(fullPath);
-        return { name: f, fullPath, mtime: stat.mtimeMs, size: stat.size };
-      })
-      .sort((a, b) => b.mtime - a.mtime); // 由新到舊
+async function buildSystemBackupPayload() {
+  const catalogOverrides = await loadCatalogOverridesStore();
+  const reports = await loadReportsStore();
+  const votes = await loadVotesStore();
 
-    // 1. 保留最新 7 份，超過的刪除
-    if (files.length > MAX_BACKUP_RETENTION_COUNT) {
-      const toDelete = files.slice(MAX_BACKUP_RETENTION_COUNT);
-      for (const item of toDelete) {
-        try { fs.unlinkSync(item.fullPath); } catch {}
-      }
+  return {
+    app: 'TW_KTV_CATALOG_SYSTEM',
+    exportVersion: '1.0',
+    exportedAt: new Date().toISOString(),
+    data: {
+      catalogOverrides: catalogOverrides || { songs: {}, deletedIds: [] },
+      reports: Array.isArray(reports) ? reports : [],
+      votes: votes || {}
     }
+  };
+}
 
-    // 2. 容量硬上限檢查 (<= 10 MB)
-    const remainingFiles = fs.readdirSync(BACKUPS_DIR)
+function readLocalBackupSnapshots(dirPath = getBackupsDir()) {
+  ensureBackupsDirExists(dirPath);
+  try {
+    const files = fs.readdirSync(dirPath)
       .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
       .map(f => {
-        const fullPath = path.join(BACKUPS_DIR, f);
+        const fullPath = path.join(dirPath, f);
         const stat = fs.statSync(fullPath);
-        return { name: f, fullPath, mtime: stat.mtimeMs, size: stat.size };
+        const dateMatch = f.match(/backup_(\d{4}-\d{2}-\d{2})\.json/);
+        const date = dateMatch ? dateMatch[1] : new Date(stat.mtimeMs).toISOString().slice(0, 10);
+        return {
+          name: f,
+          date,
+          createdAt: new Date(stat.mtimeMs).toISOString(),
+          source: 'scheduled_daily',
+          storage: 'local_file',
+          size: stat.size
+        };
       })
-      .sort((a, b) => a.mtime - b.mtime); // 由舊到新
+      .sort((a, b) => b.date.localeCompare(a.date));
+    return files;
+  } catch {
+    return [];
+  }
+}
 
-    let totalBytes = remainingFiles.reduce((acc, cur) => acc + cur.size, 0);
-    while (totalBytes > MAX_BACKUPS_TOTAL_BYTES && remainingFiles.length > 1) {
-      const oldest = remainingFiles.shift();
-      try {
-        fs.unlinkSync(oldest.fullPath);
-        totalBytes -= oldest.size;
-      } catch {
-        break;
+async function loadBackupSnapshotsStore(dirPath = getBackupsDir()) {
+  ensureBackupsDirExists(dirPath);
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('GET', REDIS_BACKUP_KEY);
+      if (raw) {
+        const snapshots = JSON.parse(raw);
+        if (Array.isArray(snapshots)) {
+          return {
+            snapshots,
+            snapshotStorage: 'redis',
+            snapshotPersistence: true,
+            warning: null
+          };
+        }
       }
+      return {
+        snapshots: [],
+        snapshotStorage: 'redis',
+        snapshotPersistence: true,
+        warning: null
+      };
+    } catch (e) {
+      console.warn('[Backup Redis Load Warning]', e.message);
+      const localSnapshots = readLocalBackupSnapshots(dirPath);
+      return {
+        snapshots: localSnapshots,
+        snapshotStorage: 'local_fallback',
+        snapshotPersistence: false,
+        warning: 'Redis不可用；目前使用本機Fallback備份，Render重啟或重新部署時可能遺失。'
+      };
     }
-  } catch (err) {
-    console.warn('[Backup] Cleanup failed:', err.message);
   }
+
+  const localSnapshots = readLocalBackupSnapshots(dirPath);
+  return {
+    snapshots: localSnapshots,
+    snapshotStorage: 'local_file',
+    snapshotPersistence: false,
+    warning: null
+  };
 }
 
-async function triggerAutoRollingBackup() {
-  ensureBackupsDirExists();
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayBackupFile = path.join(BACKUPS_DIR, `backup_${todayStr}.json`);
+async function saveBackupSnapshotsStore(snapshots, dirPath = getBackupsDir()) {
+  ensureBackupsDirExists(dirPath);
+  const sortedSnapshots = [...snapshots].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-  if (fs.existsSync(todayBackupFile)) return;
+  let storage = USE_REDIS ? 'redis' : 'local_file';
+  let warning = null;
 
-  try {
-    const overrides = await loadCatalogOverridesStore();
-    const reports = await loadReportsStore();
-    const votes = await loadVotesStore();
-
-    const snapshotPayload = {
-      version: '1.0',
-      createdAt: new Date().toISOString(),
-      catalogOverrides: overrides,
-      reportsCount: Array.isArray(reports) ? reports.length : 0,
-      votesCount: Object.keys(votes || {}).length,
-      snapshotData: {
-        overrides,
-        reports,
-        votes
-      }
-    };
-
-    safeAtomicWriteJson(todayBackupFile, snapshotPayload);
-    console.log(`[Backup] 每日自動快照已生成: backup_${todayStr}.json`);
-    cleanupOldBackups();
-  } catch (err) {
-    console.warn('[Backup] Auto rolling backup failed:', err.message);
+  if (USE_REDIS) {
+    try {
+      await redisCmd('SET', REDIS_BACKUP_KEY, JSON.stringify(sortedSnapshots));
+    } catch (e) {
+      console.warn('[Backup Redis Save Warning]', e.message);
+      storage = 'local_fallback';
+      warning = 'Redis不可用；目前使用本機Fallback備份，Render重啟或重新部署時可能遺失。';
+    }
   }
+
+  for (const snap of sortedSnapshots) {
+    if (snap.payload && snap.name) {
+      const localFile = path.join(dirPath, snap.name);
+      safeAtomicWriteJson(localFile, snap.payload);
+    }
+  }
+
+  return { storage, warning };
 }
 
-function getQuotaUsageStats() {
-  ensureBackupsDirExists();
-  let backupFiles = [];
-  let totalBackupBytes = 0;
-  try {
-    backupFiles = fs.readdirSync(BACKUPS_DIR)
-      .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
-      .map(f => {
-        const fullPath = path.join(BACKUPS_DIR, f);
-        const stat = fs.statSync(fullPath);
-        return { name: f, size: stat.size, mtime: stat.mtimeMs };
-      })
-      .sort((a, b) => b.mtime - a.mtime);
-    totalBackupBytes = backupFiles.reduce((acc, f) => acc + f.size, 0);
-  } catch {}
+function cleanupBackupSnapshots(snapshots, dirPath = getBackupsDir()) {
+  const dailySnapshots = snapshots.filter(s => s.source === 'scheduled_daily' || !s.source);
+  const otherSnapshots = snapshots.filter(s => s.source && s.source !== 'scheduled_daily');
+
+  const mapByDate = new Map();
+  dailySnapshots.forEach(s => {
+    const existing = mapByDate.get(s.date);
+    if (!existing || new Date(s.createdAt) > new Date(existing.createdAt)) {
+      mapByDate.set(s.date, s);
+    }
+  });
+
+  const uniqueDaily = Array.from(mapByDate.values()).sort((a, b) => b.date.localeCompare(a.date));
+  const keptDaily = uniqueDaily.slice(0, MAX_BACKUP_RETENTION_COUNT);
+  const deletedDaily = uniqueDaily.slice(MAX_BACKUP_RETENTION_COUNT);
+
+  for (const del of deletedDaily) {
+    const file = path.join(dirPath, del.name);
+    if (fs.existsSync(file)) {
+      try { fs.unlinkSync(file); } catch {}
+    }
+  }
+
+  return [...keptDaily, ...otherSnapshots].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+async function upsertDailyBackupSnapshot(targetDateStr, dirPath = getBackupsDir()) {
+  const dateStr = targetDateStr || new Date().toISOString().slice(0, 10);
+  const storeResult = await loadBackupSnapshotsStore(dirPath);
+  let snapshots = storeResult.snapshots;
+
+  const existing = snapshots.find(s => s.date === dateStr && (s.source === 'scheduled_daily' || !s.source));
+  if (existing) {
+    return { created: false, name: existing.name, storage: storeResult.snapshotStorage };
+  }
+
+  const payload = await buildSystemBackupPayload();
+  const name = `backup_${dateStr}.json`;
+  const createdAt = new Date().toISOString();
+
+  const newSnapshot = {
+    name,
+    date: dateStr,
+    createdAt,
+    source: 'scheduled_daily',
+    storage: USE_REDIS ? 'redis' : 'local_file',
+    size: JSON.stringify(payload).length,
+    payload
+  };
+
+  snapshots.push(newSnapshot);
+  const cleanedSnapshots = cleanupBackupSnapshots(snapshots, dirPath);
+  const saveRes = await saveBackupSnapshotsStore(cleanedSnapshots, dirPath);
+  const finalStorage = saveRes.storage || storeResult.snapshotStorage;
+
+  console.log(`[Backup] 每日自動快照已成功生成: ${name} (Storage: ${finalStorage})`);
+  return { created: true, name, storage: finalStorage };
+}
+
+function startDailyBackupScheduler() {
+  upsertDailyBackupSnapshot().catch(err => console.warn('[Backup Scheduler Error]', err.message));
+
+  setInterval(() => {
+    upsertDailyBackupSnapshot().catch(err => console.warn('[Backup Scheduler Error]', err.message));
+  }, 60 * 60 * 1000);
+}
+
+async function getQuotaUsageStats(dirPath = getBackupsDir()) {
+  const storeResult = await loadBackupSnapshotsStore(dirPath);
+  const snapshots = cleanupBackupSnapshots(storeResult.snapshots, dirPath);
+  await saveBackupSnapshotsStore(snapshots, dirPath);
 
   const currentOverridesSize = fs.existsSync(CATALOG_OVERRIDES_PATH)
     ? fs.statSync(CATALOG_OVERRIDES_PATH).size
     : 0;
 
-  const usagePercent = Number(((totalBackupBytes + currentOverridesSize) / (10 * 1024 * 1024) * 100).toFixed(2));
+  const totalBackupBytes = snapshots.reduce((acc, s) => acc + (s.size || 0), 0);
+  const usagePercent = Number(((totalBackupBytes + currentOverridesSize) / MAX_BACKUPS_TOTAL_BYTES * 100).toFixed(2));
   let status = 'healthy';
   if (usagePercent > 80) status = 'warning';
   if (usagePercent > 95) status = 'critical';
 
   return {
-    storageType: USE_REDIS ? 'Upstash Redis + Local Snapshot' : 'Local File System',
-    redisConfigured: USE_REDIS,
+    storageMode: USE_REDIS ? 'redis' : 'local',
+    snapshotStorage: storeResult.snapshotStorage,
+    snapshotPersistence: storeResult.snapshotPersistence,
+    warning: storeResult.warning,
     currentOverridesSizeBytes: currentOverridesSize,
-    totalBackupFilesCount: backupFiles.length,
+    totalBackupFilesCount: snapshots.length,
     totalBackupBytes: totalBackupBytes,
     backupRetentionLimit: MAX_BACKUP_RETENTION_COUNT,
     maxBackupSizeCapMB: 10,
     usagePercent,
     status,
-    backups: backupFiles.map(b => ({ name: b.name, size: b.size, date: new Date(b.mtime).toISOString() }))
+    backups: snapshots.map(s => ({
+      name: s.name,
+      date: s.date,
+      createdAt: s.createdAt,
+      size: s.size,
+      source: s.source || 'scheduled_daily',
+      storage: s.storage || storeResult.snapshotStorage
+    }))
   };
 }
 
@@ -1429,9 +1543,12 @@ app.get('/api/admin/bootstrap/status', (req, res) => {
 
 // ── 初始化第一位最高管理者 (Bootstrap Super Admin) ──
 app.post('/api/admin/bootstrap/super-admin', (req, res) => {
-  if (req.app) {
-    return res.status(410).json({ error: '目前使用單一管理者模式，請在 Render Environment 設定 ADMIN_USERNAME 與 ADMIN_PASSWORD。' });
-  }
+  return res.status(410).json({ error: 'Single admin mode is configured from Render Environment.' });
+});
+
+/*
+Legacy multi-admin bootstrap implementation is intentionally disabled.
+  return res.status(410).json({ error: '目前使用單一管理者模式，請在 Render Environment 設定 ADMIN_USERNAME 與 ADMIN_PASSWORD。' });
 
   const expectedBootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN || ADMIN_TOKEN;
   const bootstrapToken = req.headers['x-bootstrap-token'] || req.body.bootstrapToken;
@@ -1478,11 +1595,13 @@ app.post('/api/admin/bootstrap/super-admin', (req, res) => {
 });
 
 // ── 管理者登入 ──
+*/
+
 app.post('/api/admin/auth/login', (req, res) => {
   const username = String(req.body.username || '').trim();
   const password = String(req.body.password || '').trim();
 
-  if (ADMIN_PASSWORD && username && password) {
+  if (ADMIN_PASSWORD && username && password && safeCompareText(username, ADMIN_USERNAME)) {
     const user = getSingleAdminUser();
     const isUsernameValid = safeCompareText(username, ADMIN_USERNAME);
     const isPasswordValid = safeCompareText(password, ADMIN_PASSWORD);
@@ -1513,6 +1632,11 @@ app.post('/api/admin/auth/login', (req, res) => {
 
     logAdminAction('LOGIN_SUCCESS', { adminId: user.id, username: user.username, role: user.role }, req);
     return res.json({ success: true, sessionToken, admin: { id: user.id, username: user.username, displayName: user.displayName, role: user.role, permissions: permissionsSnapshot }, expiresAt });
+  }
+
+  if (ADMIN_PASSWORD) {
+    logAdminAction('LOGIN_FAILED', { username, reason: 'invalid_single_admin_credentials' }, req);
+    return res.status(401).json({ error: '帳號或密碼錯誤，請確認 Render Environment 的 ADMIN_USERNAME 與 ADMIN_PASSWORD。' });
   }
 
   if (!username || !password) {
@@ -2490,12 +2614,64 @@ app.get('/api/admin/logs', requirePermission('logs.view'), async (req, res) => {
 });
 
 // ── 系統容量配額與健康狀態 ──
-app.get('/api/admin/quota-status', requirePermission('dashboard.view'), (req, res) => {
-  res.json({
-    ...getQuotaUsageStats(),
-    storageMode: USE_REDIS ? 'redis' : 'local_json',
-    storageLabel: USE_REDIS ? 'Upstash Redis 持久化' : '本機快照模式',
-  });
+app.get('/api/admin/quota-status', requirePermission('dashboard.view'), async (req, res) => {
+  try {
+    const dirPath = getBackupsDir(req);
+    const stats = await getQuotaUsageStats(dirPath);
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: '無法獲取容量狀態：' + err.message });
+  }
+});
+
+// ── 下載七日每日備份快照 ──
+app.get('/api/admin/backup/snapshots/:name', requirePermission('backup.export'), async (req, res) => {
+  const { name } = req.params;
+  if (!/^backup_\d{4}-\d{2}-\d{2}\.json$/.test(name)) {
+    return res.status(400).json({ error: '無效的備份檔名格式' });
+  }
+
+  try {
+    const dirPath = getBackupsDir(req);
+    const storeResult = await loadBackupSnapshotsStore(dirPath);
+    const snap = storeResult.snapshots.find(s => s.name === name);
+
+    if (snap && snap.payload) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
+      return res.send(JSON.stringify(snap.payload, null, 2));
+    }
+
+    const localFilePath = path.join(dirPath, name);
+    if (fs.existsSync(localFilePath)) {
+      return res.download(localFilePath, name);
+    }
+
+    return res.status(404).json({ error: '找不到該備份快照檔案' });
+  } catch (err) {
+    console.error('[Admin Backup Download Error]', err);
+    res.status(500).json({ error: '下載備份檔失敗：' + err.message });
+  }
+});
+
+// ── 測試專用：建立/更新指定日期之每日快照（僅限 BACKUP_TEST_MODE=true 環境） ──
+app.post('/api/admin/backup/test-upsert-daily', requirePermission('backup.export'), async (req, res) => {
+  if (!isBackupTestModeEnabled()) {
+    return res.status(404).json({ error: 'Not Found' });
+  }
+
+  const { date } = req.body;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: '請提供合法的日期格式 (YYYY-MM-DD)' });
+  }
+
+  try {
+    const dirPath = getBackupsDir(req);
+    const result = await upsertDailyBackupSnapshot(date, dirPath);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ error: '測試建立快照失敗：' + err.message });
+  }
 });
 
 // ── 匯出全站 JSON 備份包 ──
@@ -2616,5 +2792,5 @@ app.listen(PORT, () => {
   console.log(`[Server] Maintenance API token status: ${ADMIN_TOKEN ? 'set' : 'unset'}`);
   console.log(`[Server] Admin Panel: http://localhost:${PORT}/admin`);
   console.log(`[Server] Single admin mode: ${getSingleAdminUser() ? 'configured' : 'not configured'}`);
-  triggerAutoRollingBackup();
+  startDailyBackupScheduler();
 });
