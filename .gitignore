@@ -45,6 +45,7 @@ server/database.json
 server/stats.json
 server/reports.json
 server/votes.json
+server/backups/
 
 # IDE & OS temporary files
 .vscode/*
