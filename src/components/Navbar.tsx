@@ -36,16 +36,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const toggleTheme = () => {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   };
-  // 100% 真實訪客線上與累積人數統計 (12小時去重機制)
+  // 100% 真實訪客線上與累積人數統計 (12小時去重與 Redis 全站同步)
   const [onlineCount, setOnlineCount] = useState<number>(1);
-  const [totalVisits, setTotalVisits] = useState<number>(() => {
-    try {
-      const stored = localStorage.getItem('tw_ktv_total_visits_v2');
-      return stored ? parseInt(stored, 10) : 1;
-    } catch {
-      return 1;
-    }
-  });
+  const [totalVisits, setTotalVisits] = useState<number | null>(null);
+  const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
+  const [isStatsError, setIsStatsError] = useState<boolean>(false);
+  const [isStatsPersistent, setIsStatsPersistent] = useState<boolean>(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -66,14 +62,26 @@ export const Navbar: React.FC<NavbarProps> = ({
           const data = await res.json();
           if (data && isMounted) {
             if (typeof data.online === 'number') setOnlineCount(Math.max(1, data.online));
-            if (typeof data.totalVisits === 'number') {
-              setTotalVisits(data.totalVisits);
-              try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
+            if (typeof data.totalVisits !== 'number') {
+              setIsStatsError(true);
+              setIsStatsLoading(false);
+              return;
             }
+            setTotalVisits(data.totalVisits);
+            setIsStatsPersistent(data.persistent !== false);
+            setIsStatsError(false);
+            setIsStatsLoading(false);
+            try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
           }
+        } else if (isMounted) {
+          setIsStatsError(true);
+          setIsStatsLoading(false);
         }
       } catch {
-        // 純靜態託管時容錯
+        if (isMounted) {
+          setIsStatsError(true);
+          setIsStatsLoading(false);
+        }
       }
     };
 
@@ -153,23 +161,35 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Accumulated Visitor Counter Badge */}
             <div 
-              title="全台歌友累積查詢與使用人數"
+              title={
+                isStatsError
+                  ? '全站累積查詢人數暫時無法連線同步'
+                  : !isStatsPersistent
+                    ? '全台歌友累積查詢數 (本機模式)'
+                    : '全台歌友累積查詢與使用人數 (12小時去重與 Redis 全站同步)'
+              }
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
                 padding: '3px 10px',
                 borderRadius: '20px',
-                background: 'rgba(168, 85, 247, 0.12)',
-                border: '1px solid rgba(168, 85, 247, 0.35)',
+                background: isStatsError ? 'rgba(248, 113, 113, 0.12)' : 'rgba(168, 85, 247, 0.12)',
+                border: `1px solid ${isStatsError ? 'rgba(248, 113, 113, 0.35)' : 'rgba(168, 85, 247, 0.35)'}`,
                 fontSize: '0.75rem',
                 fontWeight: 700,
-                color: '#c084fc',
-                boxShadow: '0 0 12px rgba(168, 85, 247, 0.25)',
+                color: isStatsError ? '#f87171' : '#c084fc',
+                boxShadow: isStatsError ? '0 0 12px rgba(248, 113, 113, 0.25)' : '0 0 12px rgba(168, 85, 247, 0.25)',
                 backdropFilter: 'blur(4px)',
               }}
             >
-              <span>累積查詢 {totalVisits.toLocaleString()} 人</span>
+              <span>
+                {isStatsLoading
+                  ? '累積查詢同步中...'
+                  : isStatsError
+                    ? '累積查詢暫未同步'
+                    : `${isStatsPersistent ? '累積查詢' : '本機統計'} ${totalVisits?.toLocaleString() ?? 1} 人`}
+              </span>
             </div>
           </div>
         </div>
