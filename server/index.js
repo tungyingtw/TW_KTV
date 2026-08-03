@@ -136,9 +136,16 @@ app.get('/contact.html', (req, res) => res.redirect(301, `${OFFICIAL_SITE}contac
 // Admin 密碼驗證與本機資安過濾 (Security & Localhost-Only Guard)
 // ─────────────────────────────────────────────
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || ADMIN_TOKEN;
+const SINGLE_ADMIN_ID = 'single_admin';
 
 if (!ADMIN_TOKEN) {
   console.warn('[Server] ADMIN_TOKEN 未設定，管理員 API 將拒絕所有請求。');
+}
+
+if (!ADMIN_PASSWORD) {
+  console.warn('[Server] ADMIN_PASSWORD/ADMIN_TOKEN 未設定，後台登入將無法使用。');
 }
 
 function isLocalhostRequest(req) {
@@ -201,8 +208,20 @@ app.use(express.static(path.join(__dirname, '../dist')));
 // ─────────────────────────────────────────────
 // 後台角色與權限系統 (RBAC & Multi-User Admin Auth System)
 // ─────────────────────────────────────────────
-const ADMIN_USERS_PATH = path.join(__dirname, 'admin_users.json');
-const ADMIN_SESSIONS_PATH = path.join(__dirname, 'admin_sessions.json');
+function resolveDataPath(envVar, defaultFilename) {
+  const customPath = process.env[envVar];
+  const targetPath = customPath ? path.resolve(customPath) : path.join(__dirname, defaultFilename);
+  try {
+    const parentDir = path.dirname(targetPath);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+  } catch {}
+  return targetPath;
+}
+
+const ADMIN_USERS_PATH = resolveDataPath('ADMIN_USERS_PATH', 'admin_users.json');
+const ADMIN_SESSIONS_PATH = resolveDataPath('ADMIN_SESSIONS_PATH', 'admin_sessions.json');
 
 const ALL_PERMISSIONS = [
   'dashboard.view',
@@ -260,9 +279,27 @@ function verifyPassword(password, storedHash) {
 
 function resolveAdminPermissions(user) {
   if (!user || user.status !== 'active') return [];
-  if (user.role === 'super_admin') return ALL_PERMISSIONS;
+  if (user.role === 'super_admin' || user.role === 'single_admin') return ALL_PERMISSIONS;
   const customPermissions = Array.isArray(user.permissions) ? user.permissions : [];
   return Array.from(new Set([...DEFAULT_ADMIN_PERMISSIONS, ...customPermissions]));
+}
+
+function safeCompareText(a, b) {
+  const left = Buffer.from(String(a || ''), 'utf8');
+  const right = Buffer.from(String(b || ''), 'utf8');
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function getSingleAdminUser() {
+  if (!ADMIN_PASSWORD) return null;
+  return {
+    id: SINGLE_ADMIN_ID,
+    username: ADMIN_USERNAME,
+    displayName: process.env.ADMIN_DISPLAY_NAME || '後台管理者',
+    role: 'single_admin',
+    status: 'active',
+    permissions: ALL_PERMISSIONS,
+  };
 }
 
 function loadAdminUsersStore() {
@@ -331,8 +368,7 @@ function requireSession(req, res, next) {
     return res.status(401).json({ error: '未登入或 Session 已過期' });
   }
 
-  const users = loadAdminUsersStore();
-  const user = users.find(u => u.id === session.adminId);
+  const user = session.adminId === SINGLE_ADMIN_ID ? getSingleAdminUser() : null;
   if (!user || user.status !== 'active') {
     return res.status(403).json({ error: '帳號無效或已被停用' });
   }
@@ -372,7 +408,7 @@ function requirePermission(permissionCode) {
 const CATALOG_PATH = path.join(__dirname, '../public/songs_catalog.json');
 const REPORTS_PATH = path.join(__dirname, 'reports.json');
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
-const ADMIN_LOG_PATH = path.join(__dirname, 'admin_actions.log');
+const ADMIN_LOG_PATH = resolveDataPath('ADMIN_ACTIONS_LOG_PATH', 'admin_actions.log');
 const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 
 // ─────────────────────────────────────────────
@@ -1383,8 +1419,20 @@ app.get('/api/votes/:songId', async (req, res) => {
 // 管理員 RBAC & Auth API 路由 (管理憑證與身分權限驗證)
 // ═══════════════════════════════════════════════════════
 
+// ── 查詢系統初始化與 Bootstrap 狀態 ──
+app.get('/api/admin/bootstrap/status', (req, res) => {
+  res.json({
+    hasSuperAdmin: Boolean(getSingleAdminUser()),
+    bootstrapAvailable: false
+  });
+});
+
 // ── 初始化第一位最高管理者 (Bootstrap Super Admin) ──
 app.post('/api/admin/bootstrap/super-admin', (req, res) => {
+  if (req.app) {
+    return res.status(410).json({ error: '目前使用單一管理者模式，請在 Render Environment 設定 ADMIN_USERNAME 與 ADMIN_PASSWORD。' });
+  }
+
   const expectedBootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN || ADMIN_TOKEN;
   const bootstrapToken = req.headers['x-bootstrap-token'] || req.body.bootstrapToken;
   if (!expectedBootstrapToken || bootstrapToken !== expectedBootstrapToken) {
@@ -1433,6 +1481,39 @@ app.post('/api/admin/bootstrap/super-admin', (req, res) => {
 app.post('/api/admin/auth/login', (req, res) => {
   const username = String(req.body.username || '').trim();
   const password = String(req.body.password || '').trim();
+
+  if (ADMIN_PASSWORD && username && password) {
+    const user = getSingleAdminUser();
+    const isUsernameValid = safeCompareText(username, ADMIN_USERNAME);
+    const isPasswordValid = safeCompareText(password, ADMIN_PASSWORD);
+
+    if (!user || !isUsernameValid || !isPasswordValid) {
+      logAdminAction('LOGIN_FAILED', { username, reason: 'invalid_single_admin_credentials' }, req);
+      return res.status(401).json({ error: '帳號或密碼不正確，請確認後再試。' });
+    }
+
+    const now = new Date();
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString();
+    const permissionsSnapshot = resolveAdminPermissions(user);
+    const sessions = loadAdminSessionsStore();
+
+    sessions.push({
+      sessionId: sessionToken,
+      adminId: user.id,
+      role: user.role,
+      permissionsSnapshot,
+      createdAt: now.toISOString(),
+      expiresAt,
+      lastSeenAt: now.toISOString(),
+      ip: req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1',
+      userAgent: req.headers['user-agent'] || 'browser'
+    });
+    saveAdminSessionsStore(sessions);
+
+    logAdminAction('LOGIN_SUCCESS', { adminId: user.id, username: user.username, role: user.role }, req);
+    return res.json({ success: true, sessionToken, admin: { id: user.id, username: user.username, displayName: user.displayName, role: user.role, permissions: permissionsSnapshot }, expiresAt });
+  }
 
   if (!username || !password) {
     return res.status(400).json({ error: '請輸入管理者帳號與密碼' });
@@ -1537,6 +1618,24 @@ app.post('/api/admin/auth/logout', requireSession, (req, res) => {
 
 // ── 管理者列表 ──
 app.get('/api/admin/admins', requirePermission('admins.view'), (req, res) => {
+  const singleAdmin = getSingleAdminUser();
+  if (singleAdmin) {
+    return res.json({
+      admins: [{
+        id: singleAdmin.id,
+        username: singleAdmin.username,
+        displayName: singleAdmin.displayName,
+        role: singleAdmin.role,
+        status: singleAdmin.status,
+        permissions: resolveAdminPermissions(singleAdmin),
+        customPermissions: [],
+        createdAt: null,
+        lastLoginAt: null,
+        lastLoginIp: null,
+      }]
+    });
+  }
+
   const users = loadAdminUsersStore();
   const safeUsers = users.map(u => ({
     id: u.id,
@@ -1555,6 +1654,10 @@ app.get('/api/admin/admins', requirePermission('admins.view'), (req, res) => {
 
 // ── 新增一般管理者 ──
 app.post('/api/admin/admins', requirePermission('admins.manage'), (req, res) => {
+  if (getSingleAdminUser()) {
+    return res.status(410).json({ error: '目前使用單一管理者模式，不支援建立其他管理者。' });
+  }
+
   const reason = String(req.body.reason || '').trim();
   if (!reason || reason.length < 4) {
     return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
@@ -1601,6 +1704,10 @@ app.post('/api/admin/admins', requirePermission('admins.manage'), (req, res) => 
 
 // ── 更新管理者狀態與權限 ──
 app.patch('/api/admin/admins/:adminId', requirePermission('admins.manage'), (req, res) => {
+  if (getSingleAdminUser()) {
+    return res.status(410).json({ error: '目前使用單一管理者模式，不支援修改管理者權限。' });
+  }
+
   const reason = String(req.body.reason || '').trim();
   if (!reason || reason.length < 4) {
     return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
@@ -1647,6 +1754,10 @@ app.patch('/api/admin/admins/:adminId', requirePermission('admins.manage'), (req
 
 // ── 重設管理者密碼 ──
 app.post('/api/admin/admins/:adminId/password', requirePermission('admins.manage'), (req, res) => {
+  if (getSingleAdminUser()) {
+    return res.status(410).json({ error: '目前使用單一管理者模式，請在 Render Environment 修改 ADMIN_PASSWORD。' });
+  }
+
   const reason = String(req.body.reason || '').trim();
   if (!reason || reason.length < 4) {
     return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
@@ -2504,5 +2615,6 @@ app.listen(PORT, () => {
   console.log(`[Server] KTV Song API 服務啟動於: http://localhost:${PORT}`);
   console.log(`[Server] Maintenance API token status: ${ADMIN_TOKEN ? 'set' : 'unset'}`);
   console.log(`[Server] Admin Panel: http://localhost:${PORT}/admin`);
+  console.log(`[Server] Single admin mode: ${getSingleAdminUser() ? 'configured' : 'not configured'}`);
   triggerAutoRollingBackup();
 });

@@ -875,7 +875,15 @@ async function doLogin() {
       loadReports();
       loadAdminAliases();
     } else {
-      if (errEl) errEl.textContent = data.error || '帳號或密碼不正確，請確認後再試。';
+      let msg = data.error || '帳號或密碼不正確，請確認後再試。';
+      try {
+        const statusRes = await fetch(API + '/api/admin/bootstrap/status');
+        const statusData = await statusRes.json();
+        if (statusData && statusData.hasSuperAdmin === false) {
+          msg = '後台尚未初始化最高管理者帳號，請由系統擁有者執行初始化。';
+        }
+      } catch {}
+      if (errEl) errEl.textContent = msg;
     }
   } catch (err) {
     if (errEl) errEl.textContent = '連線失敗，請稍後再試';
@@ -969,6 +977,7 @@ function applyAdminPermissionsUI(admin) {
   }
 
   const perms = admin.permissions || [];
+  const singleAdminMode = admin.role === 'single_admin';
 
   const tabPermMap = {
     'nav-overview': 'dashboard.view',
@@ -986,7 +995,7 @@ function applyAdminPermissionsUI(admin) {
   for (const [navId, requiredPerm] of Object.entries(tabPermMap)) {
     const navBtn = document.getElementById(navId);
     if (navBtn) {
-      navBtn.style.display = perms.includes(requiredPerm) ? 'inline-block' : 'none';
+      navBtn.style.display = (!singleAdminMode || navId !== 'nav-admins') && perms.includes(requiredPerm) ? 'inline-block' : 'none';
     }
   }
 
@@ -1014,7 +1023,7 @@ function applyAdminPermissionsUI(admin) {
   if (btnDeleteAlias) btnDeleteAlias.style.display = perms.includes('aliases.manage') ? 'inline-block' : 'none';
 
   const btnOpenCreateAdmin = document.getElementById('btn-open-create-admin');
-  if (btnOpenCreateAdmin) btnOpenCreateAdmin.style.display = perms.includes('admins.manage') ? 'inline-block' : 'none';
+  if (btnOpenCreateAdmin) btnOpenCreateAdmin.style.display = !singleAdminMode && perms.includes('admins.manage') ? 'inline-block' : 'none';
 }
 
 // ── 統計 ──
