@@ -1385,8 +1385,9 @@ app.get('/api/votes/:songId', async (req, res) => {
 
 // ── 初始化第一位最高管理者 (Bootstrap Super Admin) ──
 app.post('/api/admin/bootstrap/super-admin', (req, res) => {
+  const expectedBootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN || ADMIN_TOKEN;
   const bootstrapToken = req.headers['x-bootstrap-token'] || req.body.bootstrapToken;
-  if (!ADMIN_TOKEN || bootstrapToken !== ADMIN_TOKEN) {
+  if (!expectedBootstrapToken || bootstrapToken !== expectedBootstrapToken) {
     return res.status(401).json({ error: '初始化失敗：提供之 Bootstrap Token 無效' });
   }
 
