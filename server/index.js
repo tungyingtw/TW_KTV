@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
 import { loadArtistAliases, saveArtistAlias, deleteArtistAlias, expandArtistQuery } from './artistAliases.js';
 
@@ -197,16 +198,173 @@ app.get('/sitemap.xml', (req, res) => {
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, '../dist')));
 
-function requireAdmin(req, res, next) {
-  const token = req.headers['x-admin-token'] || req.query.token;
-  if (!token || token !== ADMIN_TOKEN) {
-    return res.status(401).json({ error: '權限不足：請提供有效的管理憑證' });
+// ─────────────────────────────────────────────
+// 後台角色與權限系統 (RBAC & Multi-User Admin Auth System)
+// ─────────────────────────────────────────────
+const ADMIN_USERS_PATH = path.join(__dirname, 'admin_users.json');
+const ADMIN_SESSIONS_PATH = path.join(__dirname, 'admin_sessions.json');
+
+const ALL_PERMISSIONS = [
+  'dashboard.view',
+  'reports.view',
+  'reports.review',
+  'votes.view',
+  'songs.view',
+  'songs.create',
+  'songs.update',
+  'songs.delete',
+  'brand.update',
+  'mv.update',
+  'aliases.view',
+  'aliases.manage',
+  'stats.reset',
+  'logs.view',
+  'backup.export',
+  'backup.validate',
+  'backup.import',
+  'admins.view',
+  'admins.manage',
+  'roles.manage',
+];
+
+const DEFAULT_ADMIN_PERMISSIONS = [
+  'dashboard.view',
+  'reports.view',
+  'reports.review',
+  'votes.view',
+  'songs.view',
+  'songs.create',
+  'songs.update',
+  'brand.update',
+  'mv.update',
+  'aliases.view',
+  'aliases.manage',
+];
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, storedHash) {
+  if (!storedHash || typeof storedHash !== 'string' || !storedHash.includes(':')) return false;
+  const [salt, hash] = storedHash.split(':');
+  try {
+    const verifyHash = crypto.scryptSync(password, salt, 64).toString('hex');
+    return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(verifyHash, 'hex'));
+  } catch {
+    return false;
   }
+}
+
+function resolveAdminPermissions(user) {
+  if (!user || user.status !== 'active') return [];
+  if (user.role === 'super_admin') return ALL_PERMISSIONS;
+  const customPermissions = Array.isArray(user.permissions) ? user.permissions : [];
+  return Array.from(new Set([...DEFAULT_ADMIN_PERMISSIONS, ...customPermissions]));
+}
+
+function loadAdminUsersStore() {
+  try {
+    if (fs.existsSync(ADMIN_USERS_PATH)) {
+      const data = JSON.parse(fs.readFileSync(ADMIN_USERS_PATH, 'utf8'));
+      if (data && Array.isArray(data.users)) return data.users;
+    }
+  } catch (e) {
+    console.error('[Admin Users Load Error]', e);
+  }
+  return [];
+}
+
+function saveAdminUsersStore(users) {
+  try {
+    fs.writeFileSync(ADMIN_USERS_PATH, JSON.stringify({ users }, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[Admin Users Save Error]', e);
+  }
+}
+
+function loadAdminSessionsStore() {
+  try {
+    if (fs.existsSync(ADMIN_SESSIONS_PATH)) {
+      const data = JSON.parse(fs.readFileSync(ADMIN_SESSIONS_PATH, 'utf8'));
+      if (data && Array.isArray(data.sessions)) return data.sessions;
+    }
+  } catch (e) {
+    console.error('[Admin Sessions Load Error]', e);
+  }
+  return [];
+}
+
+function saveAdminSessionsStore(sessions) {
+  try {
+    fs.writeFileSync(ADMIN_SESSIONS_PATH, JSON.stringify({ sessions }, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[Admin Sessions Save Error]', e);
+  }
+}
+
+function getSessionTokenFromReq(req) {
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+  return req.headers['x-admin-session'] || '';
+}
+
+function requireSession(req, res, next) {
   if (!isAllowedAdminSource(req)) {
     return res.status(403).json({ error: '權限不足：此請求來源不被允許' });
   }
+
+  const token = getSessionTokenFromReq(req);
+  if (!token) {
+    return res.status(401).json({ error: '未登入或 Session 已失效' });
+  }
+
+  const sessions = loadAdminSessionsStore();
+  const now = new Date().toISOString();
+  const session = sessions.find(s => s.sessionId === token);
+
+  if (!session || session.expiresAt <= now) {
+    return res.status(401).json({ error: '未登入或 Session 已過期' });
+  }
+
+  const users = loadAdminUsersStore();
+  const user = users.find(u => u.id === session.adminId);
+  if (!user || user.status !== 'active') {
+    return res.status(403).json({ error: '帳號無效或已被停用' });
+  }
+
+  session.lastSeenAt = now;
+  saveAdminSessionsStore(sessions);
+
+  req.adminSession = session;
+  req.admin = {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    role: user.role,
+    status: user.status,
+    permissions: resolveAdminPermissions(user),
+  };
   next();
 }
+
+function requirePermission(permissionCode) {
+  return (req, res, next) => {
+    requireSession(req, res, () => {
+      const permissions = req.admin?.permissions || [];
+      if (!permissions.includes(permissionCode)) {
+        return res.status(403).json({ error: `權限不足：缺少 ${permissionCode} 權限` });
+      }
+      req.permission = permissionCode;
+      next();
+    });
+  };
+}
+
 
 // ─────────────────────────────────────────────
 // 資料路徑
@@ -484,8 +642,41 @@ async function saveCatalog(catalog) {
   }
 }
 
-function logAdminAction(action, detail) {
-  const line = `[${new Date().toISOString()}] ${action}: ${JSON.stringify(detail)}\n`;
+function logAdminAction(action, detail = {}, req = null) {
+  const adminId = detail.adminId || req?.admin?.id || 'system';
+  const username = detail.username || req?.admin?.username || 'system';
+  const role = detail.role || req?.admin?.role || 'system';
+  const permission = req?.permission || 'none';
+  const ip = req ? (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1') : '127.0.0.1';
+  const userAgent = req?.headers?.['user-agent'] || 'system';
+  const reason = String(detail.reason || req?.body?.reason || req?.query?.reason || '').trim();
+
+  const sanitizedDetail = { ...detail };
+  delete sanitizedDetail.password;
+  delete sanitizedDetail.passwordHash;
+  delete sanitizedDetail.sessionToken;
+  delete sanitizedDetail.token;
+  delete sanitizedDetail.reason;
+
+  const logObj = {
+    time: new Date().toISOString(),
+    action,
+    adminId,
+    username,
+    displayName: req?.admin?.displayName || username,
+    role,
+    permission,
+    ip,
+    userAgent,
+    targetType: detail.targetType || 'system',
+    targetId: String(detail.targetId || detail.songId || detail.reportId || ''),
+    reason,
+    before: detail.before !== undefined ? detail.before : null,
+    after: detail.after !== undefined ? detail.after : null,
+    detail: sanitizedDetail
+  };
+
+  const line = JSON.stringify(logObj) + '\n';
   try {
     fs.appendFileSync(ADMIN_LOG_PATH, line, 'utf8');
   } catch (err) {
@@ -1027,7 +1218,7 @@ app.post('/api/report', async (req, res) => {
   res.json({ success: true, reportId: newReport.id, autoResolved: isAutoResolved });
 });
 
-app.get('/api/reports', requireAdmin, async (req, res) => {
+app.get('/api/reports', requirePermission('reports.view'), async (req, res) => {
   const reports = await loadReportsStore();
   const { status } = req.query;
   const filtered = status ? reports.filter(r => r.status === status) : reports;
@@ -1189,19 +1380,315 @@ app.get('/api/votes/:songId', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════
-// 管理員 API（需要 x-admin-token header）
+// 管理員 RBAC & Auth API 路由 (管理憑證與身分權限驗證)
 // ═══════════════════════════════════════════════════════
 
+// ── 初始化第一位最高管理者 (Bootstrap Super Admin) ──
+app.post('/api/admin/bootstrap/super-admin', (req, res) => {
+  const bootstrapToken = req.headers['x-bootstrap-token'] || req.body.bootstrapToken;
+  if (!ADMIN_TOKEN || bootstrapToken !== ADMIN_TOKEN) {
+    return res.status(401).json({ error: '初始化失敗：提供之 Bootstrap Token 無效' });
+  }
+
+  const users = loadAdminUsersStore();
+  const activeSuperAdmin = users.find(u => u.role === 'super_admin' && u.status === 'active');
+  if (activeSuperAdmin) {
+    return res.status(400).json({ error: '初始化失敗：系統已存在最高管理者帳號' });
+  }
+
+  const username = String(req.body.username || 'owner').trim();
+  const displayName = String(req.body.displayName || '最高管理者').trim();
+  const password = String(req.body.password || '').trim();
+
+  if (!username || !password || password.length < 6) {
+    return res.status(400).json({ error: '資料未完整：請提供帳號與長度至少 6 碼之密碼' });
+  }
+
+  const superAdminUser = {
+    id: `admin_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    username,
+    displayName,
+    role: 'super_admin',
+    passwordHash: hashPassword(password),
+    status: 'active',
+    permissions: ALL_PERMISSIONS,
+    createdAt: new Date().toISOString(),
+    createdBy: 'bootstrap_system',
+    updatedAt: new Date().toISOString(),
+    lastLoginAt: null,
+    lastLoginIp: null,
+    failedLoginCount: 0,
+    lockedUntil: null
+  };
+
+  users.push(superAdminUser);
+  saveAdminUsersStore(users);
+
+  logAdminAction('BOOTSTRAP_SUPER_ADMIN', { adminId: superAdminUser.id, username, displayName }, req);
+  res.json({ success: true, message: '已成功初始化最高管理者帳號', admin: { id: superAdminUser.id, username, displayName, role: 'super_admin' } });
+});
+
+// ── 管理者登入 ──
+app.post('/api/admin/auth/login', (req, res) => {
+  const username = String(req.body.username || '').trim();
+  const password = String(req.body.password || '').trim();
+
+  if (!username || !password) {
+    return res.status(400).json({ error: '請輸入管理者帳號與密碼' });
+  }
+
+  const users = loadAdminUsersStore();
+  const user = users.find(u => u.username === username);
+
+  if (!user) {
+    logAdminAction('LOGIN_FAILED', { username, reason: '帳號不存在' }, req);
+    return res.status(401).json({ error: '帳號或密碼不正確，請確認後再試。' });
+  }
+
+  if (user.status !== 'active') {
+    logAdminAction('LOGIN_FAILED', { username, reason: '帳號已被停用' }, req);
+    return res.status(403).json({ error: '此帳號已被停用，請洽最高管理者。' });
+  }
+
+  const now = new Date();
+  if (user.lockedUntil && new Date(user.lockedUntil) > now) {
+    const lockMinutes = Math.ceil((new Date(user.lockedUntil) - now) / (60 * 1000));
+    logAdminAction('LOGIN_FAILED', { username, reason: '帳號受鎖定保護中' }, req);
+    return res.status(429).json({ error: `此帳號暫時鎖定，請於 ${lockMinutes} 分鐘後再試。` });
+  }
+
+  const isPasswordValid = verifyPassword(password, user.passwordHash);
+
+  if (!isPasswordValid) {
+    user.failedLoginCount = (user.failedLoginCount || 0) + 1;
+    if (user.failedLoginCount >= 5) {
+      user.lockedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    }
+    user.updatedAt = now.toISOString();
+    saveAdminUsersStore(users);
+
+    logAdminAction('LOGIN_FAILED', { username, reason: `密碼錯誤 (失敗 ${user.failedLoginCount} 次)` }, req);
+    return res.status(401).json({ error: '帳號或密碼不正確，請確認後再試。' });
+  }
+
+  // 重置鎖定與失敗次數
+  user.failedLoginCount = 0;
+  user.lockedUntil = null;
+  user.lastLoginAt = now.toISOString();
+  user.lastLoginIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
+  user.updatedAt = now.toISOString();
+  saveAdminUsersStore(users);
+
+  // 產生 Session Token
+  const sessionToken = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(); // 8 小時有效期
+  const permissionsSnapshot = resolveAdminPermissions(user);
+
+  const sessions = loadAdminSessionsStore();
+  const newSession = {
+    sessionId: sessionToken,
+    adminId: user.id,
+    role: user.role,
+    permissionsSnapshot,
+    createdAt: now.toISOString(),
+    expiresAt,
+    lastSeenAt: now.toISOString(),
+    ip: user.lastLoginIp,
+    userAgent: req.headers['user-agent'] || 'browser'
+  };
+
+  sessions.push(newSession);
+  saveAdminSessionsStore(sessions);
+
+  const adminInfo = {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    role: user.role,
+    permissions: permissionsSnapshot,
+  };
+
+  logAdminAction('LOGIN_SUCCESS', { adminId: user.id, username: user.username, role: user.role }, req);
+  res.json({ success: true, sessionToken, admin: adminInfo, expiresAt });
+});
+
+// ── 讀取當前登入者身分與權限 ──
+app.get('/api/admin/auth/me', requireSession, (req, res) => {
+  res.json({
+    admin: req.admin,
+    session: {
+      expiresAt: req.adminSession.expiresAt,
+      lastSeenAt: req.adminSession.lastSeenAt,
+    }
+  });
+});
+
+// ── 管理者登出 ──
+app.post('/api/admin/auth/logout', requireSession, (req, res) => {
+  const token = getSessionTokenFromReq(req);
+  let sessions = loadAdminSessionsStore();
+  sessions = sessions.filter(s => s.sessionId !== token);
+  saveAdminSessionsStore(sessions);
+
+  logAdminAction('LOGOUT', { adminId: req.admin.id, username: req.admin.username }, req);
+  res.json({ success: true, message: '已成功登出後台' });
+});
+
+// ── 管理者列表 ──
+app.get('/api/admin/admins', requirePermission('admins.view'), (req, res) => {
+  const users = loadAdminUsersStore();
+  const safeUsers = users.map(u => ({
+    id: u.id,
+    username: u.username,
+    displayName: u.displayName,
+    role: u.role,
+    status: u.status,
+    permissions: resolveAdminPermissions(u),
+    customPermissions: u.permissions || [],
+    createdAt: u.createdAt,
+    lastLoginAt: u.lastLoginAt,
+    lastLoginIp: u.lastLoginIp,
+  }));
+  res.json({ admins: safeUsers });
+});
+
+// ── 新增一般管理者 ──
+app.post('/api/admin/admins', requirePermission('admins.manage'), (req, res) => {
+  const reason = String(req.body.reason || '').trim();
+  if (!reason || reason.length < 4) {
+    return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
+  }
+
+  const username = String(req.body.username || '').trim();
+  const displayName = String(req.body.displayName || username).trim();
+  const password = String(req.body.password || '').trim();
+  const role = req.body.role === 'super_admin' ? 'super_admin' : 'admin';
+  const customPermissions = Array.isArray(req.body.permissions) ? req.body.permissions : [];
+
+  if (!username || !password || password.length < 6) {
+    return res.status(400).json({ error: '請填寫帳號與長度至少 6 碼之密碼' });
+  }
+
+  const users = loadAdminUsersStore();
+  if (users.some(u => u.username === username)) {
+    return res.status(409).json({ error: '該管理者帳號已存在' });
+  }
+
+  const newUser = {
+    id: `admin_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    username,
+    displayName,
+    role,
+    passwordHash: hashPassword(password),
+    status: 'active',
+    permissions: customPermissions,
+    createdAt: new Date().toISOString(),
+    createdBy: req.admin.username,
+    updatedAt: new Date().toISOString(),
+    lastLoginAt: null,
+    lastLoginIp: null,
+    failedLoginCount: 0,
+    lockedUntil: null
+  };
+
+  users.push(newUser);
+  saveAdminUsersStore(users);
+
+  logAdminAction('CREATE_ADMIN', { targetId: newUser.id, username, displayName, role, before: null, after: { id: newUser.id, username, displayName, role, status: newUser.status }, reason }, req);
+  res.json({ success: true, admin: { id: newUser.id, username, displayName, role } });
+});
+
+// ── 更新管理者狀態與權限 ──
+app.patch('/api/admin/admins/:adminId', requirePermission('admins.manage'), (req, res) => {
+  const reason = String(req.body.reason || '').trim();
+  if (!reason || reason.length < 4) {
+    return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
+  }
+
+  const { adminId } = req.params;
+  const users = loadAdminUsersStore();
+  const user = users.find(u => u.id === adminId);
+
+  if (!user) {
+    return res.status(404).json({ error: '找不到該管理者帳號' });
+  }
+
+  if (req.body.status === 'disabled' && user.id === req.admin.id) {
+    return res.status(400).json({ error: '操作無效：最高管理者不可停用自己的帳號' });
+  }
+
+  if (req.body.status === 'disabled' && user.role === 'super_admin') {
+    const activeSuperAdmins = users.filter(u => u.role === 'super_admin' && u.status === 'active' && u.id !== user.id);
+    if (activeSuperAdmins.length === 0) {
+      return res.status(400).json({ error: '操作無效：系統必須保留至少一位啟用的最高管理者' });
+    }
+  }
+
+  const before = { displayName: user.displayName, role: user.role, status: user.status, permissions: user.permissions || [] };
+  if (req.body.displayName) user.displayName = String(req.body.displayName).trim();
+  if (req.body.role && (req.body.role === 'super_admin' || req.body.role === 'admin')) user.role = req.body.role;
+  if (req.body.status && (req.body.status === 'active' || req.body.status === 'disabled')) user.status = req.body.status;
+  if (Array.isArray(req.body.permissions)) user.permissions = req.body.permissions;
+  user.updatedAt = new Date().toISOString();
+
+  saveAdminUsersStore(users);
+
+  // 若帳號停用，使該帳號所有既有 Session 立即失效
+  if (user.status === 'disabled') {
+    let sessions = loadAdminSessionsStore();
+    sessions = sessions.filter(s => s.adminId !== user.id);
+    saveAdminSessionsStore(sessions);
+  }
+
+  logAdminAction('UPDATE_ADMIN', { targetId: user.id, username: user.username, before, after: { displayName: user.displayName, role: user.role, status: user.status, permissions: user.permissions || [] }, reason }, req);
+  res.json({ success: true, admin: { id: user.id, username: user.username, displayName: user.displayName, role: user.role, status: user.status } });
+});
+
+// ── 重設管理者密碼 ──
+app.post('/api/admin/admins/:adminId/password', requirePermission('admins.manage'), (req, res) => {
+  const reason = String(req.body.reason || '').trim();
+  if (!reason || reason.length < 4) {
+    return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
+  }
+
+  const { adminId } = req.params;
+  const newPassword = String(req.body.password || '').trim();
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: '請提供長度至少 6 碼的新密碼' });
+  }
+
+  const users = loadAdminUsersStore();
+  const user = users.find(u => u.id === adminId);
+  if (!user) {
+    return res.status(404).json({ error: '找不到該管理者帳號' });
+  }
+
+  user.passwordHash = hashPassword(newPassword);
+  user.failedLoginCount = 0;
+  user.lockedUntil = null;
+  user.updatedAt = new Date().toISOString();
+
+  saveAdminUsersStore(users);
+
+  // 密碼重設後強制使該帳號所有 Session 失效重登
+  let sessions = loadAdminSessionsStore();
+  sessions = sessions.filter(s => s.adminId !== user.id);
+  saveAdminSessionsStore(sessions);
+
+  logAdminAction('RESET_ADMIN_PASSWORD', { targetId: user.id, username: user.username, before: { passwordReset: false }, after: { passwordResetAt: new Date().toISOString(), sessionInvalidated: true }, reason }, req);
+  res.json({ success: true, message: `已成功重設管理者「${user.username}」之密碼` });
+});
+
 // ── 查看所有回報 ──
-app.get('/api/admin/reports', requireAdmin, async (req, res) => {
+app.get('/api/admin/reports', requirePermission('reports.view'), async (req, res) => {
   const reports = await loadReportsStore();
   const { status } = req.query;
   const filtered = status ? reports.filter(r => r.status === status) : reports;
   res.json({ total: filtered.length, reports: filtered.reverse() });
 });
 
-// ── 更新回報狀態（pending → reviewed / resolved）──
-app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
+// ── 更新回報狀態 ──
+app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), async (req, res) => {
   const { reportId } = req.params;
   const { status, adminNote } = req.body;
   const validStatus = ['pending', 'reviewed', 'resolved', 'rejected'];
@@ -1216,7 +1703,6 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
   report.adminNote = adminNote || '';
   report.reviewedAt = new Date().toISOString();
 
-  // ── 管理員審核動態寫入連通 (Admin Manual Approval -> Live Catalog Injection) ──
   if (status === 'resolved') {
     try {
       if ((report.issueType === 'missing_song' || report.issueType === 'suggest_song') && report.songTitle) {
@@ -1259,7 +1745,6 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
         }
         await saveCatalog(songsDatabase);
         await saveCatalogOverrideSong(existingSong);
-        console.log(`[Admin Inject] 管理員審核完成，寫入新歌《${report.songTitle}》— ${report.artist}`);
       } else if (report.songId && songsDatabase.length > 0) {
         const sIdx = songsDatabase.findIndex(s => s.id === report.songId);
         if (sIdx !== -1) {
@@ -1279,7 +1764,6 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
           }
           await saveCatalog(songsDatabase);
           await saveCatalogOverrideSong(songsDatabase[sIdx]);
-          console.log(`[Admin Update] 管理員審核更正《${report.songTitle}》(${report.brandId}) 收錄狀態`);
         }
       }
     } catch (err) {
@@ -1294,13 +1778,19 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
     console.error('[Admin Reports] Persistent save failed:', err);
     return res.status(503).json({ error: '回報狀態暫時無法持久化儲存，請稍後再試' });
   }
-  logAdminAction('UPDATE_REPORT_STATUS', { reportId, status, adminNote });
+  logAdminAction('UPDATE_REPORT_STATUS', { reportId, status, adminNote }, req);
   res.json({ success: true, report: reports[idx] });
 });
 
-// ── 後台管理 API：設定 / 自訂累積訪客計數器 ──
-app.post('/api/admin/stats/reset', requireAdmin, async (req, res) => {
+// ── 後台管理 API：設定 / 自訂累積訪客計數器 (高風險操作：理由必填) ──
+app.post('/api/admin/stats/reset', requirePermission('stats.reset'), async (req, res) => {
+  const reason = String(req.body.reason || req.query.reason || '').trim();
+  if (!reason || reason.length < 4) {
+    return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
+  }
+
   const newCount = (typeof req.body.count === 'number' && req.body.count >= 0) ? req.body.count : 1;
+  const beforeCount = currentStats.totalVisits;
   currentStats.totalVisits = newCount;
   saveStats(currentStats);
 
@@ -1313,12 +1803,12 @@ app.post('/api/admin/stats/reset', requireAdmin, async (req, res) => {
     }
   }
 
-  logAdminAction('RESET_STATS', { newCount, adminIp: req.ip });
+  logAdminAction('RESET_STATS', { before: beforeCount, after: newCount, newCount, reason }, req);
   res.json({ success: true, totalVisits: currentStats.totalVisits });
 });
 
-// ── 查看爭議歌曲（deny 票多的）──
-app.get('/api/admin/disputed', requireAdmin, async (req, res) => {
+// ── 查看爭議歌曲 ──
+app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
   const minVotes = parseInt(req.query.minVotes) || 3;
 
@@ -1344,13 +1834,12 @@ app.get('/api/admin/disputed', requireAdmin, async (req, res) => {
     }
   }
 
-  // 依爭議程度排序（deny 越多越前面）
   disputed.sort((a, b) => b.deny - a.deny);
   res.json({ total: disputed.length, disputed });
 });
 
-// ── 查看高度確認歌曲（confirm 票多的）──
-app.get('/api/admin/verified', requireAdmin, async (req, res) => {
+// ── 查看高度確認歌曲 ──
+app.get('/api/admin/verified', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
   const verified = [];
 
@@ -1371,7 +1860,8 @@ app.get('/api/admin/verified', requireAdmin, async (req, res) => {
   res.json({ total: verified.length, verified });
 });
 
-app.get('/api/admin/guided-votes', requireAdmin, async (req, res) => {
+// ── 查看導唱投票 ──
+app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
   const guidedVotes = [];
 
@@ -1403,7 +1893,8 @@ app.get('/api/admin/guided-votes', requireAdmin, async (req, res) => {
   res.json({ total: guidedVotes.length, guidedVotes });
 });
 
-app.get('/api/admin/mv-votes', requireAdmin, async (req, res) => {
+// ── 查看 MV 投票 ──
+app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
   const mvVotes = [];
   const minTotal = req.query.minTotal !== undefined
@@ -1517,7 +2008,8 @@ function normalizeAdminSongPayload(body, existingSong = null) {
   };
 }
 
-app.get('/api/admin/songs', requireAdmin, (req, res) => {
+// ── 查詢歌曲列表 ──
+app.get('/api/admin/songs', requirePermission('songs.view'), (req, res) => {
   const { query = '', language = '', page = 1, limit = 50, sort = 'relevance_len_asc' } = req.query;
   const q = String(query).trim().toLowerCase();
   const selectedLanguage = String(language).trim();
@@ -1552,7 +2044,6 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
     results = results.filter(song => song.language === selectedLanguage);
   }
 
-  // 排序邏輯（支援字數、相關度、發行年份與廠牌數排序）
   results = [...results].sort((a, b) => {
     const titleA = String(a.title || '');
     const titleB = String(b.title || '');
@@ -1574,7 +2065,6 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
       return brandsB - brandsA;
     }
 
-    // 預設 (relevance_len_asc)：歌手別名精確度 (Rank 1) ➔ 歌名開頭 (Rank 2) ➔ 歌名字數 (短到長) ➔ 筆劃/字母
     if (q) {
       const getRelevance = (s) => {
         const t = String(s.title || '').toLowerCase();
@@ -1613,46 +2103,46 @@ app.get('/api/admin/songs', requireAdmin, (req, res) => {
 });
 
 // ── 歌手別名字典管理 API ──
-app.get('/api/admin/aliases', requireAdmin, (req, res) => {
+app.get('/api/admin/aliases', requirePermission('aliases.view'), (req, res) => {
   res.json({ aliases: loadArtistAliases() });
 });
 
-app.post('/api/admin/alias', requireAdmin, (req, res) => {
+app.post('/api/admin/alias', requirePermission('aliases.manage'), (req, res) => {
   try {
     const { artist, aliases } = req.body;
     if (!artist) return res.status(400).json({ error: '缺少歌手名稱' });
     const saved = saveArtistAlias(artist, aliases);
-    logAdminAction('UPDATE_ARTIST_ALIAS', { artist, aliases: saved });
+    logAdminAction('UPDATE_ARTIST_ALIAS', { artist, aliases: saved }, req);
     res.json({ success: true, artist, aliases: saved });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.delete('/api/admin/alias/:artistName', requireAdmin, (req, res) => {
+app.delete('/api/admin/alias/:artistName', requirePermission('aliases.manage'), (req, res) => {
   try {
     const artist = decodeURIComponent(req.params.artistName);
     deleteArtistAlias(artist);
-    logAdminAction('DELETE_ARTIST_ALIAS', { artist });
+    logAdminAction('DELETE_ARTIST_ALIAS', { artist }, req);
     res.json({ success: true, artist });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.get('/api/admin/alias/test', requireAdmin, (req, res) => {
+app.get('/api/admin/alias/test', requirePermission('aliases.view'), (req, res) => {
   const q = String(req.query.q || '').trim();
   const resolution = expandArtistQuery(q);
   res.json(resolution);
 });
 
-app.get('/api/admin/song/:songId', requireAdmin, (req, res) => {
+app.get('/api/admin/song/:songId', requirePermission('songs.view'), (req, res) => {
   const song = songsDatabase.find(s => s.id === req.params.songId);
   if (!song) return res.status(404).json({ error: '找不到歌曲' });
   res.json({ song });
 });
 
-app.post('/api/admin/song', requireAdmin, async (req, res) => {
+app.post('/api/admin/song', requirePermission('songs.create'), async (req, res) => {
   try {
     const song = normalizeAdminSongPayload(req.body);
     if (songsDatabase.some(item => item.id === song.id)) {
@@ -1660,14 +2150,14 @@ app.post('/api/admin/song', requireAdmin, async (req, res) => {
     }
     songsDatabase.push(song);
     await saveCatalogOverrideSong(song);
-    logAdminAction('CREATE_SONG', { songId: song.id, title: song.title, artist: song.artist });
+    logAdminAction('CREATE_SONG', { songId: song.id, title: song.title, artist: song.artist }, req);
     res.json({ success: true, song });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.put('/api/admin/song/:songId', requireAdmin, async (req, res) => {
+app.put('/api/admin/song/:songId', requirePermission('songs.update'), async (req, res) => {
   try {
     const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
     if (idx === -1) return res.status(404).json({ error: '找不到歌曲' });
@@ -1680,21 +2170,35 @@ app.put('/api/admin/song/:songId', requireAdmin, async (req, res) => {
       songId: song.id,
       before: { title: before.title, artist: before.artist },
       after: { title: song.title, artist: song.artist },
-    });
+    }, req);
     res.json({ success: true, song });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.delete('/api/admin/song/:songId', requireAdmin, async (req, res) => {
+// ── 刪除歌曲 (高風險操作：理由必填) ──
+app.delete('/api/admin/song/:songId', requirePermission('songs.delete'), async (req, res) => {
+  const reason = String(req.body.reason || req.query.reason || '').trim();
+  if (!reason || reason.length < 4) {
+    return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
+  }
+
   const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
   if (idx === -1) return res.status(404).json({ error: '找不到歌曲' });
   const [deleted] = songsDatabase.splice(idx, 1);
-  const reason = String(req.body.reason || req.query.reason || '').trim();
   try {
     await saveCatalogDeletedSong(deleted.id);
-    logAdminAction('DELETE_SONG', { songId: deleted.id, title: deleted.title, artist: deleted.artist, reason: reason || '未提供原因' });
+    logAdminAction('DELETE_SONG', {
+      targetType: 'song',
+      targetId: deleted.id,
+      songId: deleted.id,
+      title: deleted.title,
+      artist: deleted.artist,
+      before: { id: deleted.id, title: deleted.title, artist: deleted.artist, language: deleted.language },
+      after: { deleted: true },
+      reason,
+    }, req);
     res.json({ success: true, deleted });
   } catch (err) {
     console.error('[Admin Song Delete Error]', err);
@@ -1702,10 +2206,8 @@ app.delete('/api/admin/song/:songId', requireAdmin, async (req, res) => {
   }
 });
 
-// ── 套用廠牌收錄狀態修正（核心管理功能）──
-// PATCH /api/admin/song/:songId/brand
-// body: { brandId, available: true/false, note }
-app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
+// ── 套用廠牌收錄狀態修正 ──
+app.patch('/api/admin/song/:songId/brand', requirePermission('brand.update'), async (req, res) => {
   const { songId } = req.params;
   const { brandId, available, audioType, mvType, note } = req.body;
 
@@ -1765,13 +2267,10 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
     return res.status(503).json({ error: '歌庫修正暫時無法持久化儲存，請稍後再試' });
   }
 
-  // 記錄管理員操作
   logAdminAction('FIX_BRAND_AVAILABILITY', {
     songId, songTitle: song.title, artist: song.artist,
     brandId, before, after: song.brands[brandId], note: note || '',
-  });
-
-  console.log(`[管理員修正] 《${song.title}》(${brandId}): ${before?.available} → ${available}`);
+  }, req);
 
   res.json({
     success: true,
@@ -1781,10 +2280,8 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
   });
 });
 
-// ── 套用廠牌 MV 類型修正（不修改收錄狀態/音訊類型，避免污染）──
-// PATCH /api/admin/song/:songId/brand/mv-type
-// body: { brandId, mvType, note }
-app.patch('/api/admin/song/:songId/brand/mv-type', requireAdmin, async (req, res) => {
+// ── 套用廠牌 MV 類型修正 ──
+app.patch('/api/admin/song/:songId/brand/mv-type', requirePermission('mv.update'), async (req, res) => {
   const { songId } = req.params;
   const { brandId, mvType, note } = req.body;
 
@@ -1823,7 +2320,7 @@ app.patch('/api/admin/song/:songId/brand/mv-type', requireAdmin, async (req, res
   logAdminAction('FIX_BRAND_MV_TYPE', {
     songId, songTitle: song.title, artist: song.artist,
     brandId, before: before.mvType || 'none', after: song.brands[brandId].mvType || 'none', note: note || '',
-  });
+  }, req);
 
   res.json({
     success: true,
@@ -1834,7 +2331,7 @@ app.patch('/api/admin/song/:songId/brand/mv-type', requireAdmin, async (req, res
 });
 
 // ── 管理員儀表板統計 ──
-app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+app.get('/api/admin/stats', requirePermission('dashboard.view'), async (req, res) => {
   const reports = await loadReportsStore();
   const votes = await loadVotesStore();
 
@@ -1863,7 +2360,7 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 });
 
 // ── 管理員操作日誌 ──
-app.get('/api/admin/logs', requireAdmin, async (req, res) => {
+app.get('/api/admin/logs', requirePermission('logs.view'), async (req, res) => {
   try {
     if (USE_REDIS) {
       const redisLogs = await redisCmd('lrange', ADMIN_LOG_REDIS_KEY, 0, 99);
@@ -1881,7 +2378,7 @@ app.get('/api/admin/logs', requireAdmin, async (req, res) => {
 });
 
 // ── 系統容量配額與健康狀態 ──
-app.get('/api/admin/quota-status', requireAdmin, (req, res) => {
+app.get('/api/admin/quota-status', requirePermission('dashboard.view'), (req, res) => {
   res.json({
     ...getQuotaUsageStats(),
     storageMode: USE_REDIS ? 'redis' : 'local_json',
@@ -1890,7 +2387,7 @@ app.get('/api/admin/quota-status', requireAdmin, (req, res) => {
 });
 
 // ── 匯出全站 JSON 備份包 ──
-app.get('/api/admin/backup/export', requireAdmin, async (req, res) => {
+app.get('/api/admin/backup/export', requirePermission('backup.export'), async (req, res) => {
   try {
     const overrides = await loadCatalogOverridesStore();
     const reports = await loadReportsStore();
@@ -1918,7 +2415,7 @@ app.get('/api/admin/backup/export', requireAdmin, async (req, res) => {
 });
 
 // ── 驗證系統 JSON 備份包 (匯入前預覽差異) ──
-app.post('/api/admin/backup/validate', requireAdmin, (req, res) => {
+app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (req, res) => {
   const payload = req.body;
   if (!payload || typeof payload !== 'object') {
     return res.status(400).json({ valid: false, error: '資料格式不正確：缺少備份物件' });
@@ -1943,14 +2440,24 @@ app.post('/api/admin/backup/validate', requireAdmin, (req, res) => {
   });
 });
 
-// ── 還原全站 JSON 備份包 ──
-app.post('/api/admin/backup/import', requireAdmin, async (req, res) => {
+// ── 還原全站 JSON 備份包 (高風險操作：理由必填) ──
+app.post('/api/admin/backup/import', requirePermission('backup.import'), async (req, res) => {
   try {
     const payload = req.body;
     const reason = String(req.body.reason || '').trim();
+    if (!reason || reason.length < 4) {
+      return res.status(400).json({ error: '此高風險操作需要填寫操作理由（至少 4 個字）' });
+    }
+
     if (!payload || !payload.data || payload.app !== 'TW_KTV_CATALOG_SYSTEM') {
       return res.status(400).json({ error: '資料格式不正確：請提供有效的系統備份 JSON 檔案' });
     }
+
+    const beforeCounts = {
+      catalogOverridesCount: Object.keys((await loadCatalogOverridesStore()).songs || {}).length,
+      reportsCount: (await loadReportsStore()).length,
+      votesCount: Object.keys(await loadVotesStore()).length,
+    };
 
     const { catalogOverrides, reports, votes } = payload.data;
     if (catalogOverrides) {
@@ -1964,7 +2471,20 @@ app.post('/api/admin/backup/import', requireAdmin, async (req, res) => {
       await saveVotesStore(votes);
     }
 
-    logAdminAction('IMPORT_SYSTEM_BACKUP', { exportedAt: payload.exportedAt || 'unknown', reason: reason || '未提供原因' });
+    const afterCounts = {
+      catalogOverridesCount: catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides).length : 0,
+      reportsCount: Array.isArray(reports) ? reports.length : 0,
+      votesCount: votes && typeof votes === 'object' ? Object.keys(votes).length : 0,
+    };
+
+    logAdminAction('IMPORT_SYSTEM_BACKUP', {
+      targetType: 'backup',
+      targetId: 'system',
+      exportedAt: payload.exportedAt || 'unknown',
+      before: beforeCounts,
+      after: afterCounts,
+      reason,
+    }, req);
     res.json({ success: true, message: '系統備份資料已成功還原' });
   } catch (err) {
     console.error('[Admin Backup Import Error]', err);

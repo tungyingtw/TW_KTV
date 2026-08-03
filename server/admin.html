@@ -259,10 +259,11 @@
 <!-- ══ Login Screen ══ -->
 <div id="login-screen">
   <div class="login-box">
-    <h1>台灣 KTV 歌曲資料後台</h1>
-    <p>請輸入管理憑證後進入後台。</p>
-    <input type="password" id="token-input" placeholder="請輸入管理憑證" />
-    <button onclick="doLogin()">進入後台</button>
+    <h1>後台管理系統</h1>
+    <p>請使用管理者帳號登入。所有操作將記錄於系統稽核紀錄。</p>
+    <input type="text" id="username-input" placeholder="管理者帳號" autocomplete="username" />
+    <input type="password" id="password-input" placeholder="密碼" autocomplete="current-password" />
+    <button onclick="doLogin()">登入</button>
     <div id="login-err" class="login-err"></div>
   </div>
 </div>
@@ -271,6 +272,10 @@
 <div id="app">
   <header>
     <h1>台灣 KTV 歌曲資料後台 <span>維護工具</span></h1>
+    <div id="user-info-bar" style="display:flex; align-items:center; gap:8px; background:var(--surface2); padding:4px 12px; border-radius:20px; font-size:0.82rem; border:1px solid var(--border);">
+      <span id="user-display-name" style="font-weight:700; color:var(--text);"></span>
+      <span id="user-role-badge" class="badge badge-resolved"></span>
+    </div>
     <div class="header-stats" id="stats-bar">
       <div class="stat-chip">正在載入資料...</div>
     </div>
@@ -281,16 +286,17 @@
   </header>
 
   <nav>
-    <button class="active" onclick="showTab('tab-overview', this)">總覽</button>
-    <button onclick="showTab('tab-reports', this)">使用者回報</button>
-    <button onclick="showTab('tab-disputed', this)">爭議投票</button>
-    <button onclick="showTab('tab-verified', this)">已驗證建議</button>
-    <button onclick="showTab('tab-guided', this)">導唱票選</button>
-    <button onclick="showTab('tab-mv', this)">MV 類型票選</button>
-    <button onclick="showTab('tab-songs', this)">歌曲管理</button>
-    <button onclick="showTab('tab-aliases', this)">歌手別名</button>
-    <button onclick="showTab('tab-backup', this)">備份與容量</button>
-    <button onclick="showTab('tab-logs', this)">操作日誌</button>
+    <button id="nav-overview" class="active" onclick="showTab('tab-overview', this)">總覽</button>
+    <button id="nav-reports" onclick="showTab('tab-reports', this)">使用者回報</button>
+    <button id="nav-disputed" onclick="showTab('tab-disputed', this)">爭議投票</button>
+    <button id="nav-verified" onclick="showTab('tab-verified', this)">已驗證建議</button>
+    <button id="nav-guided" onclick="showTab('tab-guided', this)">導唱票選</button>
+    <button id="nav-mv" onclick="showTab('tab-mv', this)">MV 類型票選</button>
+    <button id="nav-songs" onclick="showTab('tab-songs', this)">歌曲管理</button>
+    <button id="nav-aliases" onclick="showTab('tab-aliases', this)">歌手別名</button>
+    <button id="nav-backup" onclick="showTab('tab-backup', this)">備份與容量</button>
+    <button id="nav-logs" onclick="showTab('tab-logs', this)">操作日誌</button>
+    <button id="nav-admins" onclick="showTab('tab-admins', this)">管理者管理</button>
   </nav>
 
   <main>
@@ -372,7 +378,7 @@
         </ol>
       </div>
 
-      <div class="card" style="margin-top:20px; border-color:rgba(168,85,247,0.3)">
+      <div class="card" id="reset-stats-card" style="margin-top:20px; border-color:rgba(168,85,247,0.3)">
         <h3 style="margin-bottom:12px; font-size:0.95rem; color:#c084fc;">累積訪客查詢人數管理</h3>
         <p style="color:var(--muted); font-size:0.85rem; margin-bottom:12px;">
           在此您可以隨時重置全站累積查詢人數為 1 人次，或輸入自訂數值進行設定。
@@ -502,8 +508,8 @@
       <h2 style="font-size:1.05rem; margin-bottom:12px;">系統資料備份與免費容量健康監控</h2>
       <p class="tab-help"><b>用途：</b>檢查儲存狀態、匯出備份與必要時匯入還原。<b>完成標準：</b>確認備份時間、容量狀態與匯入來源正確。</p>
       <div class="filter-row">
-        <button class="btn btn-blue" onclick="exportSystemBackup()">下載全站備份</button>
-        <button class="btn btn-green" onclick="triggerImportBackup()">匯入備份</button>
+        <button class="btn btn-blue" id="btn-export-backup" onclick="exportSystemBackup()">下載全站備份</button>
+        <button class="btn btn-green" id="btn-trigger-import-backup" onclick="triggerImportBackup()">匯入備份</button>
         <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="handleImportBackup(event)" />
         <button class="btn btn-ghost" onclick="loadQuotaStatus()">重新整理</button>
       </div>
@@ -551,7 +557,90 @@
       </div>
       <div id="logs-list"><div class="empty">正在載入資料...</div></div>
     </div>
+
+    <!-- ── 管理者管理 ── -->
+    <div id="tab-admins" class="tab">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <h2 style="font-size:1.05rem;">管理者帳號與權限控管</h2>
+          <p class="tab-help"><b>用途：</b>維護後台管理者帳號、角色與存取狀態。<b>完成標準：</b>高風險操作均明確記錄身分與權限。</p>
+        </div>
+        <button class="btn btn-primary" id="btn-open-create-admin" onclick="openCreateAdminModal()">+ 新增一般管理者</button>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.85rem;">
+          <thead>
+            <tr style="background:var(--surface2); color:var(--muted); border-bottom:1px solid var(--border);">
+              <th style="padding:10px 14px;">帳號</th>
+              <th style="padding:10px 14px;">顯示名稱</th>
+              <th style="padding:10px 14px;">角色</th>
+              <th style="padding:10px 14px;">狀態</th>
+              <th style="padding:10px 14px;">最後登入時間</th>
+              <th style="padding:10px 14px; text-align:right;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="admins-list-tbody">
+            <tr><td colspan="6" style="padding:20px; text-align:center; color:var(--muted);">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </main>
+</div>
+
+<!-- ══ Create Admin Modal ══ -->
+<div id="create-admin-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:250;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal-box" style="width:480px;">
+    <h3>新增管理者帳號</h3>
+    <div class="form-group">
+      <label>管理者帳號</label>
+      <input id="new-admin-username" placeholder="例：staff_mike" />
+    </div>
+    <div class="form-group">
+      <label>顯示名稱</label>
+      <input id="new-admin-display-name" placeholder="例：維護員 Mike" />
+    </div>
+    <div class="form-group">
+      <label>初始密碼 (至少 6 碼)</label>
+      <input id="new-admin-password" type="password" placeholder="請輸入密碼" />
+    </div>
+    <div class="form-group">
+      <label>角色類型</label>
+      <select id="new-admin-role">
+        <option value="admin" selected>一般管理者 (Admin)</option>
+        <option value="super_admin">最高管理者 (Super Admin)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>建立原因 / 說明 (高風險必填，至少 4 字)</label>
+      <input id="new-admin-reason" placeholder="請填寫本次建立管理者帳號的原因" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="saveCreateAdmin()" style="flex:1;">確認新增</button>
+      <button class="btn btn-ghost" onclick="closeCreateAdminModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Reset Admin Password Modal ══ -->
+<div id="reset-admin-pwd-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:250;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal-box" style="width:440px;">
+    <h3>重設管理者密碼</h3>
+    <input type="hidden" id="reset-pwd-admin-id" />
+    <div id="reset-pwd-admin-info" style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.88rem;color:var(--muted);"></div>
+    <div class="form-group">
+      <label>新密碼 (至少 6 碼)</label>
+      <input id="reset-new-password" type="password" placeholder="請輸入新密碼" />
+    </div>
+    <div class="form-group">
+      <label>重設原因 / 說明 (高風險必填，至少 4 字)</label>
+      <input id="reset-pwd-reason" placeholder="請填寫重設密碼的原因" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-yellow" onclick="saveResetAdminPassword()" style="flex:1;">確認重設</button>
+      <button class="btn btn-ghost" onclick="closeResetAdminPasswordModal()">取消</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══ Fix Modal ══ -->
@@ -642,7 +731,7 @@
     <div id="song-brand-editor" class="brand-editor-grid"></div>
     <div class="song-editor-actions">
       <button class="btn-editor-save" onclick="saveSongEditor()">儲存歌曲</button>
-      <button class="btn-editor-delete" onclick="deleteSongFromEditor()">刪除歌曲</button>
+      <button class="btn-editor-delete" id="btn-delete-song" onclick="deleteSongFromEditor()">刪除歌曲</button>
       <button class="btn-editor-cancel" onclick="closeSongEditor()">取消</button>
     </div>
   </div>
@@ -706,7 +795,6 @@ const API = isLocalEnv
   ? `${window.location.protocol}//${window.location.hostname}:3001`
   : (isGitHubPages ? 'https://tw-ktv.onrender.com' : window.location.origin);
 
-let adminToken = sessionStorage.getItem('ktv_admin_token') || '';
 let currentSongEditorMode = 'create';
 let currentSongEditorData = null;
 const ADMIN_BRANDS = [
@@ -723,8 +811,14 @@ const ADMIN_BRANDS = [
   ['hongyin', '弘○'],
 ];
 
-if (adminToken) {
+window.currentAdmin = null;
+
+// 頁面初次載入自動檢查 Session
+if (sessionStorage.getItem('adminSessionToken')) {
   verifyLogin();
+} else {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
 }
 
 // ── 狀態標籤對照 ──
@@ -746,71 +840,193 @@ function confidenceLabel(confidence) {
   }[confidence] || confidence;
 }
 
-// ── 登入 ──
-function doLogin() {
-  const t = document.getElementById('token-input').value.trim();
-  if (!t) {
-    document.getElementById('login-err').textContent = '請輸入管理憑證';
+// ── 帳密登入 ──
+async function doLogin() {
+  const usernameEl = document.getElementById('username-input');
+  const passwordEl = document.getElementById('password-input');
+  const errEl = document.getElementById('login-err');
+
+  const username = usernameEl ? usernameEl.value.trim() : '';
+  const password = passwordEl ? passwordEl.value.trim() : '';
+
+  if (!username || !password) {
+    if (errEl) errEl.textContent = '請輸入管理者帳號與密碼';
     return;
   }
-  adminToken = t;
-  verifyLogin();
-}
-document.getElementById('token-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
 
-// ── 登出並返回首頁 ──
-function doLogout() {
-  if (!confirm('確定要登出後台嗎？\n登出後需要重新輸入管理憑證。')) return;
-  sessionStorage.removeItem('ktv_admin_token');
-  adminToken = '';
-  const homeUrl = isLocalEnv
-    ? `${window.location.protocol}//${window.location.hostname}:5173/`
-    : 'https://tungyingtw.github.io/TW_KTV/';
-  window.location.href = homeUrl;
-}
+  if (errEl) errEl.textContent = '正在登入...';
 
-async function verifyLogin() {
-  const errEl = document.getElementById('login-err');
-  if (errEl) errEl.textContent = '正在驗證登入...';
   try {
-    const res = await apiFetch('/api/admin/stats');
-    if (res.ok) {
-      sessionStorage.setItem('ktv_admin_token', adminToken);
+    const res = await fetch(API + '/api/admin/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success && data.sessionToken) {
+      sessionStorage.setItem('adminSessionToken', data.sessionToken);
+      window.currentAdmin = data.admin;
+      if (errEl) errEl.textContent = '';
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
+      applyAdminPermissionsUI(data.admin);
       loadStats();
       loadReports();
       loadAdminAliases();
     } else {
-      const data = await res.json().catch(() => ({}));
-      if (errEl) errEl.textContent = data.error || '權限不足：請提供有效的管理憑證';
-      sessionStorage.removeItem('ktv_admin_token');
+      if (errEl) errEl.textContent = data.error || '帳號或密碼不正確，請確認後再試。';
+    }
+  } catch (err) {
+    if (errEl) errEl.textContent = '連線失敗，請稍後再試';
+  }
+}
+
+const uInput = document.getElementById('username-input');
+const pInput = document.getElementById('password-input');
+if (uInput) uInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+if (pInput) pInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ── 登出 ──
+async function doLogout() {
+  if (!confirm('確定要登出後台嗎？\n登出後需要重新輸入管理者帳號與密碼。')) return;
+  try {
+    await apiFetch('/api/admin/auth/logout', { method: 'POST' });
+  } catch (e) {}
+  sessionStorage.removeItem('adminSessionToken');
+  window.currentAdmin = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  if (document.getElementById('login-err')) document.getElementById('login-err').textContent = '';
+}
+
+async function verifyLogin() {
+  const errEl = document.getElementById('login-err');
+  const token = sessionStorage.getItem('adminSessionToken');
+  if (!token) {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    return;
+  }
+  if (errEl) errEl.textContent = '正在驗證身分...';
+  try {
+    const res = await apiFetch('/api/admin/auth/me');
+    if (res.ok) {
+      const data = await res.json();
+      window.currentAdmin = data.admin;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      applyAdminPermissionsUI(data.admin);
+      loadStats();
+      loadReports();
+      loadAdminAliases();
+    } else {
+      sessionStorage.removeItem('adminSessionToken');
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      if (errEl) errEl.textContent = 'Session 已失效，請重新登入';
     }
   } catch (e) {
     if (errEl) errEl.textContent = '連線失敗，請稍後再試';
   }
 }
 
-// ── API 工具 ──
+// ── API 工具 (自動帶入 Session Token 與 HTTP 錯誤處理) ──
 function apiFetch(path, options = {}) {
+  const token = sessionStorage.getItem('adminSessionToken') || '';
   return fetch(API + path, {
     ...options,
-    headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken, ...(options.headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'x-admin-session': token,
+      ...(options.headers || {})
+    },
+  }).then(async res => {
+    if (res.status === 401 && path !== '/api/admin/auth/login' && path !== '/api/admin/auth/me') {
+      showToast('Session 已過期，請重新登入', 'error');
+      sessionStorage.removeItem('adminSessionToken');
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+    } else if (res.status === 403 && path !== '/api/admin/auth/me') {
+      const data = await res.clone().json().catch(() => ({}));
+      showToast('權限不足：' + (data.error || '此操作被拒絕'), 'error');
+    }
+    return res;
   });
+}
+
+// ── 動態適配管理者 UI 權限 ──
+function applyAdminPermissionsUI(admin) {
+  if (!admin) return;
+  const userDisp = document.getElementById('user-display-name');
+  const roleBadge = document.getElementById('user-role-badge');
+  if (userDisp) userDisp.textContent = admin.displayName || admin.username;
+  if (roleBadge) {
+    const isSuper = admin.role === 'super_admin';
+    roleBadge.textContent = isSuper ? '最高管理者' : '一般管理者';
+    roleBadge.className = isSuper ? 'badge badge-resolved' : 'badge badge-reviewed';
+  }
+
+  const perms = admin.permissions || [];
+
+  const tabPermMap = {
+    'nav-overview': 'dashboard.view',
+    'nav-reports': 'reports.view',
+    'nav-disputed': 'votes.view',
+    'nav-verified': 'votes.view',
+    'nav-guided': 'votes.view',
+    'nav-mv': 'votes.view',
+    'nav-songs': 'songs.view',
+    'nav-aliases': 'aliases.view',
+    'nav-logs': 'logs.view',
+    'nav-admins': 'admins.view',
+  };
+
+  for (const [navId, requiredPerm] of Object.entries(tabPermMap)) {
+    const navBtn = document.getElementById(navId);
+    if (navBtn) {
+      navBtn.style.display = perms.includes(requiredPerm) ? 'inline-block' : 'none';
+    }
+  }
+
+  // 2.3 備份頁籤權限邏輯修正：具備 export / validate / import 任一權限即可看到頁籤
+  const navBackup = document.getElementById('nav-backup');
+  if (navBackup) {
+    const hasBackupPerm = perms.includes('backup.export') || perms.includes('backup.validate') || perms.includes('backup.import');
+    navBackup.style.display = hasBackupPerm ? 'inline-block' : 'none';
+  }
+
+  // 2.2 高風險按鈕級權限控制
+  const resetStatsCard = document.getElementById('reset-stats-card');
+  if (resetStatsCard) resetStatsCard.style.display = perms.includes('stats.reset') ? 'block' : 'none';
+
+  const btnExportBackup = document.getElementById('btn-export-backup');
+  if (btnExportBackup) btnExportBackup.style.display = perms.includes('backup.export') ? 'inline-block' : 'none';
+
+  const btnTriggerImport = document.getElementById('btn-trigger-import-backup');
+  if (btnTriggerImport) btnTriggerImport.style.display = perms.includes('backup.import') ? 'inline-block' : 'none';
+
+  const btnDeleteSong = document.getElementById('btn-delete-song');
+  if (btnDeleteSong) btnDeleteSong.style.display = perms.includes('songs.delete') ? 'inline-block' : 'none';
+
+  const btnDeleteAlias = document.getElementById('btn-delete-alias');
+  if (btnDeleteAlias) btnDeleteAlias.style.display = perms.includes('aliases.manage') ? 'inline-block' : 'none';
+
+  const btnOpenCreateAdmin = document.getElementById('btn-open-create-admin');
+  if (btnOpenCreateAdmin) btnOpenCreateAdmin.style.display = perms.includes('admins.manage') ? 'inline-block' : 'none';
 }
 
 // ── 統計 ──
 async function loadStats() {
   const res = await apiFetch('/api/admin/stats');
+  if (!res.ok) return;
   const data = await res.json();
   document.getElementById('ov-catalog').textContent = data.catalog?.total?.toLocaleString() ?? '—';
   document.getElementById('ov-pending').textContent = data.reports?.pending ?? '—';
   document.getElementById('ov-disputed').textContent = data.votes?.disputed ?? '—';
   document.getElementById('ov-verified').textContent = data.votes?.verified ?? '—';
 
-  // 即時更新今日待處理任務看板卡片
   const dashReports = document.getElementById('dash-reports-count');
   const dashDisputed = document.getElementById('dash-disputed-count');
   const dashGuided = document.getElementById('dash-guided-count');
@@ -850,6 +1066,171 @@ function showTab(id, btnEl) {
   if (id === 'tab-aliases') loadAdminAliases();
   if (id === 'tab-backup') loadQuotaStatus();
   if (id === 'tab-logs') loadLogs();
+  if (id === 'tab-admins') loadAdmins();
+}
+
+// ── 管理者管理功能 ──
+async function loadAdmins() {
+  const tbody = document.getElementById('admins-list-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center; color:var(--muted);">載入中...</td></tr>';
+
+  try {
+    const res = await apiFetch('/api/admin/admins');
+    if (!res.ok) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center; color:var(--red);">無法載入管理者列表 (權限不足)</td></tr>';
+      return;
+    }
+    const data = await res.json();
+    const admins = data.admins || [];
+
+    if (!admins.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center; color:var(--muted);">目前沒有其他管理者</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = admins.map(u => `
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:10px 14px; font-weight:700; color:var(--text);">${escapeHtml(u.username)}</td>
+        <td style="padding:10px 14px; color:var(--text);">${escapeHtml(u.displayName || u.username)}</td>
+        <td style="padding:10px 14px;">
+          <span class="badge ${u.role==='super_admin'?'badge-resolved':'badge-reviewed'}">${u.role==='super_admin'?'最高管理者':'一般管理者'}</span>
+        </td>
+        <td style="padding:10px 14px;">
+          <span class="badge ${u.status==='active'?'badge-resolved':'badge-rejected'}">${u.status==='active'?'啟用':'停用'}</span>
+        </td>
+        <td style="padding:10px 14px; color:var(--muted); font-size:0.8rem;">${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('zh-TW') : '未曾登入'}</td>
+        <td style="padding:10px 14px; text-align:right;">
+          <div style="display:flex; gap:6px; justify-content:flex-end;">
+            <button class="btn btn-yellow" style="padding:3px 8px; font-size:0.75rem;" onclick="openResetAdminPasswordModal('${u.id}', '${escapeAttr(u.username)}')">重設密碼</button>
+            <button class="btn ${u.status==='active'?'btn-red':'btn-green'}" style="padding:3px 8px; font-size:0.75rem;" onclick="toggleAdminStatus('${u.id}', '${escapeAttr(u.username)}', '${u.status}')">
+              ${u.status==='active'?'停用帳號':'啟用帳號'}
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center; color:var(--red);">連線失敗，無法載入管理者列表</td></tr>';
+  }
+}
+
+function openCreateAdminModal() {
+  document.getElementById('new-admin-username').value = '';
+  document.getElementById('new-admin-display-name').value = '';
+  document.getElementById('new-admin-password').value = '';
+  document.getElementById('new-admin-role').value = 'admin';
+  document.getElementById('new-admin-reason').value = '';
+  document.getElementById('create-admin-modal').style.display = 'flex';
+}
+
+function closeCreateAdminModal() {
+  document.getElementById('create-admin-modal').style.display = 'none';
+}
+
+async function saveCreateAdmin() {
+  const username = document.getElementById('new-admin-username').value.trim();
+  const displayName = document.getElementById('new-admin-display-name').value.trim();
+  const password = document.getElementById('new-admin-password').value.trim();
+  const role = document.getElementById('new-admin-role').value;
+  const reason = document.getElementById('new-admin-reason').value.trim();
+
+  if (!username || !password || password.length < 6) {
+    showToast('資料未完整：請提供帳號與至少 6 碼之密碼', 'error');
+    return;
+  }
+  if (!reason || reason.length < 4) {
+    showToast('此高風險操作需要填寫操作理由（至少 4 個字）', 'error');
+    return;
+  }
+
+  try {
+    const res = await apiFetch('/api/admin/admins', {
+      method: 'POST',
+      body: JSON.stringify({ username, displayName, password, role, reason })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(`已完成：成功新增管理者「${username}」`, 'success');
+      closeCreateAdminModal();
+      loadAdmins();
+    } else {
+      showToast('操作失敗：' + (data.error || '新增失敗'), 'error');
+    }
+  } catch (err) {
+    showToast('操作失敗：' + err.message, 'error');
+  }
+}
+
+async function toggleAdminStatus(adminId, username, currentStatus) {
+  const nextStatus = currentStatus === 'active' ? 'disabled' : 'active';
+  const actionText = nextStatus === 'disabled' ? '停用' : '啟用';
+  const reason = prompt(`確定要${actionText}管理者「${username}」的帳號嗎？\n請輸入本次操作原因 (高風險必填，至少 4 個字)：`, `因維護需求${actionText}帳號`);
+  if (!reason) return;
+  if (reason.trim().length < 4) {
+    showToast('此高風險操作需要填寫操作理由（至少 4 個字）', 'error');
+    return;
+  }
+
+  try {
+    const res = await apiFetch(`/api/admin/admins/${adminId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: nextStatus, reason: reason.trim() })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(`已完成：管理者「${username}」帳號已${actionText}`, 'success');
+      loadAdmins();
+    } else {
+      showToast('操作失敗：' + (data.error || '狀態更新失敗'), 'error');
+    }
+  } catch (err) {
+    showToast('操作失敗：' + err.message, 'error');
+  }
+}
+
+function openResetAdminPasswordModal(adminId, username) {
+  document.getElementById('reset-pwd-admin-id').value = adminId;
+  document.getElementById('reset-pwd-admin-info').textContent = `正在重設管理者帳號：「${username}」之登入密碼`;
+  document.getElementById('reset-new-password').value = '';
+  document.getElementById('reset-pwd-reason').value = '';
+  document.getElementById('reset-admin-pwd-modal').style.display = 'flex';
+}
+
+function closeResetAdminPasswordModal() {
+  document.getElementById('reset-admin-pwd-modal').style.display = 'none';
+}
+
+async function saveResetAdminPassword() {
+  const adminId = document.getElementById('reset-pwd-admin-id').value;
+  const password = document.getElementById('reset-new-password').value.trim();
+  const reason = document.getElementById('reset-pwd-reason').value.trim();
+
+  if (!password || password.length < 6) {
+    showToast('請提供長度至少 6 碼的新密碼', 'error');
+    return;
+  }
+  if (!reason || reason.length < 4) {
+    showToast('此高風險操作需要填寫操作理由（至少 4 個字）', 'error');
+    return;
+  }
+
+  try {
+    const res = await apiFetch(`/api/admin/admins/${adminId}/password`, {
+      method: 'POST',
+      body: JSON.stringify({ password, reason })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(data.message || '已成功重設密碼', 'success');
+      closeResetAdminPasswordModal();
+      loadAdmins();
+    } else {
+      showToast('操作失敗：' + (data.error || '重設密碼失敗'), 'error');
+    }
+  } catch (err) {
+    showToast('操作失敗：' + err.message, 'error');
+  }
 }
 
 // ── 備份與容量健康監控 ──
@@ -915,14 +1296,28 @@ async function loadQuotaStatus() {
   }
 }
 
-function exportSystemBackup() {
-  const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token') || adminToken;
-  if (!token) {
-    showToast('權限已失效，請重新登入', 'error');
-    return;
-  }
+async function exportSystemBackup() {
   showToast('正在匯出全站備份...', 'success');
-  window.open(`/api/admin/backup/export?token=${encodeURIComponent(token)}`, '_blank');
+  try {
+    const res = await apiFetch('/api/admin/backup/export');
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      showToast('備份匯出失敗：' + (data.error || '權限不足'), 'error');
+      return;
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ktv_system_backup_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    showToast('備份已成功下載', 'success');
+  } catch (err) {
+    showToast('備份匯出失敗：' + err.message, 'error');
+  }
 }
 
 function triggerImportBackup() {
@@ -1535,6 +1930,33 @@ async function saveSongEditor() {
   }
 }
 
+async function resetStatsCounter() {
+  const countInput = document.getElementById('custom-stats-count');
+  const count = countInput ? Number(countInput.value) : 1;
+  const reason = prompt(`確定要將累積查詢人數設定為 ${count} 人次嗎？此數字會影響前台累積查詢顯示。\n請輸入本次操作原因 (高風險必填，至少 4 個字)：`, '定期維護校正累積查詢人數');
+  if (!reason) return;
+  if (reason.trim().length < 4) {
+    showToast('此高風險操作需要填寫操作理由（至少 4 個字）', 'error');
+    return;
+  }
+
+  try {
+    const res = await apiFetch('/api/admin/stats/reset', {
+      method: 'POST',
+      body: JSON.stringify({ count, reason: reason.trim() })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(`已完成：累積查詢人數已設定為 ${data.totalVisits} 人次`, 'success');
+      loadStats();
+    } else {
+      showToast('操作失敗：' + (data.error || '設定失敗'), 'error');
+    }
+  } catch (err) {
+    showToast('操作失敗：' + err.message, 'error');
+  }
+}
+
 async function deleteSongFromEditor() {
   if (currentSongEditorMode !== 'edit') {
     closeSongEditor(true);
@@ -1542,13 +1964,17 @@ async function deleteSongFromEditor() {
   }
   const songId = document.getElementById('song-editor-id').value;
   const title = document.getElementById('song-title').value;
-  const reasonPrompt = prompt(`確定要刪除歌曲「${title}」嗎？\n請輸入刪除原因/說明（選填）：`, '');
-  if (reasonPrompt === null) return; // 使用者取消
+  const reasonPrompt = prompt(`確定要刪除歌曲「${title}」嗎？此操作會寫入前台刪除覆寫，使用者將不再看到此歌曲。\n請輸入刪除原因/說明 (高風險必填，至少 4 個字)：`, '門市經人工確認未收錄此歌曲');
+  if (!reasonPrompt) return;
+  if (reasonPrompt.trim().length < 4) {
+    showToast('此高風險操作需要填寫操作理由（至少 4 個字）', 'error');
+    return;
+  }
 
   try {
     const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`, {
       method: 'DELETE',
-      body: JSON.stringify({ reason: reasonPrompt })
+      body: JSON.stringify({ reason: reasonPrompt.trim() })
     });
     const data = await res.json().catch(() => ({ error: '伺服器回應格式異常' }));
     if (!data.success) {
@@ -1693,28 +2119,6 @@ async function applyFix() {
   }
 }
 
-async function resetStatsCounter() {
-  const countInput = document.getElementById('custom-stats-count');
-  const count = parseInt(countInput.value, 10) || 1;
-  const reasonPrompt = prompt(`確定要將累積查詢人數設定為 ${count} 人次嗎？\n請輸入設定原因/說明（選填）：`, '');
-  if (reasonPrompt === null) return; // 使用者取消
-
-  try {
-    const res = await apiFetch('/api/admin/stats/reset', {
-      method: 'POST',
-      body: JSON.stringify({ count, reason: reasonPrompt }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast(`已完成：累積查詢人數已設定為 ${data.totalVisits} 人次`, 'success');
-      try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
-    } else {
-      showToast('操作失敗：' + (data.error || '連線失敗，請稍後再試'), 'error');
-    }
-  } catch (e) {
-    showToast('操作失敗，請稍後再試', 'error');
-  }
-}
 
 // ── Toast ──
 let toastTimer;
