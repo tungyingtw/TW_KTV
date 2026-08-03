@@ -37,14 +37,10 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
   };
 
   const [onlineCount, setOnlineCount] = useState<number>(1);
-  const [totalVisits, setTotalVisits] = useState<number>(() => {
-    try {
-      const stored = localStorage.getItem('tw_ktv_total_visits_v2');
-      return stored ? parseInt(stored, 10) : 1;
-    } catch {
-      return 1;
-    }
-  });
+  const [totalVisits, setTotalVisits] = useState<number | null>(null);
+  const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
+  const [isStatsError, setIsStatsError] = useState<boolean>(false);
+  const [isStatsPersistent, setIsStatsPersistent] = useState<boolean>(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,12 +57,26 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
         if (res.ok && isMounted) {
           const data = await res.json();
           if (typeof data.online === 'number') setOnlineCount(Math.max(1, data.online));
-          if (typeof data.totalVisits === 'number') {
-            setTotalVisits(data.totalVisits);
-            try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
+          if (typeof data.totalVisits !== 'number') {
+            setIsStatsError(true);
+            setIsStatsLoading(false);
+            return;
           }
+          setTotalVisits(data.totalVisits);
+          setIsStatsPersistent(data.persistent !== false);
+          setIsStatsError(false);
+          setIsStatsLoading(false);
+          try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
+        } else if (isMounted) {
+          setIsStatsError(true);
+          setIsStatsLoading(false);
         }
-      } catch {}
+      } catch {
+        if (isMounted) {
+          setIsStatsError(true);
+          setIsStatsLoading(false);
+        }
+      }
     };
     fetchStats();
     const interval = setInterval(fetchStats, 15000);
@@ -109,12 +119,31 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
               <span>{onlineCount.toLocaleString()} 人線上</span>
             </div>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', padding: '2px 7px',
-              borderRadius: '12px', background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)',
-              fontSize: '0.7rem', fontWeight: 700, color: '#c084fc', whiteSpace: 'nowrap',
-            }}>
-              <span>累積 {totalVisits.toLocaleString()} 人</span>
+            <div
+              title={
+                isStatsError
+                  ? '全站累積查詢人數暫時無法連線同步'
+                  : !isStatsPersistent
+                    ? '全台歌友累積查詢數 (本機模式)'
+                    : '全台歌友累積查詢與使用人數 (12小時去重與 Redis 全站同步)'
+              }
+              style={{
+                display: 'inline-flex', alignItems: 'center', padding: '2px 7px',
+                borderRadius: '12px',
+                background: isStatsError ? 'rgba(248, 113, 113, 0.15)' : 'rgba(168, 85, 247, 0.15)',
+                border: `1px solid ${isStatsError ? 'rgba(248, 113, 113, 0.3)' : 'rgba(168, 85, 247, 0.3)'}`,
+                fontSize: '0.7rem', fontWeight: 700,
+                color: isStatsError ? '#f87171' : '#c084fc',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span>
+                {isStatsLoading
+                  ? '同步中...'
+                  : isStatsError
+                    ? '未同步'
+                    : `${isStatsPersistent ? '累積' : '本機'} ${totalVisits?.toLocaleString() ?? 1} 人`}
+              </span>
             </div>
           </div>
         </div>
