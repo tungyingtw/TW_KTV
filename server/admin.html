@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow, noarchive" />
-<title>台灣 KTV 歌曲索引 — 維護工具</title>
+<title>台灣 KTV 歌曲資料後台維護工具</title>
 <style>
   :root {
     --bg: #0f172a;
@@ -22,6 +22,16 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
+
+  .tab-help {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.7;
+    margin: -8px 0 16px;
+  }
+  .tab-help b {
+    color: var(--text);
+  }
 
   /* ── Login ── */
   #login-screen {
@@ -72,61 +82,67 @@
     background: rgba(248,113,113,0.22); border-color: rgba(248,113,113,0.6);
   }
 
+  /* ── Navigation Tabs ── */
   nav {
     background: var(--surface); border-bottom: 1px solid var(--border);
-    display: flex; gap: 0; overflow-x: auto;
+    padding: 0 24px; display: flex; gap: 4px; overflow-x: auto;
   }
   nav button {
-    background: none; border: none; border-bottom: 3px solid transparent;
-    color: var(--muted); padding: 12px 20px; cursor: pointer; white-space: nowrap;
-    font-size: 0.88rem; font-weight: 600; transition: all 0.2s;
+    background: none; border: none; color: var(--muted);
+    padding: 12px 16px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
   }
+  nav button:hover { color: var(--text); }
   nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
-  nav button:hover:not(.active) { color: var(--text); }
 
-  main { padding: 20px 24px; max-width: 1200px; }
-
-  /* ── Tabs ── */
+  /* ── Main Content ── */
+  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
   .tab { display: none; }
   .tab.active { display: block; }
 
-  /* ── Cards ── */
+  /* ── Cards & Tables ── */
   .card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 18px 20px; margin-bottom: 12px;
+    padding: 20px; margin-bottom: 16px; transition: border-color 0.2s;
   }
-  .card-row { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-  .card-meta { flex: 1; min-width: 200px; }
-  .card-meta .title { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+  .card-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .card-meta { flex: 1; min-width: 240px; }
+  .card-meta .title { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
   .card-meta .sub { color: var(--muted); font-size: 0.82rem; }
-  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+  .card-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-  /* ── Badges ── */
   .badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    border-radius: 20px; padding: 3px 10px; font-size: 0.76rem; font-weight: 700;
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;
   }
-  .badge-pending  { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
-  .badge-resolved { background: rgba(74,222,128,0.15); color: var(--green);  border: 1px solid rgba(74,222,128,0.3); }
-  .badge-reviewed { background: rgba(96,165,250,0.15); color: var(--blue);   border: 1px solid rgba(96,165,250,0.3); }
-  .badge-rejected { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid var(--border); }
-  .badge-disputed { background: rgba(248,113,113,0.15); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
-  .badge-verified { background: rgba(74,222,128,0.15);  color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
-  .badge-uncertain{ background: rgba(251,191,36,0.15);  color: var(--yellow);border: 1px solid rgba(251,191,36,0.3); }
+  .badge-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .badge-reviewed { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .badge-resolved { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-rejected { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-disputed { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-verified { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-uncertain { background: rgba(251,191,36,0.15); color: var(--yellow); }
 
   /* ── Buttons ── */
-  .btn { border: none; border-radius: 7px; padding: 6px 13px; cursor: pointer; font-weight: 600; font-size: 0.82rem; transition: opacity 0.15s; }
+  .btn {
+    border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 6px;
+  }
   .btn:hover { opacity: 0.85; }
-  .btn-green  { background: rgba(74,222,128,0.2); color: var(--green); border: 1px solid rgba(74,222,128,0.4); }
-  .btn-red    { background: rgba(248,113,113,0.2); color: var(--red);  border: 1px solid rgba(248,113,113,0.4); }
-  .btn-blue   { background: rgba(96,165,250,0.2);  color: var(--blue); border: 1px solid rgba(96,165,250,0.4); }
-  .btn-yellow { background: rgba(251,191,36,0.2);  color: var(--yellow); border: 1px solid rgba(251,191,36,0.4); }
-  .btn-ghost  { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+  .btn-green  { background: rgba(74,222,128,0.18); color: var(--green); border: 1px solid rgba(74,222,128,0.35); }
+  .btn-red    { background: rgba(248,113,113,0.18); color: var(--red); border: 1px solid rgba(248,113,113,0.35); }
+  .btn-yellow { background: rgba(251,191,36,0.18); color: var(--yellow); border: 1px solid rgba(251,191,36,0.35); }
+  .btn-blue   { background: rgba(96,165,250,0.18); color: var(--blue); border: 1px solid rgba(96,165,250,0.35); }
+  .btn-ghost  { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-primary { background: linear-gradient(135deg, #ec4899, #a855f7); color: #fff; }
 
-  /* ── Votes Bar ── */
-  .vote-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .filter-row { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+  .filter-row input, .filter-row select {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 12px; color: var(--text); font-size: 0.85rem;
+  }
+
+  .vote-bar { display: flex; gap: 12px; align-items: center; font-size: 0.82rem; margin-top: 6px; }
   .vote-confirm { color: var(--green); font-weight: 700; }
-  .vote-deny    { color: var(--red);   font-weight: 700; }
 
   /* ── Filters ── */
   .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
@@ -243,10 +259,10 @@
 <!-- ══ Login Screen ══ -->
 <div id="login-screen">
   <div class="login-box">
-    <h1>台灣 KTV 歌曲索引</h1>
-    <p>授權維護工具 — 請輸入存取憑證</p>
-    <input type="password" id="token-input" placeholder="輸入存取憑證..." />
-    <button onclick="doLogin()">進入維護工具</button>
+    <h1>台灣 KTV 歌曲資料後台</h1>
+    <p>請輸入管理憑證後進入後台。</p>
+    <input type="password" id="token-input" placeholder="請輸入管理憑證" />
+    <button onclick="doLogin()">進入後台</button>
     <div id="login-err" class="login-err"></div>
   </div>
 </div>
@@ -254,13 +270,13 @@
 <!-- ══ App ══ -->
 <div id="app">
   <header>
-    <h1>台灣 KTV 歌曲索引 — <span>維護工具</span></h1>
+    <h1>台灣 KTV 歌曲資料後台 <span>維護工具</span></h1>
     <div class="header-stats" id="stats-bar">
-      <div class="stat-chip">載入中...</div>
+      <div class="stat-chip">正在載入資料...</div>
     </div>
-    <button class="btn-logout" onclick="doLogout()" title="登出維護工具並返回首頁">
+    <button class="btn-logout" onclick="doLogout()" title="登出後台並返回首頁">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      登出並返回首頁
+      登出
     </button>
   </header>
 
@@ -268,18 +284,19 @@
     <button class="active" onclick="showTab('tab-overview', this)">總覽</button>
     <button onclick="showTab('tab-reports', this)">使用者回報</button>
     <button onclick="showTab('tab-disputed', this)">爭議投票</button>
-    <button onclick="showTab('tab-verified', this)">已驗證</button>
-    <button onclick="showTab('tab-guided', this)">導唱票</button>
-    <button onclick="showTab('tab-mv', this)">MV 票選</button>
+    <button onclick="showTab('tab-verified', this)">已驗證建議</button>
+    <button onclick="showTab('tab-guided', this)">導唱票選</button>
+    <button onclick="showTab('tab-mv', this)">MV 類型票選</button>
     <button onclick="showTab('tab-songs', this)">歌曲管理</button>
-    <button onclick="showTab('tab-aliases', this)">歌手別名維護</button>
-    <button onclick="showTab('tab-backup', this)">備份與容量管理</button>
+    <button onclick="showTab('tab-aliases', this)">歌手別名</button>
+    <button onclick="showTab('tab-backup', this)">備份與容量</button>
     <button onclick="showTab('tab-logs', this)">操作日誌</button>
   </nav>
 
   <main>
     <div id="tab-overview" class="tab active">
-      <h2 style="margin-bottom:20px; font-size:1.1rem;">系統統計總覽</h2>
+      <h2 style="margin-bottom:12px; font-size:1.1rem;">系統統計總覽</h2>
+      <p class="tab-help"><b>用途：</b>查看今日需要優先處理的後台任務。<b>完成標準：</b>待處理回報、爭議票選與系統容量狀態都已確認。</p>
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px;" id="overview-cards">
         <div class="card" style="border-color:rgba(236,72,153,0.3)">
           <div style="font-size:1.8rem;font-weight:800;color:#ec4899" id="ov-catalog">—</div>
@@ -299,6 +316,51 @@
         </div>
       </div>
 
+      <!-- 今日待處理任務看板 -->
+      <div class="card" style="margin-top:20px; border-color:rgba(236,72,153,0.3)">
+        <h3 style="margin-bottom:14px; font-size:1.0rem; color:var(--text); display:flex; align-items:center; justify-space-between;">
+          今日待處理任務
+          <span style="font-size:0.78rem; font-weight:normal; color:var(--muted);">即時統計全站營運事項</span>
+        </h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px;" id="dashboard-task-cards">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-space:between;">
+            <div>
+              <div style="font-size:0.82rem; color:var(--muted);">待審使用者回報</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--yellow); margin:4px 0;" id="dash-reports-count">0 筆</div>
+            </div>
+            <button class="btn btn-yellow" style="margin-top:8px; width:100%; justify-content:center;" onclick="showTab('tab-reports')">前往審核</button>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-space:between;">
+            <div>
+              <div style="font-size:0.82rem; color:var(--muted);">爭議投票歌曲</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--red); margin:4px 0;" id="dash-disputed-count">0 筆</div>
+            </div>
+            <button class="btn btn-red" style="margin-top:8px; width:100%; justify-content:center;" onclick="showTab('tab-disputed')">前往驗證</button>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-space:between;">
+            <div>
+              <div style="font-size:0.82rem; color:var(--muted);">導唱票選數據</div>
+              <div style="font-size:1.4rem; font-weight:800; color:#ec4899; margin:4px 0;" id="dash-guided-count">0 筆</div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:8px; width:100%; justify-content:center;" onclick="showTab('tab-guided')">前往對照</button>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-space:between;">
+            <div>
+              <div style="font-size:0.82rem; color:var(--muted);">MV 類型票選數據</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--blue); margin:4px 0;" id="dash-mv-count">0 筆</div>
+            </div>
+            <button class="btn btn-blue" style="margin-top:8px; width:100%; justify-content:center;" onclick="showTab('tab-mv')">前往審查</button>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-space:between;">
+            <div>
+              <div style="font-size:0.82rem; color:var(--muted);">儲存狀態與備份</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--green); margin:6px 0;" id="dash-storage-label">Local JSON</div>
+            </div>
+            <button class="btn btn-ghost" style="margin-top:8px; width:100%; justify-content:center;" onclick="showTab('tab-backup')">檢查狀態</button>
+          </div>
+        </div>
+      </div>
+
       <div class="card" style="margin-top:20px; border-color:rgba(96,165,250,0.2)">
         <h3 style="margin-bottom:12px; font-size:0.95rem;">維護工作流程</h3>
         <ol style="color:var(--muted); line-height:2; padding-left:18px; font-size:0.88rem;">
@@ -313,81 +375,78 @@
       <div class="card" style="margin-top:20px; border-color:rgba(168,85,247,0.3)">
         <h3 style="margin-bottom:12px; font-size:0.95rem; color:#c084fc;">累積訪客查詢人數管理</h3>
         <p style="color:var(--muted); font-size:0.85rem; margin-bottom:12px;">
-          在此您可以隨時一鍵重置全站累積查詢人數為 1 人次，或輸入自訂數值進行設定。
+          在此您可以隨時重置全站累積查詢人數為 1 人次，或輸入自訂數值進行設定。
         </p>
         <div style="display:flex; align-items:center; gap:10px;">
           <input type="number" id="custom-stats-count" value="1" min="0" style="width:140px; padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:#0f172a; color:#fff;" />
-          <button class="btn btn-primary" onclick="resetStatsCounter()">設定 / 一鍵重置人數</button>
+          <button class="btn btn-primary" onclick="resetStatsCounter()">設定累積查詢人數</button>
         </div>
       </div>
     </div>
 
     <!-- ── 使用者回報 ── -->
     <div id="tab-reports" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">使用者回報</h2>
+      <p class="tab-help"><b>用途：</b>處理前台送出的錯誤回報與新增歌曲建議。<b>完成標準：</b>每筆回報都標記為已解決、已審查或已拒絕。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">使用者回報</h2>
         <select id="report-filter" onchange="loadReports()">
           <option value="">全部狀態</option>
-          <option value="pending" selected>待審 (pending)</option>
+          <option value="pending" selected>待處理 (pending)</option>
           <option value="reviewed">已審查 (reviewed)</option>
           <option value="resolved">已解決 (resolved)</option>
           <option value="rejected">已拒絕 (rejected)</option>
         </select>
         <button class="btn btn-ghost" onclick="loadReports()">重新整理</button>
       </div>
-      <div id="reports-list"><div class="empty">載入中...</div></div>
+      <div id="reports-list"><div class="empty">正在載入資料...</div></div>
     </div>
 
     <!-- ── 爭議投票 ── -->
     <div id="tab-disputed" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">爭議投票清單</h2>
+      <p class="tab-help"><b>用途：</b>確認社群對收錄狀態有明顯分歧的歌曲。<b>完成標準：</b>人工查證後套用正確收錄狀態。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">爭議投票清單</h2>
         <button class="btn btn-ghost" onclick="loadDisputed()">重新整理</button>
       </div>
-      <p style="color:var(--muted); font-size:0.82rem; margin-bottom:14px;">
-        否定票 ≥ 5 且否定票 > 確認票 × 2 的歌曲，代表該廠牌收錄狀態可能與實際不符，需要管理員驗證後套用修正。
-      </p>
-      <div id="disputed-list"><div class="empty">載入中...</div></div>
+      <div id="disputed-list"><div class="empty">正在載入資料...</div></div>
     </div>
 
-    <!-- ── 已驗證 ── -->
+    <!-- ── 已驗證建議 ── -->
     <div id="tab-verified" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">社群已驗證清單</h2>
+      <p class="tab-help"><b>用途：</b>查看社群票數高度一致的收錄建議。<b>完成標準：</b>確認資料一致後套用或保留現況。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">社群已驗證清單</h2>
         <button class="btn btn-ghost" onclick="loadVerified()">重新整理</button>
       </div>
-      <p style="color:var(--muted); font-size:0.82rem; margin-bottom:14px;">
-        確認票 ≥ 5 且確認票 > 否定票 × 3 的歌曲，社群已高度確認該廠牌確實收錄此歌。
-      </p>
-      <div id="verified-list"><div class="empty">載入中...</div></div>
+      <div id="verified-list"><div class="empty">正在載入資料...</div></div>
     </div>
 
+    <!-- ── 導唱票選 ── -->
     <div id="tab-guided" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">導唱票選清單</h2>
+      <p class="tab-help"><b>用途：</b>依社群回報修正歌曲音訊類型。<b>完成標準：</b>標記為導唱、原唱或純伴奏，並確認資料已儲存。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">導唱票選清單</h2>
         <button class="btn btn-ghost" onclick="loadGuidedVotes()">重新整理</button>
       </div>
-      <p style="color:var(--muted); font-size:0.82rem; margin-bottom:14px;">
-        這裡彙整使用者回報的導唱資訊，僅供維護判斷；目前不會自動改寫歌曲資料。
-      </p>
-      <div id="guided-list"><div class="empty">載入中...</div></div>
+      <div id="guided-list"><div class="empty">正在載入資料...</div></div>
     </div>
 
+    <!-- ── MV 類型票選 ── -->
     <div id="tab-mv" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">MV 類型社群票選清單</h2>
+      <p class="tab-help"><b>用途：</b>依社群票選修正 MV 類型。<b>完成標準：</b>標記為官方 MV、Live MV、剪輯 MV 或動畫 MV。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">MV 類型社群票選清單</h2>
         <button class="btn btn-ghost" onclick="loadMvVotes()">重新整理</button>
       </div>
-      <p style="color:var(--muted); font-size:0.82rem; margin-bottom:14px;">
-        這裡彙整歌友回報的 MV 類型（原版 MV / 伴唱帶），供管理員審查趨勢並人工一鍵套用至主資料庫。
-      </p>
-      <div id="mv-list"><div class="empty">載入中...</div></div>
+      <div id="mv-list"><div class="empty">正在載入資料...</div></div>
     </div>
 
+    <!-- ── 歌曲管理 ── -->
     <div id="tab-songs" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">歌曲資料管理</h2>
+      <p class="tab-help"><b>用途：</b>新增、編輯、刪除歌曲與各品牌收錄資料。<b>完成標準：</b>儲存後重新查詢，確認前台會使用更新後資料。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">歌曲資料管理</h2>
-        <input id="song-admin-query" placeholder="搜尋歌名、歌手、ID 或拼音" style="min-width:260px;" onkeydown="if(event.key==='Enter') loadAdminSongs(1)" />
+        <input id="song-admin-query" placeholder="搜尋歌名、歌手、ID、拼音或注音" style="min-width:260px;" onkeydown="if(event.key==='Enter') loadAdminSongs(1)" />
         <select id="song-admin-language" onchange="loadAdminSongs(1)">
           <option value="">全部語種</option>
           <option value="國語">國語</option>
@@ -401,6 +460,7 @@
           <option value="兒歌">兒歌</option>
           <option value="原住民語">原住民語</option>
           <option value="藏語">藏語</option>
+        </select>
         <select id="song-admin-sort" onchange="loadAdminSongs(1)">
           <option value="relevance_len_asc" selected>相關度 + 字數 (短到長)</option>
           <option value="title_len_asc">歌名字數 (短到長)</option>
@@ -418,43 +478,39 @@
         <button class="btn btn-green" onclick="openSongEditor()">新增歌曲</button>
       </div>
       <div class="card">
-        <div id="song-admin-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">點擊「搜尋」開始檢索歌曲資料庫</div>
-        <div id="song-admin-list"><div class="empty">請輸入條件搜尋，或直接按搜尋載入最新歌曲。</div></div>
+        <div id="song-admin-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">請輸入條件後查詢歌曲資料</div>
+        <div id="song-admin-list"><div class="empty">請輸入條件後查詢，或直接按查詢載入最新歌曲。</div></div>
         <div id="song-admin-pagination" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;"></div>
       </div>
     </div>
 
     <!-- ── 歌手別名與雙聲母維護 ── -->
     <div id="tab-aliases" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">歌手別名與同義詞維護</h2>
+      <p class="tab-help"><b>用途：</b>維護歌手本名、別名、英文名、縮寫與注音查詢對照。<b>完成標準：</b>測試查詢能命中正確歌手。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">歌手別名與同義詞維護 (英文名/暱稱/注音拼音聲母)</h2>
-        <input id="alias-search-input" placeholder="搜尋歌手本名或別名 (如: jay, ㄓㄐㄌ, zjl)" style="min-width:260px;" oninput="renderAdminAliases()" />
-        <button class="btn btn-green" onclick="openAliasEditor()">+ 新增歌手別名</button>
-        <button class="btn btn-blue" onclick="testAliasResolutionPrompt()">即時測試別名解析</button>
+        <input id="alias-search-input" placeholder="搜尋歌手本名、別名、英文名或注音" style="min-width:260px;" oninput="renderAdminAliases()" />
+        <button class="btn btn-green" onclick="openAliasEditor()">新增歌手別名</button>
+        <button class="btn btn-blue" onclick="testAliasResolutionPrompt()">測試別名解析</button>
         <button class="btn btn-ghost" onclick="loadAdminAliases()">重新整理</button>
       </div>
-      <div class="card" style="border-color:rgba(168,85,247,0.3);margin-bottom:16px;">
-        <div style="font-size:0.85rem;color:var(--muted);line-height:1.6;">
-          💡 <b>別名與雙聲母對照說明：</b>在此維護的別名包含 <b>常用英文名</b>（如 Jay）、<b>熱門暱稱</b>（如 周董）、<b>台灣注音聲母</b>（如 ㄓㄐㄌ）與 <b>拼音聲母</b>（如 zjl）。<br>
-          前台與後台搜尋引擎皆會自動聯想擴充，輸入別名或聲母即可直達對應歌手的所有歌曲！
-        </div>
-      </div>
-      <div id="aliases-list"><div class="empty">載入中...</div></div>
+      <div id="aliases-list"><div class="empty">正在載入資料...</div></div>
     </div>
 
-    <!-- ── 備份與極限容量管理 ── -->
+    <!-- ── 備份與容量管理 ── -->
     <div id="tab-backup" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">系統資料備份與免費容量健康監控</h2>
+      <p class="tab-help"><b>用途：</b>檢查儲存狀態、匯出備份與必要時匯入還原。<b>完成標準：</b>確認備份時間、容量狀態與匯入來源正確。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">系統資料備份與免費容量健康監控</h2>
-        <button class="btn btn-blue" onclick="exportSystemBackup()">📥 一鍵下載全站 JSON 備份包</button>
-        <button class="btn btn-green" onclick="triggerImportBackup()">📤 上傳還原系統備份</button>
+        <button class="btn btn-blue" onclick="exportSystemBackup()">下載全站備份</button>
+        <button class="btn btn-green" onclick="triggerImportBackup()">匯入備份</button>
         <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="handleImportBackup(event)" />
-        <button class="btn btn-ghost" onclick="loadQuotaStatus()">重新整理容量狀態</button>
+        <button class="btn btn-ghost" onclick="loadQuotaStatus()">重新整理</button>
       </div>
 
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-bottom:16px;" id="quota-cards">
         <div class="card" style="border-color:rgba(74,222,128,0.3)">
-          <div style="font-size:1.4rem;font-weight:800;color:var(--green)" id="quota-health-status">🟢 綠色健康</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--green)" id="quota-health-status">綠色健康</div>
           <div style="color:var(--muted);margin-top:4px;font-size:0.8rem;">容量狀態 (配額 10 MB 上限)</div>
         </div>
         <div class="card" style="border-color:rgba(96,165,250,0.3)">
@@ -482,17 +538,18 @@
 
       <div class="card" style="border-color:rgba(255,255,255,0.08);">
         <h3 style="margin-bottom:12px; font-size:0.95rem;">伺服器自動快照清單 (7-Day Rolling Snapshots)</h3>
-        <div id="quota-backups-list"><div class="empty">資料載入中...</div></div>
+        <div id="quota-backups-list"><div class="empty">正在載入資料...</div></div>
       </div>
     </div>
 
     <!-- ── 操作日誌 ── -->
     <div id="tab-logs" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">管理員操作日誌</h2>
+      <p class="tab-help"><b>用途：</b>查看最近後台操作紀錄。<b>完成標準：</b>可追蹤重要操作的時間、類型與影響資料。</p>
       <div class="filter-row">
-        <h2 style="font-size:1.05rem;">管理員操作日誌</h2>
         <button class="btn btn-ghost" onclick="loadLogs()">重新整理</button>
       </div>
-      <div id="logs-list"><div class="empty">載入中...</div></div>
+      <div id="logs-list"><div class="empty">正在載入資料...</div></div>
     </div>
   </main>
 </div>
@@ -516,10 +573,10 @@
     </div>
     <div class="form-group">
       <label>備註說明（選填）</label>
-      <textarea id="fix-note" placeholder="例如：已透過好樂迪 App 實際驗證"></textarea>
+      <textarea id="fix-note" placeholder="請填寫驗證來源或修正原因"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-green" onclick="applyFix()" style="flex:1;">確認套用修正</button>
+      <button class="btn btn-green" onclick="applyFix()" style="flex:1;">套用修正</button>
       <button class="btn btn-ghost" onclick="closeFix()">取消</button>
     </div>
   </div>
@@ -597,11 +654,12 @@
     <h3 id="alias-editor-title">編輯歌手別名</h3>
     <div class="form-group">
       <label>歌手本名 (例：周杰倫 / 蔡依林)</label>
-      <input id="alias-artist-name" placeholder="輸入歌手名稱..." />
+      <input id="alias-artist-name" placeholder="請輸入歌手名稱" />
     </div>
     <div class="form-group">
       <label>別名 / 英文名 / 暱稱 / 雙聲母 (請用半形逗號隔開)</label>
-      <textarea id="alias-tags-input" placeholder="例如: jay, jay chou, 周董, zjl, ㄓㄐㄌ" style="min-height:90px;"></textarea>
+      <textarea id="alias-tags-input" placeholder="例如：jay, jay chou, 周董, zjl, ㄓㄐㄌ" style="min-height:90px;" oninput="checkAliasConflicts()"></textarea>
+      <div id="alias-conflict-hint" style="font-size:0.8rem;color:var(--yellow);margin-top:6px;display:none;background:rgba(251,191,36,0.12);padding:6px 10px;border-radius:6px;border:1px solid rgba(251,191,36,0.3);"></div>
       <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">
         提示：您可以一次填入多個英文名、暱稱、聲母，用半形逗號隔開。<br>例：<code>jay, jay chou, 周董, zjl, ㄓㄐㄌ</code>
       </div>
@@ -610,6 +668,30 @@
       <button class="btn-editor-save" onclick="saveAliasEditor()">儲存歌手別名</button>
       <button class="btn-editor-delete" id="btn-delete-alias" onclick="deleteAliasFromEditor()">刪除別名條目</button>
       <button class="btn-editor-cancel" onclick="closeAliasEditor()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Backup Import Preview Modal ══ -->
+<div id="backup-preview-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:240;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal-box" style="width:480px;max-height:90vh;overflow:auto;">
+    <h3>系統備份匯入差異預覽</h3>
+    <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:14px;margin-bottom:16px;font-size:0.88rem;color:var(--text);line-height:1.8;">
+      <div style="color:var(--muted);font-size:0.8rem;margin-bottom:6px;">備份匯出時間：<b id="backup-exported-at" style="color:var(--blue)">-</b></div>
+      <div style="font-weight:700;margin-bottom:4px;">預計影響資料數：</div>
+      <ul style="padding-left:18px;color:var(--muted);">
+        <li>歌庫覆寫修正：<b id="diff-overrides-count" style="color:var(--text)">0</b> 筆</li>
+        <li>使用者錯誤回報：<b id="diff-reports-count" style="color:var(--text)">0</b> 筆</li>
+        <li>社群投票對照紀錄：<b id="diff-votes-count" style="color:var(--text)">0</b> 筆</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      <label>操作原因 / 異動說明（選填）</label>
+      <input id="backup-import-reason" placeholder="請填寫還原原因或備份來源" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="executeImportBackup()" style="flex:1;">確認還原備份</button>
+      <button class="btn btn-ghost" onclick="closeBackupPreviewModal()">取消</button>
     </div>
   </div>
 </div>
@@ -645,11 +727,30 @@ if (adminToken) {
   verifyLogin();
 }
 
+// ── 狀態標籤對照 ──
+function statusLabel(status) {
+  return {
+    pending: '待處理',
+    reviewed: '已審查',
+    resolved: '已解決',
+    rejected: '已拒絕',
+  }[status] || status;
+}
+
+function confidenceLabel(confidence) {
+  return {
+    disputed: '爭議',
+    verified: '已驗證',
+    uncertain: '待確認',
+    neutral: '樣本不足',
+  }[confidence] || confidence;
+}
+
 // ── 登入 ──
 function doLogin() {
   const t = document.getElementById('token-input').value.trim();
   if (!t) {
-    document.getElementById('login-err').textContent = '請輸入存取憑證';
+    document.getElementById('login-err').textContent = '請輸入管理憑證';
     return;
   }
   adminToken = t;
@@ -661,10 +762,9 @@ document.getElementById('token-input').addEventListener('keydown', e => {
 
 // ── 登出並返回首頁 ──
 function doLogout() {
-  if (!confirm('確定要登出維護工具並返回首頁嗎？')) return;
+  if (!confirm('確定要登出後台嗎？\n登出後需要重新輸入管理憑證。')) return;
   sessionStorage.removeItem('ktv_admin_token');
   adminToken = '';
-  // 導向首頁（自動判斷本機 or GitHub Pages）
   const homeUrl = isLocalEnv
     ? `${window.location.protocol}//${window.location.hostname}:5173/`
     : 'https://tungyingtw.github.io/TW_KTV/';
@@ -685,11 +785,11 @@ async function verifyLogin() {
       loadAdminAliases();
     } else {
       const data = await res.json().catch(() => ({}));
-      if (errEl) errEl.textContent = data.error || '憑證不正確，請重新確認';
+      if (errEl) errEl.textContent = data.error || '權限不足：請提供有效的管理憑證';
       sessionStorage.removeItem('ktv_admin_token');
     }
   } catch (e) {
-    if (errEl) errEl.textContent = '目前無法連接維護服務，請稍後再試';
+    if (errEl) errEl.textContent = '連線失敗，請稍後再試';
   }
 }
 
@@ -710,10 +810,24 @@ async function loadStats() {
   document.getElementById('ov-disputed').textContent = data.votes?.disputed ?? '—';
   document.getElementById('ov-verified').textContent = data.votes?.verified ?? '—';
 
+  // 即時更新今日待處理任務看板卡片
+  const dashReports = document.getElementById('dash-reports-count');
+  const dashDisputed = document.getElementById('dash-disputed-count');
+  const dashGuided = document.getElementById('dash-guided-count');
+  const dashMv = document.getElementById('dash-mv-count');
+  const dashStorage = document.getElementById('dash-storage-label');
+
+  if (dashReports) dashReports.textContent = `${data.reports?.pending || 0} 筆`;
+  if (dashDisputed) dashDisputed.textContent = `${data.votes?.disputed || 0} 筆`;
+  if (dashGuided) dashGuided.textContent = `${data.votes?.guided || 0} 筆`;
+  if (dashMv) dashMv.textContent = `${data.votes?.mv || 0} 筆`;
+  if (dashStorage) dashStorage.textContent = data.storageLabel || 'Local JSON';
+
   document.getElementById('stats-bar').innerHTML = `
     <div class="stat-chip">資料庫 <b>${(data.catalog?.total||0).toLocaleString()}</b> 首</div>
     <div class="stat-chip">待審回報 <b style="color:var(--yellow)">${data.reports?.pending||0}</b></div>
     <div class="stat-chip">爭議投票 <b style="color:var(--red)">${data.votes?.disputed||0}</b></div>
+    <div class="stat-chip">儲存媒介 <b style="color:var(--green)">${data.storageLabel||'Local JSON'}</b></div>
   `;
 }
 
@@ -741,7 +855,7 @@ function showTab(id, btnEl) {
 // ── 備份與容量健康監控 ──
 async function loadQuotaStatus() {
   const backupsListEl = document.getElementById('quota-backups-list');
-  if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">容量狀態檢測中...</div>';
+  if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">正在載入資料...</div>';
 
   try {
     const res = await apiFetch('/api/admin/quota-status');
@@ -754,20 +868,20 @@ async function loadQuotaStatus() {
 
     if (healthEl) {
       if (data.status === 'healthy') {
-        healthEl.innerHTML = '<span style="color:var(--green)">🟢 綠色健康</span>';
+        healthEl.innerHTML = '<span style="color:var(--green)">綠色健康</span>';
       } else if (data.status === 'warning') {
-        healthEl.innerHTML = '<span style="color:var(--yellow)">🟡 容量警告 (>80%)</span>';
+        healthEl.innerHTML = '<span style="color:var(--yellow)">容量警告 (>80%)</span>';
       } else {
-        healthEl.innerHTML = '<span style="color:var(--red)">🔴 容量極限 (>95%)</span>';
+        healthEl.innerHTML = '<span style="color:var(--red)">容量極限 (>95%)</span>';
       }
     }
 
     if (usageEl) usageEl.textContent = `${data.usagePercent || 0} %`;
     if (countEl) countEl.textContent = `${data.totalBackupFilesCount || 0} 份`;
-    if (storageEl) storageEl.textContent = data.storageType || 'Local File';
+    if (storageEl) storageEl.textContent = data.storageLabel || data.storageType || 'Local File';
 
     if (!data.backups?.length) {
-      if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">尚無每日自動快照備份</div>';
+      if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">目前尚無每日自動備份快照</div>';
       return;
     }
 
@@ -785,7 +899,7 @@ async function loadQuotaStatus() {
           <tbody>
             ${data.backups.map(b => `
               <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                <td style="padding:8px;font-family:monospace;color:#38bdf8;">📦 ${escapeHtml(b.name)}</td>
+                <td style="padding:8px;font-family:monospace;color:#38bdf8;">${escapeHtml(b.name)}</td>
                 <td style="padding:8px;color:var(--muted);">${(b.size / 1024).toFixed(1)} KB</td>
                 <td style="padding:8px;color:var(--muted);">${new Date(b.date).toLocaleString('zh-TW')}</td>
                 <td style="padding:8px;"><span class="badge badge-reviewed" style="background:rgba(74,222,128,0.15);color:var(--green);">已保護</span></td>
@@ -797,17 +911,17 @@ async function loadQuotaStatus() {
     }
   } catch (err) {
     console.error('[Load Quota Error]', err);
-    if (backupsListEl) backupsListEl.innerHTML = '<div class="empty" style="color:var(--red);">容量狀態載入失敗</div>';
+    if (backupsListEl) backupsListEl.innerHTML = '<div class="empty" style="color:var(--red);">容量狀態載入失敗，請重新整理</div>';
   }
 }
 
 function exportSystemBackup() {
-  const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token') || '';
+  const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token') || adminToken;
   if (!token) {
-    showToast('請先進行管理員登入', 'error');
+    showToast('權限已失效，請重新登入', 'error');
     return;
   }
-  showToast('📥 正在匯出全站 JSON 備份包...', 'success');
+  showToast('正在匯出全站備份...', 'success');
   window.open(`/api/admin/backup/export?token=${encodeURIComponent(token)}`, '_blank');
 }
 
@@ -816,41 +930,69 @@ function triggerImportBackup() {
   if (input) input.click();
 }
 
+let pendingImportPayload = null;
+
 async function handleImportBackup(e) {
   const file = e.target.files?.[0];
   if (!file) return;
 
-  if (!confirm(`⚠️ 確定要從檔案「${file.name}」還原系統備份嗎？\n這將會覆寫現有的歌庫修正與回報投票資料！`)) {
-    e.target.value = '';
-    return;
-  }
-
   try {
     const text = await file.text();
     const payload = JSON.parse(text);
-    if (!payload || !payload.data) {
-      showToast('無效的備份 JSON 檔案結構', 'error');
+
+    // 呼叫 validate API 進行差異預覽與格式校驗
+    const res = await apiFetch('/api/admin/backup/validate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (!res.ok || !result.valid) {
+      showToast(result.error || '資料格式不正確，請檢查備份檔後重試', 'error');
       e.target.value = '';
       return;
     }
 
+    pendingImportPayload = payload;
+    document.getElementById('backup-exported-at').textContent = result.exportedAt || '未知時間';
+    document.getElementById('diff-overrides-count').textContent = result.diff?.catalogOverridesCount || 0;
+    document.getElementById('diff-reports-count').textContent = result.diff?.reportsCount || 0;
+    document.getElementById('diff-votes-count').textContent = result.diff?.votesCount || 0;
+    document.getElementById('backup-import-reason').value = '';
+
+    document.getElementById('backup-preview-modal').style.display = 'flex';
+  } catch (err) {
+    console.error('[Import Backup Error]', err);
+    showToast('匯入失敗：' + err.message, 'error');
+  } finally {
+    e.target.value = '';
+  }
+}
+
+function closeBackupPreviewModal() {
+  document.getElementById('backup-preview-modal').style.display = 'none';
+  pendingImportPayload = null;
+}
+
+async function executeImportBackup() {
+  if (!pendingImportPayload) return;
+  const reason = document.getElementById('backup-import-reason').value.trim();
+
+  try {
     const res = await apiFetch('/api/admin/backup/import', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ ...pendingImportPayload, reason }),
     });
     const data = await res.json();
     if (data.success) {
-      showToast('✅ ' + data.message, 'success');
+      showToast('已完成：備份已匯入', 'success');
+      closeBackupPreviewModal();
       loadQuotaStatus();
       loadStats();
     } else {
-      showToast('還原失敗：' + (data.error || '無法還原'), 'error');
+      showToast('匯入失敗：' + (data.error || '無法匯入'), 'error');
     }
   } catch (err) {
-    console.error('[Import Backup Error]', err);
-    showToast('還原失敗：' + err.message, 'error');
-  } finally {
-    e.target.value = '';
+    showToast('匯入失敗：' + err.message, 'error');
   }
 }
 
@@ -907,13 +1049,13 @@ async function loadReports() {
           <div class="sub" style="margin-top:4px;font-size:0.75rem;color:#64748b">${r.timestamp?.slice(0,16).replace('T',' ')} &nbsp;|&nbsp; IP: ${r.ip}</div>
         </div>
         <div class="card-actions">
-          <span class="badge badge-${r.status}">${r.status}</span>
+          <span class="badge badge-${r.status}">${statusLabel(r.status)}</span>
           ${r.issueType !== 'missing_song' && r.issueType !== 'suggest_song' && r.issueType !== 'other' ? `
             <button class="btn btn-blue" onclick="openFix('${r.songId}', '${r.songTitle}', '${r.artist}', '${r.brandId}', '${r.issueType}')">套用修正</button>
           ` : ''}
           <button class="btn btn-green" onclick="updateReport('${r.id}', 'resolved')">標記已解決</button>
           <button class="btn btn-yellow" onclick="updateReport('${r.id}', 'reviewed')">已審查</button>
-          <button class="btn btn-ghost" onclick="updateReport('${r.id}', 'rejected')">✗ 拒絕</button>
+          <button class="btn btn-ghost" onclick="updateReport('${r.id}', 'rejected')">標記已拒絕</button>
         </div>
       </div>
     </div>
@@ -922,7 +1064,7 @@ async function loadReports() {
 
 async function updateReport(id, status) {
   await apiFetch(`/api/admin/report/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
-  showToast(`回報狀態已更新為：${status}`, 'success');
+  showToast(`已完成：回報狀態已更新為「${statusLabel(status)}」`, 'success');
   loadReports();
   loadStats();
 }
@@ -942,14 +1084,14 @@ async function loadDisputed() {
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
           <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '有收錄' : '未收錄'}</b></div>
           <div class="vote-bar">
-            <span class="vote-confirm">👍 ${d.confirm}</span>
-            <span class="vote-deny">👎 ${d.deny}</span>
-            <span class="badge badge-${d.confidence}">${d.confidence}</span>
+            <span class="vote-confirm">確認 ${d.confirm}</span>
+            <span class="vote-deny">否定 ${d.deny}</span>
+            <span class="badge badge-${d.confidence}">${confidenceLabel(d.confidence)}</span>
           </div>
         </div>
         <div class="card-actions">
-          <button class="btn btn-green" onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'has_song')">標記為有收錄</button>
-          <button class="btn btn-red"   onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'no_song')">標記為未收錄</button>
+          <button class="btn btn-green" onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'has_song')">套用為有收錄</button>
+          <button class="btn btn-red"   onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'no_song')">套用為未收錄</button>
         </div>
       </div>
     </div>
@@ -971,13 +1113,13 @@ async function loadVerified() {
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
           <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '有收錄' : '未收錄'}</b></div>
           <div class="vote-bar">
-            <span class="vote-confirm">👍 ${d.confirm}</span>
-            <span class="vote-deny">👎 ${d.deny}</span>
+            <span class="vote-confirm">確認 ${d.confirm}</span>
+            <span class="vote-deny">否定 ${d.deny}</span>
             <span class="badge badge-verified">社群已驗證</span>
           </div>
         </div>
         <div class="card-actions">
-          ${!d.currentStatus ? `<button class="btn btn-green" onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'has_song')">套用社群驗證（標記為有收錄）</button>` : `<span style="color:var(--muted);font-size:0.82rem;">目前資料已正確</span>`}
+          ${!d.currentStatus ? `<button class="btn btn-green" onclick="openFix('${d.songId}', '${d.songTitle}', '${d.artist}', '${d.brandId}', 'has_song')">套用為有收錄</button>` : `<span style="color:var(--muted);font-size:0.82rem;">目前資料已正確</span>`}
         </div>
       </div>
     </div>
@@ -1028,7 +1170,7 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
   const songId = decodeURIComponent(songIdValue);
   const brandId = decodeURIComponent(brandIdValue);
   const label = audioTypeLabel(audioType);
-  if (!confirm(`確定要將此廠牌音訊標記為「${label}」嗎？`)) return;
+  if (!confirm(`確定要將此廠牌音訊類型標記為「${label}」嗎？\n此操作會更新前台顯示的音訊類型。`)) return;
 
   const res = await apiFetch(`/api/admin/song/${songId}/brand`, {
     method: 'PATCH',
@@ -1042,11 +1184,11 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
   const data = await res.json();
 
   if (data.success) {
-    showToast(`已更新音訊標記：${label}`, 'success');
+    showToast(`已完成：音訊類型已更新為「${label}」`, 'success');
     loadGuidedVotes();
     loadStats();
   } else {
-    showToast(data.error || '套用導唱修正失敗', 'error');
+    showToast(data.error || '操作失敗：導唱修正未儲存', 'error');
   }
 }
 
@@ -1077,7 +1219,7 @@ async function loadMvVotes() {
           ` : `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
             <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv')">標記官方 MV</button>
-            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv')">標記剪輯/伴唱 MV</button>
+            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv')">標記剪輯 MV</button>
           `}
         </div>
       </div>
@@ -1089,7 +1231,7 @@ function mvTypeLabel(type) {
   const labels = {
     official_mv: '官方 MV',
     live_mv: 'Live MV',
-    reedited_mv: '剪輯/伴唱 MV',
+    reedited_mv: '剪輯 MV',
     anime_mv: '動畫 MV',
     unknown: '未標記',
   };
@@ -1100,7 +1242,7 @@ async function applyMvFix(songIdValue, brandIdValue, mvType) {
   const songId = decodeURIComponent(songIdValue);
   const brandId = decodeURIComponent(brandIdValue);
   const label = mvTypeLabel(mvType);
-  if (!confirm(`確定要將此廠牌 MV 類型標記為「${label}」嗎？（注意：不會改動原收錄狀態）`)) return;
+  if (!confirm(`確定要將此廠牌 MV 類型標記為「${label}」嗎？\n此操作只更新 MV 類型，不會改變收錄狀態。`)) return;
 
   const res = await apiFetch(`/api/admin/song/${songId}/brand/mv-type`, {
     method: 'PATCH',
@@ -1113,12 +1255,30 @@ async function applyMvFix(songIdValue, brandIdValue, mvType) {
   const data = await res.json();
 
   if (data.success) {
-    showToast(`已更新 MV 標記為「${label}」`, 'success');
+    showToast(`已完成：MV 類型已更新為「${label}」`, 'success');
     loadMvVotes();
     loadStats();
   } else {
-    showToast(data.error || '套用 MV 修正失敗', 'error');
+    showToast(data.error || '操作失敗：MV 類型修正未儲存', 'error');
   }
+}
+
+function getSongCompleteness(song) {
+  const hasYoutube = Boolean(song.youtubeUrl);
+  const hasSnippet = Boolean(song.lyricsSnippet);
+  const availableBrandsCount = countAvailableBrands(song);
+  const hasBrands = availableBrandsCount > 0;
+
+  if (hasYoutube && hasSnippet && hasBrands) {
+    return `<span class="badge" style="background:rgba(74,222,128,0.15);color:var(--green);" title="欄位健全完整">完整</span>`;
+  }
+
+  const missing = [];
+  if (!hasYoutube) missing.push('無YT');
+  if (!hasSnippet) missing.push('無歌詞');
+  if (!hasBrands) missing.push('無點歌碼');
+
+  return `<span class="badge badge-uncertain" title="資料尚有缺漏項目：${missing.join('、')}">待補 (${missing.join('·')})</span>`;
 }
 
 let currentAdminSongsPage = 1;
@@ -1160,7 +1320,7 @@ async function loadAdminSongs(pageTarget = 1, options = {}) {
           <button class="btn btn-blue" onclick="openSongEditor('${encodeURIComponent(song.id)}')">編輯歌曲</button>
         </div>
         <div>
-          <div class="song-row-title" style="font-weight:800;color:#f8fafc;">${escapeHtml(song.title)}</div>
+          <div class="song-row-title" style="font-weight:800;color:#f8fafc;display:flex;align-items:center;gap:8px;">${escapeHtml(song.title)} ${getSongCompleteness(song)}</div>
           <div class="song-row-artist" style="color:var(--muted);font-size:0.78rem;">${escapeHtml(song.artist)} · ID: ${escapeHtml(song.id)}</div>
         </div>
         <div><span class="badge badge-reviewed song-row-lang">${escapeHtml(song.language || '未分類')}</span></div>
@@ -1168,7 +1328,6 @@ async function loadAdminSongs(pageTarget = 1, options = {}) {
       </div>
     `).join('');
 
-    // 渲染分頁導覽按鈕
     let paginationHtml = '';
     paginationHtml += `<button class="btn btn-ghost" ${currentPage <= 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''} onclick="loadAdminSongs(1)">« 首頁</button>`;
     paginationHtml += `<button class="btn btn-ghost" ${currentPage <= 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''} onclick="loadAdminSongs(${currentPage - 1})">‹ 上一頁</button>`;
@@ -1202,7 +1361,7 @@ function updateSingleSongRowInDOM(songId, payload) {
   const langEl = targetRow.querySelector('.song-row-lang');
   const brandsEl = targetRow.querySelector('.song-row-brands');
 
-  if (titleEl) titleEl.textContent = payload.title || '';
+  if (titleEl) titleEl.innerHTML = `${escapeHtml(payload.title || '')} ${getSongCompleteness(payload)}`;
   if (artistEl) artistEl.textContent = `${payload.artist || ''} · ID: ${songId}`;
   if (langEl) langEl.textContent = payload.language || '未分類';
 
@@ -1235,7 +1394,7 @@ async function openSongEditor(songIdValue = '') {
     const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`);
     const data = await res.json();
     if (!data.song) {
-      showToast(data.error || '讀取歌曲失敗', 'error');
+      showToast(data.error || '操作失敗：歌曲資料讀取失敗', 'error');
       return;
     }
     currentSongEditorData = data.song;
@@ -1263,7 +1422,7 @@ async function openSongEditor(songIdValue = '') {
 
 function closeSongEditor(force = false) {
   if (!force && isSongEditorModified()) {
-    if (!confirm('⚠️ 您有尚未儲存的修改資料，確定要放棄修改並關閉嗎？')) {
+    if (!confirm('目前有尚未儲存的歌曲修改。\n關閉後這些修改將不會保留。\n確定要關閉編輯視窗嗎？')) {
       return false;
     }
   }
@@ -1307,7 +1466,7 @@ function fillSongEditor(song) {
           <option value="reedited_mv" ${status.mvType === 'reedited_mv' ? 'selected' : ''}>剪輯 MV</option>
           <option value="anime_mv" ${status.mvType === 'anime_mv' ? 'selected' : ''}>動畫 MV</option>
         </select>
-        <input class="brand-note" placeholder="備註" value="${escapeAttr(status.note || '')}" />
+        <input class="brand-note" placeholder="內部備註" value="${escapeAttr(status.note || '')}" />
       </div>
     `;
   }).join('');
@@ -1345,7 +1504,7 @@ async function saveSongEditor() {
   try {
     const payload = collectSongEditorPayload();
     if (!payload.title || !payload.artist) {
-      showToast('歌名與歌手必填', 'error');
+      showToast('資料未完整：請填寫歌名與歌手', 'error');
       return;
     }
 
@@ -1359,11 +1518,11 @@ async function saveSongEditor() {
     const data = await res.json().catch(() => ({ error: '伺服器回應格式異常' }));
 
     if (!data.success) {
-      showToast(data.error || '儲存失敗', 'error');
+      showToast(data.error || '操作失敗：資料未儲存', 'error');
       return;
     }
 
-    showToast(`✅ 歌曲《${payload.title}》資料已儲存成功！`, 'success');
+    showToast(`已完成：歌曲「${payload.title}」已儲存`, 'success');
     if (isEditMode && songId) {
       updateSingleSongRowInDOM(songId, payload);
     }
@@ -1372,7 +1531,7 @@ async function saveSongEditor() {
     loadStats();
   } catch (err) {
     console.error('[Save Song Error]', err);
-    showToast('儲存失敗：' + (err.message || '網路連線異常'), 'error');
+    showToast('操作失敗：' + (err.message || '連線失敗，請稍後再試'), 'error');
   }
 }
 
@@ -1383,16 +1542,20 @@ async function deleteSongFromEditor() {
   }
   const songId = document.getElementById('song-editor-id').value;
   const title = document.getElementById('song-title').value;
-  if (!confirm(`確定刪除「${title}」？這會寫入前台刪除覆寫。`)) return;
+  const reasonPrompt = prompt(`確定要刪除歌曲「${title}」嗎？\n請輸入刪除原因/說明（選填）：`, '');
+  if (reasonPrompt === null) return; // 使用者取消
 
   try {
-    const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`, { method: 'DELETE' });
+    const res = await apiFetch(`/api/admin/song/${encodeURIComponent(songId)}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ reason: reasonPrompt })
+    });
     const data = await res.json().catch(() => ({ error: '伺服器回應格式異常' }));
     if (!data.success) {
-      showToast(data.error || '刪除失敗', 'error');
+      showToast(data.error || '操作失敗：歌曲刪除失敗', 'error');
       return;
     }
-    showToast(`✅ 歌曲「${title}」已安全刪除！`, 'success');
+    showToast(`已完成：歌曲「${title}」已刪除`, 'success');
     if (songId) {
       const row = document.querySelector(`.song-result-row[data-song-id="${escapeAttr(songId)}"]`);
       if (row) row.remove();
@@ -1402,7 +1565,7 @@ async function deleteSongFromEditor() {
     loadStats();
   } catch (err) {
     console.error('[Delete Song Error]', err);
-    showToast('刪除失敗：' + (err.message || '網路連線異常'), 'error');
+    showToast('操作失敗：' + (err.message || '連線失敗，請稍後再試'), 'error');
   }
 }
 
@@ -1443,16 +1606,42 @@ function escapeAttr(value) {
   return escapeHtml(value);
 }
 
-// ── 操作日誌 ──
+// ── 操作日誌結構化呈現 ──
 async function loadLogs() {
   const res = await apiFetch('/api/admin/logs');
   const data = await res.json();
   const el = document.getElementById('logs-list');
-  if (!data.logs?.length) { el.innerHTML = '<div class="empty">尚無操作記錄</div>'; return; }
-  el.innerHTML = data.logs.map(l => `
-    <div style="border-bottom:1px solid var(--border); padding:8px 0; font-family:monospace; font-size:0.8rem; color:var(--muted);">${l}</div>
-  `).join('');
+  if (!data.logs?.length) { el.innerHTML = '<div class="empty">目前尚無操作紀錄</div>'; return; }
 
+  el.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--muted);">
+          <th style="padding:8px;width:170px;">時間</th>
+          <th style="padding:8px;width:180px;">動作類型</th>
+          <th style="padding:8px;">異動細節與原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.logs.map(logLine => {
+          let time = '-', action = '-', detail = logLine;
+          const match = String(logLine).match(/^\[(.*?)\]\s+([A-Z_]+)(?:\s+(.*))?$/);
+          if (match) {
+            time = match[1].slice(0, 19).replace('T', ' ');
+            action = match[2];
+            detail = match[3] || '';
+          }
+          return `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px;font-family:monospace;color:var(--muted);">${escapeHtml(time)}</td>
+              <td style="padding:8px;"><span class="badge badge-reviewed" style="background:rgba(96,165,250,0.15);color:var(--blue);">${escapeHtml(action)}</span></td>
+              <td style="padding:8px;font-family:monospace;color:#cbd5e1;word-break:break-all;">${escapeHtml(detail)}</td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
 }
 
 // ── Fix Modal ──
@@ -1496,30 +1685,31 @@ async function applyFix() {
   });
   const data = await res.json();
   if (data.success) {
-    showToast(`修正完成：《${data.songTitle}》${brandId} → ${available ? '有收錄' : '未收錄'}`, 'success');
+    showToast('已完成：收錄狀態已更新', 'success');
     closeFix();
     loadStats();
   } else {
-    showToast(`修正失敗：${data.error}`, 'error');
+    showToast('操作失敗：' + data.error, 'error');
   }
 }
 
 async function resetStatsCounter() {
   const countInput = document.getElementById('custom-stats-count');
   const count = parseInt(countInput.value, 10) || 1;
-  if (!confirm(`確定要將全站累積訪客查詢人數重置 / 設定為 ${count} 人次嗎？`)) return;
+  const reasonPrompt = prompt(`確定要將累積查詢人數設定為 ${count} 人次嗎？\n請輸入設定原因/說明（選填）：`, '');
+  if (reasonPrompt === null) return; // 使用者取消
 
   try {
     const res = await apiFetch('/api/admin/stats/reset', {
       method: 'POST',
-      body: JSON.stringify({ count }),
+      body: JSON.stringify({ count, reason: reasonPrompt }),
     });
     const data = await res.json();
     if (data.success) {
-      showToast(`已將累積訪客查詢人數設定為 ${data.totalVisits} 人次`, 'success');
+      showToast(`已完成：累積查詢人數已設定為 ${data.totalVisits} 人次`, 'success');
       try { localStorage.setItem('tw_ktv_total_visits_v2', String(data.totalVisits)); } catch {}
     } else {
-      showToast('設定失敗：' + (data.error || '請稍後再試'), 'error');
+      showToast('操作失敗：' + (data.error || '連線失敗，請稍後再試'), 'error');
     }
   } catch (e) {
     showToast('操作失敗，請稍後再試', 'error');
@@ -1542,7 +1732,7 @@ let initialAliasEditorSnapshot = null;
 
 async function loadAdminAliases() {
   const listEl = document.getElementById('aliases-list');
-  if (listEl) listEl.innerHTML = '<div class="empty">別名字典載入中...</div>';
+  if (listEl) listEl.innerHTML = '<div class="empty">正在載入資料...</div>';
 
   try {
     const res = await apiFetch('/api/admin/aliases');
@@ -1551,7 +1741,40 @@ async function loadAdminAliases() {
     renderAdminAliases();
   } catch (err) {
     console.error('[Load Aliases Error]', err);
-    if (listEl) listEl.innerHTML = '<div class="empty" style="color:var(--red);">載入歌手別名失敗</div>';
+    if (listEl) listEl.innerHTML = '<div class="empty" style="color:var(--red);">載入歌手別名失敗，請重新整理</div>';
+  }
+}
+
+function checkAliasConflicts() {
+  const currentArtist = document.getElementById('alias-artist-name').value.trim();
+  const rawTags = document.getElementById('alias-tags-input').value;
+  const hintEl = document.getElementById('alias-conflict-hint');
+  if (!hintEl) return;
+
+  if (!rawTags.trim()) {
+    hintEl.style.display = 'none';
+    return;
+  }
+
+  const tags = rawTags.split(/[,，\n]/).map(s => s.trim().toLowerCase()).filter(Boolean);
+  const conflicts = [];
+
+  for (const tag of tags) {
+    for (const [artist, aliases] of Object.entries(allAdminAliases)) {
+      if (artist.trim() === currentArtist) continue;
+      const lowerAliases = aliases.map(a => String(a).trim().toLowerCase());
+      if (lowerAliases.includes(tag)) {
+        conflicts.push(`別名「${tag}」已被歌手「${artist}」使用`);
+        break;
+      }
+    }
+  }
+
+  if (conflicts.length > 0) {
+    hintEl.textContent = `提示：${conflicts.slice(0, 2).join('；')}`;
+    hintEl.style.display = 'block';
+  } else {
+    hintEl.style.display = 'none';
   }
 }
 
@@ -1567,7 +1790,7 @@ function renderAdminAliases() {
   });
 
   if (!entries.length) {
-    listEl.innerHTML = '<div class="empty">沒有符合條件的歌手別名條目</div>';
+    listEl.innerHTML = '<div class="empty">目前沒有符合條件的歌手別名</div>';
     return;
   }
 
@@ -1577,7 +1800,7 @@ function renderAdminAliases() {
         <div class="card" style="border-color:rgba(168,85,247,0.3);margin-bottom:0;display:flex;flex-direction:column;justify-space:between;cursor:pointer;transition:border-color 0.2s;" onclick="if(event.target.tagName!=='BUTTON'&&!event.target.closest('button')) openAliasEditor('${escapeAttr(artist)}')">
           <div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div style="font-weight:800;font-size:1.08rem;color:#f8fafc;">🎤 ${escapeHtml(artist)}</div>
+              <div style="font-weight:800;font-size:1.08rem;color:#f8fafc;">${escapeHtml(artist)}</div>
               <div style="font-size:0.75rem;color:var(--muted);">${aliases.length} 個對照標籤</div>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
@@ -1587,9 +1810,9 @@ function renderAdminAliases() {
             </div>
           </div>
           <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);margin-top:auto;">
-            <button class="btn btn-blue" style="flex:1;padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); openAliasEditor('${escapeAttr(artist)}')">✏️ 編輯別名</button>
-            <button class="btn btn-green" style="flex:1;padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); openAliasEditor('${escapeAttr(artist)}')">➕ 新增標籤</button>
-            <button class="btn btn-ghost" style="color:var(--red);padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); quickDeleteAlias('${escapeAttr(artist)}')">🗑️ 刪除</button>
+            <button class="btn btn-blue" style="flex:1;padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); openAliasEditor('${escapeAttr(artist)}')">編輯別名</button>
+            <button class="btn btn-green" style="flex:1;padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); openAliasEditor('${escapeAttr(artist)}')">新增標籤</button>
+            <button class="btn btn-ghost" style="color:var(--red);padding:5px 8px;font-size:0.78rem;" onclick="event.stopPropagation(); quickDeleteAlias('${escapeAttr(artist)}')">刪除</button>
           </div>
         </div>
       `).join('')}
@@ -1598,19 +1821,19 @@ function renderAdminAliases() {
 }
 
 async function quickDeleteAlias(artist) {
-  if (!confirm(`確定要刪除《${artist}》的別名條目嗎？`)) return;
+  if (!confirm(`確定要刪除歌手「${artist}」的別名嗎？\n刪除後相關別名將不再輔助搜尋。\n完成後請使用別名測試確認。`)) return;
   try {
     const res = await apiFetch(`/api/admin/alias/${encodeURIComponent(artist)}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
-      showToast(`✅ 已刪除《${artist}》的別名字典條目`, 'success');
+      showToast(`已完成：歌手「${artist}」別名已刪除`, 'success');
       delete allAdminAliases[artist];
       renderAdminAliases();
     } else {
-      showToast('刪除失敗：' + (data.error || '無法刪除'), 'error');
+      showToast('操作失敗：' + (data.error || '無法刪除'), 'error');
     }
   } catch (err) {
-    showToast('刪除失敗：' + err.message, 'error');
+    showToast('操作失敗：' + err.message, 'error');
   }
 }
 
@@ -1622,7 +1845,7 @@ function openAliasEditor(artistName = '') {
   const delBtn = document.getElementById('btn-delete-alias');
 
   if (artistName && allAdminAliases[artistName]) {
-    titleEl.textContent = `編輯歌手別名：《${artistName}》`;
+    titleEl.textContent = `編輯歌手別名：「${artistName}」`;
     nameInput.value = artistName;
     nameInput.readOnly = true;
     nameInput.style.opacity = '0.7';
@@ -1638,6 +1861,7 @@ function openAliasEditor(artistName = '') {
   }
 
   initialAliasEditorSnapshot = JSON.stringify({ artist: nameInput.value, tags: tagsInput.value });
+  checkAliasConflicts();
   modal.style.display = 'flex';
 }
 
@@ -1647,7 +1871,7 @@ function closeAliasEditor(force = false) {
   const currentSnapshot = JSON.stringify({ artist: nameInput.value, tags: tagsInput.value });
 
   if (!force && initialAliasEditorSnapshot && initialAliasEditorSnapshot !== currentSnapshot) {
-    if (!confirm('⚠️ 您有尚未儲存的別名修改，確定要取消嗎？')) return false;
+    if (!confirm('目前有尚未儲存的別名修改。\n關閉後這些修改將不會保留。\n確定要關閉編輯視窗嗎？')) return false;
   }
 
   document.getElementById('alias-editor-modal').style.display = 'none';
@@ -1660,7 +1884,7 @@ async function saveAliasEditor() {
   const rawTags = document.getElementById('alias-tags-input').value.trim();
 
   if (!artist) {
-    showToast('請輸入歌手名稱', 'error');
+    showToast('資料未完整：請填寫歌手名稱', 'error');
     return;
   }
 
@@ -1671,37 +1895,37 @@ async function saveAliasEditor() {
     });
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || '儲存別名失敗', 'error');
+      showToast('操作失敗：' + (data.error || '儲存別名失敗'), 'error');
       return;
     }
-    showToast(`✅ 已成功更新《${artist}》的別名字典！`, 'success');
+    showToast(`已完成：歌手「${artist}」別名已更新`, 'success');
     closeAliasEditor(true);
     const parsedAliases = rawTags ? rawTags.split(/[,，\n]/).map(s => s.trim()).filter(Boolean) : [];
     allAdminAliases[artist] = parsedAliases;
     renderAdminAliases();
   } catch (err) {
-    showToast('儲存失敗：' + (err.message || '網路連線異常'), 'error');
+    showToast('操作失敗：' + (err.message || '連線失敗，請稍後再試'), 'error');
   }
 }
 
 async function deleteAliasFromEditor() {
   const artist = document.getElementById('alias-artist-name').value.trim();
   if (!artist) return;
-  if (!confirm(`確定刪除《${artist}》的別名對照條目嗎？`)) return;
+  if (!confirm(`確定要刪除歌手「${artist}」的別名嗎？\n刪除後相關別名將不再輔助搜尋。\n完成後請使用別名測試確認。`)) return;
 
   try {
     const res = await apiFetch(`/api/admin/alias/${encodeURIComponent(artist)}`, { method: 'DELETE' });
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || '刪除別名失敗', 'error');
+      showToast('操作失敗：' + (data.error || '刪除別名失敗'), 'error');
       return;
     }
-    showToast(`✅ 已刪除《${artist}》的別名字典條目`, 'success');
+    showToast(`已完成：歌手「${artist}」別名已刪除`, 'success');
     closeAliasEditor(true);
     delete allAdminAliases[artist];
     renderAdminAliases();
   } catch (err) {
-    showToast('刪除失敗：' + (err.message || '網路連線異常'), 'error');
+    showToast('操作失敗：' + (err.message || '連線失敗，請稍後再試'), 'error');
   }
 }
 
@@ -1714,7 +1938,7 @@ async function testAliasResolutionPrompt() {
     const data = await res.json();
     const matchedStr = data.matchedArtists?.length ? data.matchedArtists.join('、') : '無命中歌手';
     const termsStr = data.expandedTerms?.length ? data.expandedTerms.join(', ') : '無擴充詞';
-    alert(`🔍【即時測試結果】\n輸入字詞: "${query}"\n\n🎯 命中歌手: ${matchedStr}\n🌐 擴充關聯關鍵字: ${termsStr}`);
+    alert(`【測試別名解析結果】\n輸入字詞: "${query}"\n\n命中歌手: ${matchedStr}\n擴充關聯關鍵字: ${termsStr}`);
   } catch (err) {
     alert('測試別名解析失敗：' + err.message);
   }

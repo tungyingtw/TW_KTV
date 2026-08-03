@@ -200,10 +200,10 @@ app.use(express.static(path.join(__dirname, '../dist')));
 function requireAdmin(req, res, next) {
   const token = req.headers['x-admin-token'] || req.query.token;
   if (!token || token !== ADMIN_TOKEN) {
-    return res.status(401).json({ error: '未授權：需要高強度管理員密碼 Token' });
+    return res.status(401).json({ error: '權限不足：請提供有效的管理憑證' });
   }
   if (!isAllowedAdminSource(req)) {
-    return res.status(403).json({ error: '未授權：此管理請求來源不被允許' });
+    return res.status(403).json({ error: '權限不足：此請求來源不被允許' });
   }
   next();
 }
@@ -1298,7 +1298,7 @@ app.patch('/api/admin/report/:reportId', requireAdmin, async (req, res) => {
   res.json({ success: true, report: reports[idx] });
 });
 
-// ── 後台管理 API：一鍵重置 / 自訂累積訪客計數器 ──
+// ── 後台管理 API：設定 / 自訂累積訪客計數器 ──
 app.post('/api/admin/stats/reset', requireAdmin, async (req, res) => {
   const newCount = (typeof req.body.count === 'number' && req.body.count >= 0) ? req.body.count : 1;
   currentStats.totalVisits = newCount;
@@ -1459,11 +1459,11 @@ function normalizeAdminSongPayload(body, existingSong = null) {
 
   const title = String(body.title || '').trim();
   const artist = String(body.artist || '').trim();
-  if (!title) throw new Error('title is required');
-  if (!artist) throw new Error('artist is required');
+  if (!title) throw new Error('請填寫歌名');
+  if (!artist) throw new Error('請填寫歌手');
 
   const language = String(body.language || existingSong?.language || '國語').trim();
-  if (!validLanguages.includes(language)) throw new Error('invalid language');
+  if (!validLanguages.includes(language)) throw new Error('歌曲語言不正確');
 
   const brands = {
     ...createEmptyBrandStatuses(),
@@ -1648,7 +1648,7 @@ app.get('/api/admin/alias/test', requireAdmin, (req, res) => {
 
 app.get('/api/admin/song/:songId', requireAdmin, (req, res) => {
   const song = songsDatabase.find(s => s.id === req.params.songId);
-  if (!song) return res.status(404).json({ error: 'Song not found' });
+  if (!song) return res.status(404).json({ error: '找不到歌曲' });
   res.json({ song });
 });
 
@@ -1656,7 +1656,7 @@ app.post('/api/admin/song', requireAdmin, async (req, res) => {
   try {
     const song = normalizeAdminSongPayload(req.body);
     if (songsDatabase.some(item => item.id === song.id)) {
-      return res.status(409).json({ error: 'Song id already exists' });
+      return res.status(409).json({ error: '歌曲 ID 已存在' });
     }
     songsDatabase.push(song);
     await saveCatalogOverrideSong(song);
@@ -1670,7 +1670,7 @@ app.post('/api/admin/song', requireAdmin, async (req, res) => {
 app.put('/api/admin/song/:songId', requireAdmin, async (req, res) => {
   try {
     const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
-    if (idx === -1) return res.status(404).json({ error: 'Song not found' });
+    if (idx === -1) return res.status(404).json({ error: '找不到歌曲' });
     const before = songsDatabase[idx];
     const song = normalizeAdminSongPayload(req.body, before);
     song.id = before.id;
@@ -1689,15 +1689,16 @@ app.put('/api/admin/song/:songId', requireAdmin, async (req, res) => {
 
 app.delete('/api/admin/song/:songId', requireAdmin, async (req, res) => {
   const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
-  if (idx === -1) return res.status(404).json({ error: 'Song not found' });
+  if (idx === -1) return res.status(404).json({ error: '找不到歌曲' });
   const [deleted] = songsDatabase.splice(idx, 1);
+  const reason = String(req.body.reason || req.query.reason || '').trim();
   try {
     await saveCatalogDeletedSong(deleted.id);
-    logAdminAction('DELETE_SONG', { songId: deleted.id, title: deleted.title, artist: deleted.artist });
+    logAdminAction('DELETE_SONG', { songId: deleted.id, title: deleted.title, artist: deleted.artist, reason: reason || '未提供原因' });
     res.json({ success: true, deleted });
   } catch (err) {
     console.error('[Admin Song Delete Error]', err);
-    res.status(503).json({ error: 'Failed to delete song' });
+    res.status(503).json({ error: '歌曲刪除失敗，請稍後再試' });
   }
 });
 
@@ -1841,17 +1842,23 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   const resolvedReports = reports.filter(r => r.status === 'resolved').length;
 
   let disputedCount = 0, verifiedCount = 0, totalVoteEntries = 0;
+  let guidedVotesCount = 0, mvVotesCount = 0;
+
   for (const [, data] of Object.entries(votes)) {
     totalVoteEntries++;
     const conf = getVoteConfidence(data.confirm || 0, data.deny || 0);
     if (conf === 'disputed') disputedCount++;
     if (conf === 'verified') verifiedCount++;
+    if ((data.guided || 0) + (data.noGuided || 0) > 0) guidedVotesCount++;
+    if ((data.official || 0) + (data.edited || 0) > 0) mvVotesCount++;
   }
 
   res.json({
     catalog: { total: songsDatabase.length },
     reports: { total: reports.length, pending: pendingReports, resolved: resolvedReports },
-    votes: { totalEntries: totalVoteEntries, disputed: disputedCount, verified: verifiedCount },
+    votes: { totalEntries: totalVoteEntries, disputed: disputedCount, verified: verifiedCount, guided: guidedVotesCount, mv: mvVotesCount },
+    storageMode: USE_REDIS ? 'redis' : 'local_json',
+    storageLabel: USE_REDIS ? 'Upstash Redis 持久化' : '本機快照模式',
   });
 });
 
@@ -1875,10 +1882,14 @@ app.get('/api/admin/logs', requireAdmin, async (req, res) => {
 
 // ── 系統容量配額與健康狀態 ──
 app.get('/api/admin/quota-status', requireAdmin, (req, res) => {
-  res.json(getQuotaUsageStats());
+  res.json({
+    ...getQuotaUsageStats(),
+    storageMode: USE_REDIS ? 'redis' : 'local_json',
+    storageLabel: USE_REDIS ? 'Upstash Redis 持久化' : '本機快照模式',
+  });
 });
 
-// ── 一鍵匯出全站 JSON 備份包 ──
+// ── 匯出全站 JSON 備份包 ──
 app.get('/api/admin/backup/export', requireAdmin, async (req, res) => {
   try {
     const overrides = await loadCatalogOverridesStore();
@@ -1906,12 +1917,39 @@ app.get('/api/admin/backup/export', requireAdmin, async (req, res) => {
   }
 });
 
-// ── 一鍵還原全站 JSON 備份包 ──
+// ── 驗證系統 JSON 備份包 (匯入前預覽差異) ──
+app.post('/api/admin/backup/validate', requireAdmin, (req, res) => {
+  const payload = req.body;
+  if (!payload || typeof payload !== 'object') {
+    return res.status(400).json({ valid: false, error: '資料格式不正確：缺少備份物件' });
+  }
+  if (payload.app !== 'TW_KTV_CATALOG_SYSTEM' || !payload.data) {
+    return res.status(400).json({ valid: false, error: '資料格式不正確：無效的系統備份檔標號或資料區塊' });
+  }
+
+  const { catalogOverrides, reports, votes } = payload.data;
+  const overridesCount = catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides).length : 0;
+  const reportsCount = Array.isArray(reports) ? reports.length : 0;
+  const votesCount = votes && typeof votes === 'object' ? Object.keys(votes).length : 0;
+
+  res.json({
+    valid: true,
+    exportedAt: payload.exportedAt || '未知時間',
+    diff: {
+      catalogOverridesCount: overridesCount,
+      reportsCount,
+      votesCount,
+    }
+  });
+});
+
+// ── 還原全站 JSON 備份包 ──
 app.post('/api/admin/backup/import', requireAdmin, async (req, res) => {
   try {
     const payload = req.body;
-    if (!payload || !payload.data) {
-      return res.status(400).json({ error: '無效的備份檔案內容' });
+    const reason = String(req.body.reason || '').trim();
+    if (!payload || !payload.data || payload.app !== 'TW_KTV_CATALOG_SYSTEM') {
+      return res.status(400).json({ error: '資料格式不正確：請提供有效的系統備份 JSON 檔案' });
     }
 
     const { catalogOverrides, reports, votes } = payload.data;
@@ -1926,8 +1964,8 @@ app.post('/api/admin/backup/import', requireAdmin, async (req, res) => {
       await saveVotesStore(votes);
     }
 
-    logAdminAction('IMPORT_SYSTEM_BACKUP', { exportedAt: payload.exportedAt || 'unknown' });
-    res.json({ success: true, message: '系統備份資料已成功還原！' });
+    logAdminAction('IMPORT_SYSTEM_BACKUP', { exportedAt: payload.exportedAt || 'unknown', reason: reason || '未提供原因' });
+    res.json({ success: true, message: '系統備份資料已成功還原' });
   } catch (err) {
     console.error('[Admin Backup Import Error]', err);
     res.status(500).json({ error: '備份還原失敗：' + err.message });
