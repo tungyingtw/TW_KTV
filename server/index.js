@@ -1122,6 +1122,51 @@ app.post('/api/vote/guided', async (req, res) => {
   });
 });
 
+app.post('/api/vote/mv', async (req, res) => {
+  const { songId, brandId, vote, previousVote, removeVote } = req.body;
+  if (!songId || !brandId || !['official', 'edited'].includes(vote)) {
+    return res.status(400).json({ error: '缺少必要欄位' });
+  }
+  if (previousVote && !['official', 'edited'].includes(previousVote)) {
+    return res.status(400).json({ error: '無效的 previousVote' });
+  }
+
+  const votes = await loadVotesStore();
+  const key = `${songId}_${brandId}`;
+  if (!votes[key]) votes[key] = { confirm: 0, deny: 0, guidedVocal: 0, noGuidedVocal: 0, officialMv: 0, editedMv: 0 };
+  const voteKey = vote === 'official' ? 'officialMv' : 'editedMv';
+
+  if (removeVote) {
+    votes[key][voteKey] = Math.max(0, (votes[key][voteKey] || 0) - 1);
+  } else {
+    if (previousVote && previousVote !== vote) {
+      const previousKey = previousVote === 'official' ? 'officialMv' : 'editedMv';
+      votes[key][previousKey] = Math.max(0, (votes[key][previousKey] || 0) - 1);
+    }
+    votes[key][voteKey] = Math.max(0, (votes[key][voteKey] || 0) + 1);
+  }
+
+  try {
+    await saveVotesStore(votes);
+  } catch (err) {
+    console.error('[Votes] MV persistent save failed:', err);
+    return res.status(503).json({ error: 'MV 投票資料暫時無法儲存，請稍後再試' });
+  }
+
+  const d = votes[key];
+  res.json({
+    success: true,
+    key,
+    confirm: d.confirm || 0,
+    deny: d.deny || 0,
+    guidedVocal: d.guidedVocal || 0,
+    noGuidedVocal: d.noGuidedVocal || 0,
+    officialMv: d.officialMv || 0,
+    editedMv: d.editedMv || 0,
+    confidence: getVoteConfidence(d.confirm || 0, d.deny || 0),
+  });
+});
+
 app.get('/api/votes/:songId', async (req, res) => {
   const { songId } = req.params;
   const votes = await loadVotesStore();
@@ -1356,6 +1401,48 @@ app.get('/api/admin/guided-votes', requireAdmin, async (req, res) => {
 
   guidedVotes.sort((a, b) => (b.total - a.total) || (b.guided - a.guided));
   res.json({ total: guidedVotes.length, guidedVotes });
+});
+
+app.get('/api/admin/mv-votes', requireAdmin, async (req, res) => {
+  const votes = await loadVotesStore();
+  const mvVotes = [];
+  const minTotal = req.query.minTotal !== undefined
+    ? Math.max(1, parseInt(req.query.minTotal) || 1)
+    : 3;
+  const filterType = String(req.query.type || 'all').toLowerCase();
+  const limit = Math.min(200, Math.max(5, parseInt(req.query.limit) || 50));
+
+  for (const [key, data] of Object.entries(votes)) {
+    const official = data.officialMv || 0;
+    const edited = data.editedMv || 0;
+    const total = official + edited;
+    if (total < minTotal) continue;
+
+    if (filterType === 'official' && official <= edited) continue;
+    if (filterType === 'edited' && edited <= official) continue;
+
+    const { songId, brandId } = parseVoteKey(key);
+    const song = songsDatabase.find(s => s.id === songId);
+    const brandData = song?.brands?.[brandId] || null;
+
+    mvVotes.push({
+      key,
+      songId,
+      brandId,
+      songTitle: song?.title || '(歌曲已不存在)',
+      artist: song?.artist || '',
+      currentAvailable: brandData?.available ?? false,
+      currentMvType: brandData?.mvType || 'unknown',
+      official,
+      edited,
+      officialPct: Math.round((official / total) * 100),
+      total,
+      isLowSample: total < 3,
+    });
+  }
+
+  mvVotes.sort((a, b) => (b.total - a.total) || (b.official - a.official));
+  res.json({ total: mvVotes.length, mvVotes: mvVotes.slice(0, limit) });
 });
 
 function createEmptyBrandStatuses() {
@@ -1689,6 +1776,58 @@ app.patch('/api/admin/song/:songId/brand', requireAdmin, async (req, res) => {
     success: true,
     songId, songTitle: song.title,
     brandId, available,
+    before, after: song.brands[brandId],
+  });
+});
+
+// ── 套用廠牌 MV 類型修正（不修改收錄狀態/音訊類型，避免污染）──
+// PATCH /api/admin/song/:songId/brand/mv-type
+// body: { brandId, mvType, note }
+app.patch('/api/admin/song/:songId/brand/mv-type', requireAdmin, async (req, res) => {
+  const { songId } = req.params;
+  const { brandId, mvType, note } = req.body;
+
+  if (!brandId) {
+    return res.status(400).json({ error: '缺少必要欄位：brandId' });
+  }
+
+  const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv', ''];
+  if (mvType !== undefined && !validMvTypes.includes(mvType)) {
+    return res.status(400).json({ error: 'MV 類型不正確' });
+  }
+
+  const idx = songsDatabase.findIndex(s => s.id === songId);
+  if (idx === -1) return res.status(404).json({ error: `找不到歌曲 ID: ${songId}` });
+
+  const song = songsDatabase[idx];
+  if (!song.brands) song.brands = {};
+  const before = song.brands[brandId] ?? { available: false };
+
+  const updatedBrandStatus = {
+    ...before,
+    mvType: mvType || undefined,
+  };
+  if (!mvType) delete updatedBrandStatus.mvType;
+
+  song.brands[brandId] = updatedBrandStatus;
+  songsDatabase[idx] = song;
+
+  try {
+    await saveCatalogOverrideSong(song);
+  } catch (err) {
+    console.error('[Admin Catalog Override Save Error]', err);
+    return res.status(503).json({ error: 'MV 類型修正暫時無法持久化儲存，請稍後再試' });
+  }
+
+  logAdminAction('FIX_BRAND_MV_TYPE', {
+    songId, songTitle: song.title, artist: song.artist,
+    brandId, before: before.mvType || 'none', after: song.brands[brandId].mvType || 'none', note: note || '',
+  });
+
+  res.json({
+    success: true,
+    songId, songTitle: song.title,
+    brandId,
     before, after: song.brands[brandId],
   });
 });

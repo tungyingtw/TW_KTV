@@ -270,6 +270,7 @@
     <button onclick="showTab('tab-disputed', this)">爭議投票</button>
     <button onclick="showTab('tab-verified', this)">已驗證</button>
     <button onclick="showTab('tab-guided', this)">導唱票</button>
+    <button onclick="showTab('tab-mv', this)">MV 票選</button>
     <button onclick="showTab('tab-songs', this)">歌曲管理</button>
     <button onclick="showTab('tab-aliases', this)">歌手別名維護</button>
     <button onclick="showTab('tab-backup', this)">備份與容量管理</button>
@@ -370,6 +371,17 @@
         這裡彙整使用者回報的導唱資訊，僅供維護判斷；目前不會自動改寫歌曲資料。
       </p>
       <div id="guided-list"><div class="empty">載入中...</div></div>
+    </div>
+
+    <div id="tab-mv" class="tab">
+      <div class="filter-row">
+        <h2 style="font-size:1.05rem;">MV 類型社群票選清單</h2>
+        <button class="btn btn-ghost" onclick="loadMvVotes()">重新整理</button>
+      </div>
+      <p style="color:var(--muted); font-size:0.82rem; margin-bottom:14px;">
+        這裡彙整歌友回報的 MV 類型（原版 MV / 伴唱帶），供管理員審查趨勢並人工一鍵套用至主資料庫。
+      </p>
+      <div id="mv-list"><div class="empty">載入中...</div></div>
     </div>
 
     <div id="tab-songs" class="tab">
@@ -719,6 +731,7 @@ function showTab(id, btnEl) {
   if (id === 'tab-disputed') loadDisputed();
   if (id === 'tab-verified') loadVerified();
   if (id === 'tab-guided') loadGuidedVotes();
+  if (id === 'tab-mv') loadMvVotes();
   if (id === 'tab-songs') loadAdminSongs();
   if (id === 'tab-aliases') loadAdminAliases();
   if (id === 'tab-backup') loadQuotaStatus();
@@ -1034,6 +1047,77 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
     loadStats();
   } else {
     showToast(data.error || '套用導唱修正失敗', 'error');
+  }
+}
+
+// ── MV 類型社群票選 ──
+async function loadMvVotes() {
+  const res = await apiFetch('/api/admin/mv-votes?minTotal=1');
+  const data = await res.json();
+  const el = document.getElementById('mv-list');
+
+  if (!data.mvVotes?.length) { el.innerHTML = '<div class="empty">目前沒有 MV 社群票選資料</div>'; return; }
+
+  el.innerHTML = data.mvVotes.map(d => `
+    <div class="card" style="border-color:rgba(56,189,248,0.2)">
+      <div class="card-row">
+        <div class="card-meta">
+          <div class="title">《${d.songTitle}》— ${d.artist}</div>
+          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 收錄狀態：<b>${d.currentAvailable ? '有收錄' : '未收錄'}</b> &nbsp;|&nbsp; 目前 MV 標記：<b>${mvTypeLabel(d.currentMvType)}</b></div>
+          <div class="vote-bar">
+            <span class="vote-confirm">原版 MV ${d.official}</span>
+            <span class="vote-deny">伴唱 MV ${d.edited}</span>
+            <span class="badge badge-verified">原版 MV 比例 ${d.officialPct}%</span>
+            ${d.isLowSample ? `<span class="badge badge-uncertain" style="background:rgba(251,191,36,0.15);color:#fbbf24;margin-left:6px;padding:2px 6px;border-radius:4px;">樣本不足 (${d.total}票)</span>` : ''}
+          </div>
+        </div>
+        <div class="card-actions">
+          ${d.isLowSample ? `
+            <span style="color:var(--muted);font-size:0.82rem;font-style:italic;">累積更多回報後再判定 (目前共 ${d.total} 票)</span>
+          ` : `
+            <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
+            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv')">標記官方 MV</button>
+            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv')">標記剪輯/伴唱 MV</button>
+          `}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function mvTypeLabel(type) {
+  const labels = {
+    official_mv: '官方 MV',
+    live_mv: 'Live MV',
+    reedited_mv: '剪輯/伴唱 MV',
+    anime_mv: '動畫 MV',
+    unknown: '未標記',
+  };
+  return labels[type] || type || '未標記';
+}
+
+async function applyMvFix(songIdValue, brandIdValue, mvType) {
+  const songId = decodeURIComponent(songIdValue);
+  const brandId = decodeURIComponent(brandIdValue);
+  const label = mvTypeLabel(mvType);
+  if (!confirm(`確定要將此廠牌 MV 類型標記為「${label}」嗎？（注意：不會改動原收錄狀態）`)) return;
+
+  const res = await apiFetch(`/api/admin/song/${songId}/brand/mv-type`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      brandId,
+      mvType,
+      note: `依 MV 票選人工確認：${label}`,
+    }),
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    showToast(`已更新 MV 標記為「${label}」`, 'success');
+    loadMvVotes();
+    loadStats();
+  } else {
+    showToast(data.error || '套用 MV 修正失敗', 'error');
   }
 }
 

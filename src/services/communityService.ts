@@ -115,6 +115,8 @@ export interface VoteResponse {
   deny: number;
   guidedVocal?: number;
   noGuidedVocal?: number;
+  officialMv?: number;
+  editedMv?: number;
   confidence: VoteConfidence;
 }
 
@@ -159,6 +161,26 @@ export async function submitGuidedVote(
     return await res.json();
   } catch (err) {
     console.error('[CommunityService] submitGuidedVote failed:', err);
+    return null;
+  }
+}
+
+export async function submitMvVote(
+  songId: string,
+  brandId: BrandId,
+  vote: 'official' | 'edited',
+  options: VoteOptions<'official' | 'edited'> = {}
+): Promise<VoteResponse | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/vote/mv`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ songId, brandId, vote, ...options }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('[CommunityService] submitMvVote failed:', err);
     return null;
   }
 }

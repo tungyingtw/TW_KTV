@@ -68,6 +68,9 @@ export interface Song {
 /** 社群置信度狀態 */
 export type VoteConfidence = 'neutral' | 'verified' | 'disputed' | 'uncertain';
 
+/** MV 類型社群投票選項 */
+export type MvVoteType = 'official' | 'edited';
+
 /** 單一廠牌的投票資料 */
 export interface VoteData {
   confirm: number;       // 確認「唱得到 (有此歌)」的票數
