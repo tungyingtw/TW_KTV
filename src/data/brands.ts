@@ -117,7 +117,7 @@ export const DEFAULT_BRANDS: Record<string, BrandInfo> = {
 
 const CACHE_KEY = 'ktv_active_brands_cache';
 const CACHE_TIME_KEY = 'ktv_active_brands_cache_time';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours TTL
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 Hour TTL (startup fallback only; fetchBrands always calls API)
 
 let activeBrandsMap: Record<string, BrandInfo> = { ...DEFAULT_BRANDS };
 export let BRAND_LIST: BrandInfo[] = Object.values(activeBrandsMap);
