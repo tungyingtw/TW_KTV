@@ -713,6 +713,27 @@ async function brandExists(brandId, options = {}) {
   return true;
 }
 
+function buildBadgeBg(color) {
+  const hex = String(color || '').trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, 0.16)`;
+  }
+  return 'rgba(56, 189, 248, 0.16)';
+}
+
+function generateBrandId(existingBrands = {}) {
+  const suffix = Date.now().toString(36);
+  let id = `brand_${suffix}`;
+  while (existingBrands[id]) {
+    const rand = Math.random().toString(36).substring(2, 6);
+    id = `brand_${suffix}_${rand}`;
+  }
+  return id;
+}
+
 // ─────────────────────────────────────────────
 // 資料讀寫工具
 // ─────────────────────────────────────────────
@@ -3000,28 +3021,28 @@ app.get('/api/admin/brands', requirePermission('brands.view'), async (req, res) 
 // ── [後台] 新增品牌 ──
 app.post('/api/admin/brand', requirePermission('brands.manage'), async (req, res) => {
   try {
-    const { id, name, shortName, color, badgeBg, description, sortOrder, sourceReportId } = req.body || {};
-    const rawId = String(id || '').trim().toLowerCase();
+    const { id, name, shortName, color, description, sortOrder, sourceReportId } = req.body || {};
     const rawName = String(name || '').trim();
-    const rawShortName = String(shortName || '').trim();
 
-    if (!rawId || !/^[a-z0-9_]{2,32}$/.test(rawId)) {
-      return res.status(400).json({ error: '品牌 ID 格式不正確（僅限 2~32 字元小寫英數底線）' });
-    }
     if (!rawName) {
-      return res.status(400).json({ error: '請輸入品牌名稱' });
-    }
-    if (!rawShortName) {
-      return res.status(400).json({ error: '請輸入品牌簡稱' });
+      return res.status(400).json({ error: '請填寫品牌名稱' });
     }
 
     const store = await loadBrandSettingsStore();
+    const providedId = String(id || '').trim().toLowerCase();
+    const rawId = providedId || generateBrandId(store.brands || {});
+    const rawShortName = String(shortName || '').trim() || rawName;
+
+    if (!/^[a-z0-9_]{2,32}$/.test(rawId)) {
+      return res.status(400).json({ error: '品牌 ID 格式不正確，請使用小寫英文、數字或底線' });
+    }
+
     if (store.brands && store.brands[rawId]) {
       return res.status(400).json({ error: `品牌 ID "${rawId}" 已存在，請使用其他 ID` });
     }
 
     const brandColor = String(color || '#38bdf8').trim();
-    const brandBadgeBg = String(badgeBg || 'rgba(56, 189, 248, 0.16)').trim();
+    const brandBadgeBg = buildBadgeBg(brandColor);
     const existingOrders = Object.values(store.brands || {}).map(b => Number(b.sortOrder) || 0);
     const maxSortOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : 0;
     const finalSortOrder = Number.isInteger(Number(sortOrder)) ? Number(sortOrder) : maxSortOrder + 1;
@@ -3066,20 +3087,29 @@ app.put('/api/admin/brand/:brandId', requirePermission('brands.manage'), async (
     const existingBrand = store.brands[brandId];
     const { name, shortName, color, badgeBg, description, sortOrder, status } = req.body || {};
 
+    const nextName = name !== undefined ? String(name).trim() : existingBrand.name;
+    if (!nextName) return res.status(400).json({ error: '品牌名稱不可空白' });
+
+    let nextShortName = existingBrand.shortName;
+    if (shortName !== undefined) {
+      const trimmed = String(shortName).trim();
+      nextShortName = trimmed || nextName;
+    }
+
+    const nextColor = color !== undefined ? String(color).trim() : existingBrand.color;
+    const nextBadgeBg = buildBadgeBg(nextColor);
+
     const updatedBrand = {
       ...existingBrand,
-      name: name !== undefined ? String(name).trim() : existingBrand.name,
-      shortName: shortName !== undefined ? String(shortName).trim() : existingBrand.shortName,
-      color: color !== undefined ? String(color).trim() : existingBrand.color,
-      badgeBg: badgeBg !== undefined ? String(badgeBg).trim() : existingBrand.badgeBg,
+      name: nextName,
+      shortName: nextShortName,
+      color: nextColor,
+      badgeBg: nextBadgeBg,
       description: description !== undefined ? String(description).trim() : existingBrand.description,
       sortOrder: Number.isInteger(Number(sortOrder)) ? Number(sortOrder) : existingBrand.sortOrder,
       status: (status === 'active' || status === 'inactive') ? status : existingBrand.status,
       updatedAt: new Date().toISOString(),
     };
-
-    if (!updatedBrand.name) return res.status(400).json({ error: '品牌名稱不可空白' });
-    if (!updatedBrand.shortName) return res.status(400).json({ error: '品牌簡稱不可空白' });
 
     store.brands[brandId] = updatedBrand;
     await saveBrandSettingsStore(store, { requirePersistent: true });
