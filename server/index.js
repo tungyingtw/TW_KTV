@@ -450,6 +450,23 @@ function decodeBinaryCatalog(binPath) {
   }
 }
 
+function applyCatalogOverridesToSongs(songs, overridesData) {
+  const deletedSet = new Set(overridesData?.deletedIds || []);
+  const overridesMap = overridesData?.songs || {};
+
+  if (deletedSet.size === 0 && Object.keys(overridesMap).length === 0) return songs;
+
+  const existingMap = new Map(songs.filter(s => !deletedSet.has(s.id)).map(s => [s.id, s]));
+  for (const [id, overrideSong] of Object.entries(overridesMap)) {
+    if (overrideSong && overrideSong.id) {
+      const current = existingMap.get(id) || {};
+      existingMap.set(id, { ...current, ...overrideSong });
+    }
+  }
+
+  return Array.from(existingMap.values());
+}
+
 function loadInitialSongsDatabase() {
   let songs = null;
 
@@ -2786,6 +2803,14 @@ app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
   res.status(503).json({ error: '資料服務暫時無法使用，請稍後再試' });
 });
+
+try {
+  const persistedOverrides = await loadCatalogOverridesStore();
+  songsDatabase = applyCatalogOverridesToSongs(loadInitialSongsDatabase(), persistedOverrides);
+  console.log(`[Server] Catalog ready with persistent overrides (${songsDatabase.length} songs)`);
+} catch (err) {
+  console.warn('[Server] Persistent catalog override preload failed:', err.message);
+}
 
 app.listen(PORT, () => {
   console.log(`[Server] KTV Song API 服務啟動於: http://localhost:${PORT}`);
