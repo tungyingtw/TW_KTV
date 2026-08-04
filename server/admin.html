@@ -301,6 +301,7 @@
     <button id="nav-guided" onclick="showTab('tab-guided', this)">導唱票選</button>
     <button id="nav-mv" onclick="showTab('tab-mv', this)">MV 類型票選</button>
     <button id="nav-songs" onclick="showTab('tab-songs', this)">歌曲管理</button>
+    <button id="nav-brands" onclick="showTab('tab-brands', this)">品牌管理</button>
     <button id="nav-aliases" onclick="showTab('tab-aliases', this)">歌手別名</button>
     <button id="nav-backup" onclick="showTab('tab-backup', this)">備份與容量</button>
     <button id="nav-logs" onclick="showTab('tab-logs', this)">操作日誌</button>
@@ -499,6 +500,19 @@
     </div>
 
     <!-- ── 歌手別名與雙聲母維護 ── -->
+    <div id="tab-brands" class="tab">
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">KTV 品牌管理</h2>
+      <p class="tab-help"><b>用途：</b>新增、編輯、啟用或停用 KTV 品牌。<b>完成標準：</b>啟用品牌會出現在前台與歌曲新增/編輯欄位，停用品牌不再提供新資料選擇但不刪除既有歌曲資料。</p>
+      <div class="filter-row">
+        <button class="btn btn-green" onclick="openBrandModal()">新增品牌</button>
+        <button class="btn btn-ghost" onclick="loadBrandsList()">重新整理</button>
+      </div>
+      <div class="card">
+        <div id="brand-admin-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">請先載入品牌資料</div>
+        <div id="brand-admin-list"><div class="empty">尚未載入品牌資料...</div></div>
+      </div>
+    </div>
+
     <div id="tab-aliases" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">歌手別名與同義詞維護</h2>
       <p class="tab-help"><b>用途：</b>維護歌手本名、別名、英文名、縮寫與注音查詢對照。<b>完成標準：</b>測試查詢能命中正確歌手。</p>
@@ -684,6 +698,53 @@
   </div>
 </div>
 
+<div id="brand-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:225;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal-box" style="width:560px;max-height:90vh;overflow:auto;">
+    <h3 id="brand-editor-title">新增品牌</h3>
+    <div class="song-editor-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+      <div>
+        <label>品牌 ID</label>
+        <input id="brand-id-input" placeholder="例：new_ktv" />
+      </div>
+      <div>
+        <label>排序</label>
+        <input id="brand-sort-input" type="number" min="1" step="1" placeholder="自動排序" />
+      </div>
+      <div class="wide">
+        <label>完整名稱</label>
+        <input id="brand-name-input" placeholder="例：某○ KTV 收錄" />
+      </div>
+      <div>
+        <label>短名稱</label>
+        <input id="brand-short-input" placeholder="例：某○" />
+      </div>
+      <div>
+        <label>狀態</label>
+        <select id="brand-status-input">
+          <option value="active">啟用</option>
+          <option value="inactive">停用</option>
+        </select>
+      </div>
+      <div>
+        <label>主色</label>
+        <input id="brand-color-input" value="#38bdf8" />
+      </div>
+      <div>
+        <label>徽章底色</label>
+        <input id="brand-badge-bg-input" value="rgba(56, 189, 248, 0.16)" />
+      </div>
+      <div class="full">
+        <label>描述</label>
+        <textarea id="brand-description-input" placeholder="例：某○ KTV 門市系統歌曲收錄"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="saveBrandForm()">儲存品牌</button>
+      <button class="btn btn-ghost" onclick="closeBrandModal()">取消</button>
+    </div>
+  </div>
+</div>
+
 <div id="song-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:220;align-items:center;justify-content:center;padding:20px;">
   <div class="modal-box" style="width:960px;max-height:90vh;overflow:auto;">
     <h3 id="song-editor-title">編輯歌曲</h3>
@@ -810,6 +871,8 @@ const API = isLocalEnv
 
 let currentSongEditorMode = 'create';
 let currentSongEditorData = null;
+let dynamicBrands = [];
+let currentBrandEditorId = null;
 let ADMIN_BRANDS = [
   ['watering_hole', '享○馨'],
   ['golden_voice', '金○'],
@@ -1019,6 +1082,7 @@ function applyAdminPermissionsUI(admin) {
     'nav-guided': 'votes.view',
     'nav-mv': 'votes.view',
     'nav-songs': 'songs.view',
+    'nav-brands': 'brands.view',
     'nav-aliases': 'aliases.view',
     'nav-logs': 'logs.view',
     'nav-admins': 'admins.view',
@@ -1104,6 +1168,7 @@ function showTab(id, btnEl) {
   if (id === 'tab-guided') loadGuidedVotes();
   if (id === 'tab-mv') loadMvVotes();
   if (id === 'tab-songs') loadAdminSongs();
+  if (id === 'tab-brands') loadBrandsList();
   if (id === 'tab-aliases') loadAdminAliases();
   if (id === 'tab-backup') loadQuotaStatus();
   if (id === 'tab-logs') loadLogs();
@@ -1111,6 +1176,157 @@ function showTab(id, btnEl) {
 }
 
 // ── 管理者管理功能 ──
+// Brand management
+async function loadBrandsList() {
+  const listEl = document.getElementById('brand-admin-list');
+  const summaryEl = document.getElementById('brand-admin-summary');
+  if (listEl) listEl.innerHTML = '<div class="empty">載入品牌資料中...</div>';
+
+  try {
+    const res = await apiFetch('/api/admin/brands');
+    const data = await res.json();
+    if (!res.ok) {
+      if (listEl) listEl.innerHTML = `<div class="empty" style="color:var(--red);">品牌資料載入失敗：${escapeHtml(data.error || '權限不足或伺服器錯誤')}</div>`;
+      return;
+    }
+    dynamicBrands = Array.isArray(data.brands) ? data.brands : [];
+    if (summaryEl) summaryEl.textContent = `共 ${data.total || dynamicBrands.length} 個品牌，啟用 ${data.activeCount || 0} 個，停用 ${data.inactiveCount || 0} 個`;
+    renderBrandsList();
+  } catch (err) {
+    if (listEl) listEl.innerHTML = `<div class="empty" style="color:var(--red);">品牌資料載入失敗：${escapeHtml(err.message || '連線失敗')}</div>`;
+  }
+}
+
+function renderBrandsList() {
+  const listEl = document.getElementById('brand-admin-list');
+  if (!listEl) return;
+  if (!dynamicBrands.length) {
+    listEl.innerHTML = '<div class="empty">目前沒有品牌資料</div>';
+    return;
+  }
+
+  listEl.innerHTML = `
+    <div style="overflow:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.84rem;">
+        <thead>
+          <tr style="color:var(--muted);border-bottom:1px solid var(--border);text-align:left;">
+            <th style="padding:8px;">排序</th>
+            <th style="padding:8px;">品牌</th>
+            <th style="padding:8px;">ID</th>
+            <th style="padding:8px;">狀態</th>
+            <th style="padding:8px;">來源</th>
+            <th style="padding:8px;text-align:right;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dynamicBrands.map(b => `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:8px;color:var(--muted);">${Number(b.sortOrder) || '-'}</td>
+              <td style="padding:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:12px;height:12px;border-radius:50%;background:${escapeAttr(b.color || '#38bdf8')};display:inline-block;"></span>
+                  <div>
+                    <div style="font-weight:800;color:var(--text);">${escapeHtml(b.name || '')}</div>
+                    <div style="color:var(--muted);font-size:0.76rem;">${escapeHtml(b.shortName || '')}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="padding:8px;font-family:monospace;color:#cbd5e1;">${escapeHtml(b.id || '')}</td>
+              <td style="padding:8px;"><span class="badge ${b.status === 'active' ? 'badge-resolved' : 'badge-rejected'}">${b.status === 'active' ? '啟用' : '停用'}</span></td>
+              <td style="padding:8px;color:var(--muted);">${escapeHtml(b.source || 'system')}</td>
+              <td style="padding:8px;text-align:right;">
+                <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+                  <button class="btn btn-blue" style="padding:4px 8px;font-size:0.75rem;" onclick="openBrandModal('${escapeAttr(b.id)}')">編輯</button>
+                  <button class="btn ${b.status === 'active' ? 'btn-red' : 'btn-green'}" style="padding:4px 8px;font-size:0.75rem;" onclick="toggleBrandStatus('${escapeAttr(b.id)}','${b.status === 'active' ? 'inactive' : 'active'}')">${b.status === 'active' ? '停用' : '啟用'}</button>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function openBrandModal(brandId = '') {
+  currentBrandEditorId = brandId || null;
+  const brand = currentBrandEditorId ? dynamicBrands.find(b => b.id === currentBrandEditorId) : null;
+  document.getElementById('brand-editor-title').textContent = brand ? '編輯品牌' : '新增品牌';
+  document.getElementById('brand-id-input').value = brand?.id || '';
+  document.getElementById('brand-id-input').disabled = Boolean(brand);
+  document.getElementById('brand-name-input').value = brand?.name || '';
+  document.getElementById('brand-short-input').value = brand?.shortName || '';
+  document.getElementById('brand-color-input').value = brand?.color || '#38bdf8';
+  document.getElementById('brand-badge-bg-input').value = brand?.badgeBg || 'rgba(56, 189, 248, 0.16)';
+  document.getElementById('brand-description-input').value = brand?.description || '';
+  document.getElementById('brand-sort-input').value = brand?.sortOrder || '';
+  document.getElementById('brand-status-input').value = brand?.status || 'active';
+  document.getElementById('brand-editor-modal').style.display = 'flex';
+}
+
+function closeBrandModal() {
+  document.getElementById('brand-editor-modal').style.display = 'none';
+  currentBrandEditorId = null;
+}
+
+async function saveBrandForm() {
+  const payload = {
+    id: document.getElementById('brand-id-input').value.trim(),
+    name: document.getElementById('brand-name-input').value.trim(),
+    shortName: document.getElementById('brand-short-input').value.trim(),
+    color: document.getElementById('brand-color-input').value.trim() || '#38bdf8',
+    badgeBg: document.getElementById('brand-badge-bg-input').value.trim() || 'rgba(56, 189, 248, 0.16)',
+    description: document.getElementById('brand-description-input').value.trim(),
+    sortOrder: Number(document.getElementById('brand-sort-input').value) || undefined,
+    status: document.getElementById('brand-status-input').value,
+  };
+
+  if (!payload.id || !/^[a-z0-9_]{2,32}$/.test(payload.id)) {
+    showToast('品牌 ID 僅能使用小寫英文、數字、底線，長度 2~32', 'error');
+    return;
+  }
+  if (!payload.name || !payload.shortName) {
+    showToast('請填寫品牌完整名稱與短名稱', 'error');
+    return;
+  }
+
+  try {
+    const path = currentBrandEditorId ? `/api/admin/brand/${encodeURIComponent(currentBrandEditorId)}` : '/api/admin/brand';
+    const method = currentBrandEditorId ? 'PUT' : 'POST';
+    const res = await apiFetch(path, { method, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast('品牌儲存失敗：' + (data.error || '未知錯誤'), 'error');
+      return;
+    }
+    showToast(`已完成：品牌「${payload.shortName}」已儲存`, 'success');
+    closeBrandModal();
+    await loadBrandsList();
+  } catch (err) {
+    showToast('品牌儲存失敗：' + (err.message || '連線失敗'), 'error');
+  }
+}
+
+async function toggleBrandStatus(brandId, nextStatus) {
+  const label = nextStatus === 'active' ? '啟用' : '停用';
+  if (!confirm(`確定要${label}品牌「${brandId}」？`)) return;
+  try {
+    const res = await apiFetch(`/api/admin/brand/${encodeURIComponent(brandId)}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: nextStatus }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(`${label}品牌失敗：` + (data.error || '未知錯誤'), 'error');
+      return;
+    }
+    showToast(`已完成：品牌已${label}`, 'success');
+    await loadBrandsList();
+  } catch (err) {
+    showToast(`${label}品牌失敗：` + (err.message || '連線失敗'), 'error');
+  }
+}
+
 async function loadAdmins() {
   const tbody = document.getElementById('admins-list-tbody');
   if (!tbody) return;
