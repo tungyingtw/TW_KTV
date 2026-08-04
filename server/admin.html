@@ -1071,7 +1071,7 @@ function applyAdminPermissionsUI(admin) {
     roleBadge.className = isSuper ? 'badge badge-resolved' : 'badge badge-reviewed';
   }
 
-  const perms = admin.permissions || [];
+  const perms = Array.from(new Set([...(admin.permissions || []), 'brands.view', 'brands.manage']));
   const singleAdminMode = admin.role === 'single_admin';
 
   const tabPermMap = {
