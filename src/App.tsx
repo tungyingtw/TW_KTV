@@ -837,6 +837,13 @@ export function App() {
             </a>
 
             <a
+              href="./community-verification.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              社群驗證
+            </a>
+
+            <a
               href="./faq.html"
               style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >

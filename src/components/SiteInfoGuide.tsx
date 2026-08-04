@@ -261,6 +261,7 @@ export const SiteInfoGuide: React.FC = () => {
                 { href: './how-to-use.html', label: '使用教學', desc: '搜尋、篩選與歌單整理方式' },
                 { href: './data-source.html', label: '資料來源', desc: '公開資訊、回報與人工校對' },
                 { href: './ktv-audio-types.html', label: '版本說明', desc: '原唱、導唱與 MV 標示差異' },
+                { href: './community-verification.html', label: '社群驗證', desc: '收錄、原版 MV 與導唱投票說明' },
                 { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
               ].map(link => (
                 <a
