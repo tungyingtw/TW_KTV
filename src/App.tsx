@@ -844,6 +844,13 @@ export function App() {
             </a>
 
             <a
+              href="./original-mv-vs-karaoke-video.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              MV 類型差異
+            </a>
+
+            <a
               href="./faq.html"
               style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
