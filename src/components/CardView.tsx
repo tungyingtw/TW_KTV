@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Song, BrandId } from '../types/ktv';
 import { BRANDS } from '../data/brands';
+import { useBrands } from '../hooks/useBrands';
 import { Heart, Video, Disc, ChevronRight, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
@@ -23,10 +24,11 @@ export const CardView: React.FC<CardViewProps> = ({
   onToggleFavorite,
   onSelectSongDetail,
 }) => {
+  const brandList = useBrands();
   const [reportingSong, setReportingSong] = useState<Song | null>(null);
   const isMultiSelecting = selectedBrands.length > 0;
   const isSingleBrand = !isMultiSelecting && selectedBrand !== 'all';
-  const currentBrandInfo = isSingleBrand ? BRANDS[selectedBrand] : null;
+  const currentBrandInfo = isSingleBrand ? (brandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]) : null;
 
   if (songs.length === 0) {
     return (
@@ -51,7 +53,7 @@ export const CardView: React.FC<CardViewProps> = ({
             {isSingleBrand ? (
               <>
                 資料庫中暫無【{currentBrandInfo?.shortName}】的驗證收錄對照記錄。<br />
-                實體包廂多採用雲端對應系統（建議可先參考 Sing○ / 享○馨 收錄狀態）。
+                實體包廂多採用雲端對應系統（建議可先參考其他 KTV 門市/伴唱品牌的收錄狀態）。
               </>
             ) : (
               '嘗試更換關鍵字或取消過濾條件。'
@@ -108,10 +110,13 @@ export const CardView: React.FC<CardViewProps> = ({
         const isFav = favorites.includes(song.id);
 
         const displayBrands = isMultiSelecting
-          ? selectedBrands.map(bId => BRANDS[bId]).filter(Boolean)
+          ? selectedBrands.map(bId => brandList.find(b => b.id === bId) || BRANDS[bId]).filter(Boolean)
           : (selectedBrand === 'all'
-            ? [BRANDS['cashbox'], BRANDS['holiday'], BRANDS['watering_hole'], BRANDS['starlight']]
-            : [BRANDS[selectedBrand]]);
+            ? (() => {
+                const availableInSong = brandList.filter(b => song.brands?.[b.id]?.available);
+                return availableInSong.length > 0 ? availableInSong.slice(0, 4) : brandList.slice(0, 4);
+              })()
+            : [brandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]].filter(Boolean));
 
         return (
           <React.Fragment key={song.id}>

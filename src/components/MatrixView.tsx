@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import type { Song, BrandId } from '../types/ktv';
-import { BRAND_LIST, BRANDS } from '../data/brands';
+import type { Song, BrandId, BrandInfo } from '../types/ktv';
+import { BRANDS } from '../data/brands';
+import { useBrands } from '../hooks/useBrands';
 import { Heart, Video, Disc, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
@@ -27,22 +28,24 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   onSelectSongDetail,
   selectedSongId,
 }) => {
+  const brandList = useBrands();
   const [reportingSong, setReportingSong] = useState<Song | null>(null);
 
   const isMultiSelecting = selectedBrands && selectedBrands.length > 0;
   const isSingleBrand = !isMultiSelecting && selectedBrand !== 'all';
+  const selectedBrandInfo = isSingleBrand ? (brandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]) : null;
 
-  const activeBrands = isMultiSelecting
-    ? BRAND_LIST.filter(b => selectedBrands.includes(b.id))
-    : (selectedBrand === 'all' ? BRAND_LIST : [BRANDS[selectedBrand]]);
+  const activeBrands: BrandInfo[] = isMultiSelecting
+    ? brandList.filter(b => selectedBrands.includes(b.id))
+    : (selectedBrand === 'all' ? brandList : (selectedBrandInfo ? [selectedBrandInfo] : []));
 
-  const currentBrandInfo = isSingleBrand ? BRANDS[selectedBrand] : null;
+  const currentBrandInfo = selectedBrandInfo;
 
   const isFewBrands = activeBrands.length > 0 && activeBrands.length <= 4;
 
   const getCompactAvailability = (song: Song) => {
     const availableBrands = activeBrands.filter(b => song.brands[b.id]?.available);
-    const totalBrands = activeBrands.length || BRAND_LIST.length;
+    const totalBrands = activeBrands.length || brandList.length;
 
     if (isSingleBrand && currentBrandInfo) {
       const status = song.brands[currentBrandInfo.id];

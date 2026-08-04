@@ -9,7 +9,8 @@ export type BrandId =
   | 'silver_cabinet'
   | 'yinyuan' 
   | 'golden_voice' 
-  | 'hongyin';
+  | 'hongyin'
+  | (string & {});
 
 export interface BrandInfo {
   id: BrandId;

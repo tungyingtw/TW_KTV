@@ -1,6 +1,6 @@
 import type { BrandInfo, BrandId } from '../types/ktv';
 
-export const BRANDS: Record<BrandId, BrandInfo> = {
+export const DEFAULT_BRANDS: Record<string, BrandInfo> = {
   cashbox: {
     id: 'cashbox',
     name: '錢○ Cashbox 收錄',
@@ -89,6 +89,144 @@ export const BRANDS: Record<BrandId, BrandInfo> = {
     badgeBg: 'rgba(244, 63, 94, 0.16)',
     description: '弘○ 伴唱系統歌曲收錄',
   },
+  datang: {
+    id: 'datang',
+    name: '大○系統 收錄',
+    shortName: '大○',
+    color: '#ec4899',
+    badgeBg: 'rgba(236, 72, 153, 0.16)',
+    description: '大○ 伴唱系統歌曲收錄',
+  },
+  ruiying: {
+    id: 'ruiying',
+    name: '瑞○系統 收錄',
+    shortName: '瑞○',
+    color: '#14b8a6',
+    badgeBg: 'rgba(20, 184, 166, 0.16)',
+    description: '瑞○ 伴唱系統歌曲收錄',
+  },
+  meihua: {
+    id: 'meihua',
+    name: '美○系統 收錄',
+    shortName: '美○',
+    color: '#a855f7',
+    badgeBg: 'rgba(168, 85, 247, 0.16)',
+    description: '美○ 伴唱系統歌曲收錄',
+  },
 };
 
-export const BRAND_LIST: BrandInfo[] = Object.values(BRANDS);
+const CACHE_KEY = 'ktv_active_brands_cache';
+const CACHE_TIME_KEY = 'ktv_active_brands_cache_time';
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours TTL
+
+let activeBrandsMap: Record<string, BrandInfo> = { ...DEFAULT_BRANDS };
+export let BRAND_LIST: BrandInfo[] = Object.values(activeBrandsMap);
+
+// 嘗試由快照復原品牌
+try {
+  if (typeof localStorage !== 'undefined') {
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cachedAtStr = localStorage.getItem(CACHE_TIME_KEY);
+    const cachedAt = cachedAtStr ? parseInt(cachedAtStr, 10) : 0;
+    const isExpired = !cachedAt || (Date.now() - cachedAt > CACHE_TTL_MS);
+
+    if (cached && !isExpired) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const map: Record<string, BrandInfo> = {};
+        parsed.forEach(b => { if (b && b.id) map[b.id] = b; });
+        activeBrandsMap = map;
+        BRAND_LIST = parsed;
+      }
+    }
+  }
+} catch {
+  // Ignore cache parse error
+}
+
+type BrandChangeListener = (brands: BrandInfo[]) => void;
+const listeners = new Set<BrandChangeListener>();
+
+export function subscribeBrandChanges(listener: BrandChangeListener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function notifyListeners() {
+  BRAND_LIST = Object.values(activeBrandsMap);
+  listeners.forEach(fn => fn(BRAND_LIST));
+}
+
+export async function fetchBrands(): Promise<BrandInfo[]> {
+  try {
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const isGH = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
+    const apiBase = isLocal ? `${window.location.protocol}//${window.location.hostname}:3001` : (isGH ? 'https://tw-ktv.onrender.com' : '');
+
+    const res = await fetch(`${apiBase}/api/brands`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.brands) && data.brands.length > 0) {
+        const newMap: Record<string, BrandInfo> = {};
+        const newList: BrandInfo[] = [];
+
+        data.brands.forEach((b: BrandInfo) => {
+          if (b && b.id) {
+            newMap[b.id] = {
+              id: b.id,
+              name: b.name || `${b.shortName || b.id} 收錄`,
+              shortName: b.shortName || b.id,
+              color: b.color || '#38bdf8',
+              badgeBg: b.badgeBg || 'rgba(56, 189, 248, 0.16)',
+              description: b.description || `${b.shortName || b.id} 系統歌曲收錄`,
+            };
+            newList.push(newMap[b.id]);
+          }
+        });
+
+        activeBrandsMap = newMap;
+        BRAND_LIST = newList;
+
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(newList));
+            localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+          }
+        } catch {
+          // Ignore write error
+        }
+
+        notifyListeners();
+        return newList;
+      }
+    }
+  } catch {
+    // Fetch failed, keep local or cached fallback
+  }
+  return BRAND_LIST;
+}
+
+// Proxy 封裝，保護存取未定義品牌 ID 時不出錯，亦即時聯動 activeBrandsMap
+export const BRANDS: Record<BrandId, BrandInfo> = new Proxy(activeBrandsMap, {
+  get(target, prop: string) {
+    if (prop in target) {
+      return target[prop];
+    }
+    if (prop in DEFAULT_BRANDS) {
+      return DEFAULT_BRANDS[prop];
+    }
+    if (typeof prop === 'string' && prop !== 'then' && prop !== 'toJSON') {
+      return {
+        id: prop as BrandId,
+        name: `${prop} 收錄`,
+        shortName: prop,
+        color: '#38bdf8',
+        badgeBg: 'rgba(56, 189, 248, 0.16)',
+        description: `${prop} 系統歌曲收錄`,
+      };
+    }
+    return Reflect.get(target, prop);
+  },
+}) as Record<BrandId, BrandInfo>;

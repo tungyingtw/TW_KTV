@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BrandId } from '../../types/ktv';
-import { BRAND_LIST } from '../../data/brands';
+import { useBrands } from '../../hooks/useBrands';
 
 interface MobileBrandTabScrollProps {
   selectedBrand: BrandId | 'all';
@@ -26,6 +26,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   brandSongCounts,
   totalSongCount,
 }) => {
+  const brandList = useBrands();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -35,13 +36,13 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
 
   // 動態依據【收錄歌曲數量多寡】由大至小排序廠牌標籤
   const displayedBrands = useMemo(() => {
-    if (!brandSongCounts) return BRAND_LIST;
-    return [...BRAND_LIST].sort((a, b) => {
+    if (!brandSongCounts) return brandList;
+    return [...brandList].sort((a, b) => {
       const countA = brandSongCounts[a.id] || 0;
       const countB = brandSongCounts[b.id] || 0;
       return countB - countA; // 歌曲數量最多的優先排序
     });
-  }, [brandSongCounts]);
+  }, [brandSongCounts, brandList]);
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -241,7 +242,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
             <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>複選 ({selectedBrands.length}):</span>
             {selectedBrands.map(bId => {
-              const b = BRAND_LIST.find(x => x.id === bId);
+              const b = brandList.find(x => x.id === bId);
               return (
                 <span
                   key={bId}

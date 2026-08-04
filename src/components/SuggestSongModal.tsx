@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, PlusCircle, Send, CheckCircle2, Music2, Building2 } from 'lucide-react';
 import type { BrandId } from '../types/ktv';
-import { BRAND_LIST } from '../data/brands';
+import { useBrands } from '../hooks/useBrands';
 import { submitSuggestSong, submitSuggestBrand } from '../services/communityService';
 
 interface SuggestSongModalProps {
@@ -12,6 +12,7 @@ interface SuggestSongModalProps {
 const languageOptions = ['國語', '台語', '粵語', '英語', '日語', '韓語', '陸歌'];
 
 export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, defaultTab = 'song' }) => {
+  const brandList = useBrands();
   const [activeTab, setActiveTab] = useState<'song' | 'brand'>(defaultTab);
 
   // 支援 Esc 鍵關閉彈窗
@@ -286,7 +287,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                       onChange={event => setBrandId(event.target.value as BrandId)}
                       style={{ ...inputStyle(), cursor: 'pointer' }}
                     >
-                      {BRAND_LIST.map(brand => (
+                      {brandList.map(brand => (
                         <option key={brand.id} value={brand.id} style={{ background: 'var(--bg-card, #1e293b)' }}>
                           {brand.shortName}
                         </option>

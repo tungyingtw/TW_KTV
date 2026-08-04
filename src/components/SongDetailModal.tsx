@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Song, SongVotes } from '../types/ktv';
-import { BRAND_LIST } from '../data/brands';
+import { useBrands } from '../hooks/useBrands';
 import { X, Heart, Video, Sparkles, CheckCircle2, Flag } from 'lucide-react';
 import { BrandVoteBar } from './BrandVoteBar';
 import { ReportModal } from './ReportModal';
@@ -20,6 +20,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
   favorites,
   onToggleFavorite,
 }) => {
+  const brandList = useBrands();
   const [showReport, setShowReport] = useState(false);
   const [songVotes, setSongVotes] = useState<SongVotes>({});
 
@@ -323,7 +324,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 gap: '12px',
               }}
             >
-              {BRAND_LIST.map(b => {
+              {brandList.map(b => {
                 const status = song.brands[b.id];
                 const brandVote = songVotes[b.id];
 

@@ -810,7 +810,7 @@ const API = isLocalEnv
 
 let currentSongEditorMode = 'create';
 let currentSongEditorData = null;
-const ADMIN_BRANDS = [
+let ADMIN_BRANDS = [
   ['watering_hole', '享○馨'],
   ['golden_voice', '金○'],
   ['superstar', '超○巨星'],
@@ -823,6 +823,25 @@ const ADMIN_BRANDS = [
   ['yinyuan', '音○'],
   ['hongyin', '弘○'],
 ];
+
+function getAdminBrands() {
+  if (Array.isArray(dynamicBrands) && dynamicBrands.length > 0) {
+    return dynamicBrands
+      .filter(b => b && b.status === 'active')
+      .map(b => [b.id, b.shortName || b.name]);
+  }
+  return ADMIN_BRANDS;
+}
+
+async function ensureAdminBrandsLoaded() {
+  if (!Array.isArray(dynamicBrands) || dynamicBrands.length === 0) {
+    try {
+      await loadBrandsList();
+    } catch (err) {
+      console.warn('[AdminBrands] Load dynamic brands failed:', err.message);
+    }
+  }
+}
 
 window.currentAdmin = null;
 
@@ -1855,6 +1874,7 @@ function isSongEditorModified() {
 }
 
 async function openSongEditor(songIdValue = '') {
+  await ensureAdminBrandsLoaded();
   currentSongEditorMode = songIdValue ? 'edit' : 'create';
   currentSongEditorData = null;
   const modal = document.getElementById('song-editor-modal');
@@ -1915,7 +1935,7 @@ function fillSongEditor(song) {
   document.getElementById('song-mainland-viral').checked = Boolean(song.isMainlandViral);
   document.getElementById('song-niche').checked = Boolean(song.isNiche);
 
-  document.getElementById('song-brand-editor').innerHTML = ADMIN_BRANDS.map(([brandId, label]) => {
+  document.getElementById('song-brand-editor').innerHTML = getAdminBrands().map(([brandId, label]) => {
     const status = song.brands?.[brandId] || { available: false };
     return `
       <div class="brand-editor-card" data-brand-id="${brandId}">
