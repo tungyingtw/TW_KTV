@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Song } from '../types/ktv';
-import { BRAND_LIST } from '../data/brands';
+import { useBrands } from '../hooks/useBrands';
 import { X, Heart, Trash2, Mic2, CheckCircle2 } from 'lucide-react';
 
 interface FavoritesDrawerProps {
@@ -16,6 +16,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
   favoriteSongs,
   onToggleFavorite,
 }) => {
+  const brandList = useBrands();
   // 支援 Esc 鍵關閉抽屜
   React.useEffect(() => {
     if (!isOpen) return;
@@ -146,7 +147,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
                   flexWrap: 'wrap',
                   gap: '6px',
                 }}>
-                  {BRAND_LIST.map(b => {
+                  {brandList.map(b => {
                     const status = song.brands[b.id];
                     if (!status || !status.available) return null;
 

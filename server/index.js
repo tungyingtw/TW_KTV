@@ -117,6 +117,18 @@ function parseVoteKey(key) {
   return { songId: key.slice(0, -(brandId.length + 1)), brandId };
 }
 
+async function parseVoteKeyDynamic(key) {
+  try {
+    const store = await loadBrandSettingsStore();
+    const brandIds = Object.keys(store.brands || {}).sort((a, b) => b.length - a.length);
+    const brandId = brandIds.find(id => key.endsWith(`_${id}`));
+    if (!brandId) return parseVoteKey(key);
+    return { songId: key.slice(0, -(brandId.length + 1)), brandId };
+  } catch {
+    return parseVoteKey(key);
+  }
+}
+
 app.get('/', (req, res) => {
   res.redirect(301, OFFICIAL_SITE);
 });
@@ -233,6 +245,8 @@ const ALL_PERMISSIONS = [
   'songs.update',
   'songs.delete',
   'brand.update',
+  'brands.view',
+  'brands.manage',
   'mv.update',
   'aliases.view',
   'aliases.manage',
@@ -255,6 +269,8 @@ const DEFAULT_ADMIN_PERMISSIONS = [
   'songs.create',
   'songs.update',
   'brand.update',
+  'brands.view',
+  'brands.manage',
   'mv.update',
   'aliases.view',
   'aliases.manage',
@@ -410,6 +426,289 @@ const REPORTS_PATH = path.join(__dirname, 'reports.json');
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
 const ADMIN_LOG_PATH = resolveDataPath('ADMIN_ACTIONS_LOG_PATH', 'admin_actions.log');
 const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
+const BRAND_SETTINGS_PATH = path.join(__dirname, 'brand_settings.json');
+const BRAND_SETTINGS_REDIS_KEY = 'ktv:brandSettings';
+
+const DEFAULT_BRAND_SETTINGS = {
+  brands: {
+    cashbox: {
+      id: 'cashbox',
+      name: '錢○ Cashbox 收錄',
+      shortName: '錢○',
+      color: '#34d399',
+      badgeBg: 'rgba(52, 211, 153, 0.16)',
+      description: '錢○ 門市系統歌曲收錄',
+      status: 'active',
+      sortOrder: 1,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    holiday: {
+      id: 'holiday',
+      name: '好○迪 Holiday 收錄',
+      shortName: '好○迪',
+      color: '#38bdf8',
+      badgeBg: 'rgba(56, 189, 248, 0.16)',
+      description: '好○迪 門市系統歌曲收錄',
+      status: 'active',
+      sortOrder: 2,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    watering_hole: {
+      id: 'watering_hole',
+      name: '享○馨 KTV 收錄',
+      shortName: '享○馨',
+      color: '#fbbf24',
+      badgeBg: 'rgba(251, 191, 36, 0.16)',
+      description: '享○馨 門市庭園包廂歌曲收錄',
+      status: 'active',
+      sortOrder: 3,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    starlight: {
+      id: 'starlight',
+      name: '星○點 收錄',
+      shortName: '星○點',
+      color: '#c084fc',
+      badgeBg: 'rgba(192, 132, 252, 0.16)',
+      description: '星○點 門市系統歌曲收錄',
+      status: 'active',
+      sortOrder: 4,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    singgo: {
+      id: 'singgo',
+      name: 'Sing○ 聚唱收錄',
+      shortName: 'Sing○',
+      color: '#f472b6',
+      badgeBg: 'rgba(244, 114, 182, 0.16)',
+      description: 'Sing○ 時尚包廂歌曲收錄',
+      status: 'active',
+      sortOrder: 5,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    vmix: {
+      id: 'vmix',
+      name: 'V-M○X 收錄',
+      shortName: 'V-M○X',
+      color: '#2dd4bf',
+      badgeBg: 'rgba(45, 212, 191, 0.16)',
+      description: 'V-M○X 門市系統歌曲收錄',
+      status: 'active',
+      sortOrder: 6,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    superstar: {
+      id: 'superstar',
+      name: '超○巨星 收錄',
+      shortName: '超○巨星',
+      color: '#fb923c',
+      badgeBg: 'rgba(251, 146, 60, 0.16)',
+      description: '超○巨星 門市系統歌曲收錄',
+      status: 'active',
+      sortOrder: 7,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    silver_cabinet: {
+      id: 'silver_cabinet',
+      name: '銀○ KTV 收錄',
+      shortName: '銀○',
+      color: '#eab308',
+      badgeBg: 'rgba(234, 179, 8, 0.16)',
+      description: '銀○ 門市系統歌曲收錄',
+      status: 'active',
+      sortOrder: 8,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    yinyuan: {
+      id: 'yinyuan',
+      name: '音○ 收錄',
+      shortName: '音○',
+      color: '#a3e635',
+      badgeBg: 'rgba(163, 230, 53, 0.16)',
+      description: '音○ 伴唱系統歌曲收錄',
+      status: 'active',
+      sortOrder: 9,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    golden_voice: {
+      id: 'golden_voice',
+      name: '金○ 收錄',
+      shortName: '金○',
+      color: '#2dd4bf',
+      badgeBg: 'rgba(45, 212, 191, 0.16)',
+      description: '金○ 伴唱系統歌曲收錄',
+      status: 'active',
+      sortOrder: 10,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    hongyin: {
+      id: 'hongyin',
+      name: '弘○ 收錄',
+      shortName: '弘○',
+      color: '#f43f5e',
+      badgeBg: 'rgba(244, 63, 94, 0.16)',
+      description: '弘○ 伴唱系統歌曲收錄',
+      status: 'active',
+      sortOrder: 11,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    datang: {
+      id: 'datang',
+      name: '大○系統 收錄',
+      shortName: '大○',
+      color: '#ec4899',
+      badgeBg: 'rgba(236, 72, 153, 0.16)',
+      description: '大○ 伴唱系統歌曲收錄',
+      status: 'active',
+      sortOrder: 12,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    ruiying: {
+      id: 'ruiying',
+      name: '瑞○系統 收錄',
+      shortName: '瑞○',
+      color: '#14b8a6',
+      badgeBg: 'rgba(20, 184, 166, 0.16)',
+      description: '瑞○ 伴唱系統歌曲收錄',
+      status: 'active',
+      sortOrder: 13,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    },
+    meihua: {
+      id: 'meihua',
+      name: '美○系統 收錄',
+      shortName: '美○',
+      color: '#a855f7',
+      badgeBg: 'rgba(168, 85, 247, 0.16)',
+      description: '美○ 伴唱系統歌曲收錄',
+      status: 'active',
+      sortOrder: 14,
+      source: 'system',
+      createdAt: '2026-08-04T00:00:00.000Z',
+      updatedAt: '2026-08-04T00:00:00.000Z'
+    }
+  },
+  version: 1
+};
+
+function loadBrandSettingsFromDisk() {
+  try {
+    if (fs.existsSync(BRAND_SETTINGS_PATH)) {
+      const data = JSON.parse(fs.readFileSync(BRAND_SETTINGS_PATH, 'utf8'));
+      if (data && data.brands && typeof data.brands === 'object') {
+        return data;
+      }
+    }
+  } catch (err) {
+    console.error('[BrandSettings Load Disk Error]', err);
+  }
+  safeAtomicWriteJson(BRAND_SETTINGS_PATH, DEFAULT_BRAND_SETTINGS);
+  return DEFAULT_BRAND_SETTINGS;
+}
+
+function saveBrandSettingsToDisk(data) {
+  try {
+    const payload = {
+      brands: data?.brands || {},
+      version: data?.version || 1,
+      updatedAt: new Date().toISOString()
+    };
+    safeAtomicWriteJson(BRAND_SETTINGS_PATH, payload);
+  } catch (err) {
+    console.error('[BrandSettings Save Disk Error]', err);
+  }
+}
+
+async function loadBrandSettingsStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', BRAND_SETTINGS_REDIS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && parsed.brands) {
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[BrandSettings Persistent Read Warning]:', err.message);
+    }
+  }
+  return loadBrandSettingsFromDisk();
+}
+
+async function saveBrandSettingsStore(data, options = {}) {
+  const { requirePersistent = false } = options;
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', BRAND_SETTINGS_REDIS_KEY, JSON.stringify(data));
+      try { saveBrandSettingsToDisk(data); } catch (err) {
+        console.warn('[BrandSettings] Local JSON backup write failed:', err.message);
+      }
+      return;
+    } catch (err) {
+      try { saveBrandSettingsToDisk(data); } catch (localErr) {
+        console.warn('[BrandSettings] Local JSON backup write failed:', localErr.message);
+      }
+      console.warn('[BrandSettings Persistent Write Warning]:', err.message);
+      if (requirePersistent) {
+        throw new Error('品牌設定暫時無法持久化儲存，請稍後再試');
+      }
+      return;
+    }
+  }
+
+  try { saveBrandSettingsToDisk(data); } catch (err) {
+    console.warn('[BrandSettings] Local JSON write failed:', err.message);
+  }
+}
+
+async function getActiveBrands() {
+  const store = await loadBrandSettingsStore();
+  const brandsList = Object.values(store.brands || {});
+  const activeBrands = [];
+  for (const b of brandsList) {
+    if (b && (await brandExists(b.id, { activeOnly: true }))) {
+      activeBrands.push(b);
+    }
+  }
+  return activeBrands.sort((a, b) => (a.sortOrder || 99) - (b.sortOrder || 99));
+}
+
+async function brandExists(brandId, options = {}) {
+  const { activeOnly = true } = options;
+  if (!brandId) return false;
+  const store = await loadBrandSettingsStore();
+  const brand = store.brands ? store.brands[brandId] : null;
+  if (!brand) return false;
+  if (activeOnly) return brand.status === 'active';
+  return true;
+}
 
 // ─────────────────────────────────────────────
 // 資料讀寫工具
@@ -1327,6 +1626,13 @@ app.post('/api/report', async (req, res) => {
   const validTypes = ['no_song', 'has_song', 'missing_song', 'suggest_song', 'suggest_new_brand', 'wrong_info', 'other'];
   if (!validTypes.includes(issueType)) return res.status(400).json({ error: '無效的 issueType' });
 
+  if (issueType !== 'suggest_new_brand') {
+    const isBrandActive = await brandExists(brandId, { activeOnly: true });
+    if (!isBrandActive) {
+      return res.status(400).json({ error: `無效或已停用的品牌 ID: "${brandId}"` });
+    }
+  }
+
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
   const reports = await loadReportsStore();
 
@@ -1428,6 +1734,11 @@ app.post('/api/vote', async (req, res) => {
     return res.status(400).json({ error: '無效的 previousVote' });
   }
 
+  const isBrandActive = await brandExists(brandId, { activeOnly: true });
+  if (!isBrandActive) {
+    return res.status(400).json({ error: `無效或已停用的品牌 ID: "${brandId}"` });
+  }
+
   const votes = await loadVotesStore();
   const key = `${songId}_${brandId}`;
   if (!votes[key]) votes[key] = { confirm: 0, deny: 0, guidedVocal: 0, noGuidedVocal: 0 };
@@ -1468,6 +1779,11 @@ app.post('/api/vote/guided', async (req, res) => {
   }
   if (previousVote && !['guided', 'none'].includes(previousVote)) {
     return res.status(400).json({ error: '無效的 previousVote' });
+  }
+
+  const isBrandActive = await brandExists(brandId, { activeOnly: true });
+  if (!isBrandActive) {
+    return res.status(400).json({ error: `無效或已停用的品牌 ID: "${brandId}"` });
   }
 
   const votes = await loadVotesStore();
@@ -1511,6 +1827,11 @@ app.post('/api/vote/mv', async (req, res) => {
   }
   if (previousVote && !['official', 'edited'].includes(previousVote)) {
     return res.status(400).json({ error: '無效的 previousVote' });
+  }
+
+  const isBrandActive = await brandExists(brandId, { activeOnly: true });
+  if (!isBrandActive) {
+    return res.status(400).json({ error: `無效或已停用的品牌 ID: "${brandId}"` });
   }
 
   const votes = await loadVotesStore();
@@ -2096,7 +2417,7 @@ app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res)
 
     const confidence = getVoteConfidence(data.confirm || 0, data.deny || 0);
     if (confidence === 'disputed' || confidence === 'uncertain') {
-      const { songId, brandId } = parseVoteKey(key);
+      const { songId, brandId } = await parseVoteKeyDynamic(key);
       const song = songsDatabase.find(s => s.id === songId);
       disputed.push({
         key, songId, brandId,
@@ -2122,7 +2443,7 @@ app.get('/api/admin/verified', requirePermission('votes.view'), async (req, res)
 
   for (const [key, data] of Object.entries(votes)) {
     if (getVoteConfidence(data.confirm || 0, data.deny || 0) !== 'verified') continue;
-    const { songId, brandId } = parseVoteKey(key);
+    const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = songsDatabase.find(s => s.id === songId);
     verified.push({
       key, songId, brandId,
@@ -2148,7 +2469,7 @@ app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, 
     const total = guided + noGuided;
     if (!total) continue;
 
-    const { songId, brandId } = parseVoteKey(key);
+    const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = songsDatabase.find(s => s.id === songId);
     const brandData = song?.brands?.[brandId] || null;
 
@@ -2189,7 +2510,7 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
     if (filterType === 'official' && official <= edited) continue;
     if (filterType === 'edited' && edited <= official) continue;
 
-    const { songId, brandId } = parseVoteKey(key);
+    const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = songsDatabase.find(s => s.id === songId);
     const brandData = song?.brands?.[brandId] || null;
 
@@ -2213,14 +2534,18 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
   res.json({ total: mvVotes.length, mvVotes: mvVotes.slice(0, limit) });
 });
 
-function createEmptyBrandStatuses() {
-  return BRAND_IDS.reduce((acc, brandId) => {
-    acc[brandId] = { available: false };
-    return acc;
-  }, {});
+async function createEmptyBrandStatuses() {
+  const activeBrands = await getActiveBrands();
+  const acc = {};
+  for (const b of activeBrands) {
+    if (b && b.id) {
+      acc[b.id] = { available: false };
+    }
+  }
+  return acc;
 }
 
-function normalizeAdminSongPayload(body, existingSong = null) {
+async function normalizeAdminSongPayload(body, existingSong = null) {
   const validLanguages = ['國語', '台語', '粵語', '英語', '日語', '韓語', '陸歌', '客語', '兒歌', '原住民語', '藏語', 'MV', '樂'];
   const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track'];
   const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv'];
@@ -2233,13 +2558,17 @@ function normalizeAdminSongPayload(body, existingSong = null) {
   const language = String(body.language || existingSong?.language || '國語').trim();
   if (!validLanguages.includes(language)) throw new Error('歌曲語言不正確');
 
+  const defaultEmptyBrands = await createEmptyBrandStatuses();
   const brands = {
-    ...createEmptyBrandStatuses(),
+    ...defaultEmptyBrands,
     ...(existingSong?.brands || {}),
   };
 
   if (body.brands && typeof body.brands === 'object') {
-    for (const brandId of BRAND_IDS) {
+    for (const brandId of Object.keys(body.brands)) {
+      const isKnown = await brandExists(brandId, { activeOnly: false });
+      if (!isKnown) continue;
+
       const incoming = body.brands[brandId];
       if (!incoming || typeof incoming !== 'object') continue;
       const status = {
@@ -2432,7 +2761,7 @@ app.get('/api/admin/song/:songId', requirePermission('songs.view'), (req, res) =
 
 app.post('/api/admin/song', requirePermission('songs.create'), async (req, res) => {
   try {
-    const song = normalizeAdminSongPayload(req.body);
+    const song = await normalizeAdminSongPayload(req.body);
     if (songsDatabase.some(item => item.id === song.id)) {
       return res.status(409).json({ error: '歌曲 ID 已存在' });
     }
@@ -2450,7 +2779,7 @@ app.put('/api/admin/song/:songId', requirePermission('songs.update'), async (req
     const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
     if (idx === -1) return res.status(404).json({ error: '找不到歌曲' });
     const before = songsDatabase[idx];
-    const song = normalizeAdminSongPayload(req.body, before);
+    const song = await normalizeAdminSongPayload(req.body, before);
     song.id = before.id;
     songsDatabase[idx] = song;
     await saveCatalogOverrideSong(song);
@@ -2501,6 +2830,11 @@ app.patch('/api/admin/song/:songId/brand', requirePermission('brand.update'), as
 
   if (!brandId || typeof available !== 'boolean') {
     return res.status(400).json({ error: '缺少必要欄位：brandId, available (boolean)' });
+  }
+
+  const isBrandValid = await brandExists(brandId, { activeOnly: false });
+  if (!isBrandValid) {
+    return res.status(400).json({ error: `無效或不存在的品牌 ID: "${brandId}"` });
   }
 
   const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track', ''];
@@ -2577,6 +2911,11 @@ app.patch('/api/admin/song/:songId/brand/mv-type', requirePermission('mv.update'
     return res.status(400).json({ error: '缺少必要欄位：brandId' });
   }
 
+  const isBrandValid = await brandExists(brandId, { activeOnly: false });
+  if (!isBrandValid) {
+    return res.status(400).json({ error: `無效或不存在的品牌 ID: "${brandId}"` });
+  }
+
   const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv', ''];
   if (mvType !== undefined && !validMvTypes.includes(mvType)) {
     return res.status(400).json({ error: 'MV 類型不正確' });
@@ -2616,6 +2955,244 @@ app.patch('/api/admin/song/:songId/brand/mv-type', requirePermission('mv.update'
     brandId,
     before, after: song.brands[brandId],
   });
+});
+
+// ─────────────────────────────────────────────
+// 品牌管理 API (Brand Management System Phase 1)
+// ─────────────────────────────────────────────
+
+// ── [公開] 前台取得 active 品牌清單 ──
+app.get('/api/brands', async (req, res) => {
+  try {
+    const activeBrands = await getActiveBrands();
+    res.json({
+      brands: activeBrands,
+      total: activeBrands.length,
+    });
+  } catch (err) {
+    console.error('[Public Brands API Error]', err);
+    res.status(500).json({ error: '品牌清單讀取失敗' });
+  }
+});
+
+// ── [後台] 查看 active / inactive 全部品牌 ──
+app.get('/api/admin/brands', requirePermission('brands.view'), async (req, res) => {
+  try {
+    const store = await loadBrandSettingsStore();
+    const allBrands = Object.values(store.brands || {}).sort((a, b) => (a.sortOrder || 99) - (b.sortOrder || 99));
+    const activeCount = allBrands.filter(b => b.status === 'active').length;
+    const inactiveCount = allBrands.filter(b => b.status === 'inactive').length;
+    res.json({
+      brands: allBrands,
+      total: allBrands.length,
+      activeCount,
+      inactiveCount,
+    });
+  } catch (err) {
+    console.error('[Admin Brands View Error]', err);
+    res.status(500).json({ error: '品牌清單讀取失敗：' + err.message });
+  }
+});
+
+// ── [後台] 新增品牌 ──
+app.post('/api/admin/brand', requirePermission('brands.manage'), async (req, res) => {
+  try {
+    const { id, name, shortName, color, badgeBg, description, sortOrder, sourceReportId } = req.body || {};
+    const rawId = String(id || '').trim().toLowerCase();
+    const rawName = String(name || '').trim();
+    const rawShortName = String(shortName || '').trim();
+
+    if (!rawId || !/^[a-z0-9_]{2,32}$/.test(rawId)) {
+      return res.status(400).json({ error: '品牌 ID 格式不正確（僅限 2~32 字元小寫英數底線）' });
+    }
+    if (!rawName) {
+      return res.status(400).json({ error: '請輸入品牌名稱' });
+    }
+    if (!rawShortName) {
+      return res.status(400).json({ error: '請輸入品牌簡稱' });
+    }
+
+    const store = await loadBrandSettingsStore();
+    if (store.brands && store.brands[rawId]) {
+      return res.status(400).json({ error: `品牌 ID "${rawId}" 已存在，請使用其他 ID` });
+    }
+
+    const brandColor = String(color || '#38bdf8').trim();
+    const brandBadgeBg = String(badgeBg || 'rgba(56, 189, 248, 0.16)').trim();
+    const existingOrders = Object.values(store.brands || {}).map(b => Number(b.sortOrder) || 0);
+    const maxSortOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : 0;
+    const finalSortOrder = Number.isInteger(Number(sortOrder)) ? Number(sortOrder) : maxSortOrder + 1;
+
+    const newBrand = {
+      id: rawId,
+      name: rawName,
+      shortName: rawShortName,
+      color: brandColor,
+      badgeBg: brandBadgeBg,
+      description: String(description || '').trim(),
+      status: 'active',
+      sortOrder: finalSortOrder,
+      source: sourceReportId ? 'suggestion' : 'admin',
+      sourceReportId: sourceReportId ? String(sourceReportId) : undefined,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (!store.brands) store.brands = {};
+    store.brands[rawId] = newBrand;
+    await saveBrandSettingsStore(store, { requirePersistent: true });
+
+    logAdminAction('CREATE_BRAND', { brandId: rawId, name: rawName, shortName: rawShortName }, req);
+    res.status(201).json({ success: true, brand: newBrand });
+  } catch (err) {
+    console.error('[Admin Create Brand Error]', err);
+    const statusCode = err.message.includes('無法持久化儲存') ? 503 : 500;
+    res.status(statusCode).json({ error: '新增品牌失敗：' + err.message });
+  }
+});
+
+// ── [後台] 編輯品牌 ──
+app.put('/api/admin/brand/:brandId', requirePermission('brands.manage'), async (req, res) => {
+  try {
+    const { brandId } = req.params;
+    const store = await loadBrandSettingsStore();
+    if (!store.brands || !store.brands[brandId]) {
+      return res.status(404).json({ error: `找不到品牌 ID: ${brandId}` });
+    }
+
+    const existingBrand = store.brands[brandId];
+    const { name, shortName, color, badgeBg, description, sortOrder, status } = req.body || {};
+
+    const updatedBrand = {
+      ...existingBrand,
+      name: name !== undefined ? String(name).trim() : existingBrand.name,
+      shortName: shortName !== undefined ? String(shortName).trim() : existingBrand.shortName,
+      color: color !== undefined ? String(color).trim() : existingBrand.color,
+      badgeBg: badgeBg !== undefined ? String(badgeBg).trim() : existingBrand.badgeBg,
+      description: description !== undefined ? String(description).trim() : existingBrand.description,
+      sortOrder: Number.isInteger(Number(sortOrder)) ? Number(sortOrder) : existingBrand.sortOrder,
+      status: (status === 'active' || status === 'inactive') ? status : existingBrand.status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (!updatedBrand.name) return res.status(400).json({ error: '品牌名稱不可空白' });
+    if (!updatedBrand.shortName) return res.status(400).json({ error: '品牌簡稱不可空白' });
+
+    store.brands[brandId] = updatedBrand;
+    await saveBrandSettingsStore(store, { requirePersistent: true });
+
+    logAdminAction('UPDATE_BRAND', { brandId, before: existingBrand, after: updatedBrand }, req);
+    res.json({ success: true, brand: updatedBrand });
+  } catch (err) {
+    console.error('[Admin Update Brand Error]', err);
+    const statusCode = err.message.includes('無法持久化儲存') ? 503 : 500;
+    res.status(statusCode).json({ error: '編輯品牌失敗：' + err.message });
+  }
+});
+
+// ── [後台] 停用/啟用品牌 ──
+app.patch('/api/admin/brand/:brandId/status', requirePermission('brands.manage'), async (req, res) => {
+  try {
+    const { brandId } = req.params;
+    const { status } = req.body || {};
+    if (status !== 'active' && status !== 'inactive') {
+      return res.status(400).json({ error: '狀態必須為 "active" 或 "inactive"' });
+    }
+
+    const store = await loadBrandSettingsStore();
+    if (!store.brands || !store.brands[brandId]) {
+      return res.status(404).json({ error: `找不到品牌 ID: ${brandId}` });
+    }
+
+    const brand = store.brands[brandId];
+    const prevStatus = brand.status;
+    brand.status = status;
+    brand.updatedAt = new Date().toISOString();
+
+    store.brands[brandId] = brand;
+    await saveBrandSettingsStore(store, { requirePersistent: true });
+
+    logAdminAction('TOGGLE_BRAND_STATUS', { brandId, prevStatus, nextStatus: status }, req);
+    res.json({ success: true, brand });
+  } catch (err) {
+    console.error('[Admin Toggle Brand Status Error]', err);
+    const statusCode = err.message.includes('無法持久化儲存') ? 503 : 500;
+    res.status(statusCode).json({ error: '更新品牌狀態失敗：' + err.message });
+  }
+});
+
+// ── [後台] 從 suggest_new_brand 回報套用成正式品牌 ──
+app.post('/api/admin/brand/from-report/:reportId', requirePermission('brands.manage'), async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const reports = await loadReportsStore();
+    const reportIndex = reports.findIndex(r => String(r.id) === String(reportId));
+
+    if (reportIndex === -1) {
+      return res.status(404).json({ error: `找不到 ID 為 "${reportId}" 的回報` });
+    }
+
+    const report = reports[reportIndex];
+    if (report.issueType !== 'suggest_new_brand') {
+      return res.status(400).json({ error: '此回報類型非「建議新廠牌 (suggest_new_brand)」' });
+    }
+
+    const rawId = String(req.body.id || report.shortName || report.brandName || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    const finalId = rawId && /^[a-z0-9_]{2,32}$/.test(rawId) ? rawId : `brand_${Date.now()}`;
+    const name = String(req.body.name || report.brandName || report.brand || '').trim();
+    const shortName = String(req.body.shortName || report.shortName || report.brand || '').trim();
+
+    if (!name || !shortName) {
+      return res.status(400).json({ error: '無法從回報自動提取有效品牌名稱/簡稱，請於 Request Body 提供' });
+    }
+
+    const store = await loadBrandSettingsStore();
+    if (store.brands && store.brands[finalId]) {
+      return res.status(400).json({ error: `品牌 ID "${finalId}" 已存在` });
+    }
+
+    const existingOrders = Object.values(store.brands || {}).map(b => Number(b.sortOrder) || 0);
+    const maxSortOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : 0;
+
+    const newBrand = {
+      id: finalId,
+      name,
+      shortName,
+      color: String(req.body.color || '#38bdf8').trim(),
+      badgeBg: String(req.body.badgeBg || 'rgba(56, 189, 248, 0.16)').trim(),
+      description: String(req.body.description || report.note || report.description || '').trim(),
+      status: 'active',
+      sortOrder: maxSortOrder + 1,
+      source: 'suggestion',
+      sourceReportId: String(report.id),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (!store.brands) store.brands = {};
+    store.brands[finalId] = newBrand;
+    await saveBrandSettingsStore(store, { requirePersistent: true });
+
+    // 將回報標記為 resolved
+    reports[reportIndex] = {
+      ...report,
+      status: 'resolved',
+      resolvedAt: new Date().toISOString(),
+      resolutionNote: `已於 ${new Date().toISOString().slice(0,10)} 轉換為正式品牌 (ID: ${finalId})`,
+    };
+    await saveReportsStore(reports);
+
+    logAdminAction('CREATE_BRAND_FROM_REPORT', { reportId, brandId: finalId, name }, req);
+    res.status(201).json({
+      success: true,
+      brand: newBrand,
+      report: reports[reportIndex],
+    });
+  } catch (err) {
+    console.error('[Admin Brand From Report Error]', err);
+    const statusCode = err.message.includes('無法持久化儲存') ? 503 : 500;
+    res.status(statusCode).json({ error: '從回報建立品牌失敗：' + err.message });
+  }
 });
 
 // ── 管理員儀表板統計 ──
@@ -2733,6 +3310,7 @@ app.get('/api/admin/backup/export', requirePermission('backup.export'), async (r
     const reports = await loadReportsStore();
     const votes = await loadVotesStore();
     const artistAliasesOverrides = await loadArtistAliasesOverridesStore();
+    const brandSettings = await loadBrandSettingsStore();
 
     const exportPayload = {
       app: 'TW_KTV_CATALOG_SYSTEM',
@@ -2743,6 +3321,7 @@ app.get('/api/admin/backup/export', requirePermission('backup.export'), async (r
         reports,
         votes,
         artistAliasesOverrides,
+        brandSettings,
       }
     };
 
@@ -2766,11 +3345,12 @@ app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (re
     return res.status(400).json({ valid: false, error: '資料格式不正確：無效的系統備份檔標號或資料區塊' });
   }
 
-  const { catalogOverrides, reports, votes, artistAliasesOverrides } = payload.data;
+  const { catalogOverrides, reports, votes, artistAliasesOverrides, brandSettings } = payload.data;
   const overridesCount = catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides.songs || {}).length : 0;
   const reportsCount = Array.isArray(reports) ? reports.length : 0;
   const votesCount = votes && typeof votes === 'object' ? Object.keys(votes).length : 0;
   const aliasesOverridesCount = artistAliasesOverrides && typeof artistAliasesOverrides === 'object' ? Object.keys(artistAliasesOverrides).length : 0;
+  const brandSettingsCount = brandSettings && typeof brandSettings === 'object' ? Object.keys(brandSettings.brands || {}).length : 0;
 
   res.json({
     valid: true,
@@ -2780,6 +3360,7 @@ app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (re
       reportsCount,
       votesCount,
       artistAliasesOverridesCount: aliasesOverridesCount,
+      brandSettingsCount,
     }
   });
 });
@@ -2802,9 +3383,10 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
       reportsCount: (await loadReportsStore()).length,
       votesCount: Object.keys(await loadVotesStore()).length,
       artistAliasesOverridesCount: Object.keys(await loadArtistAliasesOverridesStore()).length,
+      brandSettingsCount: Object.keys((await loadBrandSettingsStore()).brands || {}).length,
     };
 
-    const { catalogOverrides, reports, votes, artistAliasesOverrides } = payload.data;
+    const { catalogOverrides, reports, votes, artistAliasesOverrides, brandSettings } = payload.data;
     if (catalogOverrides) {
       await saveCatalogOverridesStore(catalogOverrides);
       const baseSongs = loadInitialSongsDatabase({ applyLocalOverrides: !USE_REDIS });
@@ -2820,12 +3402,16 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
       await saveArtistAliasesOverridesStore(artistAliasesOverrides);
       applyArtistAliasesOverrides(artistAliasesOverrides);
     }
+    if (brandSettings && typeof brandSettings === 'object') {
+      await saveBrandSettingsStore(brandSettings, { requirePersistent: true });
+    }
 
     const afterCounts = {
       catalogOverridesCount: catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides.songs || {}).length : 0,
       reportsCount: Array.isArray(reports) ? reports.length : 0,
       votesCount: votes && typeof votes === 'object' ? Object.keys(votes).length : 0,
       artistAliasesOverridesCount: artistAliasesOverrides && typeof artistAliasesOverrides === 'object' ? Object.keys(artistAliasesOverrides).length : 0,
+      brandSettingsCount: brandSettings && typeof brandSettings === 'object' ? Object.keys(brandSettings.brands || {}).length : 0,
     };
 
     logAdminAction('IMPORT_SYSTEM_BACKUP', {
@@ -2877,7 +3463,53 @@ app.get('/api/admin/consistency', requirePermission('dashboard.view'), async (re
     const aliasOverrides = await loadArtistAliasesOverridesStore();
     const aliasOverridesCount = Object.keys(aliasOverrides || {}).length;
 
-    const ok = visibleDeletedIds.length === 0 && (!USE_REDIS || redisAvailable);
+    // 品牌 Consistency 檢查
+    const brandStore = await loadBrandSettingsStore();
+    const knownBrandsMap = brandStore.brands || {};
+    const activeBrandsCount = Object.values(knownBrandsMap).filter(b => b && b.status === 'active').length;
+    const inactiveBrandsCount = Object.values(knownBrandsMap).filter(b => b && b.status === 'inactive').length;
+
+    // 1. 檢查 songsDatabase[*].brands 中的未知 brandId
+    const unknownSongBrandIds = new Set();
+    for (const song of songsDatabase) {
+      if (song.brands && typeof song.brands === 'object') {
+        for (const bId of Object.keys(song.brands)) {
+          if (!knownBrandsMap[bId]) {
+            unknownSongBrandIds.add(bId);
+          }
+        }
+      }
+    }
+
+    // 2. 檢查 votes 中的未知 brandId
+    const votesStore = await loadVotesStore();
+    const unknownVoteBrandIds = new Set();
+    for (const vKey of Object.keys(votesStore || {})) {
+      const { brandId: bId } = await parseVoteKeyDynamic(vKey);
+      if (bId && !knownBrandsMap[bId]) {
+        unknownVoteBrandIds.add(bId);
+      }
+    }
+
+    // 3. 檢查 reports 中的未知 brandId
+    const reportsStore = await loadReportsStore();
+    const unknownReportBrandIds = new Set();
+    for (const r of (reportsStore || [])) {
+      if (r.brandId && r.issueType !== 'suggest_new_brand' && !knownBrandsMap[r.brandId]) {
+        unknownReportBrandIds.add(r.brandId);
+      }
+    }
+
+    const hasUnknownBrandIds = unknownSongBrandIds.size > 0 || unknownVoteBrandIds.size > 0 || unknownReportBrandIds.size > 0;
+    if (hasUnknownBrandIds) {
+      warnings.push(`發現資料庫中含有未註冊或未知的品牌 ID (歌曲: ${unknownSongBrandIds.size}, 投票: ${unknownVoteBrandIds.size}, 回報: ${unknownReportBrandIds.size})。`);
+    }
+
+    if (USE_REDIS && !redisAvailable) {
+      warnings.push('品牌設定降級運行為 local JSON fallback。');
+    }
+
+    const ok = visibleDeletedIds.length === 0 && (!USE_REDIS || redisAvailable) && !hasUnknownBrandIds;
 
     res.json({
       ok,
@@ -2890,6 +3522,12 @@ app.get('/api/admin/consistency', requirePermission('dashboard.view'), async (re
       sampleDeletedIdsStillVisible: visibleDeletedIds.slice(0, 10),
       artistAliasesPersistence: USE_REDIS ? (redisAvailable ? 'redis' : 'degraded_local') : 'local_json',
       artistAliasesOverridesCount: aliasOverridesCount,
+      brandSettingsPersistence: USE_REDIS ? (redisAvailable ? 'redis' : 'degraded_local') : 'local_json',
+      activeBrandsCount,
+      inactiveBrandsCount,
+      unknownSongBrandIds: Array.from(unknownSongBrandIds).slice(0, 10),
+      unknownVoteBrandIds: Array.from(unknownVoteBrandIds).slice(0, 10),
+      unknownReportBrandIds: Array.from(unknownReportBrandIds).slice(0, 10),
       warnings,
       timestamp: new Date().toISOString(),
     });
@@ -2920,6 +3558,25 @@ try {
   console.log('[Server] Artist aliases ready with persistent overrides');
 } catch (err) {
   console.warn('[Server] Persistent artist aliases preload failed:', err.message);
+}
+
+try {
+  const brandStore = await loadBrandSettingsStore();
+  if (USE_REDIS) {
+    try {
+      const redisVal = await redisCmd('get', BRAND_SETTINGS_REDIS_KEY);
+      if (!redisVal) {
+        await redisCmd('set', BRAND_SETTINGS_REDIS_KEY, JSON.stringify(brandStore));
+        console.log('[Server] Redis brandSettings initialized with default seed');
+      }
+    } catch (e) {
+      console.warn('[Server] Seed Redis brandSettings check failed:', e.message);
+    }
+  }
+  const activeCount = Object.values(brandStore.brands || {}).filter(b => b.status === 'active').length;
+  console.log(`[Server] Brand settings ready with ${activeCount} active brands`);
+} catch (err) {
+  console.warn('[Server] Persistent brand settings preload failed:', err.message);
 }
 
 app.listen(PORT, () => {

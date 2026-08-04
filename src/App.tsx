@@ -19,6 +19,7 @@ import { ToastNotification } from './components/ToastNotification';
 import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
 import { fetchFullCatalog } from './services/apiService';
+import { fetchBrands } from './data/brands';
 import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
@@ -118,6 +119,7 @@ export function App() {
 
   // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
   useEffect(() => {
+    fetchBrands();
     fetchFullCatalog((pct) => setTargetProgress(pct)).then(catalog => {
       if (catalog && catalog.length > 0) {
         // 前台硬過濾防護牆 (Strict Sanitizer Guard)

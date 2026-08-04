@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, AlertTriangle, Send, CheckCircle2 } from 'lucide-react';
 import type { Song, BrandId, IssueType } from '../types/ktv';
-import { BRAND_LIST } from '../data/brands';
+import { useBrands } from '../hooks/useBrands';
 import { submitReport } from '../services/communityService';
 
 interface ReportModalProps {
@@ -18,6 +18,7 @@ const ISSUE_OPTIONS: { value: IssueType; label: string }[] = [
 ];
 
 export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, defaultIssueType }) => {
+  const brandList = useBrands();
   const [selectedBrand, setSelectedBrand] = useState<BrandId | ''>('');
   const [issueType, setIssueType] = useState<IssueType | ''>(defaultIssueType || 'no_song');
   const [note, setNote] = useState('');
@@ -173,7 +174,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                   }}
                 >
                   <option value="" style={{ background: 'var(--bg-card, #1e293b)' }}>── 請選擇廠牌 ──</option>
-                  {BRAND_LIST.map(b => (
+                  {brandList.map(b => (
                     <option key={b.id} value={b.id} style={{ background: 'var(--bg-card, #1e293b)' }}>
                       {b.name}
                     </option>

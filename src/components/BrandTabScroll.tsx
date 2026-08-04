@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BrandId } from '../types/ktv';
-import { BRAND_LIST } from '../data/brands';
+import { useBrands } from '../hooks/useBrands';
 
 interface BrandTabScrollProps {
   selectedBrand: BrandId | 'all';
@@ -26,6 +26,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   brandSongCounts,
   totalSongCount,
 }) => {
+  const brandList = useBrands();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -38,13 +39,13 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
 
   // 動態依據【收錄歌曲數量多寡】由大至小排序廠牌標籤
   const displayedBrands = useMemo(() => {
-    if (!brandSongCounts) return BRAND_LIST;
-    return [...BRAND_LIST].sort((a, b) => {
+    if (!brandSongCounts) return brandList;
+    return [...brandList].sort((a, b) => {
       const countA = brandSongCounts[a.id] || 0;
       const countB = brandSongCounts[b.id] || 0;
       return countB - countA; // 歌曲數量最多的優先排序
     });
-  }, [brandSongCounts]);
+  }, [brandSongCounts, brandList]);
 
   // 檢查是否有左右溢出需要顯示捲動按鈕
   const checkScroll = () => {
@@ -228,7 +229,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
               boxSizing: 'border-box',
             }}
           >
-            全部廠牌 ({BRAND_LIST.length}){totalSongCount ? ` · ${totalSongCount >= 10000 ? (totalSongCount / 10000).toFixed(1) + '萬首' : totalSongCount + '首'}` : ''}
+            全部廠牌 ({brandList.length}){totalSongCount ? ` · ${totalSongCount >= 10000 ? (totalSongCount / 10000).toFixed(1) + '萬首' : totalSongCount + '首'}` : ''}
           </button>
 
           {/* 各大 KTV 廠牌 - 動態依【收錄歌曲數量】由多至少優先排序！ */}
@@ -326,7 +327,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ color: '#c084fc', fontWeight: 700 }}>已複選 {selectedBrands.length} 家廠牌比對：</span>
             {selectedBrands.map(bId => {
-              const b = BRAND_LIST.find(x => x.id === bId);
+              const b = brandList.find(x => x.id === bId);
               return (
                 <span key={bId} style={{
                   background: b?.badgeBg || 'rgba(255,255,255,0.1)',
