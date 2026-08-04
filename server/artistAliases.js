@@ -251,8 +251,9 @@ export const DEFAULT_ARTIST_ALIASES = {
 };
 
 let currentAliasesMap = null;
+let currentOverridesMap = null;
 
-function normalizeAliasArray(input) {
+export function normalizeAliasArray(input) {
   if (!input) return [];
   if (Array.isArray(input)) {
     return input.map(item => String(item).trim().toLowerCase()).filter(Boolean);
@@ -263,8 +264,34 @@ function normalizeAliasArray(input) {
   return [];
 }
 
-export function loadArtistAliases() {
-  if (currentAliasesMap) return currentAliasesMap;
+export function loadArtistAliasesOverridesFromDisk() {
+  if (fs.existsSync(ALIASES_FILE_PATH)) {
+    try {
+      const overrides = JSON.parse(fs.readFileSync(ALIASES_FILE_PATH, 'utf8'));
+      if (overrides && typeof overrides === 'object') {
+        const cleaned = {};
+        for (const [artist, list] of Object.entries(overrides)) {
+          cleaned[artist] = normalizeAliasArray(list);
+        }
+        return cleaned;
+      }
+    } catch (err) {
+      console.warn('[ArtistAliases] 讀取別名覆寫檔失敗:', err.message);
+    }
+  }
+  return {};
+}
+
+export function saveArtistAliasesOverridesToDisk(overrides) {
+  try {
+    fs.writeFileSync(ALIASES_FILE_PATH, JSON.stringify(overrides || {}, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[ArtistAliases] 寫入別名覆寫檔失敗:', err.message);
+  }
+}
+
+export function applyArtistAliasesOverrides(overrides) {
+  currentOverridesMap = overrides && typeof overrides === 'object' ? overrides : {};
 
   let merged = {};
   for (const [artist, val] of Object.entries(DEFAULT_ARTIST_ALIASES)) {
@@ -282,24 +309,21 @@ export function loadArtistAliases() {
     }
   }
 
-  if (fs.existsSync(ALIASES_FILE_PATH)) {
-    try {
-      const overrides = JSON.parse(fs.readFileSync(ALIASES_FILE_PATH, 'utf8'));
-      if (overrides && typeof overrides === 'object') {
-        for (const [artist, list] of Object.entries(overrides)) {
-          merged[artist] = Array.from(new Set([
-            ...(merged[artist] || []),
-            ...normalizeAliasArray(list),
-          ]));
-        }
-      }
-    } catch (err) {
-      console.warn('[ArtistAliases] 讀取別名覆寫檔失敗:', err.message);
-    }
+  for (const [artist, list] of Object.entries(currentOverridesMap)) {
+    merged[artist] = Array.from(new Set([
+      ...(merged[artist] || []),
+      ...normalizeAliasArray(list),
+    ]));
   }
 
   currentAliasesMap = merged;
   return currentAliasesMap;
+}
+
+export function loadArtistAliases() {
+  if (currentAliasesMap) return currentAliasesMap;
+  const diskOverrides = loadArtistAliasesOverridesFromDisk();
+  return applyArtistAliasesOverrides(diskOverrides);
 }
 
 export function saveArtistAlias(artistName, aliasList) {
@@ -307,37 +331,23 @@ export function saveArtistAlias(artistName, aliasList) {
   if (!normalizedArtist) throw new Error('歌手名稱不能為空');
 
   const aliases = Array.from(new Set(normalizeAliasArray(aliasList)));
-  const map = loadArtistAliases();
-  map[normalizedArtist] = aliases;
-
-  let overrides = {};
-  if (fs.existsSync(ALIASES_FILE_PATH)) {
-    try {
-      overrides = JSON.parse(fs.readFileSync(ALIASES_FILE_PATH, 'utf8'));
-    } catch {}
-  }
+  const overrides = currentOverridesMap || loadArtistAliasesOverridesFromDisk();
   overrides[normalizedArtist] = aliases;
 
-  fs.writeFileSync(ALIASES_FILE_PATH, JSON.stringify(overrides, null, 2), 'utf8');
-  currentAliasesMap = map;
+  saveArtistAliasesOverridesToDisk(overrides);
+  applyArtistAliasesOverrides(overrides);
   return aliases;
 }
 
 export function deleteArtistAlias(artistName) {
   const normalizedArtist = String(artistName).trim();
-  const map = loadArtistAliases();
-  delete map[normalizedArtist];
+  const overrides = currentOverridesMap || loadArtistAliasesOverridesFromDisk();
+  delete overrides[normalizedArtist];
 
-  let overrides = {};
-  if (fs.existsSync(ALIASES_FILE_PATH)) {
-    try {
-      overrides = JSON.parse(fs.readFileSync(ALIASES_FILE_PATH, 'utf8'));
-      delete overrides[normalizedArtist];
-      fs.writeFileSync(ALIASES_FILE_PATH, JSON.stringify(overrides, null, 2), 'utf8');
-    } catch {}
-  }
-  currentAliasesMap = map;
+  saveArtistAliasesOverridesToDisk(overrides);
+  applyArtistAliasesOverrides(overrides);
 }
+
 
 export function expandArtistQuery(rawQuery) {
   const q = String(rawQuery || '').trim().toLowerCase();

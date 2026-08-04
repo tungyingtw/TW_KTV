@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
-import { loadArtistAliases, saveArtistAlias, deleteArtistAlias, expandArtistQuery } from './artistAliases.js';
+import { loadArtistAliases, expandArtistQuery, loadArtistAliasesOverridesFromDisk, saveArtistAliasesOverridesToDisk, applyArtistAliasesOverrides, normalizeAliasArray } from './artistAliases.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -467,7 +467,8 @@ function applyCatalogOverridesToSongs(songs, overridesData) {
   return Array.from(existingMap.values());
 }
 
-function loadInitialSongsDatabase() {
+function loadInitialSongsDatabase(options = {}) {
+  const { applyLocalOverrides = true } = options;
   let songs = null;
 
   // 1. 嘗試優先載入明文 JSON（本機開發環境）
@@ -511,27 +512,15 @@ function loadInitialSongsDatabase() {
 
   if (!Array.isArray(songs)) songs = [];
 
-  // 3. 疊加套用管理員持久化覆寫 (catalog_overrides.json)
-  try {
-    const overridesData = loadCatalogOverrides();
-    const deletedSet = new Set(overridesData.deletedIds || []);
-    const overridesMap = overridesData.songs || {};
-
-    if (deletedSet.size > 0 || Object.keys(overridesMap).length > 0) {
-      songs = songs.filter(s => !deletedSet.has(s.id));
-      const existingMap = new Map(songs.map(s => [s.id, s]));
-
-      for (const [id, overrideSong] of Object.entries(overridesMap)) {
-        if (overrideSong && overrideSong.id) {
-          const current = existingMap.get(id) || {};
-          existingMap.set(id, { ...current, ...overrideSong });
-        }
-      }
-      songs = Array.from(existingMap.values());
-      console.log(`[Server] 已成功套用覆寫與刪除紀錄（共 ${songs.length} 首可用歌曲）`);
+  // 3. 若未停用本機覆寫，疊加套用管理員本機持久化覆寫 (catalog_overrides.json)
+  if (applyLocalOverrides) {
+    try {
+      const overridesData = loadCatalogOverrides();
+      songs = applyCatalogOverridesToSongs(songs, overridesData);
+      console.log(`[Server] 已成功套用本機覆寫與刪除紀錄（共 ${songs.length} 首可用歌曲）`);
+    } catch (err) {
+      console.warn('[Server] 套用 local catalog_overrides 失敗:', err.message);
     }
-  } catch (err) {
-    console.warn('[Server] 套用 catalog_overrides 失敗:', err.message);
   }
 
   return songs;
@@ -663,6 +652,39 @@ async function saveCatalogOverridesStore(data) {
 
   try { saveCatalogOverrides(data); } catch (err) {
     console.warn('[CatalogOverrides] Local JSON write failed:', err.message);
+  }
+}
+
+async function loadArtistAliasesOverridesStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', ARTIST_ALIASES_OVERRIDES_REDIS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (err) {
+      throw new Error(`Artist aliases overrides persistent read failed: ${err.message}`);
+    }
+  }
+  return loadArtistAliasesOverridesFromDisk();
+}
+
+async function saveArtistAliasesOverridesStore(data) {
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', ARTIST_ALIASES_OVERRIDES_REDIS_KEY, JSON.stringify(data));
+      try { saveArtistAliasesOverridesToDisk(data); } catch (err) {
+        console.warn('[ArtistAliasesOverrides] Local JSON backup write failed:', err.message);
+      }
+      return;
+    } catch (err) {
+      try { saveArtistAliasesOverridesToDisk(data); } catch (localErr) {
+        console.warn('[ArtistAliasesOverrides] Local JSON backup write failed:', localErr.message);
+      }
+      throw new Error(`Artist aliases overrides persistent write failed: ${err.message}`);
+    }
+  }
+
+  try { saveArtistAliasesOverridesToDisk(data); } catch (err) {
+    console.warn('[ArtistAliasesOverrides] Local JSON write failed:', err.message);
   }
 }
 
@@ -1082,6 +1104,7 @@ const VOTES_REDIS_KEY = 'ktv:votes';
 const REPORTS_REDIS_KEY = 'ktv:reports';
 const ADMIN_LOG_REDIS_KEY = 'ktv:adminLogs';
 const CATALOG_OVERRIDES_REDIS_KEY = 'ktv:catalogOverrides';
+const ARTIST_ALIASES_OVERRIDES_REDIS_KEY = 'ktv:artistAliasesOverrides';
 
 if (USE_REDIS) {
   console.log('[Stats] Upstash Redis 已啟用：累積查詢人數將持久化儲存');
@@ -1142,6 +1165,7 @@ if (USE_REDIS) {
   initializeJsonStoreInRedis(REPORTS_REDIS_KEY, loadReports(), 'Reports');
   initializeJsonStoreInRedis(VOTES_REDIS_KEY, loadVotes(), 'Votes');
   initializeJsonStoreInRedis(CATALOG_OVERRIDES_REDIS_KEY, loadCatalogOverrides(), 'CatalogOverrides');
+  initializeJsonStoreInRedis(ARTIST_ALIASES_OVERRIDES_REDIS_KEY, loadArtistAliasesOverridesFromDisk(), 'ArtistAliasesOverrides');
 
   redisCmd('get', STATS_REDIS_TOTAL_KEY).then(val => {
     if (val !== null && val !== undefined) {
@@ -2360,22 +2384,33 @@ app.get('/api/admin/aliases', requirePermission('aliases.view'), (req, res) => {
   res.json({ aliases: loadArtistAliases() });
 });
 
-app.post('/api/admin/alias', requirePermission('aliases.manage'), (req, res) => {
+app.post('/api/admin/alias', requirePermission('aliases.manage'), async (req, res) => {
   try {
     const { artist, aliases } = req.body;
     if (!artist) return res.status(400).json({ error: '缺少歌手名稱' });
-    const saved = saveArtistAlias(artist, aliases);
-    logAdminAction('UPDATE_ARTIST_ALIAS', { artist, aliases: saved }, req);
-    res.json({ success: true, artist, aliases: saved });
+
+    const currentOverrides = await loadArtistAliasesOverridesStore();
+    const normalizedArtist = String(artist).trim();
+    const aliasArr = Array.from(new Set(normalizeAliasArray(aliases)));
+    currentOverrides[normalizedArtist] = aliasArr;
+
+    await saveArtistAliasesOverridesStore(currentOverrides);
+    applyArtistAliasesOverrides(currentOverrides);
+    logAdminAction('UPDATE_ARTIST_ALIAS', { artist: normalizedArtist, aliases: aliasArr }, req);
+    res.json({ success: true, artist: normalizedArtist, aliases: aliasArr });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.delete('/api/admin/alias/:artistName', requirePermission('aliases.manage'), (req, res) => {
+app.delete('/api/admin/alias/:artistName', requirePermission('aliases.manage'), async (req, res) => {
   try {
-    const artist = decodeURIComponent(req.params.artistName);
-    deleteArtistAlias(artist);
+    const artist = decodeURIComponent(req.params.artistName).trim();
+    const currentOverrides = await loadArtistAliasesOverridesStore();
+    delete currentOverrides[artist];
+
+    await saveArtistAliasesOverridesStore(currentOverrides);
+    applyArtistAliasesOverrides(currentOverrides);
     logAdminAction('DELETE_ARTIST_ALIAS', { artist }, req);
     res.json({ success: true, artist });
   } catch (err) {
@@ -2697,6 +2732,7 @@ app.get('/api/admin/backup/export', requirePermission('backup.export'), async (r
     const overrides = await loadCatalogOverridesStore();
     const reports = await loadReportsStore();
     const votes = await loadVotesStore();
+    const artistAliasesOverrides = await loadArtistAliasesOverridesStore();
 
     const exportPayload = {
       app: 'TW_KTV_CATALOG_SYSTEM',
@@ -2705,7 +2741,8 @@ app.get('/api/admin/backup/export', requirePermission('backup.export'), async (r
       data: {
         catalogOverrides: overrides,
         reports,
-        votes
+        votes,
+        artistAliasesOverrides,
       }
     };
 
@@ -2729,10 +2766,11 @@ app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (re
     return res.status(400).json({ valid: false, error: '資料格式不正確：無效的系統備份檔標號或資料區塊' });
   }
 
-  const { catalogOverrides, reports, votes } = payload.data;
-  const overridesCount = catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides).length : 0;
+  const { catalogOverrides, reports, votes, artistAliasesOverrides } = payload.data;
+  const overridesCount = catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides.songs || {}).length : 0;
   const reportsCount = Array.isArray(reports) ? reports.length : 0;
   const votesCount = votes && typeof votes === 'object' ? Object.keys(votes).length : 0;
+  const aliasesOverridesCount = artistAliasesOverrides && typeof artistAliasesOverrides === 'object' ? Object.keys(artistAliasesOverrides).length : 0;
 
   res.json({
     valid: true,
@@ -2741,6 +2779,7 @@ app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (re
       catalogOverridesCount: overridesCount,
       reportsCount,
       votesCount,
+      artistAliasesOverridesCount: aliasesOverridesCount,
     }
   });
 });
@@ -2762,12 +2801,14 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
       catalogOverridesCount: Object.keys((await loadCatalogOverridesStore()).songs || {}).length,
       reportsCount: (await loadReportsStore()).length,
       votesCount: Object.keys(await loadVotesStore()).length,
+      artistAliasesOverridesCount: Object.keys(await loadArtistAliasesOverridesStore()).length,
     };
 
-    const { catalogOverrides, reports, votes } = payload.data;
+    const { catalogOverrides, reports, votes, artistAliasesOverrides } = payload.data;
     if (catalogOverrides) {
       await saveCatalogOverridesStore(catalogOverrides);
-      songsDatabase = loadInitialSongsDatabase();
+      const baseSongs = loadInitialSongsDatabase({ applyLocalOverrides: !USE_REDIS });
+      songsDatabase = applyCatalogOverridesToSongs(baseSongs, catalogOverrides);
     }
     if (reports && Array.isArray(reports)) {
       await saveReportsStore(reports);
@@ -2775,11 +2816,16 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
     if (votes && typeof votes === 'object') {
       await saveVotesStore(votes);
     }
+    if (artistAliasesOverrides && typeof artistAliasesOverrides === 'object') {
+      await saveArtistAliasesOverridesStore(artistAliasesOverrides);
+      applyArtistAliasesOverrides(artistAliasesOverrides);
+    }
 
     const afterCounts = {
-      catalogOverridesCount: catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides).length : 0,
+      catalogOverridesCount: catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides.songs || {}).length : 0,
       reportsCount: Array.isArray(reports) ? reports.length : 0,
       votesCount: votes && typeof votes === 'object' ? Object.keys(votes).length : 0,
+      artistAliasesOverridesCount: artistAliasesOverrides && typeof artistAliasesOverrides === 'object' ? Object.keys(artistAliasesOverrides).length : 0,
     };
 
     logAdminAction('IMPORT_SYSTEM_BACKUP', {
@@ -2797,6 +2843,61 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
   }
 });
 
+// ── 資料一致性檢查 API ──
+app.get('/api/admin/consistency', requirePermission('dashboard.view'), async (req, res) => {
+  try {
+    const warnings = [];
+    let redisAvailable = false;
+
+    if (USE_REDIS) {
+      try {
+        await redisCmd('ping');
+        redisAvailable = true;
+      } catch (err) {
+        warnings.push(`Redis 連線或驗證失敗: ${err.message}`);
+      }
+    }
+
+    const overrides = await loadCatalogOverridesStore();
+    const deletedSet = new Set(overrides.deletedIds || []);
+    const catalogOverridesSongsCount = Object.keys(overrides.songs || {}).length;
+    const deletedIdsCount = deletedSet.size;
+
+    const visibleDeletedIds = [];
+    for (const song of songsDatabase) {
+      if (deletedSet.has(song.id)) {
+        visibleDeletedIds.push(song.id);
+      }
+    }
+
+    if (visibleDeletedIds.length > 0) {
+      warnings.push(`發現 ${visibleDeletedIds.length} 首已標記刪除之歌曲仍出現在 runtime songsDatabase 中。`);
+    }
+
+    const aliasOverrides = await loadArtistAliasesOverridesStore();
+    const aliasOverridesCount = Object.keys(aliasOverrides || {}).length;
+
+    const ok = visibleDeletedIds.length === 0 && (!USE_REDIS || redisAvailable);
+
+    res.json({
+      ok,
+      storageMode: USE_REDIS ? 'redis' : 'local_json',
+      redisAvailable: USE_REDIS ? redisAvailable : null,
+      catalogOverridesCount: catalogOverridesSongsCount,
+      deletedIdsCount,
+      songsDatabaseCount: songsDatabase.length,
+      deletedIdsStillVisibleCount: visibleDeletedIds.length,
+      sampleDeletedIdsStillVisible: visibleDeletedIds.slice(0, 10),
+      artistAliasesPersistence: USE_REDIS ? (redisAvailable ? 'redis' : 'degraded_local') : 'local_json',
+      artistAliasesOverridesCount: aliasOverridesCount,
+      warnings,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: '資料一致性檢查失敗: ' + err.message });
+  }
+});
+
 // ─────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('[Unhandled API Error]', err);
@@ -2806,10 +2907,19 @@ app.use((err, req, res, next) => {
 
 try {
   const persistedOverrides = await loadCatalogOverridesStore();
-  songsDatabase = applyCatalogOverridesToSongs(loadInitialSongsDatabase(), persistedOverrides);
+  const baseSongs = loadInitialSongsDatabase({ applyLocalOverrides: !USE_REDIS });
+  songsDatabase = applyCatalogOverridesToSongs(baseSongs, persistedOverrides);
   console.log(`[Server] Catalog ready with persistent overrides (${songsDatabase.length} songs)`);
 } catch (err) {
   console.warn('[Server] Persistent catalog override preload failed:', err.message);
+}
+
+try {
+  const persistedAliases = await loadArtistAliasesOverridesStore();
+  applyArtistAliasesOverrides(persistedAliases);
+  console.log('[Server] Artist aliases ready with persistent overrides');
+} catch (err) {
+  console.warn('[Server] Persistent artist aliases preload failed:', err.message);
 }
 
 app.listen(PORT, () => {
