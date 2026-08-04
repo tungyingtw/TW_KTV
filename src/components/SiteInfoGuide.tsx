@@ -262,6 +262,9 @@ export const SiteInfoGuide: React.FC = () => {
                 { href: './data-source.html', label: '資料來源', desc: '公開資訊、回報與人工校對' },
                 { href: './ktv-audio-types.html', label: '版本說明', desc: '原唱、導唱與 MV 標示差異' },
                 { href: './community-verification.html', label: '社群驗證', desc: '收錄、原版 MV 與導唱投票說明' },
+                { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型差異', desc: '原版 MV、伴唱畫面與剪輯 MV 分類' },
+                { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '人聲導唱、原唱與純伴奏切換解析' },
+                { href: './ktv-song-availability-differences.html', label: '平台收錄差異', desc: '授權範圍、曲庫更新與門市差異' },
                 { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
               ].map(link => (
                 <a
