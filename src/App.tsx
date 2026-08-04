@@ -20,6 +20,7 @@ import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
 import { fetchFullCatalog } from './services/apiService';
 import { fetchBrands } from './data/brands';
+import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
@@ -33,6 +34,7 @@ function getSearchablePhonetic(value?: string): string {
 
 export function App() {
   const isMobile = useIsMobile();
+  const brandList = useBrands();
   const resultsRegionRef = useRef<HTMLElement>(null);
   const latestSearchStateRef = useRef({
     query: '',
@@ -195,20 +197,21 @@ export function App() {
 
   // Dynamic brand song count auditing
   const brandSongCounts = useMemo(() => {
-    const counts: Record<BrandId, number> = {
-      cashbox: 0, holiday: 0, watering_hole: 0, starlight: 0, singgo: 0,
-      vmix: 0, superstar: 0, silver_cabinet: 0, yinyuan: 0, golden_voice: 0, hongyin: 0
-    };
+    const counts: Record<string, number> = {};
+    brandList.forEach(b => {
+      counts[b.id] = 0;
+    });
+
     allSongs.forEach(song => {
       if (!song.brands) return;
-      Object.keys(counts).forEach(bId => {
-        if (song.brands[bId as BrandId]?.available) {
-          counts[bId as BrandId]++;
+      Object.entries(song.brands).forEach(([bId, status]) => {
+        if (status?.available) {
+          counts[bId] = (counts[bId] || 0) + 1;
         }
       });
     });
     return counts;
-  }, [allSongs]);
+  }, [allSongs, brandList]);
 
   // Main Multi-Dimensional Filter Logic
   const filteredSongs = useMemo(() => {
