@@ -701,44 +701,67 @@
 <div id="brand-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(10px);z-index:225;align-items:center;justify-content:center;padding:20px;">
   <div class="modal-box" style="width:560px;max-height:90vh;overflow:auto;">
     <h3 id="brand-editor-title">新增品牌</h3>
-    <div class="song-editor-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+
+    <!-- 主要欄位 -->
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px;">
       <div>
-        <label>品牌 ID</label>
-        <input id="brand-id-input" placeholder="例：new_ktv" />
+        <label style="font-weight:700;">品牌名稱 <span style="color:var(--accent)">*</span></label>
+        <input id="brand-name-input" placeholder="例：好○迪" style="margin-top:4px;" />
       </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-weight:700;">狀態</label>
+          <select id="brand-status-input" style="margin-top:4px;">
+            <option value="active">啟用</option>
+            <option value="inactive">停用</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-weight:700;">自訂主色</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+            <input type="color" id="brand-color-picker" value="#38bdf8" style="width:36px;height:36px;padding:2px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;" onchange="selectBrandColor(this.value)" />
+            <input id="brand-color-input" value="#38bdf8" style="flex:1;" oninput="updateColorFromInput(this.value)" />
+          </div>
+        </div>
+      </div>
+
       <div>
-        <label>排序</label>
-        <input id="brand-sort-input" type="number" min="1" step="1" placeholder="自動排序" />
-      </div>
-      <div class="wide">
-        <label>完整名稱</label>
-        <input id="brand-name-input" placeholder="例：某○ KTV 收錄" />
-      </div>
-      <div>
-        <label>短名稱</label>
-        <input id="brand-short-input" placeholder="例：某○" />
-      </div>
-      <div>
-        <label>狀態</label>
-        <select id="brand-status-input">
-          <option value="active">啟用</option>
-          <option value="inactive">停用</option>
-        </select>
-      </div>
-      <div>
-        <label>主色</label>
-        <input id="brand-color-input" value="#38bdf8" />
-      </div>
-      <div>
-        <label>徽章底色</label>
-        <input id="brand-badge-bg-input" value="rgba(56, 189, 248, 0.16)" />
-      </div>
-      <div class="full">
-        <label>描述</label>
-        <textarea id="brand-description-input" placeholder="例：某○ KTV 門市系統歌曲收錄"></textarea>
+        <label style="font-size:0.8rem;color:var(--muted);margin-bottom:6px;display:block;">快速選擇主題色</label>
+        <div id="brand-color-presets" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       </div>
     </div>
-    <div class="modal-actions">
+
+    <!-- 進階設定 -->
+    <details style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
+      <summary style="font-weight:700;color:var(--muted);cursor:pointer;font-size:0.88rem;user-select:none;margin-bottom:12px;">
+        ⚙️ 進階設定 (品牌 ID、顯示短名、排序、內部備註)
+      </summary>
+
+      <div class="song-editor-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px;">
+        <div>
+          <label>品牌 ID</label>
+          <input id="brand-id-input" placeholder="系統自動產生 (例：brand_x8f2)" />
+          <span style="font-size:0.72rem;color:var(--muted);display:block;margin-top:2px;">系統自動產生，編輯時唯讀</span>
+        </div>
+        <div>
+          <label>顯示短名</label>
+          <input id="brand-short-input" placeholder="預設同品牌名稱" />
+          <span style="font-size:0.72rem;color:var(--muted);display:block;margin-top:2px;">預設同品牌名稱</span>
+        </div>
+        <div>
+          <label>後台排序</label>
+          <input id="brand-sort-input" type="number" min="1" step="1" placeholder="留空自動排在最後" />
+          <span style="font-size:0.72rem;color:var(--muted);display:block;margin-top:2px;">留空時系統自動排在最後</span>
+        </div>
+        <div class="full">
+          <label>內部備註</label>
+          <textarea id="brand-description-input" placeholder="可不填，例如：民眾建議新增，待確認門市系統名稱" style="min-height:60px;"></textarea>
+        </div>
+      </div>
+    </details>
+
+    <div class="modal-actions" style="margin-top:20px;">
       <button class="btn btn-green" onclick="saveBrandForm()">儲存品牌</button>
       <button class="btn btn-ghost" onclick="closeBrandModal()">取消</button>
     </div>
@@ -1248,6 +1271,37 @@ function renderBrandsList() {
   `;
 }
 
+const BRAND_PRESET_COLORS = [
+  '#38bdf8', '#34d399', '#fbbf24', '#f472b6', '#c084fc',
+  '#fb923c', '#2dd4bf', '#f43f5e', '#a3e635', '#60a5fa'
+];
+
+function renderColorPresets(selectedColor = '#38bdf8') {
+  const container = document.getElementById('brand-color-presets');
+  if (!container) return;
+  const current = (selectedColor || '#38bdf8').toLowerCase();
+  container.innerHTML = BRAND_PRESET_COLORS.map(c => `
+    <button type="button"
+      onclick="selectBrandColor('${c}')"
+      style="width:26px;height:26px;border-radius:50%;background:${c};border:${c.toLowerCase() === current ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.2)'};cursor:pointer;box-shadow:${c.toLowerCase() === current ? '0 0 8px ' + c : 'none'};transition:transform 0.15s;"
+      title="${c}">
+    </button>
+  `).join('');
+}
+
+function selectBrandColor(hex) {
+  document.getElementById('brand-color-input').value = hex;
+  document.getElementById('brand-color-picker').value = hex;
+  renderColorPresets(hex);
+}
+
+function updateColorFromInput(hex) {
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    document.getElementById('brand-color-picker').value = hex;
+    renderColorPresets(hex);
+  }
+}
+
 function openBrandModal(brandId = '') {
   currentBrandEditorId = brandId || null;
   const brand = currentBrandEditorId ? dynamicBrands.find(b => b.id === currentBrandEditorId) : null;
@@ -1256,8 +1310,10 @@ function openBrandModal(brandId = '') {
   document.getElementById('brand-id-input').disabled = Boolean(brand);
   document.getElementById('brand-name-input').value = brand?.name || '';
   document.getElementById('brand-short-input').value = brand?.shortName || '';
-  document.getElementById('brand-color-input').value = brand?.color || '#38bdf8';
-  document.getElementById('brand-badge-bg-input').value = brand?.badgeBg || 'rgba(56, 189, 248, 0.16)';
+  const color = brand?.color || '#38bdf8';
+  document.getElementById('brand-color-input').value = color;
+  document.getElementById('brand-color-picker').value = color;
+  renderColorPresets(color);
   document.getElementById('brand-description-input').value = brand?.description || '';
   document.getElementById('brand-sort-input').value = brand?.sortOrder || '';
   document.getElementById('brand-status-input').value = brand?.status || 'active';
@@ -1270,25 +1326,27 @@ function closeBrandModal() {
 }
 
 async function saveBrandForm() {
-  const payload = {
-    id: document.getElementById('brand-id-input').value.trim(),
-    name: document.getElementById('brand-name-input').value.trim(),
-    shortName: document.getElementById('brand-short-input').value.trim(),
-    color: document.getElementById('brand-color-input').value.trim() || '#38bdf8',
-    badgeBg: document.getElementById('brand-badge-bg-input').value.trim() || 'rgba(56, 189, 248, 0.16)',
-    description: document.getElementById('brand-description-input').value.trim(),
-    sortOrder: Number(document.getElementById('brand-sort-input').value) || undefined,
-    status: document.getElementById('brand-status-input').value,
-  };
+  const name = document.getElementById('brand-name-input').value.trim();
+  if (!name) {
+    showToast('請填寫品牌名稱', 'error');
+    return;
+  }
 
-  if (!payload.id || !/^[a-z0-9_]{2,32}$/.test(payload.id)) {
+  const id = document.getElementById('brand-id-input').value.trim();
+  if (id && !/^[a-z0-9_]{2,32}$/.test(id)) {
     showToast('品牌 ID 僅能使用小寫英文、數字、底線，長度 2~32', 'error');
     return;
   }
-  if (!payload.name || !payload.shortName) {
-    showToast('請填寫品牌完整名稱與短名稱', 'error');
-    return;
-  }
+
+  const payload = {
+    id: id || undefined,
+    name: name,
+    shortName: document.getElementById('brand-short-input').value.trim() || undefined,
+    color: document.getElementById('brand-color-input').value.trim() || '#38bdf8',
+    description: document.getElementById('brand-description-input').value.trim(),
+    sortOrder: document.getElementById('brand-sort-input').value !== '' ? Number(document.getElementById('brand-sort-input').value) : undefined,
+    status: document.getElementById('brand-status-input').value,
+  };
 
   try {
     const path = currentBrandEditorId ? `/api/admin/brand/${encodeURIComponent(currentBrandEditorId)}` : '/api/admin/brand';
@@ -1299,7 +1357,8 @@ async function saveBrandForm() {
       showToast('品牌儲存失敗：' + (data.error || '未知錯誤'), 'error');
       return;
     }
-    showToast(`已完成：品牌「${payload.shortName}」已儲存`, 'success');
+    const savedBrand = data.brand || payload;
+    showToast(`已完成：品牌「${savedBrand.shortName || savedBrand.name}」已儲存`, 'success');
     closeBrandModal();
     await loadBrandsList();
   } catch (err) {
