@@ -714,7 +714,10 @@ async function brandExists(brandId, options = {}) {
 }
 
 function buildBadgeBg(color) {
-  const hex = String(color || '').trim();
+  let hex = String(color || '').trim();
+  if (/^#[0-9a-fA-F]{3}$/.test(hex)) {
+    hex = '#' + hex.slice(1).split('').map(ch => ch + ch).join('');
+  }
   if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -722,6 +725,10 @@ function buildBadgeBg(color) {
     return `rgba(${r}, ${g}, ${b}, 0.16)`;
   }
   return 'rgba(56, 189, 248, 0.16)';
+}
+
+function isValidBrandColor(color) {
+  return /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(color || '').trim());
 }
 
 function generateBrandId(existingBrands = {}) {
@@ -3041,7 +3048,8 @@ app.post('/api/admin/brand', requirePermission('brands.manage'), async (req, res
       return res.status(400).json({ error: `品牌 ID "${rawId}" 已存在，請使用其他 ID` });
     }
 
-    const brandColor = String(color || '#38bdf8').trim();
+    const rawColor = String(color || '').trim();
+    const brandColor = isValidBrandColor(rawColor) ? rawColor : '#38bdf8';
     const brandBadgeBg = buildBadgeBg(brandColor);
     const existingOrders = Object.values(store.brands || {}).map(b => Number(b.sortOrder) || 0);
     const maxSortOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : 0;
@@ -3085,7 +3093,7 @@ app.put('/api/admin/brand/:brandId', requirePermission('brands.manage'), async (
     }
 
     const existingBrand = store.brands[brandId];
-    const { name, shortName, color, badgeBg, description, sortOrder, status } = req.body || {};
+    const { name, shortName, color, description, sortOrder, status } = req.body || {};
 
     const nextName = name !== undefined ? String(name).trim() : existingBrand.name;
     if (!nextName) return res.status(400).json({ error: '品牌名稱不可空白' });
@@ -3096,7 +3104,8 @@ app.put('/api/admin/brand/:brandId', requirePermission('brands.manage'), async (
       nextShortName = trimmed || nextName;
     }
 
-    const nextColor = color !== undefined ? String(color).trim() : existingBrand.color;
+    const rawNextColor = color !== undefined ? String(color).trim() : existingBrand.color;
+    const nextColor = isValidBrandColor(rawNextColor) ? rawNextColor : existingBrand.color;
     const nextBadgeBg = buildBadgeBg(nextColor);
 
     const updatedBrand = {
@@ -3191,8 +3200,8 @@ app.post('/api/admin/brand/from-report/:reportId', requirePermission('brands.man
       id: finalId,
       name,
       shortName,
-      color: String(req.body.color || '#38bdf8').trim(),
-      badgeBg: String(req.body.badgeBg || 'rgba(56, 189, 248, 0.16)').trim(),
+      color: isValidBrandColor(String(req.body.color || '').trim()) ? String(req.body.color).trim() : '#38bdf8',
+      badgeBg: buildBadgeBg(isValidBrandColor(String(req.body.color || '').trim()) ? String(req.body.color).trim() : '#38bdf8'),
       description: String(req.body.description || report.note || report.description || '').trim(),
       status: 'active',
       sortOrder: maxSortOrder + 1,

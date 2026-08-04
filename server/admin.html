@@ -992,6 +992,7 @@ async function doLogin() {
       loadStats();
       loadReports();
       loadAdminAliases();
+      ensureAdminBrandsLoaded(); // pre-load so song editor opens instantly
     } else {
       let msg = data.error || '帳號或密碼不正確，請確認後再試。';
       try {
@@ -1046,6 +1047,7 @@ async function verifyLogin() {
       loadStats();
       loadReports();
       loadAdminAliases();
+      ensureAdminBrandsLoaded(); // pre-load so song editor opens instantly
     } else {
       sessionStorage.removeItem('adminSessionToken');
       document.getElementById('login-screen').style.display = 'flex';
