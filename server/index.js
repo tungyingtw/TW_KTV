@@ -197,6 +197,9 @@ function isAllowedAdminSource(req) {
 function handleAdminPageServe(req, res) {
   const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(adminPath);
   } else {
     res.status(404).send('Admin Panel HTML File Not Found');
