@@ -43,6 +43,21 @@ function writeChunkedCatalog(outputBuffer, targetDir) {
   return chunks;
 }
 
+function hasValidChunkedCatalog(dirPath) {
+  const manifestFile = path.join(dirPath, 'songs_catalog.manifest.json');
+  if (!fs.existsSync(manifestFile) || fs.statSync(manifestFile).size <= 100) return false;
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+    const chunks = Array.isArray(manifest.chunks) ? manifest.chunks : [];
+    return chunks.length > 0 && chunks.every(chunk => {
+      const chunkPath = path.join(dirPath, chunk.file);
+      return fs.existsSync(chunkPath) && fs.statSync(chunkPath).size === Number(chunk.bytes);
+    });
+  } catch {
+    return false;
+  }
+}
+
 export function generateBinCatalog() {
   let sourceJsonPath = null;
 
@@ -55,6 +70,10 @@ export function generateBinCatalog() {
   if (!sourceJsonPath) {
     if (fs.existsSync(binPath) && fs.statSync(binPath).size > 1000) {
       console.log('⚡ [Build Catalog Bin] songs_catalog.bin 已是最新，無需重新打包。');
+      return;
+    }
+    if (hasValidChunkedCatalog(path.dirname(binPath))) {
+      console.log('⚡ [Build Catalog Bin] songs_catalog 分片已存在，無需重新打包。');
       return;
     }
     console.error('❌ [Build Catalog Bin] 找不到可用的歌冊 JSON (public/songs_catalog.json 或 server/database.json)！');
