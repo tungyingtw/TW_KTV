@@ -1502,11 +1502,82 @@ function getSearchablePhonetic(value) {
   return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : '';
 }
 
+// ── 動態聚合社群共識票數 (Auto-Promote Consensus Votes to Public Catalog Overrides) ──
+async function getAutoVoteCatalogOverrides() {
+  const votes = await loadVotesStore();
+  const autoSongsMap = {};
+
+  for (const [key, data] of Object.entries(votes)) {
+    const { songId, brandId } = await parseVoteKeyDynamic(key);
+    if (!songId || !brandId) continue;
+
+    const confirm = data.confirm || 0;
+    const deny = data.deny || 0;
+    const guided = data.guidedVocal || 0;
+    const noGuided = data.noGuidedVocal || 0;
+    const official = data.officialMv || 0;
+    const edited = data.editedMv || 0;
+
+    let brandPatch = null;
+
+    // 1. 導唱自動標記門檻：只要「有導唱」>= 2 票且高於「無導唱」
+    if (guided >= 2 && guided > noGuided) {
+      if (!brandPatch) brandPatch = {};
+      brandPatch.audioType = 'guided_vocal';
+    }
+
+    // 2. MV 類型自動標記門檻：只要「官方 MV」>= 2 票且高於「伴唱 MV」
+    if (official >= 2 && official > edited) {
+      if (!brandPatch) brandPatch = {};
+      brandPatch.mvType = 'official_mv';
+    } else if (edited >= 2 && edited > official) {
+      if (!brandPatch) brandPatch = {};
+      brandPatch.mvType = 'reedited_mv';
+    }
+
+    // 3. 社群高度驗證： confirm >= 3 且無大量否定
+    if (confirm >= 3 && confirm > deny * 2) {
+      if (!brandPatch) brandPatch = {};
+      brandPatch.available = true;
+    }
+
+    if (brandPatch) {
+      if (!autoSongsMap[songId]) {
+        autoSongsMap[songId] = { id: songId, brands: {} };
+      }
+      autoSongsMap[songId].brands[brandId] = {
+        ...(autoSongsMap[songId].brands[brandId] || {}),
+        ...brandPatch,
+      };
+    }
+  }
+
+  return autoSongsMap;
+}
+
 app.get('/api/catalog-overrides', async (req, res) => {
   const overrides = await loadCatalogOverridesStore();
-  const songs = overrides?.songs && typeof overrides.songs === 'object'
-    ? Object.values(overrides.songs)
-    : [];
+  const manualSongsMap = overrides?.songs || {};
+  const autoSongsMap = await getAutoVoteCatalogOverrides();
+
+  // 合併社群自動共識與手動覆蓋（手動覆蓋擁有最高優先權）
+  const mergedSongsMap = { ...autoSongsMap };
+  for (const [sId, mSong] of Object.entries(manualSongsMap)) {
+    if (!mergedSongsMap[sId]) {
+      mergedSongsMap[sId] = mSong;
+    } else {
+      mergedSongsMap[sId] = {
+        ...mergedSongsMap[sId],
+        ...mSong,
+        brands: {
+          ...(mergedSongsMap[sId].brands || {}),
+          ...(mSong.brands || {}),
+        },
+      };
+    }
+  }
+
+  const songs = Object.values(mergedSongsMap);
   const deletedIds = Array.isArray(overrides?.deletedIds) ? overrides.deletedIds : [];
   res.json({ songs, deletedIds });
 });
@@ -2697,6 +2768,11 @@ app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, 
     const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = await getAdminSongById(songId);
     const brandData = song?.brands?.[brandId] || null;
+    const currentType = brandData?.audioType || 'unknown';
+
+    // 若資料已與投票共識一致，代表已完成審核/採納，自動從待審清單隱藏
+    if (guided > noGuided && currentType === 'guided_vocal') continue;
+    if (noGuided > guided && currentType === 'backing_track') continue;
 
     guidedVotes.push({
       key,
@@ -2704,7 +2780,7 @@ app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, 
       brandId,
       songTitle: song?.title || songId,
       artist: song?.artist || '',
-      currentAudioType: brandData?.audioType || 'unknown',
+      currentAudioType: currentType,
       guided,
       noGuided,
       guidedPct: Math.round((guided / total) * 100),
@@ -2738,6 +2814,11 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
     const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = await getAdminSongById(songId);
     const brandData = song?.brands?.[brandId] || null;
+    const currentMvType = brandData?.mvType || 'unknown';
+
+    // 若資料已與投票共識一致，代表已完成審核/採納，自動從待審清單隱藏
+    if (official > edited && currentMvType === 'official_mv') continue;
+    if (edited > official && currentMvType === 'reedited_mv') continue;
 
     mvVotes.push({
       key,
@@ -2746,7 +2827,7 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
       songTitle: song?.title || songId,
       artist: song?.artist || '',
       currentAvailable: brandData?.available ?? false,
-      currentMvType: brandData?.mvType || 'unknown',
+      currentMvType,
       official,
       edited,
       officialPct: Math.round((official / total) * 100),
