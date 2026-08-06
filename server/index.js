@@ -1691,6 +1691,80 @@ function sanitizeText(str) {
     .trim();
 }
 
+function sanitizeBrandStatusSnapshot(status) {
+  if (!status || typeof status !== 'object') return null;
+  const result = { available: Boolean(status.available) };
+  const code = sanitizeText(status.code).slice(0, 50);
+  const audioType = sanitizeText(status.audioType);
+  const mvType = sanitizeText(status.mvType);
+  const note = sanitizeText(status.note).slice(0, 200);
+  if (code) result.code = code;
+  if (['original_vocal', 'guided_vocal', 'backing_track'].includes(audioType)) result.audioType = audioType;
+  if (['official_mv', 'live_mv', 'reedited_mv', 'anime_mv'].includes(mvType)) result.mvType = mvType;
+  if (note) result.note = note;
+  return result;
+}
+
+function sanitizeSongSnapshot(snapshot, fallback = {}) {
+  if (!snapshot || typeof snapshot !== 'object') return null;
+  const id = sanitizeText(snapshot.id || fallback.songId);
+  const title = sanitizeText(snapshot.title || fallback.songTitle);
+  const artist = sanitizeText(snapshot.artist || fallback.artist);
+  if (!id || !title) return null;
+
+  const brands = {};
+  if (snapshot.brands && typeof snapshot.brands === 'object') {
+    for (const [brandId, status] of Object.entries(snapshot.brands)) {
+      const cleanBrandId = sanitizeText(brandId).slice(0, 80);
+      const cleanStatus = sanitizeBrandStatusSnapshot(status);
+      if (cleanBrandId && cleanStatus) brands[cleanBrandId] = cleanStatus;
+    }
+  }
+
+  return {
+    id,
+    title,
+    artist,
+    lyricist: sanitizeText(snapshot.lyricist).slice(0, 120),
+    composer: sanitizeText(snapshot.composer).slice(0, 120),
+    language: sanitizeText(snapshot.language || fallback.lang) || '??',
+    zhuyin: sanitizeText(snapshot.zhuyin).slice(0, 120),
+    pinyin: sanitizeText(snapshot.pinyin).slice(0, 120),
+    releaseYear: Number.parseInt(String(snapshot.releaseYear || new Date().getFullYear()), 10) || new Date().getFullYear(),
+    popularRank: Number.isFinite(Number(snapshot.popularRank)) ? Number(snapshot.popularRank) : undefined,
+    lyricsSnippet: sanitizeText(snapshot.lyricsSnippet).slice(0, 500),
+    youtubeUrl: sanitizeText(snapshot.youtubeUrl).slice(0, 500) || undefined,
+    isMainlandViral: Boolean(snapshot.isMainlandViral),
+    isNiche: Boolean(snapshot.isNiche),
+    brands,
+  };
+}
+
+function buildReportSongSnapshot(report) {
+  const fromSnapshot = sanitizeSongSnapshot(report.songSnapshot, report);
+  if (fromSnapshot) return fromSnapshot;
+  if (!report.songId || !report.songTitle) return null;
+  return {
+    id: sanitizeText(report.songId),
+    title: sanitizeText(report.songTitle),
+    artist: sanitizeText(report.artist) || '未填寫',
+    lyricist: sanitizeText(report.lyricist),
+    composer: sanitizeText(report.composer),
+    language: sanitizeText(report.lang) || '??',
+    zhuyin: '',
+    pinyin: '',
+    releaseYear: new Date().getFullYear(),
+    lyricsSnippet: sanitizeText(report.lyricsSnippet),
+    youtubeUrl: sanitizeText(report.youtubeUrl) || undefined,
+    brands: {},
+  };
+}
+
+async function persistCatalogMutation(song) {
+  if (!SKIP_STATIC_CATALOG && songsDatabase.length > 0) await saveCatalog(songsDatabase);
+  await saveCatalogOverrideSong(song);
+}
+
 // ─────────────────────────────────────────────
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
@@ -1715,6 +1789,7 @@ app.post('/api/report', async (req, res) => {
     systemType,
     codeFormat,
     storeLocations,
+    songSnapshot,
   } = req.body;
   if (!songId || !brandId || !issueType) return res.status(400).json({ error: '缺少必要欄位' });
 
@@ -1745,6 +1820,7 @@ app.post('/api/report', async (req, res) => {
   const cleanNote = sanitizeText(note).slice(0, 500);
   const cleanLyricsSnippet = sanitizeText(lyricsSnippet).slice(0, 500);
   const cleanYoutubeUrl = sanitizeText(youtubeUrl).slice(0, 500);
+  const cleanSongSnapshot = sanitizeSongSnapshot(songSnapshot, { songId, songTitle, artist, lang });
 
   const newReport = {
     id: `rpt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -1767,6 +1843,7 @@ app.post('/api/report', async (req, res) => {
     codeFormat: cleanCodeFormat,
     storeLocations: cleanStoreLocations,
     note: cleanNote,
+    songSnapshot: cleanSongSnapshot || undefined,
     timestamp: new Date().toISOString(),
     ip: clientIp,
     status: 'pending',
@@ -2436,27 +2513,29 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
             mvType: report.mvType === 'official' ? 'official_mv' : existingSong.brands[report.brandId]?.mvType,
           };
         }
-        await saveCatalog(songsDatabase);
-        await saveCatalogOverrideSong(existingSong);
-      } else if (report.songId && songsDatabase.length > 0) {
+        await persistCatalogMutation(existingSong);
+      } else if (report.songId) {
         const sIdx = songsDatabase.findIndex(s => s.id === report.songId);
-        if (sIdx !== -1) {
-          if (!songsDatabase[sIdx].brands) songsDatabase[sIdx].brands = {};
+        const targetSong = sIdx !== -1 ? songsDatabase[sIdx] : buildReportSongSnapshot(report);
+        if (targetSong) {
+          if (!targetSong.brands) targetSong.brands = {};
           if (report.issueType === 'no_song') {
-            songsDatabase[sIdx].brands[report.brandId] = {
-              ...songsDatabase[sIdx].brands[report.brandId],
+            targetSong.brands[report.brandId] = {
+              ...targetSong.brands[report.brandId],
               available: false,
               note: '管理員審核更正為未收錄',
             };
           } else if (report.issueType === 'has_song') {
-            songsDatabase[sIdx].brands[report.brandId] = {
-              ...songsDatabase[sIdx].brands[report.brandId],
+            targetSong.brands[report.brandId] = {
+              ...targetSong.brands[report.brandId],
               available: true,
+              code: report.songCode || targetSong.brands[report.brandId]?.code || 'OK',
               note: '管理員審核更正為有收錄',
             };
           }
-          await saveCatalog(songsDatabase);
-          await saveCatalogOverrideSong(songsDatabase[sIdx]);
+          if (sIdx !== -1) songsDatabase[sIdx] = targetSong;
+          else songsDatabase.push(targetSong);
+          await persistCatalogMutation(targetSong);
         }
       }
     } catch (err) {
