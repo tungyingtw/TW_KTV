@@ -375,7 +375,17 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                         <div style={{ fontWeight: 700, color: b.color, fontSize: '0.9rem' }}>
                           {b.shortName}
                         </div>
-                        <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        <div style={{ display: 'flex', gap: '4px', marginTop: '2px', flexWrap: 'wrap' }}>
+                          {status.mvType === 'official_mv' && (
+                            <span className="badge" style={{ fontSize: '0.6rem', padding: '0 4px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
+                              原版 MV
+                            </span>
+                          )}
+                          {status.mvType === 'reedited_mv' && (
+                            <span className="badge" style={{ fontSize: '0.6rem', padding: '0 4px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
+                              伴唱帶
+                            </span>
+                          )}
                           {status.audioType === 'original_vocal' && (
                             <span className="badge badge-original-vocal" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
                               原唱

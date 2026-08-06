@@ -472,6 +472,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
                     const isOriginalVocal = status.audioType === 'original_vocal';
                     const hasGuidedVocal = status.audioType === 'guided_vocal';
+                    const isOfficialMv = status.mvType === 'official_mv';
+                    const isReeditedMv = status.mvType === 'reedited_mv';
 
                     if (isSingleBrand) {
                       return (
@@ -523,10 +525,20 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                               )}
                             </div>
                             
-                            <div style={{ display: 'flex', gap: '5px' }}>
+                            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                              {isOfficialMv && (
+                                <span className="badge" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
+                                  原版 MV
+                                </span>
+                              )}
+                              {isReeditedMv && (
+                                <span className="badge" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px' }}>
+                                  伴唱帶
+                                </span>
+                              )}
                               {isOriginalVocal && (
                                 <span className="badge badge-original-vocal" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
-                                  原聲原唱
+                                  原唱
                                 </span>
                               )}
                               {hasGuidedVocal && (
@@ -579,7 +591,17 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             有收錄
                           </div>
                           
-                          <div style={{ display: 'flex', gap: '2px', minHeight: '12px', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', gap: '2px', minHeight: '12px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            {isOfficialMv && (
+                              <span className="badge" style={{ padding: '1px 3px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
+                                原版
+                              </span>
+                            )}
+                            {isReeditedMv && (
+                              <span className="badge" style={{ padding: '1px 3px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '3px' }}>
+                                伴唱帶
+                              </span>
+                            )}
                             {isOriginalVocal && (
                               <span className="badge badge-original-vocal" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
                                 原唱
