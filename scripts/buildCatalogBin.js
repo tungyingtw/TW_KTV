@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -10,7 +10,7 @@ const jsonServerPath = path.join(__dirname, '../server/database.json');
 const binPath = path.join(__dirname, '../public/songs_catalog.bin');
 const distBinPath = path.join(__dirname, '../dist/songs_catalog.bin');
 const chunkPrefix = 'songs_catalog.part';
-const maxGitSafeChunkSize = 50 * 1024 * 1024;
+const maxGitSafeChunkSize = 25 * 1024 * 1024;
 
 const MAGIC_HEADER = Buffer.from([0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]); // "TWKTVBIN"
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];

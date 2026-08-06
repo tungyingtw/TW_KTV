@@ -2,22 +2,34 @@
   "version": 1,
   "format": "twktv-xor-bin-chunks",
   "totalBytes": 158147032,
-  "chunkSize": 52428800,
+  "chunkSize": 26214400,
   "chunks": [
     {
       "file": "songs_catalog.part000.bin",
-      "bytes": 52428800
+      "bytes": 26214400
     },
     {
       "file": "songs_catalog.part001.bin",
-      "bytes": 52428800
+      "bytes": 26214400
     },
     {
       "file": "songs_catalog.part002.bin",
-      "bytes": 52428800
+      "bytes": 26214400
     },
     {
       "file": "songs_catalog.part003.bin",
+      "bytes": 26214400
+    },
+    {
+      "file": "songs_catalog.part004.bin",
+      "bytes": 26214400
+    },
+    {
+      "file": "songs_catalog.part005.bin",
+      "bytes": 26214400
+    },
+    {
+      "file": "songs_catalog.part006.bin",
       "bytes": 860632
     }
   ]
