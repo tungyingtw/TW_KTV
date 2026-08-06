@@ -386,11 +386,6 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                               伴唱帶
                             </span>
                           )}
-                          {status.audioType === 'original_vocal' && (
-                            <span className="badge badge-original-vocal" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
-                              原唱
-                            </span>
-                          )}
                           {status.audioType === 'guided_vocal' && (
                             <span className="badge badge-guided-vocal" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
                               導唱

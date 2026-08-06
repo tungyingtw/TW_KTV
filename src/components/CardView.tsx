@@ -299,11 +299,6 @@ export const CardView: React.FC<CardViewProps> = ({
                           伴唱帶
                         </span>
                       )}
-                      {status.audioType === 'original_vocal' && (
-                        <span className="badge badge-original-vocal" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
-                          原唱
-                        </span>
-                      )}
                       {status.audioType === 'guided_vocal' && (
                         <span className="badge badge-guided-vocal" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
                           導唱
