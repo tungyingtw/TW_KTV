@@ -894,6 +894,7 @@ const API = isLocalEnv
 
 let currentSongEditorMode = 'create';
 let currentSongEditorData = null;
+let currentReportsById = {};
 let dynamicBrands = [];
 let currentBrandEditorId = null;
 let ADMIN_BRANDS = [
@@ -1780,6 +1781,7 @@ async function loadReports() {
   const res = await apiFetch(url);
   const data = await res.json();
   const el = document.getElementById('reports-list');
+  currentReportsById = Object.fromEntries((data.reports || []).map(r => [String(r.id), r]));
 
   if (!data.reports?.length) { el.innerHTML = '<div class="empty">目前沒有符合條件的回報</div>'; return; }
 
@@ -1817,6 +1819,9 @@ async function loadReports() {
         </div>
         <div class="card-actions">
           <span class="badge badge-${r.status}">${statusLabel(r.status)}</span>
+          ${(r.songSnapshot || r.songId) && r.issueType !== 'suggest_new_brand' ? `
+            <button class="btn btn-blue" onclick="openSongEditorFromReport('${escapeAttr(r.id)}')">編輯歌曲</button>
+          ` : ''}
           ${r.issueType !== 'missing_song' && r.issueType !== 'suggest_song' && r.issueType !== 'other' ? `
             <button class="btn btn-blue" onclick="openFix('${r.songId}', '${r.songTitle}', '${r.artist}', '${r.brandId}', '${r.issueType}')">套用修正</button>
           ` : ''}
@@ -1827,6 +1832,47 @@ async function loadReports() {
       </div>
     </div>
   `).join('');
+}
+
+async function openSongEditorFromReport(reportId) {
+  const report = currentReportsById[String(reportId)];
+  if (!report) {
+    showToast('找不到這筆回報資料，請重新整理後再試。', 'error');
+    return;
+  }
+
+  await ensureAdminBrandsLoaded();
+  const snapshot = report.songSnapshot || {};
+  const song = {
+    id: snapshot.id || report.songId || `admin_${Date.now()}`,
+    title: snapshot.title || report.songTitle || '',
+    artist: snapshot.artist || report.artist || '',
+    lyricist: snapshot.lyricist || report.lyricist || '',
+    composer: snapshot.composer || report.composer || '',
+    language: snapshot.language || report.lang || '國語',
+    zhuyin: snapshot.zhuyin || '',
+    pinyin: snapshot.pinyin || '',
+    releaseYear: snapshot.releaseYear || new Date().getFullYear(),
+    lyricsSnippet: snapshot.lyricsSnippet || report.lyricsSnippet || '',
+    youtubeUrl: snapshot.youtubeUrl || report.youtubeUrl || '',
+    isMainlandViral: Boolean(snapshot.isMainlandViral),
+    isNiche: Boolean(snapshot.isNiche),
+    brands: { ...(snapshot.brands || {}) },
+  };
+
+  if (report.brandId && report.issueType !== 'other') {
+    const previous = song.brands[report.brandId] || {};
+    if (report.issueType === 'no_song') song.brands[report.brandId] = { ...previous, available: false, note: report.note || previous.note || '管理員依使用者回報修正為未收錄' };
+    if (report.issueType === 'has_song') song.brands[report.brandId] = { ...previous, available: true, code: report.songCode || previous.code || 'OK', note: report.note || previous.note || '管理員依使用者回報修正為有收錄' };
+    if (report.issueType === 'wrong_info') song.brands[report.brandId] = { ...previous, available: previous.available !== false, code: report.songCode || previous.code || '' };
+  }
+
+  currentSongEditorMode = 'edit';
+  currentSongEditorData = song;
+  document.getElementById('song-editor-title').textContent = '依回報編輯歌曲';
+  fillSongEditor(song);
+  captureSongEditorSnapshot();
+  document.getElementById('song-editor-modal').style.display = 'flex';
 }
 
 async function updateReport(id, status) {

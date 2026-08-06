@@ -1100,6 +1100,11 @@ async function saveCatalogDeletedSong(songId) {
   await saveCatalogOverridesStore(overrides);
 }
 
+async function loadCatalogOverrideSong(songId) {
+  const overrides = await loadCatalogOverridesStore();
+  return overrides?.songs?.[songId] || null;
+}
+
 async function saveCatalog(catalog) {
   const dbPath = path.join(__dirname, 'database.json');
   fs.writeFileSync(dbPath, JSON.stringify(catalog), 'utf8');
@@ -2927,8 +2932,8 @@ app.get('/api/admin/alias/test', requirePermission('aliases.view'), (req, res) =
   res.json(resolution);
 });
 
-app.get('/api/admin/song/:songId', requirePermission('songs.view'), (req, res) => {
-  const song = songsDatabase.find(s => s.id === req.params.songId);
+app.get('/api/admin/song/:songId', requirePermission('songs.view'), async (req, res) => {
+  const song = songsDatabase.find(s => s.id === req.params.songId) || await loadCatalogOverrideSong(req.params.songId);
   if (!song) return res.status(404).json({ error: '找不到歌曲' });
   res.json({ song });
 });
@@ -2951,7 +2956,19 @@ app.post('/api/admin/song', requirePermission('songs.create'), async (req, res) 
 app.put('/api/admin/song/:songId', requirePermission('songs.update'), async (req, res) => {
   try {
     const idx = songsDatabase.findIndex(s => s.id === req.params.songId);
-    if (idx === -1) return res.status(404).json({ error: '找不到歌曲' });
+    if (idx === -1) {
+      const before = await loadCatalogOverrideSong(req.params.songId);
+      const song = await normalizeAdminSongPayload(req.body, before);
+      song.id = before?.id || req.params.songId;
+      songsDatabase.push(song);
+      await persistCatalogMutation(song);
+      logAdminAction('UPDATE_SONG', {
+        songId: song.id,
+        before: before ? { title: before.title, artist: before.artist } : null,
+        after: { title: song.title, artist: song.artist },
+      }, req);
+      return res.json({ success: true, song });
+    }
     const before = songsDatabase[idx];
     const song = await normalizeAdminSongPayload(req.body, before);
     song.id = before.id;
