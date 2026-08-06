@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Song, BrandId, BrandInfo } from '../types/ktv';
 import { BRANDS } from '../data/brands';
 import { useBrands } from '../hooks/useBrands';
@@ -16,6 +16,7 @@ interface MatrixViewProps {
   onToggleFavorite: (songId: string) => void;
   onSelectSongDetail: (song: Song) => void;
   selectedSongId?: string | null; // 目前已開啟詳細資料的歌曲 ID
+  brandSongCounts?: Record<BrandId, number>;
 }
 
 export const MatrixView: React.FC<MatrixViewProps> = ({
@@ -27,6 +28,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   onToggleFavorite,
   onSelectSongDetail,
   selectedSongId,
+  brandSongCounts,
 }) => {
   const brandList = useBrands();
   const [reportingSong, setReportingSong] = useState<Song | null>(null);
@@ -35,9 +37,19 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   const isSingleBrand = !isMultiSelecting && selectedBrand !== 'all';
   const selectedBrandInfo = isSingleBrand ? (brandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]) : null;
 
-  const activeBrands: BrandInfo[] = isMultiSelecting
-    ? brandList.filter(b => selectedBrands.includes(b.id))
-    : (selectedBrand === 'all' ? brandList : (selectedBrandInfo ? [selectedBrandInfo] : []));
+  const activeBrands: BrandInfo[] = useMemo(() => {
+    const rawList = isMultiSelecting
+      ? brandList.filter(b => selectedBrands.includes(b.id))
+      : (selectedBrand === 'all' ? brandList : (selectedBrandInfo ? [selectedBrandInfo] : []));
+
+    if (!brandSongCounts) return rawList;
+
+    return [...rawList].sort((a, b) => {
+      const countA = brandSongCounts[a.id] || 0;
+      const countB = brandSongCounts[b.id] || 0;
+      return countB - countA;
+    });
+  }, [isMultiSelecting, selectedBrands, selectedBrand, brandList, selectedBrandInfo, brandSongCounts]);
 
   const currentBrandInfo = selectedBrandInfo;
 
