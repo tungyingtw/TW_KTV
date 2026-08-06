@@ -528,7 +528,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
                               {isOfficialMv && (
                                 <span className="badge" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
-                                  原版 MV
+                                  MV
                                 </span>
                               )}
                               {isReeditedMv && (
@@ -584,7 +584,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           <div style={{ display: 'flex', gap: '2px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {isOfficialMv && (
                               <span className="badge" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
-                                原版
+                                MV
                               </span>
                             )}
                             {isReeditedMv && (
