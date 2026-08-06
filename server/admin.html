@@ -2028,7 +2028,9 @@ async function loadMvVotes() {
         </div>
         <div class="card-actions">
           ${d.isLowSample ? `
-            <span style="color:var(--muted);font-size:0.82rem;font-style:italic;">累積更多回報後再判定 (目前共 ${d.total} 票)</span>
+            <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
+            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv')">標記官方 MV</button>
+            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv')">標記剪輯 MV</button>
           ` : `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
             <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv')">標記官方 MV</button>
