@@ -557,58 +557,48 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         key={b.id}
                         style={{
                           textAlign: 'center',
-                          padding: '8px 4px',
+                          padding: '6px 2px',
                           borderLeft: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
+                          verticalAlign: 'middle',
                         }}
                       >
-                        {/* 統一高度 (40px) 與最小寬度 (70px) 的標準化膠囊標籤 */}
                         <div 
                           style={{
                             display: 'inline-flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '2px',
-                            height: '40px',
-                            minWidth: '70px',
-                            padding: '4px 6px',
-                            borderRadius: '14px',
-                            background: b.badgeBg,
-                            border: `1px solid ${b.color}44`,
+                            gap: '3px',
                             whiteSpace: 'nowrap',
-                            boxSizing: 'border-box',
                           }}
                         >
-                          <div style={{ 
+                          <span style={{ 
                             fontWeight: 700, 
                             color: b.color, 
                             fontSize: '0.78rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '2px',
+                            lineHeight: 1.2,
                           }}>
-                            <CheckCircle2 size={12} color={b.color} />
                             有收錄
-                          </div>
+                          </span>
                           
-                          <div style={{ display: 'flex', gap: '2px', minHeight: '12px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '2px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {isOfficialMv && (
-                              <span className="badge" style={{ padding: '1px 3px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
+                              <span className="badge" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
                                 原版
                               </span>
                             )}
                             {isReeditedMv && (
-                              <span className="badge" style={{ padding: '1px 3px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '3px' }}>
+                              <span className="badge" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '3px' }}>
                                 伴唱帶
                               </span>
                             )}
                             {isOriginalVocal && (
-                              <span className="badge badge-original-vocal" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
+                              <span className="badge badge-original-vocal" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
                                 原唱
                               </span>
                             )}
                             {hasGuidedVocal && (
-                              <span className="badge badge-guided-vocal" style={{ padding: '1px 4px', fontSize: '0.62rem' }}>
+                              <span className="badge badge-guided-vocal" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
                                 導唱
                               </span>
                             )}
