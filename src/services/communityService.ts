@@ -4,7 +4,7 @@
  * 為何這樣設計：將 fetch 邏輯集中於 service 層，讓 UI 元件保持純淨，方便日後切換到真實後端 API URL。
  */
 
-import type { BrandId, IssueType, VoteData, VoteConfidence } from '../types/ktv';
+import type { BrandId, IssueType, Song, VoteData, VoteConfidence } from '../types/ktv';
 
 const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
@@ -34,6 +34,7 @@ export interface ReportPayload {
   systemType?: string;
   codeFormat?: string;
   storeLocations?: string;
+  songSnapshot?: Song;
 }
 
 export async function submitReport(payload: ReportPayload): Promise<{ success: boolean; reportId?: string; error?: string }> {

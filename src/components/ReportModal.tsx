@@ -54,6 +54,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
       brandId: (selectedBrand || 'cashbox') as BrandId,
       issueType: issueType as IssueType,
       note,
+      songSnapshot: song,
     });
 
     setIsSubmitting(false);
