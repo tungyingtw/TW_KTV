@@ -2,7 +2,7 @@ import type { Song } from '../types/ktv';
 
 const DB_NAME = 'KtvCatalogDB';
 const STORE_NAME = 'catalog_store';
-const KEY_NAME = 'full_catalog_v26';
+const KEY_NAME = 'full_catalog_v27';
 
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
 const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTVBIN"
@@ -29,7 +29,7 @@ export async function getCachedCatalog(): Promise<Song[] | null> {
     // 清理舊版本快取鍵值
     const txClear = db.transaction(STORE_NAME, 'readwrite');
     const storeClear = txClear.objectStore(STORE_NAME);
-    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9', 'full_catalog_v17', 'full_catalog_v18', 'full_catalog_v19', 'full_catalog_v20', 'full_catalog_v21', 'full_catalog_v22', 'full_catalog_v23', 'full_catalog_v24', 'full_catalog_v25'].forEach(k => storeClear.delete(k));
+    ['full_catalog_v1', 'full_catalog_v2', 'full_catalog_v3', 'full_catalog_v4', 'full_catalog_v5', 'full_catalog_v6', 'full_catalog_v7', 'full_catalog_v8', 'full_catalog_v9', 'full_catalog_v17', 'full_catalog_v18', 'full_catalog_v19', 'full_catalog_v20', 'full_catalog_v21', 'full_catalog_v22', 'full_catalog_v23', 'full_catalog_v24', 'full_catalog_v25', 'full_catalog_v26'].forEach(k => storeClear.delete(k));
     
     return new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
@@ -54,7 +54,7 @@ export async function setCachedCatalog(catalog: Song[]): Promise<void> {
   }
 }
 
-const TIME_KEY = 'full_catalog_timestamp_v26';
+const TIME_KEY = 'full_catalog_timestamp_v27';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小時快取效期 (避免重複浪費頻寬)
 
 export async function fetchFullCatalog(onProgress?: (percent: number) => void): Promise<Song[]> {
@@ -125,57 +125,29 @@ async function fetchCatalogOverrides(): Promise<{ songs: Song[]; deletedIds: str
 async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promise<Song[] | null> {
   try {
     const baseUrl = import.meta.env.BASE_URL || './';
-    const catalogUrl = `${baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'}songs_catalog.bin?v=${Date.now()}`;
-    const response = await fetch(catalogUrl);
-    if (response.ok && response.body) {
-      const contentLength = response.headers.get('content-length');
-      const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+    const normalizedBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+    const catalogBytes = await fetchChunkedCatalog(normalizedBase, onProgress) || await fetchSingleCatalog(`${normalizedBase}songs_catalog.bin?v=${Date.now()}`, onProgress);
 
-      const reader = response.body.getReader();
-      let loadedBytes = 0;
-      const chunks: Uint8Array[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        loadedBytes += value.length;
-
-        if (totalBytes > 0) {
-          const pct = Math.min(92, Math.round(10 + (loadedBytes / totalBytes) * 82));
-          onProgress?.(pct);
-        } else {
-          // 估算進度（針對未回傳 content-length 之情況）
-          const estPct = Math.min(90, Math.round(10 + 80 * (1 - Math.exp(-loadedBytes / 15000000))));
-          onProgress?.(estPct);
-        }
-      }
-
+    if (catalogBytes && catalogBytes.length > 0) {
       onProgress?.(95);
-      const concatenated = new Uint8Array(loadedBytes);
-      let offset = 0;
-      for (const chunk of chunks) {
-        concatenated.set(chunk, offset);
-        offset += chunk.length;
-      }
 
       // 驗證 Magic Header
       let isHeaderMatch = true;
       for (let i = 0; i < MAGIC_HEADER.length; i++) {
-        if (concatenated[i] !== MAGIC_HEADER[i]) {
+        if (catalogBytes[i] !== MAGIC_HEADER[i]) {
           isHeaderMatch = false;
           break;
         }
       }
 
       const payloadOffset = isHeaderMatch ? MAGIC_HEADER.length : 0;
-      const payloadLength = loadedBytes - payloadOffset;
+      const payloadLength = catalogBytes.length - payloadOffset;
       const decodedBytes = new Uint8Array(payloadLength);
 
       // 記憶體中 Byte 解混淆 (In-Memory De-obfuscation)
       for (let i = 0; i < payloadLength; i++) {
         const keyByte = XOR_KEY[i % XOR_KEY.length];
-        decodedBytes[i] = concatenated[payloadOffset + i] ^ keyByte;
+        decodedBytes[i] = catalogBytes[payloadOffset + i] ^ keyByte;
       }
 
       const text = new TextDecoder('utf-8').decode(decodedBytes);
@@ -190,4 +162,66 @@ async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promis
     console.warn('[API Service] 串流下載或解密 static catalog BIN 失敗:', err);
   }
   return null;
+}
+
+async function fetchChunkedCatalog(baseUrl: string, onProgress?: (percent: number) => void): Promise<Uint8Array | null> {
+  try {
+    const manifestResponse = await fetch(`${baseUrl}songs_catalog.manifest.json?v=${Date.now()}`);
+    if (!manifestResponse.ok) return null;
+    const manifest = await manifestResponse.json();
+    const chunks = Array.isArray(manifest.chunks) ? manifest.chunks : [];
+    const totalBytes = Number(manifest.totalBytes) || chunks.reduce((sum: number, chunk: { bytes?: number }) => sum + (Number(chunk.bytes) || 0), 0);
+    if (!chunks.length || totalBytes <= 0) return null;
+
+    let loadedBytes = 0;
+    const output = new Uint8Array(totalBytes);
+    for (const chunk of chunks as Array<{ file: string; bytes: number }>) {
+      const response = await fetch(`${baseUrl}${chunk.file}?v=${Date.now()}`);
+      if (!response.ok) throw new Error(`chunk ${chunk.file} HTTP ${response.status}`);
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      output.set(bytes, loadedBytes);
+      loadedBytes += bytes.length;
+      const pct = Math.min(92, Math.round(10 + (loadedBytes / totalBytes) * 82));
+      onProgress?.(pct);
+    }
+    return loadedBytes === totalBytes ? output : output.slice(0, loadedBytes);
+  } catch (err) {
+    console.warn('[API Service] 分片歌庫載入失敗，改用單檔備援:', err);
+    return null;
+  }
+}
+
+async function fetchSingleCatalog(catalogUrl: string, onProgress?: (percent: number) => void): Promise<Uint8Array | null> {
+  const response = await fetch(catalogUrl);
+  if (!response.ok || !response.body) return null;
+
+  const contentLength = response.headers.get('content-length');
+  const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+  const reader = response.body.getReader();
+  let loadedBytes = 0;
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loadedBytes += value.length;
+
+    if (totalBytes > 0) {
+      const pct = Math.min(92, Math.round(10 + (loadedBytes / totalBytes) * 82));
+      onProgress?.(pct);
+    } else {
+      // 估算進度（針對未回傳 content-length 之情況）
+      const estPct = Math.min(90, Math.round(10 + 80 * (1 - Math.exp(-loadedBytes / 15000000))));
+      onProgress?.(estPct);
+    }
+  }
+
+  const concatenated = new Uint8Array(loadedBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    concatenated.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return concatenated;
 }
