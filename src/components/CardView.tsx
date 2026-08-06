@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Song, BrandId } from '../types/ktv';
 import { BRANDS } from '../data/brands';
 import { useBrands } from '../hooks/useBrands';
@@ -14,6 +14,7 @@ interface CardViewProps {
   favorites: string[];
   onToggleFavorite: (songId: string) => void;
   onSelectSongDetail: (song: Song) => void;
+  brandSongCounts?: Record<BrandId, number>;
 }
 
 export const CardView: React.FC<CardViewProps> = ({
@@ -23,12 +24,23 @@ export const CardView: React.FC<CardViewProps> = ({
   favorites,
   onToggleFavorite,
   onSelectSongDetail,
+  brandSongCounts,
 }) => {
   const brandList = useBrands();
   const [reportingSong, setReportingSong] = useState<Song | null>(null);
   const isMultiSelecting = selectedBrands.length > 0;
   const isSingleBrand = !isMultiSelecting && selectedBrand !== 'all';
-  const currentBrandInfo = isSingleBrand ? (brandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]) : null;
+
+  const sortedBrandList = useMemo(() => {
+    if (!brandSongCounts) return brandList;
+    return [...brandList].sort((a, b) => {
+      const countA = brandSongCounts[a.id] || 0;
+      const countB = brandSongCounts[b.id] || 0;
+      return countB - countA;
+    });
+  }, [brandList, brandSongCounts]);
+
+  const currentBrandInfo = isSingleBrand ? (sortedBrandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]) : null;
 
   if (songs.length === 0) {
     return (
@@ -110,13 +122,13 @@ export const CardView: React.FC<CardViewProps> = ({
         const isFav = favorites.includes(song.id);
 
         const displayBrands = isMultiSelecting
-          ? selectedBrands.map(bId => brandList.find(b => b.id === bId) || BRANDS[bId]).filter(Boolean)
+          ? selectedBrands.map(bId => sortedBrandList.find(b => b.id === bId) || BRANDS[bId]).filter(Boolean)
           : (selectedBrand === 'all'
             ? (() => {
-                const availableInSong = brandList.filter(b => song.brands?.[b.id]?.available);
-                return availableInSong.length > 0 ? availableInSong.slice(0, 4) : brandList.slice(0, 4);
+                const availableInSong = sortedBrandList.filter(b => song.brands?.[b.id]?.available);
+                return availableInSong.length > 0 ? availableInSong.slice(0, 4) : sortedBrandList.slice(0, 4);
               })()
-            : [brandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]].filter(Boolean));
+            : [sortedBrandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]].filter(Boolean));
 
         return (
           <React.Fragment key={song.id}>

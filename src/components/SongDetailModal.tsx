@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import type { Song, SongVotes } from '../types/ktv';
+import React, { useState, useEffect, useMemo } from 'react';
+import type { Song, SongVotes, BrandId } from '../types/ktv';
 import { useBrands } from '../hooks/useBrands';
 import { X, Heart, Video, Sparkles, CheckCircle2, Flag } from 'lucide-react';
 import { BrandVoteBar } from './BrandVoteBar';
@@ -12,6 +12,7 @@ interface SongDetailModalProps {
   onClose: () => void;
   favorites: string[];
   onToggleFavorite: (songId: string) => void;
+  brandSongCounts?: Record<BrandId, number>;
 }
 
 export const SongDetailModal: React.FC<SongDetailModalProps> = ({
@@ -19,10 +20,20 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
   onClose,
   favorites,
   onToggleFavorite,
+  brandSongCounts,
 }) => {
   const brandList = useBrands();
   const [showReport, setShowReport] = useState(false);
   const [songVotes, setSongVotes] = useState<SongVotes>({});
+
+  const sortedBrandList = useMemo(() => {
+    if (!brandSongCounts) return brandList;
+    return [...brandList].sort((a, b) => {
+      const countA = brandSongCounts[a.id] || 0;
+      const countB = brandSongCounts[b.id] || 0;
+      return countB - countA;
+    });
+  }, [brandList, brandSongCounts]);
 
   // 開啟 modal 時載入該歌曲的社群投票資料
   useEffect(() => {
@@ -324,7 +335,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 gap: '12px',
               }}
             >
-              {brandList.map(b => {
+              {sortedBrandList.map(b => {
                 const status = song.brands[b.id];
                 const brandVote = songVotes[b.id];
 

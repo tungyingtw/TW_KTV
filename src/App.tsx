@@ -687,6 +687,7 @@ export function App() {
             onSelectSongDetail={(song) => setSelectedSongDetail(song)}
             selectedSongId={selectedSongDetail?.id ?? null}
             compact={isMobile}
+            brandSongCounts={brandSongCounts}
           />
         ) : (
           <CardView
@@ -696,6 +697,7 @@ export function App() {
             favorites={favorites}
             onToggleFavorite={handleToggleFavorite}
             onSelectSongDetail={(song) => setSelectedSongDetail(song)}
+            brandSongCounts={brandSongCounts}
           />
         )}
 
@@ -720,6 +722,7 @@ export function App() {
         onClose={() => setSelectedSongDetail(null)}
         favorites={favorites}
         onToggleFavorite={handleToggleFavorite}
+        brandSongCounts={brandSongCounts}
       />
 
       <BottomSheetFilter
