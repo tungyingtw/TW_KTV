@@ -828,8 +828,8 @@ function applyCatalogOverridesToSongs(songs, overridesData) {
 }
 
 function loadInitialSongsDatabase(options = {}) {
-  const { applyLocalOverrides = true } = options;
-  if (SKIP_STATIC_CATALOG) {
+  const { applyLocalOverrides = true, forceLoad = false } = options;
+  if (SKIP_STATIC_CATALOG && !forceLoad) {
     let songs = [];
     if (applyLocalOverrides) {
       try {
@@ -1103,6 +1103,52 @@ async function saveCatalogDeletedSong(songId) {
 async function loadCatalogOverrideSong(songId) {
   const overrides = await loadCatalogOverridesStore();
   return overrides?.songs?.[songId] || null;
+}
+
+let staticCatalogCacheMap = null;
+
+async function getAdminSongById(songId) {
+  if (!songId) return null;
+
+  // 1. 記憶體 songsDatabase
+  let song = songsDatabase.find(s => s.id === songId);
+  if (song) return song;
+
+  // 2. catalog_overrides
+  song = await loadCatalogOverrideSong(songId);
+  if (song) return song;
+
+  // 3. 回報快照 (Report Snapshots)
+  try {
+    const reports = await loadReportsStore();
+    const rep = reports.find(r => r.songSnapshot?.id === songId || r.songId === songId);
+    if (rep) {
+      const snap = rep.songSnapshot || {};
+      return {
+        id: songId,
+        title: snap.title || rep.songTitle || '',
+        artist: snap.artist || rep.artist || '',
+        language: snap.language || rep.lang || '國語',
+        brands: snap.brands || {},
+      };
+    }
+  } catch {}
+
+  // 4. 若開立 SKIP_STATIC_CATALOG，按需唯讀一次全量歌庫建立快照 Mapping
+  if (SKIP_STATIC_CATALOG) {
+    if (!staticCatalogCacheMap) {
+      try {
+        const fullSongs = loadInitialSongsDatabase({ applyLocalOverrides: false, forceLoad: true });
+        staticCatalogCacheMap = new Map((fullSongs || []).map(s => [s.id, s]));
+      } catch {
+        staticCatalogCacheMap = new Map();
+      }
+    }
+    const cached = staticCatalogCacheMap.get(songId);
+    if (cached) return cached;
+  }
+
+  return null;
 }
 
 async function saveCatalog(catalog) {
@@ -2597,10 +2643,10 @@ app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res)
     const confidence = getVoteConfidence(data.confirm || 0, data.deny || 0);
     if (confidence === 'disputed' || confidence === 'uncertain') {
       const { songId, brandId } = await parseVoteKeyDynamic(key);
-      const song = songsDatabase.find(s => s.id === songId);
+      const song = await getAdminSongById(songId);
       disputed.push({
         key, songId, brandId,
-        songTitle: song?.title || '(歌曲已不存在)',
+        songTitle: song?.title || songId,
         artist: song?.artist || '',
         currentStatus: song?.brands?.[brandId]?.available ?? null,
         confirm: data.confirm || 0,
@@ -2623,10 +2669,10 @@ app.get('/api/admin/verified', requirePermission('votes.view'), async (req, res)
   for (const [key, data] of Object.entries(votes)) {
     if (getVoteConfidence(data.confirm || 0, data.deny || 0) !== 'verified') continue;
     const { songId, brandId } = await parseVoteKeyDynamic(key);
-    const song = songsDatabase.find(s => s.id === songId);
+    const song = await getAdminSongById(songId);
     verified.push({
       key, songId, brandId,
-      songTitle: song?.title || '(歌曲已不存在)',
+      songTitle: song?.title || songId,
       artist: song?.artist || '',
       currentStatus: song?.brands?.[brandId]?.available ?? null,
       confirm: data.confirm || 0,
@@ -2649,14 +2695,14 @@ app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, 
     if (!total) continue;
 
     const { songId, brandId } = await parseVoteKeyDynamic(key);
-    const song = songsDatabase.find(s => s.id === songId);
+    const song = await getAdminSongById(songId);
     const brandData = song?.brands?.[brandId] || null;
 
     guidedVotes.push({
       key,
       songId,
       brandId,
-      songTitle: song?.title || '(歌曲已不存在)',
+      songTitle: song?.title || songId,
       artist: song?.artist || '',
       currentAudioType: brandData?.audioType || 'unknown',
       guided,
@@ -2690,14 +2736,14 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
     if (filterType === 'edited' && edited <= official) continue;
 
     const { songId, brandId } = await parseVoteKeyDynamic(key);
-    const song = songsDatabase.find(s => s.id === songId);
+    const song = await getAdminSongById(songId);
     const brandData = song?.brands?.[brandId] || null;
 
     mvVotes.push({
       key,
       songId,
       brandId,
-      songTitle: song?.title || '(歌曲已不存在)',
+      songTitle: song?.title || songId,
       artist: song?.artist || '',
       currentAvailable: brandData?.available ?? false,
       currentMvType: brandData?.mvType || 'unknown',
@@ -3037,10 +3083,22 @@ app.patch('/api/admin/song/:songId/brand', requirePermission('brand.update'), as
     return res.status(400).json({ error: 'MV 類型不正確' });
   }
 
-  const idx = songsDatabase.findIndex(s => s.id === songId);
-  if (idx === -1) return res.status(404).json({ error: `找不到歌曲 ID: ${songId}` });
-
-  const song = songsDatabase[idx];
+  let idx = songsDatabase.findIndex(s => s.id === songId);
+  let song;
+  if (idx === -1) {
+    const existing = await getAdminSongById(songId);
+    song = existing ? JSON.parse(JSON.stringify(existing)) : {
+      id: songId,
+      title: '未命名歌曲',
+      artist: '未知歌手',
+      language: '國語',
+      brands: {},
+    };
+    songsDatabase.push(song);
+    idx = songsDatabase.length - 1;
+  } else {
+    song = songsDatabase[idx];
+  }
   const before = song.brands?.[brandId] ?? null;
 
   if (!song.brands) song.brands = {};
@@ -3112,10 +3170,22 @@ app.patch('/api/admin/song/:songId/brand/mv-type', requirePermission('mv.update'
     return res.status(400).json({ error: 'MV 類型不正確' });
   }
 
-  const idx = songsDatabase.findIndex(s => s.id === songId);
-  if (idx === -1) return res.status(404).json({ error: `找不到歌曲 ID: ${songId}` });
-
-  const song = songsDatabase[idx];
+  let idx = songsDatabase.findIndex(s => s.id === songId);
+  let song;
+  if (idx === -1) {
+    const existing = await getAdminSongById(songId);
+    song = existing ? JSON.parse(JSON.stringify(existing)) : {
+      id: songId,
+      title: '未命名歌曲',
+      artist: '未知歌手',
+      language: '國語',
+      brands: {},
+    };
+    songsDatabase.push(song);
+    idx = songsDatabase.length - 1;
+  } else {
+    song = songsDatabase[idx];
+  }
   if (!song.brands) song.brands = {};
   const before = song.brands[brandId] ?? { available: false };
 
