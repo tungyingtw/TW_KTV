@@ -959,6 +959,34 @@ function confidenceLabel(confidence) {
   }[confidence] || confidence;
 }
 
+const BRAND_FRIENDLY_NAMES = {
+  cashbox: '錢○',
+  holiday: '好○迪',
+  watering_hole: '大○',
+  starlight: '星○',
+  singgo: 'Sing○',
+  vmix: 'V-MIX',
+  superstar: '超○巨星',
+  silver_cabinet: '銀○',
+  yinyuan: '音○',
+  golden_voice: '金○',
+  hongyin: '弘○',
+  datang: '大○',
+  ruiying: '瑞○',
+  meihua: '美○',
+  brand_mseh1ut3: '星○',
+};
+
+function formatBrandName(brandId) {
+  if (!brandId) return '未知門市/廠牌';
+  if (window.dynamicBrands && Array.isArray(window.dynamicBrands)) {
+    const found = window.dynamicBrands.find(b => b.id === brandId);
+    if (found) return `${found.shortName || found.name} (${brandId})`;
+  }
+  const friendly = BRAND_FRIENDLY_NAMES[brandId];
+  return friendly ? `${friendly} (${brandId})` : brandId;
+}
+
 // ── 帳密登入 ──
 async function doLogin() {
   const usernameEl = document.getElementById('username-input');
@@ -1895,7 +1923,7 @@ async function loadDisputed() {
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
-          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '有收錄' : '未收錄'}</b></div>
+          <div class="sub">門市/廠牌：<b>${escapeHtml(formatBrandName(d.brandId))}</b> &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '有收錄' : '未收錄'}</b></div>
           <div class="vote-bar">
             <span class="vote-confirm">確認 ${d.confirm}</span>
             <span class="vote-deny">否定 ${d.deny}</span>
@@ -1924,7 +1952,7 @@ async function loadVerified() {
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
-          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '有收錄' : '未收錄'}</b></div>
+          <div class="sub">門市/廠牌：<b>${escapeHtml(formatBrandName(d.brandId))}</b> &nbsp;|&nbsp; 目前資料標記：<b style="color:${d.currentStatus ? 'var(--green)' : 'var(--red)'}">${d.currentStatus ? '有收錄' : '未收錄'}</b></div>
           <div class="vote-bar">
             <span class="vote-confirm">確認 ${d.confirm}</span>
             <span class="vote-deny">否定 ${d.deny}</span>
@@ -1952,7 +1980,7 @@ async function loadGuidedVotes() {
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
-          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 目前音訊標記：<b>${audioTypeLabel(d.currentAudioType)}</b></div>
+          <div class="sub">門市/廠牌：<b>${escapeHtml(formatBrandName(d.brandId))}</b> &nbsp;|&nbsp; 目前音訊標記：<b>${audioTypeLabel(d.currentAudioType)}</b></div>
           <div class="vote-bar">
             <span class="vote-confirm">有導唱 ${d.guided}</span>
             <span class="vote-deny">純伴奏 ${d.noGuided}</span>
@@ -1999,6 +2027,7 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
   if (data.success) {
     showToast(`已完成：音訊類型已更新為「${label}」`, 'success');
     loadGuidedVotes();
+    loadDisputed();
     loadStats();
   } else {
     showToast(data.error || '操作失敗：導唱修正未儲存', 'error');
@@ -2018,7 +2047,7 @@ async function loadMvVotes() {
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${d.songTitle}》— ${d.artist}</div>
-          <div class="sub">廠牌：${d.brandId} &nbsp;|&nbsp; 收錄狀態：<b>${d.currentAvailable ? '有收錄' : '未收錄'}</b> &nbsp;|&nbsp; 目前 MV 標記：<b>${mvTypeLabel(d.currentMvType)}</b></div>
+          <div class="sub">門市/廠牌：<b>${escapeHtml(formatBrandName(d.brandId))}</b> &nbsp;|&nbsp; 收錄狀態：<b>${d.currentAvailable ? '有收錄' : '未收錄'}</b> &nbsp;|&nbsp; 目前 MV 標記：<b>${mvTypeLabel(d.currentMvType)}</b></div>
           <div class="vote-bar">
             <span class="vote-confirm">原版 MV ${d.official}</span>
             <span class="vote-deny">伴唱 MV ${d.edited}</span>
@@ -2072,6 +2101,7 @@ async function applyMvFix(songIdValue, brandIdValue, mvType) {
   if (data.success) {
     showToast(`已完成：MV 類型已更新為「${label}」`, 'success');
     loadMvVotes();
+    loadDisputed();
     loadStats();
   } else {
     showToast(data.error || '操作失敗：MV 類型修正未儲存', 'error');
@@ -2534,6 +2564,11 @@ async function applyFix() {
   if (data.success) {
     showToast('已完成：收錄狀態已更新', 'success');
     closeFix();
+    loadDisputed();
+    loadVerified();
+    loadGuidedVotes();
+    loadMvVotes();
+    loadReports();
     loadStats();
   } else {
     showToast('操作失敗：' + data.error, 'error');
