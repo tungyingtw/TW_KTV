@@ -97,6 +97,11 @@ const ADMIN_ALLOWED_ORIGINS = (process.env.ADMIN_ALLOWED_ORIGINS || DEFAULT_ALLO
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean);
+const LOAD_STATIC_CATALOG = process.env.LOAD_STATIC_CATALOG === 'true';
+const SKIP_STATIC_CATALOG = process.env.SKIP_STATIC_CATALOG === 'true' || (process.env.RENDER === 'true' && !LOAD_STATIC_CATALOG);
+if (SKIP_STATIC_CATALOG) {
+  console.warn('[Server] Static catalog preload disabled. Set LOAD_STATIC_CATALOG=true to enable full admin catalog search on larger instances.');
+}
 const BRAND_IDS = [
   'watering_hole',
   'golden_voice',
@@ -824,6 +829,19 @@ function applyCatalogOverridesToSongs(songs, overridesData) {
 
 function loadInitialSongsDatabase(options = {}) {
   const { applyLocalOverrides = true } = options;
+  if (SKIP_STATIC_CATALOG) {
+    let songs = [];
+    if (applyLocalOverrides) {
+      try {
+        songs = applyCatalogOverridesToSongs(songs, loadCatalogOverrides());
+        console.log(`[Server] Static catalog skipped; loaded ${songs.length} local override songs only.`);
+      } catch (err) {
+        console.warn('[Server] Local catalog_overrides load failed while static catalog is skipped:', err.message);
+      }
+    }
+    return songs;
+  }
+
   let songs = null;
 
   // 1. 嘗試優先載入明文 JSON（本機開發環境）
