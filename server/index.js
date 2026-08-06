@@ -760,6 +760,15 @@ function safeAtomicWriteJson(filePath, data) {
 function decodeBinaryCatalog(binPath) {
   try {
     const buffer = fs.readFileSync(binPath);
+    return decodeBinaryCatalogBuffer(buffer, path.basename(binPath));
+  } catch (err) {
+    console.error(`[Server Error] 解密二進位檔 ${path.basename(binPath)} 失敗:`, err.message);
+    return null;
+  }
+}
+
+function decodeBinaryCatalogBuffer(buffer, label = 'songs_catalog.bin') {
+  try {
     const MAGIC_HEADER = Buffer.from([0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]);
     const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
 
@@ -775,7 +784,23 @@ function decodeBinaryCatalog(binPath) {
     const parsed = JSON.parse(jsonBytes.toString('utf8'));
     return Array.isArray(parsed) ? parsed : null;
   } catch (err) {
-    console.error(`[Server Error] 解密二進位檔 ${path.basename(binPath)} 失敗:`, err.message);
+    console.error(`[Server Error] 解密二進位歌庫 ${label} 失敗:`, err.message);
+    return null;
+  }
+}
+
+function decodeChunkedBinaryCatalog(manifestPath) {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const chunks = Array.isArray(manifest.chunks) ? manifest.chunks : [];
+    if (!chunks.length) return null;
+
+    const dirPath = path.dirname(manifestPath);
+    const buffers = chunks.map(chunk => fs.readFileSync(path.join(dirPath, chunk.file)));
+    const combined = Buffer.concat(buffers);
+    return decodeBinaryCatalogBuffer(combined, path.basename(manifestPath));
+  } catch (err) {
+    console.error(`[Server Error] 解密分片歌庫 ${path.basename(manifestPath)} 失敗:`, err.message);
     return null;
   }
 }
@@ -834,6 +859,27 @@ function loadInitialSongsDatabase(options = {}) {
         songs = decodeBinaryCatalog(bp);
         if (songs && songs.length > 0) {
           console.log(`[Server] 成功由二進位加密檔 (${path.basename(bp)}) 解密加載 ${songs.length} 首歌曲`);
+          break;
+        }
+      }
+    }
+  }
+
+  // 2b. 若無單一二進位檔，改讀 GitHub-safe 分片歌庫
+  if (!songs || songs.length === 0) {
+    const manifestPaths = [
+      path.join(__dirname, '../public/songs_catalog.manifest.json'),
+      path.join(__dirname, '../dist/songs_catalog.manifest.json'),
+      path.join(process.cwd(), 'public/songs_catalog.manifest.json'),
+      path.join(process.cwd(), 'dist/songs_catalog.manifest.json'),
+      path.join(__dirname, 'songs_catalog.manifest.json'),
+    ];
+
+    for (const mp of manifestPaths) {
+      if (fs.existsSync(mp) && fs.statSync(mp).size > 100) {
+        songs = decodeChunkedBinaryCatalog(mp);
+        if (songs && songs.length > 0) {
+          console.log(`[Server] 成功由分片加密歌庫 (${path.basename(mp)}) 解密加載 ${songs.length} 首歌曲`);
           break;
         }
       }

@@ -9,9 +9,39 @@ const jsonPublicPath = path.join(__dirname, '../public/songs_catalog.json');
 const jsonServerPath = path.join(__dirname, '../server/database.json');
 const binPath = path.join(__dirname, '../public/songs_catalog.bin');
 const distBinPath = path.join(__dirname, '../dist/songs_catalog.bin');
+const chunkPrefix = 'songs_catalog.part';
+const maxGitSafeChunkSize = 50 * 1024 * 1024;
 
 const MAGIC_HEADER = Buffer.from([0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]); // "TWKTVBIN"
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
+
+function removeGeneratedCatalogFiles(dirPath) {
+  if (!fs.existsSync(dirPath)) return;
+  for (const file of fs.readdirSync(dirPath)) {
+    if (file === 'songs_catalog.bin' || file === 'songs_catalog.manifest.json' || /^songs_catalog\.part\d+\.bin$/.test(file)) {
+      try { fs.unlinkSync(path.join(dirPath, file)); } catch {}
+    }
+  }
+}
+
+function writeChunkedCatalog(outputBuffer, targetDir) {
+  removeGeneratedCatalogFiles(targetDir);
+  const chunks = [];
+  for (let offset = 0, index = 0; offset < outputBuffer.length; offset += maxGitSafeChunkSize, index++) {
+    const fileName = `${chunkPrefix}${String(index).padStart(3, '0')}.bin`;
+    const part = outputBuffer.subarray(offset, Math.min(offset + maxGitSafeChunkSize, outputBuffer.length));
+    fs.writeFileSync(path.join(targetDir, fileName), part);
+    chunks.push({ file: fileName, bytes: part.length });
+  }
+  fs.writeFileSync(path.join(targetDir, 'songs_catalog.manifest.json'), JSON.stringify({
+    version: 1,
+    format: 'twktv-xor-bin-chunks',
+    totalBytes: outputBuffer.length,
+    chunkSize: maxGitSafeChunkSize,
+    chunks
+  }, null, 2), 'utf8');
+  return chunks;
+}
 
 export function generateBinCatalog() {
   let sourceJsonPath = null;
@@ -52,12 +82,22 @@ export function generateBinCatalog() {
     outputBuffer[MAGIC_HEADER.length + i] = jsonBytes[i] ^ keyByte;
   }
 
-  fs.writeFileSync(binPath, outputBuffer);
-  console.log(`✅ [Build Catalog Bin] 加密包生成成功！檔案大小: ${(outputBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+  if (outputBuffer.length > 95 * 1024 * 1024) {
+    const chunks = writeChunkedCatalog(outputBuffer, path.dirname(binPath));
+    console.log(`✅ [Build Catalog Bin] 加密包分片生成成功！總大小: ${(outputBuffer.length / 1024 / 1024).toFixed(2)} MB，分片數: ${chunks.length}`);
+  } else {
+    removeGeneratedCatalogFiles(path.dirname(binPath));
+    fs.writeFileSync(binPath, outputBuffer);
+    console.log(`✅ [Build Catalog Bin] 加密包生成成功！檔案大小: ${(outputBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+  }
 
   if (fs.existsSync(path.dirname(distBinPath))) {
     try {
-      fs.writeFileSync(distBinPath, outputBuffer);
+      if (outputBuffer.length > 95 * 1024 * 1024) writeChunkedCatalog(outputBuffer, path.dirname(distBinPath));
+      else {
+        removeGeneratedCatalogFiles(path.dirname(distBinPath));
+        fs.writeFileSync(distBinPath, outputBuffer);
+      }
     } catch (e) {}
   }
 

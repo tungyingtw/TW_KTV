@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "format": "twktv-xor-bin-chunks",
+  "totalBytes": 158147032,
+  "chunkSize": 52428800,
+  "chunks": [
+    {
+      "file": "songs_catalog.part000.bin",
+      "bytes": 52428800
+    },
+    {
+      "file": "songs_catalog.part001.bin",
+      "bytes": 52428800
+    },
+    {
+      "file": "songs_catalog.part002.bin",
+      "bytes": 52428800
+    },
+    {
+      "file": "songs_catalog.part003.bin",
+      "bytes": 860632
+    }
+  ]
+}
