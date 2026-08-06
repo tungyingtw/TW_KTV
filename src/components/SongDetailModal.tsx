@@ -378,7 +378,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                         <div style={{ display: 'flex', gap: '4px', marginTop: '2px', flexWrap: 'wrap' }}>
                           {status.mvType === 'official_mv' && (
                             <span className="badge" style={{ fontSize: '0.6rem', padding: '0 4px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
-                              原版 MV
+                              MV
                             </span>
                           )}
                           {status.mvType === 'reedited_mv' && (

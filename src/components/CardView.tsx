@@ -291,7 +291,7 @@ export const CardView: React.FC<CardViewProps> = ({
                       </span>
                       {status.mvType === 'official_mv' && (
                         <span className="badge" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
-                          原版 MV
+                          MV
                         </span>
                       )}
                       {status.mvType === 'reedited_mv' && (
