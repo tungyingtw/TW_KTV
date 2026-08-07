@@ -548,6 +548,10 @@
         <button class="btn btn-ghost" onclick="loadQuotaStatus()">重新整理</button>
       </div>
 
+      <div class="card" id="backup-export-summary" style="border-color:rgba(56,189,248,0.24);margin-bottom:16px;">
+        <div class="empty">正在載入備份匯出摘要...</div>
+      </div>
+
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-bottom:16px;" id="quota-cards">
         <div class="card" style="border-color:rgba(74,222,128,0.3)">
           <div style="font-size:1.4rem;font-weight:800;color:var(--green)" id="quota-health-status">綠色健康</div>
@@ -1802,19 +1806,25 @@ async function saveResetAdminPassword() {
 async function loadQuotaStatus() {
   const backupsListEl = document.getElementById('quota-backups-list');
   const dataGrowthEl = document.getElementById('data-growth-list');
+  const backupExportSummaryEl = document.getElementById('backup-export-summary');
   const alertWarnEl = document.getElementById('alert-backup-warning');
   const alertTextEl = document.getElementById('alert-backup-warning-text');
   if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">正在載入資料...</div>';
   if (dataGrowthEl) dataGrowthEl.innerHTML = '<div class="empty">正在載入資料成長狀態...</div>';
 
+  if (backupExportSummaryEl) backupExportSummaryEl.innerHTML = '<div class="empty">正在載入備份匯出摘要...</div>';
+
   try {
-    const [res, growthRes] = await Promise.all([
+    const [res, growthRes, exportSummaryRes] = await Promise.all([
       apiFetch('/api/admin/quota-status'),
       apiFetch('/api/admin/data-growth-status'),
+      apiFetch('/api/admin/backup/export-summary'),
     ]);
     const data = await res.json();
     const growthData = await growthRes.json().catch(() => ({}));
+    const exportSummaryData = await exportSummaryRes.json().catch(() => ({}));
     if (dataGrowthEl) renderDataGrowthStatus(dataGrowthEl, growthRes.ok ? growthData : null);
+    if (backupExportSummaryEl) renderBackupExportSummary(backupExportSummaryEl, exportSummaryRes.ok ? exportSummaryData : null);
 
     const healthEl = document.getElementById('quota-health-status');
     const usageEl = document.getElementById('quota-usage-percent');
@@ -1914,6 +1924,37 @@ function dataGrowthRiskBadge(risk) {
   return '<span class="badge badge-resolved">正常</span>';
 }
 
+function renderBackupExportSummary(container, data) {
+  if (!data?.counts) {
+    container.innerHTML = '<div class="empty" style="color:var(--red);">目前無法取得備份匯出摘要</div>';
+    return;
+  }
+  const c = data.counts || {};
+  const riskStyle = data.risk === 'warning' ? 'color:var(--yellow);' : 'color:var(--green);';
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+      <div>
+        <h3 style="margin:0 0 8px;font-size:0.95rem;">備份匯出估算</h3>
+        <div style="color:var(--muted);font-size:0.82rem;line-height:1.7;">
+          匯出會一次讀取完整備份資料；資料較大時，Render 免費環境可能需要稍等。
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:1.25rem;font-weight:800;${riskStyle}">${formatBytes(data.estimatedBytes)}</div>
+        <div style="color:var(--muted);font-size:0.75rem;">預估 JSON 大小</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      <span class="badge badge-reviewed">回報 ${Number(c.reports || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">投票 ${Number(c.votes || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">歌曲覆寫 ${Number(c.catalogOverrides || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">刪除標記 ${Number(c.deletedSongs || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">歌手別名 ${Number(c.artistAliasesOverrides || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">品牌 ${Number(c.brands || 0).toLocaleString()}</span>
+    </div>
+  `;
+}
+
 function renderDataGrowthStatus(container, data) {
   if (!data?.stores?.length) {
     container.innerHTML = '<div class="empty">目前無法取得資料成長狀態</div>';
@@ -1969,7 +2010,13 @@ async function downloadSnapshot(name) {
 }
 
 async function exportSystemBackup() {
-  showToast('正在匯出全站備份...', 'success');
+  const btn = document.getElementById('btn-export-backup');
+  const originalText = btn?.textContent || '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '準備備份中...';
+  }
+  showToast('正在準備備份匯出，請稍候...', 'success');
   try {
     const res = await apiFetch('/api/admin/backup/export');
     if (!res.ok) {
@@ -1986,9 +2033,15 @@ async function exportSystemBackup() {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
-    showToast('備份已成功下載', 'success');
+    showToast(`備份已成功下載（${formatBytes(blob.size)}）`, 'success');
+    loadQuotaStatus();
   } catch (err) {
     showToast('備份匯出失敗：' + err.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
   }
 }
 

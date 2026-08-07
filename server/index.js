@@ -4943,27 +4943,37 @@ app.post('/api/admin/backup/test-upsert-daily', requirePermission('backup.export
 });
 
 // ── 匯出全站 JSON 備份包 ──
+async function buildBackupExportPayload() {
+  const overrides = await loadCatalogOverridesStore();
+  const reports = await loadReportsStore();
+  const votes = await loadVotesStore();
+  const artistAliasesOverrides = await loadArtistAliasesOverridesStore();
+  const brandSettings = await loadBrandSettingsStore();
+  return {
+    app: 'TW_KTV_CATALOG_SYSTEM',
+    exportVersion: '1.0',
+    exportedAt: new Date().toISOString(),
+    data: { catalogOverrides: overrides, reports, votes, artistAliasesOverrides, brandSettings },
+  };
+}
+
+function summarizeBackupExportPayload(payload) {
+  const data = payload?.data || {};
+  const counts = {
+    catalogOverrides: Object.keys(data.catalogOverrides?.songs || {}).length,
+    deletedSongs: Array.isArray(data.catalogOverrides?.deletedIds) ? data.catalogOverrides.deletedIds.length : 0,
+    reports: Array.isArray(data.reports) ? data.reports.length : 0,
+    votes: data.votes && typeof data.votes === 'object' ? Object.keys(data.votes).length : 0,
+    artistAliasesOverrides: data.artistAliasesOverrides && typeof data.artistAliasesOverrides === 'object' ? Object.keys(data.artistAliasesOverrides).length : 0,
+    brands: data.brandSettings && typeof data.brandSettings === 'object' ? Object.keys(data.brandSettings.brands || {}).length : 0,
+  };
+  const estimatedBytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+  return { generatedAt: new Date().toISOString(), estimatedBytes, counts, risk: estimatedBytes >= 8 * 1024 * 1024 ? 'warning' : 'healthy' };
+}
+
 app.get('/api/admin/backup/export', requirePermission('backup.export'), async (req, res) => {
   try {
-    const overrides = await loadCatalogOverridesStore();
-    const reports = await loadReportsStore();
-    const votes = await loadVotesStore();
-    const artistAliasesOverrides = await loadArtistAliasesOverridesStore();
-    const brandSettings = await loadBrandSettingsStore();
-
-    const exportPayload = {
-      app: 'TW_KTV_CATALOG_SYSTEM',
-      exportVersion: '1.0',
-      exportedAt: new Date().toISOString(),
-      data: {
-        catalogOverrides: overrides,
-        reports,
-        votes,
-        artistAliasesOverrides,
-        brandSettings,
-      }
-    };
-
+    const exportPayload = await buildBackupExportPayload();
     const filename = `ktv_system_backup_${new Date().toISOString().slice(0,10)}.json`;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -4975,6 +4985,15 @@ app.get('/api/admin/backup/export', requirePermission('backup.export'), async (r
 });
 
 // ── 驗證系統 JSON 備份包 (匯入前預覽差異) ──
+app.get('/api/admin/backup/export-summary', requirePermission('backup.export'), async (req, res) => {
+  try {
+    res.json(summarizeBackupExportPayload(await buildBackupExportPayload()));
+  } catch (err) {
+    console.error('[Admin Backup Export Summary Error]', err);
+    res.status(503).json({ error: 'Backup export summary failed: ' + err.message });
+  }
+});
+
 app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (req, res) => {
   const payload = req.body;
   if (!payload || typeof payload !== 'object') {
