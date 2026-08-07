@@ -61,6 +61,7 @@ export async function submitSuggestSong(payload: {
   language: string;
   songCode?: string;
   brandId: BrandId;
+  brandName?: string;
   hasOfficialMv?: boolean;
   guidedVocalStatus?: 'unknown' | 'guided' | 'none';
   lyricsSnippet?: string;
@@ -72,6 +73,7 @@ export async function submitSuggestSong(payload: {
     artist: payload.artist,
     brandId: payload.brandId || 'cashbox',
     issueType: 'suggest_song',
+    brandName: payload.brandName,
     lang: payload.language,
     songCode: payload.songCode,
     lyricist: payload.lyricist,
