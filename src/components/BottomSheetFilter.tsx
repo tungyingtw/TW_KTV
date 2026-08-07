@@ -139,6 +139,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
             ].map(item => (
               <button
                 key={item.id}
+                className="bottom-sheet-option"
                 onClick={() => setFilters(prev => ({ ...prev, sortBy: item.id as any }))}
                 style={{
                   padding: '10px 12px',
@@ -169,12 +170,13 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               return (
                 <button
                   key={item.id}
+                  className="bottom-sheet-option"
                   onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id as any }))}
                   style={{
                     padding: '8px 4px',
                     borderRadius: 'var(--radius-md)',
                     background: isSelected ? 'rgba(168, 85, 247, 0.3)' : 'var(--bg-card-hover)',
-                    color: isSelected ? '#c084fc' : 'var(--text-secondary)',
+                    color: isSelected ? 'var(--accent-purple, #c084fc)' : 'var(--text-secondary)',
                     border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.6)' : 'var(--border-color)'}`,
                     fontWeight: 600,
                     fontSize: '0.8rem',
@@ -249,6 +251,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               return (
                 <button
                   key={lang}
+                  className="bottom-sheet-option"
                   onClick={() => toggleLanguage(lang)}
                   style={{
                     padding: '10px',

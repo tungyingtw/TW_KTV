@@ -447,6 +447,43 @@ html, body {
   display: none;
 }
 
+.filter-chip,
+.filter-summary-button,
+.bottom-sheet-option {
+  min-height: 28px;
+  outline: none;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.filter-chip:hover,
+.filter-summary-button:hover,
+.bottom-sheet-option:hover {
+  filter: brightness(1.08);
+}
+
+.filter-chip:focus-visible,
+.filter-summary-button:focus-visible,
+.bottom-sheet-option:focus-visible {
+  box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.45) !important;
+}
+
+[data-theme="light"] .filter-chip,
+[data-theme="light"] .filter-summary-button,
+[data-theme="light"] .bottom-sheet-option {
+  background-color: #ffffff;
+  border-color: rgba(15, 23, 42, 0.14);
+}
+
+[data-theme="light"] .filter-summary-button {
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+}
+
 /* ============================================================
    📱 100% 完美手機響應式排版與按鈕防不自然斷行適配 (Mobile Perfection)
    ============================================================ */

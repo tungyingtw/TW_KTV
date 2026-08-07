@@ -134,6 +134,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
 
         <button
           onClick={onOpenMobileFilters}
+          className="filter-summary-button"
           aria-label="開啟篩選條件"
           style={{
             marginTop: '8px',

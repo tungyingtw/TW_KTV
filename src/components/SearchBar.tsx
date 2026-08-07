@@ -165,6 +165,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 return (
                   <button
                     key={lang}
+                    className="filter-chip"
                     onClick={() => toggleLanguage(lang)}
                     style={{
                       background: isSelected ? lStyle.bg : 'rgba(255, 255, 255, 0.04)',
@@ -196,10 +197,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 return (
                   <button
                     key={item.id}
+                    className="filter-chip"
                     onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id }))}
                     style={{
                       background: isSelected ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                      color: isSelected ? '#c084fc' : 'var(--text-secondary)',
+                      color: isSelected ? 'var(--accent-purple, #c084fc)' : 'var(--text-secondary)',
                       border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
                       padding: '4px 10px',
                       borderRadius: 'var(--radius-full)',
