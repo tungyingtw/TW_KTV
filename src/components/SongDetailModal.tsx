@@ -89,7 +89,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
           className="modal-content song-detail-modal-content"
           onClick={e => e.stopPropagation()}
           style={{
-            backgroundColor: 'var(--bg-card, #1e293b)',
+            backgroundColor: 'var(--modal-surface, #111827)',
             color: 'var(--text-primary, #ffffff)',
             borderRadius: 'var(--radius-lg, 20px)',
             width: '100%',

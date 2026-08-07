@@ -5,6 +5,7 @@
   --bg-card: rgba(15, 23, 42, 0.72);
   --bg-card-hover: rgba(30, 41, 59, 0.86);
   --bg-glass: rgba(5, 8, 22, 0.82);
+  --modal-surface: #111827;
   --border-color: rgba(255, 255, 255, 0.09);
   --border-glow: rgba(128, 82, 255, 0.36);
 
@@ -38,6 +39,7 @@
   --bg-card: #ffffff;
   --bg-card-hover: #fbf7f1;
   --bg-glass: rgba(255, 255, 255, 0.94);
+  --modal-surface: #ffffff;
   --border-color: rgba(15, 23, 42, 0.09);
   --border-glow: rgba(128, 82, 255, 0.22);
 
@@ -506,6 +508,15 @@ textarea:focus {
 
 .brand-chip.is-selected:hover {
   filter: brightness(1.04);
+}
+
+.song-list-click-target {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.song-detail-modal-content {
+  background: var(--modal-surface) !important;
 }
 
 .home-hero {

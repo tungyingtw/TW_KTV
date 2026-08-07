@@ -134,7 +134,7 @@ export const CardView: React.FC<CardViewProps> = ({
           <React.Fragment key={song.id}>
           <div 
             onClick={() => onSelectSongDetail(song)}
-            className="glass-panel animate-fade-in"
+            className="glass-panel animate-fade-in song-list-click-target"
             style={{
               padding: '16px',
               position: 'relative',
