@@ -440,6 +440,7 @@ const REVIEW_ACTIONS_ARCHIVE_DIR = process.env.REVIEW_ACTIONS_ARCHIVE_DIR
 const REVIEW_ACTIONS_HANDLED_PATH = resolveDataPath('REVIEW_ACTIONS_HANDLED_PATH', 'review_actions_handled.json');
 const REVIEW_ACTIONS_ACTIVE_LIMIT = Math.max(300, parseInt(process.env.REVIEW_ACTIONS_ACTIVE_LIMIT, 10) || 2000);
 const REVIEW_QUEUE_CACHE_TTL_MS = Math.max(1000, parseInt(process.env.REVIEW_QUEUE_CACHE_TTL_MS, 10) || 10000);
+const ADMIN_STATS_CACHE_TTL_MS = Math.max(1000, parseInt(process.env.ADMIN_STATS_CACHE_TTL_MS, 10) || 10000);
 const ADMIN_LOG_PATH = resolveDataPath('ADMIN_ACTIONS_LOG_PATH', 'admin_actions.log');
 const ADMIN_LOG_MAX_LINES = Math.max(200, parseInt(process.env.ADMIN_LOG_MAX_LINES, 10) || 1000);
 const ADMIN_LOG_MAX_BYTES = Math.max(256 * 1024, parseInt(process.env.ADMIN_LOG_MAX_BYTES, 10) || 1024 * 1024);
@@ -688,7 +689,7 @@ async function saveBrandSettingsStore(data, options = {}) {
       try { saveBrandSettingsToDisk(data); } catch (err) {
         console.warn('[BrandSettings] Local JSON backup write failed:', err.message);
       }
-      invalidateReviewQueueCache();
+      invalidateAdminDerivedCaches();
       return;
     } catch (err) {
       try { saveBrandSettingsToDisk(data); } catch (localErr) {
@@ -705,7 +706,7 @@ async function saveBrandSettingsStore(data, options = {}) {
   try { saveBrandSettingsToDisk(data); } catch (err) {
     console.warn('[BrandSettings] Local JSON write failed:', err.message);
   }
-  invalidateReviewQueueCache();
+  invalidateAdminDerivedCaches();
 }
 
 async function getActiveBrands() {
@@ -975,7 +976,7 @@ async function saveReportsStore(data) {
       try { saveReports(data); } catch (err) {
         console.warn('[Reports] Local JSON backup write failed:', err.message);
       }
-      invalidateReviewQueueCache();
+      invalidateAdminDerivedCaches();
       return;
     } catch (err) {
       try { saveReports(data); } catch (localErr) {
@@ -988,7 +989,7 @@ async function saveReportsStore(data) {
   try { saveReports(data); } catch (err) {
     console.warn('[Reports] Local JSON backup write failed:', err.message);
   }
-  invalidateReviewQueueCache();
+  invalidateAdminDerivedCaches();
 }
 
 function loadVotes() {
@@ -1069,7 +1070,7 @@ async function saveVotesStore(data) {
       try { saveVotes(data); } catch (err) {
         console.warn('[Votes] Local JSON backup write failed:', err.message);
       }
-      invalidateReviewQueueCache();
+      invalidateAdminDerivedCaches();
       return;
     } catch (err) {
       try { saveVotes(data); } catch (localErr) {
@@ -1082,7 +1083,7 @@ async function saveVotesStore(data) {
   try { saveVotes(data); } catch (err) {
     console.warn('[Votes] Local JSON backup write failed:', err.message);
   }
-  invalidateReviewQueueCache();
+  invalidateAdminDerivedCaches();
 }
 
 async function loadVotesArchiveStore() {
@@ -1368,7 +1369,7 @@ async function saveReviewActionsStore(data) {
       try { saveReviewActions(storeData); } catch (err) {
         console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
       }
-      invalidateReviewQueueCache();
+      invalidateAdminDerivedCaches();
       return;
     } catch (err) {
       try { saveReviewActions(storeData); } catch (localErr) {
@@ -1381,7 +1382,7 @@ async function saveReviewActionsStore(data) {
   try { saveReviewActions(storeData); } catch (err) {
     console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
   }
-  invalidateReviewQueueCache();
+  invalidateAdminDerivedCaches();
 }
 
 async function loadCatalogOverridesStore() {
@@ -1457,7 +1458,7 @@ async function saveCatalogOverrideSong(song) {
   overrides.deletedIds = overrides.deletedIds.filter(id => id !== song.id);
   overrides.songs[song.id] = song;
   await saveCatalogOverridesStore(overrides);
-  invalidateReviewQueueCache();
+  invalidateAdminDerivedCaches();
 }
 
 async function saveCatalogDeletedSong(songId) {
@@ -1467,7 +1468,7 @@ async function saveCatalogDeletedSong(songId) {
   delete overrides.songs[songId];
   if (!overrides.deletedIds.includes(songId)) overrides.deletedIds.push(songId);
   await saveCatalogOverridesStore(overrides);
-  invalidateReviewQueueCache();
+  invalidateAdminDerivedCaches();
 }
 
 async function loadCatalogOverrideSong(songId) {
@@ -3282,6 +3283,7 @@ async function loadHandledReviewItemIds() {
 }
 
 const reviewQueueCache = new Map();
+let adminStatsCache = null;
 
 function getReviewQueueCacheKey(canViewReports, canViewVotes) {
   return `${canViewReports ? 'reports' : 'no-reports'}:${canViewVotes ? 'votes' : 'no-votes'}`;
@@ -3289,6 +3291,15 @@ function getReviewQueueCacheKey(canViewReports, canViewVotes) {
 
 function invalidateReviewQueueCache() {
   reviewQueueCache.clear();
+}
+
+function invalidateAdminStatsCache() {
+  adminStatsCache = null;
+}
+
+function invalidateAdminDerivedCaches() {
+  invalidateReviewQueueCache();
+  invalidateAdminStatsCache();
 }
 
 async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
@@ -4674,8 +4685,7 @@ app.post('/api/admin/brand/from-report/:reportId', requirePermission('brands.man
   }
 });
 
-// ── 管理員儀表板統計 ──
-app.get('/api/admin/stats', requirePermission('dashboard.view'), async (req, res) => {
+async function buildAdminStatsSummary() {
   const reports = await loadReportsStore();
   const votes = await loadVotesStore();
 
@@ -4694,16 +4704,28 @@ app.get('/api/admin/stats', requirePermission('dashboard.view'), async (req, res
     if ((data.officialMv || 0) + (data.editedMv || 0) > 0) mvVotesCount++;
   }
 
-  res.json({
+  return {
     catalog: { total: songsDatabase.length },
     reports: { total: reports.length, pending: pendingReports, resolved: resolvedReports },
     votes: { totalEntries: totalVoteEntries, disputed: disputedCount, verified: verifiedCount, guided: guidedVotesCount, mv: mvVotesCount },
     storageMode: USE_REDIS ? 'redis' : 'local_json',
-    storageLabel: USE_REDIS ? 'Upstash Redis 持久化' : '本機快照模式',
-  });
+    storageLabel: USE_REDIS ? 'Upstash Redis persistent' : 'Local JSON snapshot',
+  };
+}
+
+async function loadAdminStatsCached() {
+  const now = Date.now();
+  if (adminStatsCache && adminStatsCache.expiresAt > now) return { data: adminStatsCache.data, cache: 'hit' };
+  const data = await buildAdminStatsSummary();
+  adminStatsCache = { data, expiresAt: now + ADMIN_STATS_CACHE_TTL_MS };
+  return { data, cache: 'miss' };
+}
+
+app.get('/api/admin/stats', requirePermission('dashboard.view'), async (req, res) => {
+  const { data, cache } = await loadAdminStatsCached();
+  res.json({ ...data, meta: { cache, ttlMs: ADMIN_STATS_CACHE_TTL_MS } });
 });
 
-// ── 管理員操作日誌 ──
 app.get('/api/admin/logs', requirePermission('logs.view'), async (req, res) => {
   try {
     if (USE_REDIS) {
