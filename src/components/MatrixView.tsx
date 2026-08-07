@@ -75,12 +75,15 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
     };
   };
 
-  const getCompactVocalLabel = (song: Song) => {
-    const hasOriginal = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.audioType === 'original_vocal');
-    const hasGuided = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.audioType === 'guided_vocal');
+  const getCompactMvLabel = (song: Song) => {
+    const hasOfficialMv = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.mvType === 'official_mv');
+    if (hasOfficialMv) return { label: '有', color: '#38bdf8' };
+    return { label: '-', color: 'var(--text-muted, #64748b)' };
+  };
 
-    if (hasOriginal) return { label: '原唱', color: 'var(--accent-pink, #ec4899)' };
-    if (hasGuided) return { label: '導唱', color: '#22d3ee' };
+  const getCompactGuidedLabel = (song: Song) => {
+    const hasGuided = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.audioType === 'guided_vocal');
+    if (hasGuided) return { label: '有', color: '#22d3ee' };
     return { label: '-', color: 'var(--text-muted, #64748b)' };
   };
 
@@ -172,8 +175,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               }}>
                 <th style={{ padding: '10px 6px', width: '38px', textAlign: 'center' }}></th>
                 <th style={{ padding: '10px 8px' }}>歌曲</th>
-                <th style={{ padding: '10px 6px', width: '76px', textAlign: 'center' }}>收錄</th>
-                <th style={{ padding: '10px 6px', width: '54px', textAlign: 'center' }}>導唱</th>
+                <th style={{ padding: '10px 4px', width: '70px', textAlign: 'center' }}>收錄</th>
+                <th style={{ padding: '10px 4px', width: '42px', textAlign: 'center' }}>MV</th>
+                <th style={{ padding: '10px 4px', width: '46px', textAlign: 'center' }}>導唱</th>
               </tr>
             </thead>
             <tbody>
@@ -181,7 +185,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                 const isFav = favorites.includes(song.id);
                 const isSelected = selectedSongId === song.id;
                 const availability = getCompactAvailability(song);
-                const vocalStatus = getCompactVocalLabel(song);
+                const mvStatus = getCompactMvLabel(song);
+                const guidedStatus = getCompactGuidedLabel(song);
 
                 return (
                   <tr
@@ -279,12 +284,23 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
                     <td style={{ textAlign: 'center', padding: '10px 4px' }}>
                       <span style={{
-                        color: vocalStatus.color,
+                        color: mvStatus.color,
                         fontWeight: 800,
                         fontSize: '0.74rem',
                         whiteSpace: 'nowrap',
                       }}>
-                        {vocalStatus.label}
+                        {mvStatus.label}
+                      </span>
+                    </td>
+
+                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                      <span style={{
+                        color: guidedStatus.color,
+                        fontWeight: 800,
+                        fontSize: '0.74rem',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {guidedStatus.label}
                       </span>
                     </td>
                   </tr>
