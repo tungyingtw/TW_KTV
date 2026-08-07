@@ -431,6 +431,10 @@ function requirePermission(permissionCode) {
 // ─────────────────────────────────────────────
 const CATALOG_PATH = path.join(__dirname, '../public/songs_catalog.json');
 const REPORTS_PATH = path.join(__dirname, 'reports.json');
+const REPORTS_ARCHIVE_DIR = process.env.REPORTS_ARCHIVE_DIR
+  ? path.resolve(process.env.REPORTS_ARCHIVE_DIR)
+  : path.join(__dirname, 'reports_archive');
+const REPORTS_ACTIVE_LIMIT = Math.max(300, parseInt(process.env.REPORTS_ACTIVE_LIMIT, 10) || 3000);
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
 const VOTES_ARCHIVE_PATH = resolveDataPath('VOTES_ARCHIVE_PATH', 'votes_archived_signals.json');
 const REVIEW_ACTIONS_PATH = path.join(__dirname, 'review_actions.json');
@@ -954,7 +958,59 @@ function loadReports() {
   try { return JSON.parse(fs.readFileSync(REPORTS_PATH, 'utf8')); } catch { return []; }
 }
 function saveReports(data) {
-  fs.writeFileSync(REPORTS_PATH, JSON.stringify(data, null, 2), 'utf8');
+  safeAtomicWriteJson(REPORTS_PATH, data);
+}
+
+function getReportArchiveMonth(report) {
+  const raw = String(report?.reviewedAt || report?.resolvedAt || report?.timestamp || '');
+  const match = raw.match(/^\d{4}-\d{2}/);
+  return match ? match[0] : 'unknown';
+}
+
+function mergeReportsById(existing, incoming) {
+  const merged = new Map();
+  for (const report of Array.isArray(existing) ? existing : []) {
+    if (report?.id) merged.set(String(report.id), report);
+  }
+  for (const report of Array.isArray(incoming) ? incoming : []) {
+    if (report?.id) merged.set(String(report.id), report);
+  }
+  return [...merged.values()].sort((a, b) => String(b.reviewedAt || b.timestamp || '').localeCompare(String(a.reviewedAt || a.timestamp || '')));
+}
+
+function compactReports(data) {
+  const reports = Array.isArray(data) ? data.filter(Boolean) : [];
+  const pending = reports.filter(report => (report.status || 'pending') === 'pending');
+  const handled = reports.filter(report => (report.status || 'pending') !== 'pending');
+  const availableHandledLimit = Math.max(0, REPORTS_ACTIVE_LIMIT - pending.length);
+  if (handled.length <= availableHandledLimit) return { active: reports, archived: [] };
+  const sortedHandled = [...handled].sort((a, b) => String(b.reviewedAt || b.timestamp || '').localeCompare(String(a.reviewedAt || a.timestamp || '')));
+  const activeHandledIds = new Set(sortedHandled.slice(0, availableHandledLimit).map(report => String(report.id || '')));
+  return {
+    active: reports.filter(report => (report.status || 'pending') === 'pending' || activeHandledIds.has(String(report.id || ''))),
+    archived: reports.filter(report => (report.status || 'pending') !== 'pending' && !activeHandledIds.has(String(report.id || ''))),
+  };
+}
+
+function archiveReportsLocal(reports) {
+  if (!reports.length) return {};
+  fs.mkdirSync(REPORTS_ARCHIVE_DIR, { recursive: true });
+  const months = {};
+  for (const report of reports) {
+    const month = getReportArchiveMonth(report);
+    if (!months[month]) months[month] = [];
+    months[month].push(report);
+  }
+  for (const [month, monthReports] of Object.entries(months)) {
+    const archivePath = path.join(REPORTS_ARCHIVE_DIR, `${month}.json`);
+    let existing = [];
+    try {
+      const parsed = JSON.parse(fs.readFileSync(archivePath, 'utf8'));
+      existing = Array.isArray(parsed) ? parsed : [];
+    } catch {}
+    safeAtomicWriteJson(archivePath, mergeReportsById(existing, monthReports));
+  }
+  return Object.fromEntries(Object.entries(months).map(([month, monthReports]) => [month, monthReports.length]));
 }
 
 async function loadReportsStore() {
@@ -970,23 +1026,35 @@ async function loadReportsStore() {
 }
 
 async function saveReportsStore(data) {
+  const { active, archived } = compactReports(data);
+  let storeData = Array.isArray(data) ? data : [];
+  if (archived.length) {
+    try {
+      archiveReportsLocal(archived);
+      storeData = active;
+      logAdminAction('ARCHIVE_REPORTS', { archived: archived.length, active: active.length, activeLimit: REPORTS_ACTIVE_LIMIT });
+    } catch (err) {
+      console.warn('[Reports] Archive failed; keeping full active store:', err.message);
+    }
+  }
+
   if (USE_REDIS) {
     try {
-      await redisCmd('set', REPORTS_REDIS_KEY, JSON.stringify(data));
-      try { saveReports(data); } catch (err) {
+      await redisCmd('set', REPORTS_REDIS_KEY, JSON.stringify(storeData));
+      try { saveReports(storeData); } catch (err) {
         console.warn('[Reports] Local JSON backup write failed:', err.message);
       }
       invalidateAdminDerivedCaches();
       return;
     } catch (err) {
-      try { saveReports(data); } catch (localErr) {
+      try { saveReports(storeData); } catch (localErr) {
         console.warn('[Reports] Local JSON backup write failed:', localErr.message);
       }
       throw new Error(`Reports persistent write failed: ${err.message}`);
     }
   }
 
-  try { saveReports(data); } catch (err) {
+  try { saveReports(storeData); } catch (err) {
     console.warn('[Reports] Local JSON backup write failed:', err.message);
   }
   invalidateAdminDerivedCaches();
@@ -4761,6 +4829,7 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
     const votesArchive = await loadVotesArchiveStore();
     const reviewActions = await loadReviewActionsStore();
     const handledReviewActions = await loadReviewActionsHandledStateStore();
+    const reportArchives = getLocalDirStats(REPORTS_ARCHIVE_DIR);
     const reviewActionArchives = getLocalDirStats(REVIEW_ACTIONS_ARCHIVE_DIR);
     const logBytes = getLocalFileSize(ADMIN_LOG_PATH);
     const logLines = countLocalLogLines(ADMIN_LOG_PATH);
@@ -4782,12 +4851,12 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
       stores: [
         {
           key: 'reports',
-          label: '使用者回報',
+          label: '\u4f7f\u7528\u8005\u56de\u5831',
           count: reports.length,
-          sizeBytes: getLocalFileSize(REPORTS_PATH),
-          risk: classifyDataGrowth(reports.length, getLocalFileSize(REPORTS_PATH), 1000, 5000),
-          detail: reportStatusCounts,
-          policy: '已分頁顯示；資料本體需規劃日期封存，不建議直接刪除。',
+          sizeBytes: getLocalFileSize(REPORTS_PATH) + reportArchives.sizeBytes,
+          risk: classifyDataGrowth(reports.length, getLocalFileSize(REPORTS_PATH), Math.floor(REPORTS_ACTIVE_LIMIT * 0.8), REPORTS_ACTIVE_LIMIT),
+          detail: { ...reportStatusCounts, activeLimit: REPORTS_ACTIVE_LIMIT, archivedFiles: reportArchives.files, archivedRecords: reportArchives.records },
+          policy: `\u4e3b\u6a94\u4fdd\u7559 pending \u8207\u6700\u8fd1\u8655\u7406\u56de\u5831\uff0c\u4e0a\u9650 ${REPORTS_ACTIVE_LIMIT} \u7b46\uff1b\u8d85\u51fa\u5f8c\u5df2\u8655\u7406\u56de\u5831\u4f9d\u6708\u4efd\u5c01\u5b58\u3002`,
         },
         {
           key: 'votes',
