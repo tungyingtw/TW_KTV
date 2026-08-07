@@ -46,12 +46,15 @@
 4. 必須實測「匯入備份預覽」是否顯示封存資料總筆數。
 5. 必須確認冷啟動時，前台顯示載入/喚醒狀態，不得誤顯示為真正 0 筆結果。
 6. 必須確認後台處理項目後，項目不會重新出現在待處理列表。
+7. 必須執行 `docs/database-slimming-semantic-audit-plan.md`，先確認 `brand.note`、`brand.audioType`、`brand.mvType` 與 `brand.available` 是否可安全瘦身。
+8. 必須依 `docs/database-slimming-validation-runbook.md` 產生候選檔並驗證，不得直接批次覆寫正式 `database.json`。
 
 ## 暫不處理
 
 1. 暫不建立 review queue 永久索引。只有在線上資料量變大、待處理載入明顯變慢時才執行。
 2. 暫不改成 Postgres 或其他資料庫。免費 Render 與 Upstash Redis 仍可先透過封存、快取、摘要與備份治理維持。
 3. 暫不建立自動封存還原 UI。封存資料還原仍必須透過全站備份匯入或人工修復流程確認後執行。
+4. 暫不直接刪除 `database.json` 欄位。必須先完成只讀稽核、候選檔、前後台驗證與可回復流程。
 
 ## 下一步
 
