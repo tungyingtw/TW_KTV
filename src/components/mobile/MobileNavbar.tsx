@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
+import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
 import type { FilterOptions } from '../../types/ktv';
 
 interface MobileNavbarProps {
@@ -177,6 +177,20 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 <span>建議</span>
               </button>
             )}
+
+            <a
+              href="./games/"
+              className="btn-secondary"
+              style={{
+                padding: '4px 8px', fontSize: '0.75rem', borderRadius: '8px',
+                borderColor: 'rgba(34, 211, 238, 0.35)', color: '#38bdf8', background: 'rgba(34, 211, 238, 0.08)',
+                textDecoration: 'none',
+              }}
+              title="前往 KTV 小遊戲列表"
+            >
+              <Gamepad2 size={14} />
+              <span>遊戲</span>
+            </a>
 
             <button
               onClick={onOpenFavorites}
