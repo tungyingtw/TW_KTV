@@ -296,7 +296,7 @@
   <nav>
     <button id="nav-overview" class="active" onclick="showTab('tab-overview', this)">總覽</button>
     <button id="nav-reports" onclick="showTab('tab-reports', this)">使用者回報</button>
-    <button id="nav-disputed" onclick="showTab('tab-disputed', this)">爭議投票</button>
+    <button id="nav-disputed" onclick="showTab('tab-disputed', this)">收錄狀態待確認</button>
     <button id="nav-verified" onclick="showTab('tab-verified', this)">已驗證建議</button>
     <button id="nav-guided" onclick="showTab('tab-guided', this)">導唱票選</button>
     <button id="nav-mv" onclick="showTab('tab-mv', this)">MV 類型票選</button>
@@ -311,7 +311,7 @@
   <main>
     <div id="tab-overview" class="tab active">
       <h2 style="margin-bottom:12px; font-size:1.1rem;">系統統計總覽</h2>
-      <p class="tab-help"><b>用途：</b>查看今日需要優先處理的後台任務。<b>完成標準：</b>待處理回報、爭議票選與系統容量狀態都已確認。</p>
+      <p class="tab-help"><b>用途：</b>查看今日需要優先處理的後台任務。<b>完成標準：</b>待處理回報、收錄狀態待確認項目與系統容量狀態都已確認。</p>
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px;" id="overview-cards">
         <div class="card" style="border-color:rgba(236,72,153,0.3)">
           <div style="font-size:1.8rem;font-weight:800;color:#ec4899" id="ov-catalog">—</div>
@@ -347,7 +347,7 @@
           </div>
           <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-space:between;">
             <div>
-              <div style="font-size:0.82rem; color:var(--muted);">爭議投票歌曲</div>
+              <div style="font-size:0.82rem; color:var(--muted);">收錄狀態待確認</div>
               <div style="font-size:1.4rem; font-weight:800; color:var(--red); margin:4px 0;" id="dash-disputed-count">0 筆</div>
             </div>
             <button class="btn btn-red" style="margin-top:8px; width:100%; justify-content:center;" onclick="showTab('tab-disputed')">前往驗證</button>
@@ -382,7 +382,7 @@
           <li>前往「<b style="color:var(--yellow)">使用者回報</b>」查看使用者提交的資料錯誤回報</li>
           <li>點擊「<b style="color:var(--blue)">套用修正</b>」按鈕，選擇正確收錄狀態，直接更新資料庫</li>
           <li>將回報標記為「<b style="color:var(--green)">已解決</b>」完成處理</li>
-          <li>前往「<b style="color:var(--red)">爭議投票</b>」查看否定票 ≥ 5 的歌曲</li>
+          <li>前往「<b style="color:var(--red)">收錄狀態待確認</b>」查看群眾投票與正式資料不一致的歌曲</li>
           <li>實際驗證後套用修正，資料會於使用者重新整理頁面後更新</li>
         </ol>
       </div>
@@ -416,9 +416,9 @@
       <div id="reports-list"><div class="empty">正在載入資料...</div></div>
     </div>
 
-    <!-- ── 爭議投票 ── -->
+    <!-- ── 收錄狀態待確認 ── -->
     <div id="tab-disputed" class="tab">
-      <h2 style="font-size:1.05rem; margin-bottom:12px;">爭議投票清單</h2>
+      <h2 style="font-size:1.05rem; margin-bottom:12px;">收錄狀態待確認清單</h2>
       <p class="tab-help"><b>用途：</b>確認社群對收錄狀態有明顯分歧的歌曲。<b>完成標準：</b>人工查證後套用正確收錄狀態。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadDisputed()">重新整理</button>
@@ -1367,7 +1367,7 @@ async function loadStats() {
   document.getElementById('stats-bar').innerHTML = `
     <div class="stat-chip">資料庫 <b>${(data.catalog?.total||0).toLocaleString()}</b> 首</div>
     <div class="stat-chip">待審回報 <b style="color:var(--yellow)">${data.reports?.pending||0}</b></div>
-    <div class="stat-chip">爭議投票 <b style="color:var(--red)">${data.votes?.disputed||0}</b></div>
+    <div class="stat-chip">收錄狀態待確認 <b style="color:var(--red)">${data.votes?.disputed||0}</b></div>
     <div class="stat-chip">儲存媒介 <b style="color:var(--green)">${data.storageLabel||'Local JSON'}</b></div>
   `;
   document.getElementById('stats-bar').innerHTML = `
@@ -2121,13 +2121,13 @@ async function updateReport(id, status) {
   scheduleAdminListSync('reports', () => loadReports());
 }
 
-// ── 爭議投票 ──
+// ── 收錄狀態待確認 ──
 async function loadDisputed() {
   const res = await apiFetch('/api/admin/disputed');
   const data = await res.json();
   const el = document.getElementById('disputed-list');
 
-  if (!data.disputed?.length) { el.innerHTML = '<div class="empty">目前沒有爭議投票歌曲</div>'; return; }
+  if (!data.disputed?.length) { el.innerHTML = '<div class="empty">目前沒有收錄狀態待確認資料</div>'; return; }
 
   el.innerHTML = data.disputed.map(d => `
     <div class="card" id="${escapeAttr(reviewListCardId('availability-vote', d.key))}">
@@ -2896,6 +2896,19 @@ function openReviewQueueSource(itemId) {
   else if (item.itemType === 'mv') showTab('tab-mv');
 }
 
+function openReviewActionSource(sourceType, itemType, sourceId, status) {
+  if (sourceType === 'report') {
+    const filter = document.getElementById('report-filter');
+    if (filter) filter.value = status === 'rejected' ? 'rejected' : 'resolved';
+    showTab('tab-reports');
+    return;
+  }
+  if (itemType === 'availability' || sourceType === 'availability_vote') showTab('tab-disputed');
+  else if (itemType === 'guided' || sourceType === 'guided_vote') showTab('tab-guided');
+  else if (itemType === 'mv' || sourceType === 'mv_vote') showTab('tab-mv');
+  else showToast('此來源沒有可直接開啟的原始列表', 'error');
+}
+
 async function resolveReviewQueueItem(item, decision, action, payload = {}, reason = '') {
   if (!item) return;
   const res = await apiFetch('/api/admin/review-queue/' + encodeURIComponent(item.id) + '/resolve', {
@@ -3005,7 +3018,7 @@ async function loadReviewActions(status) {
             <div class="sub" style="margin-top:4px;font-size:0.75rem;color:#64748b">${escapeHtml(action.reviewedAt?.slice(0,16).replace('T',' '))}</div>
           </div>
           <div class="card-actions">
-            ${item.sourceType ? `<button class="btn btn-ghost" onclick="openReviewQueueSource(${jsArg(item.id)})">查看來源</button>` : ''}
+            ${action.sourceType ? `<button class="btn btn-ghost" onclick="openReviewActionSource(${jsArg(action.sourceType)}, ${jsArg(action.itemType || item.itemType)}, ${jsArg(action.sourceId)}, ${jsArg(status)})">查看來源</button>` : ''}
           </div>
         </div>
       </div>
