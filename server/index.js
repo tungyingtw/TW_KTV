@@ -433,6 +433,11 @@ const CATALOG_PATH = path.join(__dirname, '../public/songs_catalog.json');
 const REPORTS_PATH = path.join(__dirname, 'reports.json');
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
 const REVIEW_ACTIONS_PATH = path.join(__dirname, 'review_actions.json');
+const REVIEW_ACTIONS_ARCHIVE_DIR = process.env.REVIEW_ACTIONS_ARCHIVE_DIR
+  ? path.resolve(process.env.REVIEW_ACTIONS_ARCHIVE_DIR)
+  : path.join(__dirname, 'review_actions_archive');
+const REVIEW_ACTIONS_HANDLED_PATH = resolveDataPath('REVIEW_ACTIONS_HANDLED_PATH', 'review_actions_handled.json');
+const REVIEW_ACTIONS_ACTIVE_LIMIT = Math.max(300, parseInt(process.env.REVIEW_ACTIONS_ACTIVE_LIMIT, 10) || 2000);
 const ADMIN_LOG_PATH = resolveDataPath('ADMIN_ACTIONS_LOG_PATH', 'admin_actions.log');
 const ADMIN_LOG_MAX_LINES = Math.max(200, parseInt(process.env.ADMIN_LOG_MAX_LINES, 10) || 1000);
 const ADMIN_LOG_MAX_BYTES = Math.max(256 * 1024, parseInt(process.env.ADMIN_LOG_MAX_BYTES, 10) || 1024 * 1024);
@@ -981,7 +986,20 @@ function loadReviewActions() {
   }
 }
 function saveReviewActions(data) {
-  fs.writeFileSync(REVIEW_ACTIONS_PATH, JSON.stringify(data, null, 2), 'utf8');
+  safeAtomicWriteJson(REVIEW_ACTIONS_PATH, data);
+}
+
+function loadReviewActionsHandledState() {
+  try {
+    const data = JSON.parse(fs.readFileSync(REVIEW_ACTIONS_HANDLED_PATH, 'utf8'));
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveReviewActionsHandledState(data) {
+  safeAtomicWriteJson(REVIEW_ACTIONS_HANDLED_PATH, data && typeof data === 'object' ? data : {});
 }
 
 function loadCatalogOverrides() {
@@ -1043,23 +1061,161 @@ async function loadReviewActionsStore() {
   return loadReviewActions();
 }
 
-async function saveReviewActionsStore(data) {
+function getReviewActionMonth(action) {
+  const raw = String(action?.reviewedAt || action?.createdAt || '');
+  const match = raw.match(/^\d{4}-\d{2}/);
+  return match ? match[0] : 'unknown';
+}
+
+function compactReviewActions(data) {
+  const actions = Array.isArray(data) ? data.filter(Boolean) : [];
+  if (actions.length <= REVIEW_ACTIONS_ACTIVE_LIMIT) return { active: actions, archived: [] };
+
+  const sorted = [...actions].sort((a, b) => String(b.reviewedAt || '').localeCompare(String(a.reviewedAt || '')));
+  const activeIds = new Set(sorted.slice(0, REVIEW_ACTIONS_ACTIVE_LIMIT).map(action => String(action.id || '')));
+  return {
+    active: actions.filter(action => activeIds.has(String(action.id || ''))),
+    archived: actions.filter(action => !activeIds.has(String(action.id || ''))),
+  };
+}
+
+function mergeReviewActionsById(existing, incoming) {
+  const merged = new Map();
+  for (const action of Array.isArray(existing) ? existing : []) {
+    if (action?.id) merged.set(String(action.id), action);
+  }
+  for (const action of Array.isArray(incoming) ? incoming : []) {
+    if (action?.id) merged.set(String(action.id), action);
+  }
+  return [...merged.values()].sort((a, b) => String(b.reviewedAt || '').localeCompare(String(a.reviewedAt || '')));
+}
+
+function archiveReviewActionsLocal(actions) {
+  if (!actions.length) return {};
+  fs.mkdirSync(REVIEW_ACTIONS_ARCHIVE_DIR, { recursive: true });
+  const months = {};
+  for (const action of actions) {
+    const month = getReviewActionMonth(action);
+    if (!months[month]) months[month] = [];
+    months[month].push(action);
+  }
+  for (const [month, monthActions] of Object.entries(months)) {
+    const archivePath = path.join(REVIEW_ACTIONS_ARCHIVE_DIR, `${month}.json`);
+    let existing = [];
+    try {
+      const parsed = JSON.parse(fs.readFileSync(archivePath, 'utf8'));
+      existing = Array.isArray(parsed) ? parsed : [];
+    } catch {}
+    safeAtomicWriteJson(archivePath, mergeReviewActionsById(existing, monthActions));
+  }
+  return Object.fromEntries(Object.entries(months).map(([month, monthActions]) => [month, monthActions.length]));
+}
+
+async function archiveReviewActionsRedis(actions) {
+  if (!USE_REDIS || !actions.length) return;
+  const months = {};
+  for (const action of actions) {
+    const month = getReviewActionMonth(action);
+    if (!months[month]) months[month] = [];
+    months[month].push(action);
+  }
+  for (const [month, monthActions] of Object.entries(months)) {
+    const key = `${REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX}${month}`;
+    const raw = await redisCmd('get', key);
+    let existing = [];
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        existing = Array.isArray(parsed) ? parsed : [];
+      } catch {}
+    }
+    await redisCmd('set', key, JSON.stringify(mergeReviewActionsById(existing, monthActions)));
+  }
+}
+
+async function loadReviewActionsHandledStateStore() {
   if (USE_REDIS) {
     try {
-      await redisCmd('set', REVIEW_ACTIONS_REDIS_KEY, JSON.stringify(data));
-      try { saveReviewActions(data); } catch (err) {
+      const raw = await redisCmd('get', REVIEW_ACTIONS_HANDLED_REDIS_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && typeof data === 'object' && !Array.isArray(data)) return data;
+      }
+    } catch (err) {
+      console.warn('[ReviewActions] Handled state read failed:', err.message);
+    }
+  }
+  return loadReviewActionsHandledState();
+}
+
+async function saveReviewActionsHandledStateStore(data) {
+  const state = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', REVIEW_ACTIONS_HANDLED_REDIS_KEY, JSON.stringify(state));
+    } catch (err) {
+      console.warn('[ReviewActions] Handled state Redis write failed:', err.message);
+    }
+  }
+  try { saveReviewActionsHandledState(state); } catch (err) {
+    console.warn('[ReviewActions] Handled state local write failed:', err.message);
+  }
+}
+
+async function syncReviewActionsHandledState(actions) {
+  const state = await loadReviewActionsHandledStateStore();
+  let changed = false;
+  for (const action of Array.isArray(actions) ? actions : []) {
+    const reviewItemId = String(action?.reviewItemId || '');
+    if (!reviewItemId || !['adopted', 'rejected'].includes(action?.status)) continue;
+    state[reviewItemId] = {
+      status: action.status,
+      actionId: action.id || '',
+      reviewedAt: action.reviewedAt || '',
+    };
+    changed = true;
+  }
+  if (changed) await saveReviewActionsHandledStateStore(state);
+  return state;
+}
+
+async function saveReviewActionsStore(data) {
+  const state = await syncReviewActionsHandledState(data);
+  const { active, archived } = compactReviewActions(data);
+  let storeData = Array.isArray(data) ? data : [];
+  if (archived.length) {
+    try {
+      if (USE_REDIS) {
+        await archiveReviewActionsRedis(archived);
+        try { archiveReviewActionsLocal(archived); } catch (err) {
+          console.warn('[ReviewActions] Local archive backup write failed:', err.message);
+        }
+      } else {
+        archiveReviewActionsLocal(archived);
+      }
+      storeData = active;
+      logAdminAction('ARCHIVE_REVIEW_ACTIONS', { archived: archived.length, active: active.length, handled: Object.keys(state).length });
+    } catch (err) {
+      console.warn('[ReviewActions] Archive failed; keeping full active store:', err.message);
+    }
+  }
+
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', REVIEW_ACTIONS_REDIS_KEY, JSON.stringify(storeData));
+      try { saveReviewActions(storeData); } catch (err) {
         console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
       }
       return;
     } catch (err) {
-      try { saveReviewActions(data); } catch (localErr) {
+      try { saveReviewActions(storeData); } catch (localErr) {
         console.warn('[ReviewActions] Local JSON backup write failed:', localErr.message);
       }
       throw new Error(`Review actions persistent write failed: ${err.message}`);
     }
   }
 
-  try { saveReviewActions(data); } catch (err) {
+  try { saveReviewActions(storeData); } catch (err) {
     console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
   }
 }
@@ -1668,6 +1824,8 @@ const STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits';
 const VOTES_REDIS_KEY = 'ktv:votes';
 const REPORTS_REDIS_KEY = 'ktv:reports';
 const REVIEW_ACTIONS_REDIS_KEY = 'ktv:reviewActions';
+const REVIEW_ACTIONS_HANDLED_REDIS_KEY = 'ktv:reviewActionsHandled';
+const REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX = 'ktv:reviewActionsArchive:';
 const ADMIN_LOG_REDIS_KEY = 'ktv:adminLogs';
 const CATALOG_OVERRIDES_REDIS_KEY = 'ktv:catalogOverrides';
 const ARTIST_ALIASES_OVERRIDES_REDIS_KEY = 'ktv:artistAliasesOverrides';
@@ -2946,12 +3104,14 @@ app.post('/api/admin/stats/reset', requirePermission('stats.reset'), async (req,
 // ── 查看爭議歌曲 ──
 async function loadHandledReviewItemIds() {
   const reviewActions = await loadReviewActionsStore();
-  return new Set(
-    reviewActions
+  const state = await loadReviewActionsHandledStateStore();
+  return new Set([
+    ...Object.keys(state || {}),
+    ...reviewActions
       .filter(a => a && (a.status === 'adopted' || a.status === 'rejected'))
       .map(a => String(a.reviewItemId || ''))
       .filter(Boolean)
-  );
+  ]);
 }
 
 app.get('/api/admin/review-queue', requireSession, async (req, res) => {
@@ -3151,6 +3311,26 @@ function countLocalLogLines(filePath) {
     return content ? content.split('\n').length : 0;
   } catch {
     return 0;
+  }
+}
+
+function getLocalDirStats(dirPath) {
+  try {
+    if (!fs.existsSync(dirPath)) return { files: 0, records: 0, sizeBytes: 0 };
+    return fs.readdirSync(dirPath)
+      .filter(name => name.endsWith('.json'))
+      .reduce((acc, name) => {
+        const filePath = path.join(dirPath, name);
+        acc.files += 1;
+        acc.sizeBytes += getLocalFileSize(filePath);
+        try {
+          const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          if (Array.isArray(parsed)) acc.records += parsed.length;
+        } catch {}
+        return acc;
+      }, { files: 0, records: 0, sizeBytes: 0 });
+  } catch {
+    return { files: 0, records: 0, sizeBytes: 0 };
   }
 }
 
@@ -4358,6 +4538,8 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
     const reports = await loadReportsStore();
     const votes = await loadVotesStore();
     const reviewActions = await loadReviewActionsStore();
+    const handledReviewActions = await loadReviewActionsHandledStateStore();
+    const reviewActionArchives = getLocalDirStats(REVIEW_ACTIONS_ARCHIVE_DIR);
     const logBytes = getLocalFileSize(ADMIN_LOG_PATH);
     const logLines = countLocalLogLines(ADMIN_LOG_PATH);
     const reportStatusCounts = reports.reduce((acc, report) => {
@@ -4395,12 +4577,12 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
         },
         {
           key: 'review_actions',
-          label: '審核處理紀錄',
+          label: '\u5be9\u6838\u8655\u7406\u7d00\u9304',
           count: reviewActions.length,
-          sizeBytes: getLocalFileSize(REVIEW_ACTIONS_PATH),
-          risk: classifyDataGrowth(reviewActions.length, getLocalFileSize(REVIEW_ACTIONS_PATH), 1000, 5000),
-          detail: actionStatusCounts,
-          policy: '需保留追溯性；未來以月份封存，不建議手動清除。',
+          sizeBytes: getLocalFileSize(REVIEW_ACTIONS_PATH) + reviewActionArchives.sizeBytes,
+          risk: classifyDataGrowth(reviewActions.length, getLocalFileSize(REVIEW_ACTIONS_PATH), Math.floor(REVIEW_ACTIONS_ACTIVE_LIMIT * 0.8), REVIEW_ACTIONS_ACTIVE_LIMIT),
+          detail: { ...actionStatusCounts, activeLimit: REVIEW_ACTIONS_ACTIVE_LIMIT, handledIndexed: Object.keys(handledReviewActions || {}).length, archivedFiles: reviewActionArchives.files, archivedRecords: reviewActionArchives.records },
+          policy: `\u4e3b\u6a94\u4fdd\u7559\u6700\u8fd1 ${REVIEW_ACTIONS_ACTIVE_LIMIT} \u7b46\u5b8c\u6574\u8655\u7406\u7d00\u9304\uff1b\u8d85\u51fa\u5f8c\u4f9d\u6708\u4efd\u5c01\u5b58\uff0c\u4e26\u4fdd\u7559\u5df2\u8655\u7406\u7d22\u5f15\u907f\u514d\u820a\u9805\u76ee\u56de\u5230\u5f85\u8655\u7406\u3002`,
         },
         {
           key: 'admin_logs',
