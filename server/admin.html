@@ -2207,8 +2207,10 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
     loadDisputed();
     loadReviewQueue();
     loadStats();
+    return true;
   } else {
     showToast(data.error || '操作失敗：導唱修正未儲存', 'error');
+    return false;
   }
 }
 
@@ -2282,8 +2284,10 @@ async function applyMvFix(songIdValue, brandIdValue, mvType) {
     loadDisputed();
     loadReviewQueue();
     loadStats();
+    return true;
   } else {
     showToast(data.error || '操作失敗：MV 類型修正未儲存', 'error');
+    return false;
   }
 }
 
@@ -2848,7 +2852,7 @@ function openReviewQueueSource(itemId) {
 
 async function recordReviewQueueAdoption(item, action, reason = '') {
   if (!item) return;
-  await apiFetch(`/api/admin/review-queue/${encodeURIComponent(item.id)}/adopt`, {
+  const res = await apiFetch(`/api/admin/review-queue/${encodeURIComponent(item.id)}/adopt`, {
     method: 'POST',
     body: JSON.stringify({
       sourceType: item.sourceType,
@@ -2859,6 +2863,15 @@ async function recordReviewQueueAdoption(item, action, reason = '') {
       snapshot: item,
     }),
   });
+  const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
+  if (!res.ok || !data.success) throw new Error(data.error || '採納紀錄寫入失敗');
+  return data.action;
+}
+
+async function refreshReviewWorkflowLists(status = 'adopted') {
+  await loadReviewQueue();
+  loadReviewActions(status);
+  loadStats();
 }
 
 async function rejectReviewQueueItem(itemId) {
@@ -2887,8 +2900,7 @@ async function rejectReviewQueueItem(itemId) {
     return;
   }
   showToast('已駁回並寫入審核紀錄', 'success');
-  await loadReviewQueue();
-  loadReviewActions('rejected');
+  await refreshReviewWorkflowLists('rejected');
 }
 
 function openFixFromReviewQueue(itemId, issueType) {
@@ -2901,17 +2913,19 @@ function openFixFromReviewQueue(itemId, issueType) {
 async function adoptGuidedFromReviewQueue(itemId, audioType) {
   const item = currentReviewQueueById[String(itemId)];
   if (!item) return;
-  await applyGuidedFix(item.songId, item.brandId, audioType);
+  const applied = await applyGuidedFix(item.songId, item.brandId, audioType);
+  if (!applied) return;
   await recordReviewQueueAdoption(item, `set_${audioType}`, `採納導唱功能為 ${audioTypeLabel(audioType)}`);
-  loadReviewActions('adopted');
+  await refreshReviewWorkflowLists('adopted');
 }
 
 async function adoptMvFromReviewQueue(itemId, mvType) {
   const item = currentReviewQueueById[String(itemId)];
   if (!item) return;
-  await applyMvFix(item.songId, item.brandId, mvType);
+  const applied = await applyMvFix(item.songId, item.brandId, mvType);
+  if (!applied) return;
   await recordReviewQueueAdoption(item, `set_${mvType}`, `採納 MV 類型為 ${mvTypeLabel(mvType)}`);
-  loadReviewActions('adopted');
+  await refreshReviewWorkflowLists('adopted');
 }
 
 async function loadReviewActions(status) {
@@ -2976,8 +2990,7 @@ async function createBrandFromReviewQueue(itemId) {
   showToast(`已建立品牌「${data.brand?.shortName || data.brand?.name || shortName || name}」並結案`, 'success');
   await recordReviewQueueAdoption(item, 'create_brand', `建立品牌 ${data.brand?.id || shortName || name}`);
   await loadBrandsList();
-  await loadReviewQueue();
-  loadStats();
+  await refreshReviewWorkflowLists('adopted');
 }
 
 async function createBrandFromReport(reportId) {
@@ -3098,6 +3111,7 @@ async function applyFix() {
       const item = currentReviewQueueById[String(currentFixReviewItemId)];
       await recordReviewQueueAdoption(item, available ? 'set_available' : 'set_unavailable', available ? '採納為有收錄' : '採納為未收錄');
       currentFixReviewItemId = '';
+      await refreshReviewWorkflowLists('adopted');
     }
     closeFix();
     loadDisputed();
@@ -3105,7 +3119,6 @@ async function applyFix() {
     loadGuidedVotes();
     loadMvVotes();
     loadReports();
-    loadReviewQueue();
     loadStats();
   } else {
     showToast('操作失敗：' + data.error, 'error');

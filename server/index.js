@@ -2750,6 +2750,16 @@ app.post('/api/admin/stats/reset', requirePermission('stats.reset'), async (req,
 });
 
 // ── 查看爭議歌曲 ──
+async function loadHandledReviewItemIds() {
+  const reviewActions = await loadReviewActionsStore();
+  return new Set(
+    reviewActions
+      .filter(a => a && (a.status === 'adopted' || a.status === 'rejected'))
+      .map(a => String(a.reviewItemId || ''))
+      .filter(Boolean)
+  );
+}
+
 app.get('/api/admin/review-queue', requireSession, async (req, res) => {
   const permissions = req.admin?.permissions || [];
   const canViewReports = permissions.includes('reports.view');
@@ -2759,7 +2769,9 @@ app.get('/api/admin/review-queue', requireSession, async (req, res) => {
   const typeFilter = String(req.query.type || 'all');
   const limit = Math.min(300, Math.max(10, Number.parseInt(String(req.query.limit || '120'), 10) || 120));
   const items = [];
+  const handledReviewItemIds = await loadHandledReviewItemIds();
   const pushItem = (item) => {
+    if (handledReviewItemIds.has(String(item.id))) return;
     if (typeFilter !== 'all' && item.itemType !== typeFilter && item.sourceType !== typeFilter) return;
     items.push({ status: 'pending', priority: 0, updatedAt: item.createdAt || new Date().toISOString(), ...item });
   };
@@ -2810,7 +2822,8 @@ app.get('/api/admin/review-queue', requireSession, async (req, res) => {
       if (availabilityTotal >= 3) {
         const confidence = getVoteConfidence(confirm, deny);
         const currentStatus = brandData?.available ?? null;
-        const shouldQueueDisputed = confidence === 'disputed' || confidence === 'uncertain';
+        const suggestedAvailability = confirm >= deny;
+        const shouldQueueDisputed = (confidence === 'disputed' || confidence === 'uncertain') && currentStatus !== suggestedAvailability;
         const shouldQueueVerified = confidence === 'verified' && currentStatus !== true;
         if (shouldQueueDisputed || shouldQueueVerified) {
           pushItem({
@@ -2820,7 +2833,7 @@ app.get('/api/admin/review-queue', requireSession, async (req, res) => {
             itemType: 'availability',
             ...base,
             currentValue: currentStatus,
-            suggestedValue: confirm >= deny,
+            suggestedValue: suggestedAvailability,
             signalSummary: { confirm, deny, total: availabilityTotal, confidence },
             priority: (shouldQueueVerified ? 85 : 65) + Math.min(20, availabilityTotal),
           });
@@ -2962,16 +2975,31 @@ app.post('/api/admin/review-queue/:reviewItemId/reject', requireSession, async (
   };
   actions.push(record);
   await saveReviewActionsStore(actions);
+  if (record.sourceType === 'report' && record.sourceId) {
+    const reports = await loadReportsStore();
+    const idx = reports.findIndex(r => String(r.id) === String(record.sourceId));
+    if (idx !== -1 && reports[idx].status === 'pending') {
+      reports[idx] = {
+        ...reports[idx],
+        status: 'rejected',
+        adminNote: cleanReason,
+        reviewedAt: now,
+      };
+      await saveReportsStore(reports);
+    }
+  }
   logAdminAction('REJECT_REVIEW_QUEUE_ITEM', record, req);
   res.json({ success: true, action: record });
 });
 
 app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
+  const handledReviewItemIds = await loadHandledReviewItemIds();
   const minVotes = parseInt(req.query.minVotes) || 3;
 
   const disputed = [];
   for (const [key, data] of Object.entries(votes)) {
+    if (handledReviewItemIds.has(`availability_vote:${key}`)) continue;
     const total = (data.confirm || 0) + (data.deny || 0);
     if (total < minVotes) continue;
 
@@ -2979,11 +3007,14 @@ app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res)
     if (confidence === 'disputed' || confidence === 'uncertain') {
       const { songId, brandId } = await parseVoteKeyDynamic(key);
       const song = await getAdminSongById(songId);
+      const currentStatus = song?.brands?.[brandId]?.available ?? null;
+      const suggestedAvailability = (data.confirm || 0) >= (data.deny || 0);
+      if (currentStatus === suggestedAvailability) continue;
       disputed.push({
         key, songId, brandId,
         songTitle: song?.title || songId,
         artist: song?.artist || '',
-        currentStatus: song?.brands?.[brandId]?.available ?? null,
+        currentStatus,
         confirm: data.confirm || 0,
         deny: data.deny || 0,
         confidence,
@@ -2999,17 +3030,21 @@ app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res)
 // ── 查看高度確認歌曲 ──
 app.get('/api/admin/verified', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
+  const handledReviewItemIds = await loadHandledReviewItemIds();
   const verified = [];
 
   for (const [key, data] of Object.entries(votes)) {
+    if (handledReviewItemIds.has(`availability_vote:${key}`)) continue;
     if (getVoteConfidence(data.confirm || 0, data.deny || 0) !== 'verified') continue;
     const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = await getAdminSongById(songId);
+    const currentStatus = song?.brands?.[brandId]?.available ?? null;
+    if (currentStatus === true) continue;
     verified.push({
       key, songId, brandId,
       songTitle: song?.title || songId,
       artist: song?.artist || '',
-      currentStatus: song?.brands?.[brandId]?.available ?? null,
+      currentStatus,
       confirm: data.confirm || 0,
       deny: data.deny || 0,
     });
@@ -3021,9 +3056,11 @@ app.get('/api/admin/verified', requirePermission('votes.view'), async (req, res)
 // ── 查看導唱投票 ──
 app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
+  const handledReviewItemIds = await loadHandledReviewItemIds();
   const guidedVotes = [];
 
   for (const [key, data] of Object.entries(votes)) {
+    if (handledReviewItemIds.has(`guided_vote:${key}`)) continue;
     const guided = data.guidedVocal || 0;
     const noGuided = data.noGuidedVocal || 0;
     const total = guided + noGuided;
@@ -3059,6 +3096,7 @@ app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, 
 // ── 查看 MV 投票 ──
 app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
+  const handledReviewItemIds = await loadHandledReviewItemIds();
   const mvVotes = [];
   const minTotal = req.query.minTotal !== undefined
     ? Math.max(1, parseInt(req.query.minTotal) || 1)
@@ -3067,6 +3105,7 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
   const limit = Math.min(200, Math.max(5, parseInt(req.query.limit) || 50));
 
   for (const [key, data] of Object.entries(votes)) {
+    if (handledReviewItemIds.has(`mv_vote:${key}`)) continue;
     const official = data.officialMv || 0;
     const edited = data.editedMv || 0;
     const total = official + edited;
