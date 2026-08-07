@@ -1407,6 +1407,33 @@ function showTab(id, btnEl) {
 
 // ── 管理者管理功能 ──
 // Brand management
+const adminListSyncTimers = {};
+function reviewListCardId(prefix, ...parts) {
+  return `${prefix}-${parts.map(part => encodeURIComponent(String(part || ''))).join('__')}`;
+}
+function removeAdminListCard(cardId, listId, emptyText) {
+  const card = document.getElementById(cardId);
+  if (!card) return false;
+  const list = card.parentElement || document.getElementById(listId);
+  card.remove();
+  if (list && !list.querySelector('.card')) list.innerHTML = `<div class="empty">${emptyText}</div>`;
+  return true;
+}
+function scheduleAdminListSync(key, callback, delay = 1400) {
+  clearTimeout(adminListSyncTimers[key]);
+  adminListSyncTimers[key] = setTimeout(callback, delay);
+}
+function scheduleStatsSync(delay = 900) {
+  scheduleAdminListSync('stats', () => loadStats(), delay);
+}
+function markReviewQueueItemHandled(itemId, status = 'adopted') {
+  delete currentReviewQueueById[String(itemId)];
+  removeAdminListCard(`rq-${itemId}`, 'review-queue-list', '目前沒有符合條件的待處理資料');
+  scheduleAdminListSync(`review-actions-${status}`, () => loadReviewActions(status), 700);
+  scheduleStatsSync();
+  scheduleAdminListSync('review-queue', () => loadReviewQueue());
+}
+
 async function loadBrandsList() {
   const listEl = document.getElementById('brand-admin-list');
   const summaryEl = document.getElementById('brand-admin-summary');
@@ -2081,10 +2108,17 @@ async function openSongEditorFromReport(reportId) {
 }
 
 async function updateReport(id, status) {
-  await apiFetch(`/api/admin/report/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
-  showToast(`已完成：回報狀態已更新為「${statusLabel(status)}」`, 'success');
-  loadReports();
-  loadStats();
+  const res = await apiFetch(`/api/admin/report/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
+  if (!res.ok || data.error) {
+    showToast(data.error || '回報狀態更新失敗', 'error');
+    return;
+  }
+  showToast(`已將回報狀態更新為「${statusLabel(status)}」`, 'success');
+  const filter = document.getElementById('report-filter')?.value || '';
+  if (filter && filter !== status) removeAdminListCard(`rpt-${id}`, 'reports-list', '目前沒有符合條件的回報');
+  scheduleStatsSync();
+  scheduleAdminListSync('reports', () => loadReports());
 }
 
 // ── 爭議投票 ──
@@ -2096,7 +2130,7 @@ async function loadDisputed() {
   if (!data.disputed?.length) { el.innerHTML = '<div class="empty">目前沒有爭議投票歌曲</div>'; return; }
 
   el.innerHTML = data.disputed.map(d => `
-    <div class="card">
+    <div class="card" id="${escapeAttr(reviewListCardId('availability-vote', d.key))}">
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${escapeHtml(d.songTitle)}》 - ${escapeHtml(d.artist)}</div>
@@ -2108,8 +2142,8 @@ async function loadDisputed() {
           </div>
         </div>
         <div class="card-actions">
-          <button class="btn btn-green" onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'has_song')">套用為有收錄</button>
-          <button class="btn btn-red"   onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'no_song')">套用為未收錄</button>
+          <button class="btn btn-green" onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'has_song', ${jsArg(reviewListCardId('availability-vote', d.key))}, ${jsArg(`availability_vote:${d.key}`)})">套用為有收錄</button>
+          <button class="btn btn-red"   onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'no_song', ${jsArg(reviewListCardId('availability-vote', d.key))}, ${jsArg(`availability_vote:${d.key}`)})">套用為未收錄</button>
         </div>
       </div>
     </div>
@@ -2125,7 +2159,7 @@ async function loadVerified() {
   if (!data.verified?.length) { el.innerHTML = '<div class="empty">目前沒有社群已驗證的歌曲</div>'; return; }
 
   el.innerHTML = data.verified.map(d => `
-    <div class="card" style="border-color:rgba(74,222,128,0.2)">
+    <div class="card" id="${escapeAttr(reviewListCardId('availability-vote', d.key))}" style="border-color:rgba(74,222,128,0.2)">
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${escapeHtml(d.songTitle)}》 - ${escapeHtml(d.artist)}</div>
@@ -2137,7 +2171,7 @@ async function loadVerified() {
           </div>
         </div>
         <div class="card-actions">
-          ${!d.currentStatus ? `<button class="btn btn-green" onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'has_song')">套用為有收錄</button>` : `<span style="color:var(--muted);font-size:0.82rem;">目前資料已正確</span>`}
+          ${!d.currentStatus ? `<button class="btn btn-green" onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'has_song', ${jsArg(reviewListCardId('availability-vote', d.key))}, ${jsArg(`availability_vote:${d.key}`)})">套用為有收錄</button>` : `<span style="color:var(--muted);font-size:0.82rem;">目前資料已正確</span>`}
         </div>
       </div>
     </div>
@@ -2153,7 +2187,7 @@ async function loadGuidedVotes() {
   if (!data.guidedVotes?.length) { el.innerHTML = '<div class="empty">目前沒有導唱票選資料</div>'; return; }
 
   el.innerHTML = data.guidedVotes.map(d => `
-    <div class="card" style="border-color:rgba(236,72,153,0.2)">
+    <div class="card" id="${escapeAttr(reviewListCardId('guided-vote', d.key))}" style="border-color:rgba(236,72,153,0.2)">
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${escapeHtml(d.songTitle)}》 - ${escapeHtml(d.artist)}</div>
@@ -2166,8 +2200,8 @@ async function loadGuidedVotes() {
         </div>
         <div class="card-actions">
           <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後再調整資料</span>
-          <button class="btn btn-green" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'guided_vocal')">標記導唱</button>
-          <button class="btn btn-yellow" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'backing_track')">標記純伴奏</button>
+          <button class="btn btn-green" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'guided_vocal', ${jsArg(reviewListCardId('guided-vote', d.key))}, { reviewItemId: ${jsArg(`guided_vote:${d.key}`)} })">標記導唱</button>
+          <button class="btn btn-yellow" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'backing_track', ${jsArg(reviewListCardId('guided-vote', d.key))}, { reviewItemId: ${jsArg(`guided_vote:${d.key}`)} })">標記純伴奏</button>
         </div>
       </div>
     </div>
@@ -2184,37 +2218,42 @@ function audioTypeLabel(type) {
   return labels[type] || type || '未標記';
 }
 
-async function applyGuidedFix(songIdValue, brandIdValue, audioType) {
+async function applyGuidedFix(songIdValue, brandIdValue, audioType, sourceCardId = '', options = {}) {
   const songId = decodeURIComponent(songIdValue);
   const brandId = decodeURIComponent(brandIdValue);
   const label = audioTypeLabel(audioType);
-  if (!confirm(`確定要將此廠牌音訊類型標記為「${label}」嗎？\n此操作會更新前台顯示的音訊類型。`)) return;
+  if (!confirm('確認將音訊類型更新為「' + label + '」？')) return false;
 
-  const res = await apiFetch(`/api/admin/song/${songId}/brand`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      brandId,
-      available: true,
-      audioType,
-      note: `依導唱票選人工確認：${label}`,
-    }),
-  });
-  const data = await res.json();
+  try {
+    if (options.reviewItemId) {
+      const sourceId = options.reviewItemId.replace(/^guided_vote:/, '');
+      const item = { id: options.reviewItemId, sourceType: 'guided_vote', sourceId, itemType: 'guided', songId, brandId };
+      const action = audioType === 'guided_vocal' ? 'set_guided_vocal' : 'set_backing_track';
+      await resolveReviewQueueItem(item, 'adopt', action, { songId, brandId, audioType }, '採納導唱功能為 ' + label);
+    } else {
+      const res = await apiFetch('/api/admin/song/' + encodeURIComponent(songId) + '/brand', {
+        method: 'PATCH',
+        body: JSON.stringify({ brandId, available: true, audioType, note: '管理者依票選結果調整為 ' + label }),
+      });
+      const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
+      if (!res.ok || !data.success) throw new Error(data.error || '導唱修正未儲存');
+    }
 
-  if (data.success) {
-    showToast(`已完成：音訊類型已更新為「${label}」`, 'success');
-    loadGuidedVotes();
-    loadDisputed();
-    loadReviewQueue();
-    loadStats();
+    showToast('已完成：音訊類型已更新為「' + label + '」', 'success');
+    if (sourceCardId) removeAdminListCard(sourceCardId, 'guided-list', '目前沒有導唱票選資料');
+    if (!options.skipSync) {
+      scheduleStatsSync();
+      scheduleAdminListSync('guided-votes', () => loadGuidedVotes());
+      if (options.reviewItemId) scheduleAdminListSync('review-actions-adopted', () => loadReviewActions('adopted'), 700);
+      scheduleAdminListSync('review-queue', () => loadReviewQueue());
+    }
     return true;
-  } else {
-    showToast(data.error || '操作失敗：導唱修正未儲存', 'error');
+  } catch (err) {
+    showToast(err.message || '導唱修正未儲存', 'error');
     return false;
   }
 }
 
-// ── MV 類型社群票選 ──
 async function loadMvVotes() {
   const res = await apiFetch('/api/admin/mv-votes?minTotal=1');
   const data = await res.json();
@@ -2223,7 +2262,7 @@ async function loadMvVotes() {
   if (!data.mvVotes?.length) { el.innerHTML = '<div class="empty">目前沒有 MV 社群票選資料</div>'; return; }
 
   el.innerHTML = data.mvVotes.map(d => `
-    <div class="card" style="border-color:rgba(56,189,248,0.2)">
+    <div class="card" id="${escapeAttr(reviewListCardId('mv-vote', d.key))}" style="border-color:rgba(56,189,248,0.2)">
       <div class="card-row">
         <div class="card-meta">
           <div class="title">《${escapeHtml(d.songTitle)}》 - ${escapeHtml(d.artist)}</div>
@@ -2238,12 +2277,12 @@ async function loadMvVotes() {
         <div class="card-actions">
           ${d.isLowSample ? `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
-            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv')">標記官方 MV</button>
-            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv')">標記剪輯 MV</button>
+            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記官方 MV</button>
+            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記剪輯 MV</button>
           ` : `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
-            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv')">標記官方 MV</button>
-            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv')">標記剪輯 MV</button>
+            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記官方 MV</button>
+            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記剪輯 MV</button>
           `}
         </div>
       </div>
@@ -2262,31 +2301,38 @@ function mvTypeLabel(type) {
   return labels[type] || type || '未標記';
 }
 
-async function applyMvFix(songIdValue, brandIdValue, mvType) {
+async function applyMvFix(songIdValue, brandIdValue, mvType, sourceCardId = '', options = {}) {
   const songId = decodeURIComponent(songIdValue);
   const brandId = decodeURIComponent(brandIdValue);
   const label = mvTypeLabel(mvType);
-  if (!confirm(`確定要將此廠牌 MV 類型標記為「${label}」嗎？\n此操作只更新 MV 類型，不會改變收錄狀態。`)) return;
+  if (!confirm('確認將 MV 類型更新為「' + label + '」？')) return false;
 
-  const res = await apiFetch(`/api/admin/song/${songId}/brand/mv-type`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      brandId,
-      mvType,
-      note: `依 MV 票選人工確認：${label}`,
-    }),
-  });
-  const data = await res.json();
+  try {
+    if (options.reviewItemId) {
+      const sourceId = options.reviewItemId.replace(/^mv_vote:/, '');
+      const item = { id: options.reviewItemId, sourceType: 'mv_vote', sourceId, itemType: 'mv', songId, brandId };
+      const action = mvType === 'official_mv' ? 'set_official_mv' : 'set_reedited_mv';
+      await resolveReviewQueueItem(item, 'adopt', action, { songId, brandId, mvType }, '採納 MV 類型為 ' + label);
+    } else {
+      const res = await apiFetch('/api/admin/song/' + encodeURIComponent(songId) + '/brand/mv-type', {
+        method: 'PATCH',
+        body: JSON.stringify({ brandId, mvType, note: '管理者依 MV 票選結果調整為 ' + label }),
+      });
+      const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
+      if (!res.ok || !data.success) throw new Error(data.error || 'MV 類型修正未儲存');
+    }
 
-  if (data.success) {
-    showToast(`已完成：MV 類型已更新為「${label}」`, 'success');
-    loadMvVotes();
-    loadDisputed();
-    loadReviewQueue();
-    loadStats();
+    showToast('已完成：MV 類型已更新為「' + label + '」', 'success');
+    if (sourceCardId) removeAdminListCard(sourceCardId, 'mv-list', '目前沒有 MV 票選資料');
+    if (!options.skipSync) {
+      scheduleStatsSync();
+      scheduleAdminListSync('mv-votes', () => loadMvVotes());
+      if (options.reviewItemId) scheduleAdminListSync('review-actions-adopted', () => loadReviewActions('adopted'), 700);
+      scheduleAdminListSync('review-queue', () => loadReviewQueue());
+    }
     return true;
-  } else {
-    showToast(data.error || '操作失敗：MV 類型修正未儲存', 'error');
+  } catch (err) {
+    showToast(err.message || 'MV 類型修正未儲存', 'error');
     return false;
   }
 }
@@ -2850,82 +2896,78 @@ function openReviewQueueSource(itemId) {
   else if (item.itemType === 'mv') showTab('tab-mv');
 }
 
-async function recordReviewQueueAdoption(item, action, reason = '') {
+async function resolveReviewQueueItem(item, decision, action, payload = {}, reason = '') {
   if (!item) return;
-  const res = await apiFetch(`/api/admin/review-queue/${encodeURIComponent(item.id)}/adopt`, {
+  const res = await apiFetch('/api/admin/review-queue/' + encodeURIComponent(item.id) + '/resolve', {
     method: 'POST',
-    body: JSON.stringify({
-      sourceType: item.sourceType,
-      sourceId: item.sourceId,
-      itemType: item.itemType,
-      action,
-      reason,
-      snapshot: item,
-    }),
+    body: JSON.stringify({ decision, action, reason, payload, snapshot: item }),
   });
   const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
-  if (!res.ok || !data.success) throw new Error(data.error || '採納紀錄寫入失敗');
-  return data.action;
+  if (res.status === 409) {
+    markReviewQueueItemHandled(item.id, data.action?.status || 'adopted');
+    throw new Error(data.error || '此項目已被其他管理者處理');
+  }
+  if (!res.ok || !data.success) throw new Error(data.error || '審核處理失敗');
+  return data;
 }
-
 async function refreshReviewWorkflowLists(status = 'adopted') {
-  await loadReviewQueue();
-  loadReviewActions(status);
-  loadStats();
+  scheduleAdminListSync(`review-actions-${status}`, () => loadReviewActions(status), 700);
+  scheduleStatsSync();
+  scheduleAdminListSync('review-queue', () => loadReviewQueue());
 }
 
 async function rejectReviewQueueItem(itemId) {
   const item = currentReviewQueueById[String(itemId)];
   if (!item) return;
-  const reason = prompt('請填寫駁回原因，至少 4 字。', '資料不足或查證不採納');
+  const reason = prompt('請輸入駁回原因，至少 4 個字', '資料不足或無法驗證');
   if (!reason) return;
   if (reason.trim().length < 4) {
-    showToast('駁回原因至少需要 4 字', 'error');
+    showToast('駁回原因至少需要 4 個字', 'error');
     return;
   }
-
-  const res = await apiFetch(`/api/admin/review-queue/${encodeURIComponent(item.id)}/reject`, {
-    method: 'POST',
-    body: JSON.stringify({
-      sourceType: item.sourceType,
-      sourceId: item.sourceId,
-      itemType: item.itemType,
-      reason: reason.trim(),
-      snapshot: item,
-    }),
-  });
-  const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
-  if (!res.ok || !data.success) {
-    showToast(data.error || '駁回失敗', 'error');
+  try {
+    await resolveReviewQueueItem(item, 'reject', 'reject', {}, reason.trim());
+  } catch (err) {
+    showToast(err.message || '駁回失敗', 'error');
     return;
   }
   showToast('已駁回並寫入審核紀錄', 'success');
-  await refreshReviewWorkflowLists('rejected');
+  markReviewQueueItemHandled(item.id, 'rejected');
 }
 
 function openFixFromReviewQueue(itemId, issueType) {
   const item = currentReviewQueueById[String(itemId)];
   if (!item) return;
   currentFixReviewItemId = item.id;
-  openFix(item.songId, item.songTitle, item.artist, item.brandId, issueType);
+  openFix(item.songId, item.songTitle, item.artist, item.brandId, issueType, '', '', true);
 }
 
 async function adoptGuidedFromReviewQueue(itemId, audioType) {
   const item = currentReviewQueueById[String(itemId)];
   if (!item) return;
-  const applied = await applyGuidedFix(item.songId, item.brandId, audioType);
-  if (!applied) return;
-  await recordReviewQueueAdoption(item, `set_${audioType}`, `採納導唱功能為 ${audioTypeLabel(audioType)}`);
-  await refreshReviewWorkflowLists('adopted');
+  const action = audioType === 'guided_vocal' ? 'set_guided_vocal' : 'set_backing_track';
+  try {
+    await resolveReviewQueueItem(item, 'adopt', action, { songId: item.songId, brandId: item.brandId, audioType }, '採納導唱功能為 ' + audioTypeLabel(audioType));
+  } catch (err) {
+    showToast(err.message || '導唱採納失敗', 'error');
+    return;
+  }
+  showToast('已完成：音訊類型已更新為「' + audioTypeLabel(audioType) + '」', 'success');
+  markReviewQueueItemHandled(item.id, 'adopted');
 }
 
 async function adoptMvFromReviewQueue(itemId, mvType) {
   const item = currentReviewQueueById[String(itemId)];
   if (!item) return;
-  const applied = await applyMvFix(item.songId, item.brandId, mvType);
-  if (!applied) return;
-  await recordReviewQueueAdoption(item, `set_${mvType}`, `採納 MV 類型為 ${mvTypeLabel(mvType)}`);
-  await refreshReviewWorkflowLists('adopted');
+  const action = mvType === 'official_mv' ? 'set_official_mv' : 'set_reedited_mv';
+  try {
+    await resolveReviewQueueItem(item, 'adopt', action, { songId: item.songId, brandId: item.brandId, mvType }, '採納 MV 類型為 ' + mvTypeLabel(mvType));
+  } catch (err) {
+    showToast(err.message || 'MV 採納失敗', 'error');
+    return;
+  }
+  showToast('已完成：MV 類型已更新為「' + mvTypeLabel(mvType) + '」', 'success');
+  markReviewQueueItemHandled(item.id, 'adopted');
 }
 
 async function loadReviewActions(status) {
@@ -2976,21 +3018,16 @@ async function createBrandFromReviewQueue(itemId) {
   if (!item) return;
   const name = String(item.signalSummary?.brandName || item.songTitle || '').trim();
   const shortName = String(item.signalSummary?.shortName || name).trim();
-  if (!confirm(`建立新品牌「${shortName || name}」並將來源回報標記為已解決？`)) return;
-
-  const res = await apiFetch(`/api/admin/brand/from-report/${encodeURIComponent(item.sourceId)}`, {
-    method: 'POST',
-    body: JSON.stringify({ name, shortName }),
-  });
-  const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
-  if (!res.ok || !data.success) {
-    showToast(data.error || '建立品牌失敗', 'error');
+  if (!confirm('建立新品牌「' + (shortName || name) + '」並結案？')) return;
+  try {
+    const data = await resolveReviewQueueItem(item, 'adopt', 'create_brand', { brand: { name, shortName } }, '建立品牌 ' + (shortName || name));
+    showToast('已建立品牌「' + (data.updated?.brand?.shortName || data.updated?.brand?.name || shortName || name) + '」並結案', 'success');
+  } catch (err) {
+    showToast(err.message || '建立品牌失敗', 'error');
     return;
   }
-  showToast(`已建立品牌「${data.brand?.shortName || data.brand?.name || shortName || name}」並結案`, 'success');
-  await recordReviewQueueAdoption(item, 'create_brand', `建立品牌 ${data.brand?.id || shortName || name}`);
-  await loadBrandsList();
-  await refreshReviewWorkflowLists('adopted');
+  markReviewQueueItemHandled(item.id, 'adopted');
+  scheduleAdminListSync('brands', () => loadBrandsList(), 700);
 }
 
 async function createBrandFromReport(reportId) {
@@ -3020,9 +3057,10 @@ async function createBrandFromReport(reportId) {
     }
 
     showToast(`已建立品牌「${data.brand?.shortName || data.brand?.name || shortName || name}」並結案`, 'success');
-    await loadBrandsList();
-    await loadReports();
-    loadStats();
+    removeAdminListCard(`rpt-${reportId}`, 'reports-list', '目前沒有符合條件的回報');
+    scheduleAdminListSync('brands', () => loadBrandsList(), 700);
+    scheduleAdminListSync('reports', () => loadReports());
+    scheduleStatsSync();
   } catch (err) {
     showToast('建立品牌失敗：' + (err.message || '未知錯誤'), 'error');
   }
@@ -3066,13 +3104,18 @@ async function loadLogs() {
 }
 
 // ── Fix Modal ──
-function openFix(songId, songTitle, artist, brandId, issueType) {
+let currentFixSourceCardId = '';
+let currentFixSourceReviewItemId = '';
+function openFix(songId, songTitle, artist, brandId, issueType, sourceCardId = '', sourceReviewItemId = '', preserveReviewQueueItem = false) {
   document.getElementById('fix-song-id').value = songId;
   document.getElementById('fix-brand-id').value = brandId;
   document.getElementById('fix-song-info').innerHTML =
     `《${escapeHtml(songTitle)}》 - ${escapeHtml(artist)}<br><small>Song ID: ${escapeHtml(songId)}</small>`;
   document.getElementById('fix-available').value = (issueType === 'has_song') ? 'true' : 'false';
   document.getElementById('fix-note').value = '';
+  currentFixSourceCardId = sourceCardId;
+  currentFixSourceReviewItemId = sourceReviewItemId;
+  if (!preserveReviewQueueItem) currentFixReviewItemId = '';
   document.getElementById('fix-modal').classList.add('open');
 }
 
@@ -3095,33 +3138,47 @@ fixModalEl.addEventListener('click', e => {
 });
 
 async function applyFix() {
-  const songId   = document.getElementById('fix-song-id').value;
-  const brandId  = document.getElementById('fix-brand-id').value;
+  const songId = document.getElementById('fix-song-id').value;
+  const brandId = document.getElementById('fix-brand-id').value;
   const available = document.getElementById('fix-available').value === 'true';
-  const note     = document.getElementById('fix-note').value;
+  const note = document.getElementById('fix-note').value;
+  const action = available ? 'set_available' : 'set_unavailable';
 
-  const res = await apiFetch(`/api/admin/song/${songId}/brand`, {
-    method: 'PATCH',
-    body: JSON.stringify({ brandId, available, note }),
-  });
-  const data = await res.json();
-  if (data.success) {
-    showToast('已完成：收錄狀態已更新', 'success');
+  try {
     if (currentFixReviewItemId) {
       const item = currentReviewQueueById[String(currentFixReviewItemId)];
-      await recordReviewQueueAdoption(item, available ? 'set_available' : 'set_unavailable', available ? '採納為有收錄' : '採納為未收錄');
+      await resolveReviewQueueItem(item, 'adopt', action, { songId, brandId, available, note }, available ? '採納為有收錄' : '採納為未收錄');
       currentFixReviewItemId = '';
-      await refreshReviewWorkflowLists('adopted');
+      markReviewQueueItemHandled(item.id, 'adopted');
+    } else if (currentFixSourceReviewItemId) {
+      const sourceId = currentFixSourceReviewItemId.replace(/^availability_vote:/, '');
+      const item = { id: currentFixSourceReviewItemId, sourceType: 'availability_vote', sourceId, itemType: 'availability', songId, brandId };
+      await resolveReviewQueueItem(item, 'adopt', action, { songId, brandId, available, note }, available ? '採納為有收錄' : '採納為未收錄');
+    } else {
+      const res = await apiFetch('/api/admin/song/' + encodeURIComponent(songId) + '/brand', {
+        method: 'PATCH',
+        body: JSON.stringify({ brandId, available, note }),
+      });
+      const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
+      if (!res.ok || !data.success) throw new Error(data.error || '收錄狀態更新失敗');
     }
+
+    showToast('已完成：收錄狀態已更新', 'success');
+    const hadSourceReviewItem = Boolean(currentFixSourceReviewItemId);
+    if (currentFixSourceCardId) {
+      removeAdminListCard(currentFixSourceCardId, 'disputed-list', '目前沒有收錄狀態待確認資料');
+      removeAdminListCard(currentFixSourceCardId, 'verified-list', '目前沒有群眾確認收錄資料');
+      currentFixSourceCardId = '';
+    }
+    currentFixSourceReviewItemId = '';
     closeFix();
-    loadDisputed();
-    loadVerified();
-    loadGuidedVotes();
-    loadMvVotes();
-    loadReports();
-    loadStats();
-  } else {
-    showToast('操作失敗：' + data.error, 'error');
+    scheduleStatsSync();
+    scheduleAdminListSync('disputed', () => loadDisputed());
+    scheduleAdminListSync('verified', () => loadVerified());
+    if (hadSourceReviewItem) scheduleAdminListSync('review-actions-adopted', () => loadReviewActions('adopted'), 700);
+    scheduleAdminListSync('review-queue', () => loadReviewQueue());
+  } catch (err) {
+    showToast('操作失敗：' + (err.message || '未知錯誤'), 'error');
   }
 }
 
