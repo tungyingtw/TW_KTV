@@ -432,6 +432,7 @@ function requirePermission(permissionCode) {
 const CATALOG_PATH = path.join(__dirname, '../public/songs_catalog.json');
 const REPORTS_PATH = path.join(__dirname, 'reports.json');
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
+const REVIEW_ACTIONS_PATH = path.join(__dirname, 'review_actions.json');
 const ADMIN_LOG_PATH = resolveDataPath('ADMIN_ACTIONS_LOG_PATH', 'admin_actions.log');
 const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 const BRAND_SETTINGS_PATH = path.join(__dirname, 'brand_settings.json');
@@ -969,6 +970,18 @@ function saveVotes(data) {
   fs.writeFileSync(VOTES_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
+function loadReviewActions() {
+  try {
+    const data = JSON.parse(fs.readFileSync(REVIEW_ACTIONS_PATH, 'utf8'));
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+function saveReviewActions(data) {
+  fs.writeFileSync(REVIEW_ACTIONS_PATH, JSON.stringify(data, null, 2), 'utf8');
+}
+
 function loadCatalogOverrides() {
   try {
     const data = JSON.parse(fs.readFileSync(CATALOG_OVERRIDES_PATH, 'utf8'));
@@ -1013,6 +1026,39 @@ async function saveVotesStore(data) {
 
   try { saveVotes(data); } catch (err) {
     console.warn('[Votes] Local JSON backup write failed:', err.message);
+  }
+}
+
+async function loadReviewActionsStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', REVIEW_ACTIONS_REDIS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (err) {
+      throw new Error(`Review actions persistent read failed: ${err.message}`);
+    }
+  }
+  return loadReviewActions();
+}
+
+async function saveReviewActionsStore(data) {
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', REVIEW_ACTIONS_REDIS_KEY, JSON.stringify(data));
+      try { saveReviewActions(data); } catch (err) {
+        console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
+      }
+      return;
+    } catch (err) {
+      try { saveReviewActions(data); } catch (localErr) {
+        console.warn('[ReviewActions] Local JSON backup write failed:', localErr.message);
+      }
+      throw new Error(`Review actions persistent write failed: ${err.message}`);
+    }
+  }
+
+  try { saveReviewActions(data); } catch (err) {
+    console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
   }
 }
 
@@ -1618,6 +1664,7 @@ const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
 const STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits';
 const VOTES_REDIS_KEY = 'ktv:votes';
 const REPORTS_REDIS_KEY = 'ktv:reports';
+const REVIEW_ACTIONS_REDIS_KEY = 'ktv:reviewActions';
 const ADMIN_LOG_REDIS_KEY = 'ktv:adminLogs';
 const CATALOG_OVERRIDES_REDIS_KEY = 'ktv:catalogOverrides';
 const ARTIST_ALIASES_OVERRIDES_REDIS_KEY = 'ktv:artistAliasesOverrides';
@@ -1680,6 +1727,7 @@ async function initializeJsonStoreInRedis(redisKey, localData, label) {
 if (USE_REDIS) {
   initializeJsonStoreInRedis(REPORTS_REDIS_KEY, loadReports(), 'Reports');
   initializeJsonStoreInRedis(VOTES_REDIS_KEY, loadVotes(), 'Votes');
+  initializeJsonStoreInRedis(REVIEW_ACTIONS_REDIS_KEY, loadReviewActions(), 'ReviewActions');
   initializeJsonStoreInRedis(CATALOG_OVERRIDES_REDIS_KEY, loadCatalogOverrides(), 'CatalogOverrides');
   initializeJsonStoreInRedis(ARTIST_ALIASES_OVERRIDES_REDIS_KEY, loadArtistAliasesOverridesFromDisk(), 'ArtistAliasesOverrides');
 
@@ -2702,6 +2750,222 @@ app.post('/api/admin/stats/reset', requirePermission('stats.reset'), async (req,
 });
 
 // ── 查看爭議歌曲 ──
+app.get('/api/admin/review-queue', requireSession, async (req, res) => {
+  const permissions = req.admin?.permissions || [];
+  const canViewReports = permissions.includes('reports.view');
+  const canViewVotes = permissions.includes('votes.view');
+  if (!canViewReports && !canViewVotes) return res.status(403).json({ error: '缺少待處理資料查看權限' });
+
+  const typeFilter = String(req.query.type || 'all');
+  const limit = Math.min(300, Math.max(10, Number.parseInt(String(req.query.limit || '120'), 10) || 120));
+  const items = [];
+  const pushItem = (item) => {
+    if (typeFilter !== 'all' && item.itemType !== typeFilter && item.sourceType !== typeFilter) return;
+    items.push({ status: 'pending', priority: 0, updatedAt: item.createdAt || new Date().toISOString(), ...item });
+  };
+
+  if (canViewReports) {
+    const reports = await loadReportsStore();
+    for (const report of reports.filter(r => r.status === 'pending')) {
+      const itemType = report.issueType === 'suggest_new_brand'
+        ? 'suggest_new_brand'
+        : (report.issueType === 'suggest_song' || report.issueType === 'missing_song' ? 'suggest_song' : 'report');
+      pushItem({
+        id: `report:${report.id}`,
+        sourceType: 'report',
+        sourceId: report.id,
+        itemType,
+        songId: report.songId,
+        songTitle: report.songTitle || report.songSnapshot?.title || '',
+        artist: report.artist || report.songSnapshot?.artist || '',
+        brandId: report.brandId,
+        currentValue: null,
+        suggestedValue: report.issueType,
+        signalSummary: {
+          issueType: report.issueType,
+          songCode: report.songCode || '',
+          note: report.note || '',
+          brandName: report.brandName || '',
+          shortName: report.shortName || '',
+        },
+        priority: itemType === 'suggest_new_brand' ? 95 : (itemType === 'suggest_song' ? 90 : 70),
+        createdAt: report.timestamp,
+        updatedAt: report.reviewedAt || report.timestamp,
+      });
+    }
+  }
+
+  if (canViewVotes) {
+    const votes = await loadVotesStore();
+    for (const [key, data] of Object.entries(votes)) {
+      const { songId, brandId } = await parseVoteKeyDynamic(key);
+      if (!songId || !brandId) continue;
+      const song = await getAdminSongById(songId);
+      const brandData = song?.brands?.[brandId] || null;
+      const base = { songId, brandId, songTitle: song?.title || songId, artist: song?.artist || '' };
+
+      const confirm = data.confirm || 0;
+      const deny = data.deny || 0;
+      const availabilityTotal = confirm + deny;
+      if (availabilityTotal >= 3) {
+        const confidence = getVoteConfidence(confirm, deny);
+        const currentStatus = brandData?.available ?? null;
+        const shouldQueueDisputed = confidence === 'disputed' || confidence === 'uncertain';
+        const shouldQueueVerified = confidence === 'verified' && currentStatus !== true;
+        if (shouldQueueDisputed || shouldQueueVerified) {
+          pushItem({
+            id: `availability_vote:${key}`,
+            sourceType: 'availability_vote',
+            sourceId: key,
+            itemType: 'availability',
+            ...base,
+            currentValue: currentStatus,
+            suggestedValue: confirm >= deny,
+            signalSummary: { confirm, deny, total: availabilityTotal, confidence },
+            priority: (shouldQueueVerified ? 85 : 65) + Math.min(20, availabilityTotal),
+          });
+        }
+      }
+
+      const guided = data.guidedVocal || 0;
+      const noGuided = data.noGuidedVocal || 0;
+      const guidedTotal = guided + noGuided;
+      if (guidedTotal > 0) {
+        const suggestedAudioType = guided > noGuided ? 'guided_vocal' : (noGuided > guided ? 'backing_track' : 'needs_review');
+        const currentAudioType = brandData?.audioType || 'unknown';
+        const alreadyMatches = suggestedAudioType !== 'needs_review' && currentAudioType === suggestedAudioType;
+        if (!alreadyMatches) {
+          pushItem({
+            id: `guided_vote:${key}`,
+            sourceType: 'guided_vote',
+            sourceId: key,
+            itemType: 'guided',
+            ...base,
+            currentValue: currentAudioType,
+            suggestedValue: suggestedAudioType,
+            signalSummary: { guided, noGuided, total: guidedTotal },
+            priority: 55 + Math.min(20, guidedTotal),
+          });
+        }
+      }
+
+      const official = data.officialMv || 0;
+      const edited = data.editedMv || 0;
+      const mvTotal = official + edited;
+      if (mvTotal > 0) {
+        const suggestedMvType = official > edited ? 'official_mv' : (edited > official ? 'reedited_mv' : 'needs_review');
+        const currentMvType = brandData?.mvType || 'unknown';
+        const alreadyMatches = suggestedMvType !== 'needs_review' && currentMvType === suggestedMvType;
+        if (!alreadyMatches) {
+          pushItem({
+            id: `mv_vote:${key}`,
+            sourceType: 'mv_vote',
+            sourceId: key,
+            itemType: 'mv',
+            ...base,
+            currentValue: currentMvType,
+            suggestedValue: suggestedMvType,
+            signalSummary: { official, edited, total: mvTotal },
+            priority: 50 + Math.min(20, mvTotal),
+          });
+        }
+      }
+    }
+  }
+
+  items.sort((a, b) => (b.priority - a.priority) || String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+  res.json({
+    total: items.length,
+    items: items.slice(0, limit),
+    filters: {
+      all: items.length,
+      report: items.filter(i => i.itemType === 'report').length,
+      availability: items.filter(i => i.itemType === 'availability').length,
+      guided: items.filter(i => i.itemType === 'guided').length,
+      mv: items.filter(i => i.itemType === 'mv').length,
+      suggest_song: items.filter(i => i.itemType === 'suggest_song').length,
+      suggest_new_brand: items.filter(i => i.itemType === 'suggest_new_brand').length,
+    },
+  });
+});
+
+app.get('/api/admin/review-actions', requireSession, async (req, res) => {
+  const permissions = req.admin?.permissions || [];
+  if (!permissions.includes('reports.view') && !permissions.includes('votes.view')) {
+    return res.status(403).json({ error: '缺少審核紀錄查看權限' });
+  }
+
+  const status = String(req.query.status || '').trim();
+  const limit = Math.min(300, Math.max(10, Number.parseInt(String(req.query.limit || '120'), 10) || 120));
+  const actions = await loadReviewActionsStore();
+  const filtered = status ? actions.filter(a => a.status === status) : actions;
+  filtered.sort((a, b) => String(b.reviewedAt || '').localeCompare(String(a.reviewedAt || '')));
+  res.json({ total: filtered.length, actions: filtered.slice(0, limit) });
+});
+
+app.post('/api/admin/review-queue/:reviewItemId/adopt', requireSession, async (req, res) => {
+  const permissions = req.admin?.permissions || [];
+  if (!permissions.includes('reports.review') && !permissions.includes('brand.update') && !permissions.includes('mv.update') && !permissions.includes('brands.manage')) {
+    return res.status(403).json({ error: '缺少採納審核資料權限' });
+  }
+
+  const { reviewItemId } = req.params;
+  const { sourceType, sourceId, itemType, action, reason = '', snapshot = {} } = req.body || {};
+  const actions = await loadReviewActionsStore();
+  const now = new Date().toISOString();
+  const record = {
+    id: `rva_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    reviewItemId,
+    sourceType: String(sourceType || snapshot.sourceType || ''),
+    sourceId: String(sourceId || snapshot.sourceId || ''),
+    itemType: String(itemType || snapshot.itemType || ''),
+    status: 'adopted',
+    action: String(action || 'adopt'),
+    reason: String(reason || '').trim(),
+    snapshot,
+    adminId: req.admin?.id || 'unknown',
+    adminName: req.admin?.displayName || req.admin?.username || 'unknown',
+    reviewedAt: now,
+  };
+  actions.push(record);
+  await saveReviewActionsStore(actions);
+  logAdminAction('ADOPT_REVIEW_QUEUE_ITEM', record, req);
+  res.json({ success: true, action: record });
+});
+
+app.post('/api/admin/review-queue/:reviewItemId/reject', requireSession, async (req, res) => {
+  const permissions = req.admin?.permissions || [];
+  if (!permissions.includes('reports.review') && !permissions.includes('brand.update') && !permissions.includes('mv.update') && !permissions.includes('brands.manage')) {
+    return res.status(403).json({ error: '缺少駁回審核資料權限' });
+  }
+
+  const { reviewItemId } = req.params;
+  const { sourceType, sourceId, itemType, reason, snapshot = {} } = req.body || {};
+  const cleanReason = String(reason || '').trim();
+  if (cleanReason.length < 4) return res.status(400).json({ error: '請填寫至少 4 字的駁回原因' });
+
+  const actions = await loadReviewActionsStore();
+  const now = new Date().toISOString();
+  const record = {
+    id: `rvr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    reviewItemId,
+    sourceType: String(sourceType || snapshot.sourceType || ''),
+    sourceId: String(sourceId || snapshot.sourceId || ''),
+    itemType: String(itemType || snapshot.itemType || ''),
+    status: 'rejected',
+    action: 'reject',
+    reason: cleanReason,
+    snapshot,
+    adminId: req.admin?.id || 'unknown',
+    adminName: req.admin?.displayName || req.admin?.username || 'unknown',
+    reviewedAt: now,
+  };
+  actions.push(record);
+  await saveReviewActionsStore(actions);
+  logAdminAction('REJECT_REVIEW_QUEUE_ITEM', record, req);
+  res.json({ success: true, action: record });
+});
+
 app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res) => {
   const votes = await loadVotesStore();
   const minVotes = parseInt(req.query.minVotes) || 3;
@@ -3564,8 +3828,8 @@ app.get('/api/admin/stats', requirePermission('dashboard.view'), async (req, res
     const conf = getVoteConfidence(data.confirm || 0, data.deny || 0);
     if (conf === 'disputed') disputedCount++;
     if (conf === 'verified') verifiedCount++;
-    if ((data.guided || 0) + (data.noGuided || 0) > 0) guidedVotesCount++;
-    if ((data.official || 0) + (data.edited || 0) > 0) mvVotesCount++;
+    if ((data.guidedVocal || 0) + (data.noGuidedVocal || 0) > 0) guidedVotesCount++;
+    if ((data.officialMv || 0) + (data.editedMv || 0) > 0) mvVotesCount++;
   }
 
   res.json({
