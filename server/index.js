@@ -435,6 +435,7 @@ const REPORTS_ARCHIVE_DIR = process.env.REPORTS_ARCHIVE_DIR
   ? path.resolve(process.env.REPORTS_ARCHIVE_DIR)
   : path.join(__dirname, 'reports_archive');
 const REPORTS_ACTIVE_LIMIT = Math.max(300, parseInt(process.env.REPORTS_ACTIVE_LIMIT, 10) || 3000);
+const UNKNOWN_REPORT_BRAND_ID = '__unknown_brand__';
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
 const VOTES_ARCHIVE_PATH = resolveDataPath('VOTES_ARCHIVE_PATH', 'votes_archived_signals.json');
 const REVIEW_ACTIONS_PATH = path.join(__dirname, 'review_actions.json');
@@ -2339,6 +2340,10 @@ function reportGuidedVocalStatusToAudioType(report) {
   return undefined;
 }
 
+function isUnknownReportBrandId(brandId) {
+  return String(brandId || '') === UNKNOWN_REPORT_BRAND_ID;
+}
+
 async function updateSongBrandStatus({ songId, brandId, available, audioType, mvType, note = '' }) {
   if (!brandId || typeof available !== 'boolean') {
     const err = new Error('Missing required fields: brandId, available');
@@ -2557,7 +2562,7 @@ app.post('/api/report', async (req, res) => {
   const validTypes = ['no_song', 'has_song', 'missing_song', 'suggest_song', 'suggest_new_brand', 'wrong_info', 'other'];
   if (!validTypes.includes(issueType)) return res.status(400).json({ error: '無效的 issueType' });
 
-  if (issueType !== 'suggest_new_brand') {
+  if (issueType !== 'suggest_new_brand' && !(issueType === 'suggest_song' && isUnknownReportBrandId(brandId))) {
     const isBrandActive = await brandExists(brandId, { activeOnly: true });
     if (!isBrandActive) {
       return res.status(400).json({ error: `無效或已停用的品牌 ID: "${brandId}"` });
@@ -3244,6 +3249,9 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
   if (status === 'resolved') {
     try {
       if ((report.issueType === 'missing_song' || report.issueType === 'suggest_song') && report.songTitle) {
+        if (isUnknownReportBrandId(report.brandId)) {
+          return res.status(400).json({ error: '此新歌建議尚未指定正式 KTV 廠牌，請先在歌曲編輯器選擇正確廠牌後再結案。' });
+        }
         const normTitle = normalizeString(report.songTitle);
         const normArtist = normalizeString(report.artist);
         let existingSong = songsDatabase.find(s => normalizeString(s.title) === normTitle && normalizeString(s.artist) === normArtist);
@@ -5393,7 +5401,7 @@ app.get('/api/admin/consistency', requirePermission('dashboard.view'), async (re
     const reportsStore = await loadReportsStore();
     const unknownReportBrandIds = new Set();
     for (const r of (reportsStore || [])) {
-      if (r.brandId && r.issueType !== 'suggest_new_brand' && !knownBrandsMap[r.brandId]) {
+      if (r.brandId && !isUnknownReportBrandId(r.brandId) && r.issueType !== 'suggest_new_brand' && !knownBrandsMap[r.brandId]) {
         unknownReportBrandIds.add(r.brandId);
       }
     }

@@ -10,6 +10,7 @@ interface SuggestSongModalProps {
 }
 
 const languageOptions = ['國語', '台語', '粵語', '英語', '日語', '韓語', '陸歌'];
+const UNKNOWN_BRAND_ID = '__unknown_brand__' as BrandId;
 
 export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, defaultTab = 'song' }) => {
   const brandList = useBrands();
@@ -32,6 +33,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [composer, setComposer] = useState('');
   const [language, setLanguage] = useState('國語');
   const [brandId, setBrandId] = useState<BrandId>('cashbox');
+  const [suggestedSongBrandName, setSuggestedSongBrandName] = useState('');
   const [hasOfficialMv, setHasOfficialMv] = useState(true);
   const [guidedVocalStatus, setGuidedVocalStatus] = useState<'unknown' | 'guided' | 'none'>('unknown');
   const [lyricsSnippet, setLyricsSnippet] = useState('');
@@ -65,6 +67,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         composer: composer.trim(),
         language,
         brandId,
+        brandName: brandId === UNKNOWN_BRAND_ID ? suggestedSongBrandName.trim() : undefined,
         hasOfficialMv,
         guidedVocalStatus,
         lyricsSnippet: lyricsSnippet.trim(),
@@ -289,9 +292,25 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                           {brand.shortName}
                         </option>
                       ))}
+                      <option value={UNKNOWN_BRAND_ID} style={{ background: 'var(--bg-card, #1e293b)' }}>
+                        找不到 / 不確定廠牌
+                      </option>
                     </select>
                   </div>
                 </div>
+
+                {brandId === UNKNOWN_BRAND_ID && (
+                  <div>
+                    <label style={smallLabelStyle()}>看到的 KTV 廠牌或線索</label>
+                    <input
+                      type="text"
+                      value={suggestedSongBrandName}
+                      onChange={event => setSuggestedSongBrandName(event.target.value)}
+                      placeholder="例：店內點歌機顯示的品牌、門市名稱或系統名稱"
+                      style={inputStyle('rgba(56, 189, 248, 0.35)')}
+                    />
+                  </div>
+                )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                   <div>
