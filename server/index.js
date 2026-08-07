@@ -727,6 +727,21 @@ async function brandExists(brandId, options = {}) {
   return true;
 }
 
+async function getKnownVoteBrandIdsForSong(songId) {
+  const ids = new Set();
+  const song = songsDatabase.find(s => String(s.id) === String(songId));
+  for (const brandId of Object.keys(song?.brands || {})) ids.add(brandId);
+  try {
+    const store = await loadBrandSettingsStore();
+    for (const [brandId, brand] of Object.entries(store.brands || {})) {
+      if (!brand || brand.status === 'active') ids.add(brandId);
+    }
+  } catch (err) {
+    console.warn('[Votes] Brand lookup failed, using song brand keys only:', err.message);
+  }
+  return [...ids];
+}
+
 function buildBadgeBg(color) {
   let hex = String(color || '').trim();
   if (/^#[0-9a-fA-F]{3}$/.test(hex)) {
@@ -2703,20 +2718,20 @@ app.post('/api/vote/mv', async (req, res) => {
 app.get('/api/votes/:songId', async (req, res) => {
   const { songId } = req.params;
   const votes = await loadVotesStore();
+  const brandIds = await getKnownVoteBrandIdsForSong(songId);
   const result = {};
-  for (const [key, data] of Object.entries(votes)) {
-    if (key.startsWith(`${songId}_`)) {
-      const brandId = key.slice(songId.length + 1);
-      result[brandId] = {
-        confirm: data.confirm || 0,
-        deny: data.deny || 0,
-        guidedVocal: data.guidedVocal || 0,
-        noGuidedVocal: data.noGuidedVocal || 0,
-        officialMv: data.officialMv || 0,
-        editedMv: data.editedMv || 0,
-        confidence: getVoteConfidence(data.confirm || 0, data.deny || 0),
-      };
-    }
+  for (const brandId of brandIds) {
+    const data = votes[`${songId}_${brandId}`];
+    if (!data) continue;
+    result[brandId] = {
+      confirm: data.confirm || 0,
+      deny: data.deny || 0,
+      guidedVocal: data.guidedVocal || 0,
+      noGuidedVocal: data.noGuidedVocal || 0,
+      officialMv: data.officialMv || 0,
+      editedMv: data.editedMv || 0,
+      confidence: getVoteConfidence(data.confirm || 0, data.deny || 0),
+    };
   }
   res.json({ songId, votes: result });
 });
