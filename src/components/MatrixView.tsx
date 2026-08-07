@@ -151,7 +151,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   }
 
   // 計算表格最小總寬度，防止響應式擠壓與動態偏移
-  const tableMinWidth = isSingleBrand ? '780px' : (isFewBrands ? '880px' : '1180px');
+  const tableMinWidth = isSingleBrand ? '780px' : (isFewBrands ? '880px' : '1260px');
 
   if (compact) {
     return (
@@ -318,9 +318,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               borderBottom: '2px solid var(--border-color, rgba(255, 255, 255, 0.1))',
               color: 'var(--text-secondary, #cbd5e1)',
             }}>
-              <th style={{ padding: '14px 10px', width: '56px', textAlign: 'center', whiteSpace: 'nowrap' }}>最愛</th>
-              <th style={{ padding: '14px 16px', width: isSingleBrand ? '35%' : (isFewBrands ? '32%' : '260px') }}>歌名 / 歌手 / 創作者</th>
-              <th style={{ padding: '14px 12px', width: '70px', textAlign: 'center' }}>語種</th>
+              <th style={{ padding: '12px 10px', width: '54px', textAlign: 'center', whiteSpace: 'nowrap' }}>最愛</th>
+              <th style={{ padding: '12px 14px', width: isSingleBrand ? '35%' : (isFewBrands ? '32%' : '300px') }}>歌名 / 歌手 / 創作者</th>
+              <th style={{ padding: '12px 10px', width: '68px', textAlign: 'center' }}>語種</th>
 
               {activeBrands.map(b => {
                 const isMultiHighlighted = selectedBrands.includes(b.id);
@@ -328,7 +328,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   <th 
                     key={b.id} 
                     style={{ 
-                      padding: '14px 8px', 
+                      padding: '12px 8px',
                       textAlign: 'center', 
                       whiteSpace: 'nowrap',
                       color: b.color,
@@ -342,7 +342,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                 );
               })}
 
-              <th style={{ padding: '14px 12px', textAlign: 'center', width: '75px' }}>預覽</th>
+              <th style={{ padding: '12px 10px', textAlign: 'center', width: '70px' }}>預覽</th>
             </tr>
           </thead>
           <tbody>
@@ -371,7 +371,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   }}
                 >
                   {/* Favorite Toggle */}
-                  <td style={{ textAlign: 'center', padding: '12px' }}>
+                  <td style={{ textAlign: 'center', padding: '10px 8px' }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
                       className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
@@ -397,9 +397,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   </td>
 
                   {/* Song Title & Artist & Authors */}
-                  <td style={{ padding: '12px 16px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <div style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)' }}>{song.title}</span>
+                  <td style={{ padding: '10px 14px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.96rem', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                      <span style={{ color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{song.title}</span>
                       {song.isMainlandViral && (
                         <span className="badge badge-mainland" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
                           🔥 爆紅
@@ -419,7 +419,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', marginTop: '3px' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span style={{ fontWeight: 600, color: 'var(--text-secondary, #cbd5e1)' }}>{song.artist}</span>
                       {(song.lyricist || song.composer) && (
                         <span style={{ fontSize: '0.78rem', marginLeft: '6px', opacity: 0.8 }}>
@@ -430,7 +430,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   </td>
 
                   {/* Language Tag */}
-                  <td style={{ textAlign: 'center', padding: '12px 8px' }}>
+                  <td style={{ textAlign: 'center', padding: '10px 6px' }}>
                     {(() => {
                       const langStyle = getLanguageStyle(song.language);
                       return (
@@ -459,7 +459,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           key={b.id} 
                           style={{ 
                             textAlign: 'center', 
-                            padding: '10px 4px',
+                            padding: '8px 4px',
                             borderLeft: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
                             color: 'var(--text-muted, #64748b)',
                             fontSize: '0.85rem',
@@ -480,7 +480,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           key={b.id}
                           style={{
                             textAlign: 'center',
-                            padding: '10px 14px',
+                            padding: '8px 14px',
                             borderLeft: `2px solid ${b.color}44`,
                             background: 'var(--bg-glass, rgba(30, 41, 59, 0.4))',
                           }}
@@ -598,7 +598,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   })}
 
                   {/* Preview Link */}
-                  <td style={{ textAlign: 'center', padding: '12px 8px' }}>
+                  <td style={{ textAlign: 'center', padding: '10px 6px' }}>
                     {song.youtubeUrl ? (
                       <a
                         href={song.youtubeUrl}

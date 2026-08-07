@@ -11,6 +11,7 @@ export interface LanguageStyle {
 }
 
 const LANGUAGE_STYLE_MAP: Record<string, LanguageStyle> = {
+  '全部': { color: '#f472b6', bg: 'rgba(244, 114, 182, 0.18)', border: 'rgba(244, 114, 182, 0.48)' },
   '國語': { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.12)', border: 'rgba(56, 189, 248, 0.32)' },
   '台語': { color: '#fb923c', bg: 'rgba(251, 146, 60, 0.12)', border: 'rgba(251, 146, 60, 0.32)' },
   '粵語': { color: '#c084fc', bg: 'rgba(192, 132, 252, 0.12)', border: 'rgba(192, 132, 252, 0.32)' },

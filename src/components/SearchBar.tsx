@@ -59,7 +59,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <div className="search-bar-container" style={{
       maxWidth: '1400px',
-      margin: '20px auto 10px',
+      margin: '18px auto 8px',
       padding: '0 20px',
     }}>
       <div className="glass-panel" style={{ padding: '16px 20px' }}>
