@@ -780,7 +780,6 @@ export function App() {
             favorites={favorites}
             onToggleFavorite={handleToggleFavorite}
             onSelectSongDetail={(song) => setSelectedSongDetail(song)}
-            selectedSongId={selectedSongDetail?.id ?? null}
             compact={isMobile}
             brandSongCounts={brandSongCounts}
           />

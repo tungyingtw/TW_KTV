@@ -67,6 +67,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
     <>
       {/* 背景遮罩 - 點擊空白處關閉 */}
       <div
+        className="song-detail-modal-overlay"
         onClick={onClose}
         style={{
           position: 'fixed',
@@ -76,7 +77,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.65)',
           backdropFilter: 'blur(8px)',
-          zIndex: 9900,
+          zIndex: 12000,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -85,6 +86,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
       >
         {/* Modal 主容器 - 使用動態 CSS 主題變數支援日間/夜間雙切換 */}
         <div
+          className="modal-content song-detail-modal-content"
           onClick={e => e.stopPropagation()}
           style={{
             backgroundColor: 'var(--bg-card, #1e293b)',
