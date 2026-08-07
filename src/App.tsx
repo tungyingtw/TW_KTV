@@ -25,6 +25,7 @@ import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
 import { expandFrontendQuery } from './utils/artistAliases';
+import { isBrandAvailable } from './utils/brandAvailability';
 import { Sparkles, Music, ChevronDown, Mail } from 'lucide-react';
 
 function getSearchablePhonetic(value?: string): string {
@@ -233,7 +234,7 @@ export function App() {
     allSongs.forEach(song => {
       if (!song.brands) return;
       Object.entries(song.brands).forEach(([bId, status]) => {
-        if (status?.available) {
+        if (isBrandAvailable(status)) {
           counts[bId] = (counts[bId] || 0) + 1;
         }
       });
@@ -299,15 +300,15 @@ export function App() {
     if (filters.selectedBrands && filters.selectedBrands.length > 0) {
       result = result.filter(song => {
         if (filters.brandFilterMode === 'all_of_them') {
-          return filters.selectedBrands.every(bId => song.brands?.[bId]?.available);
+          return filters.selectedBrands.every(bId => isBrandAvailable(song.brands?.[bId]));
         } else {
-          return filters.selectedBrands.some(bId => song.brands?.[bId]?.available);
+          return filters.selectedBrands.some(bId => isBrandAvailable(song.brands?.[bId]));
         }
       });
     } else if (filters.selectedBrand !== 'all') {
       result = result.filter(song => {
         const brandStatus = song.brands[filters.selectedBrand as BrandId];
-        return brandStatus && brandStatus.available;
+        return isBrandAvailable(brandStatus);
       });
     }
 
@@ -361,7 +362,7 @@ export function App() {
         if (filters.selectedBrand !== 'all') {
           return song.brands[filters.selectedBrand as BrandId]?.mvType === 'official_mv';
         }
-        return Object.values(song.brands).some(b => b.available && b.mvType === 'official_mv');
+        return Object.values(song.brands).some(b => isBrandAvailable(b) && b.mvType === 'official_mv');
       });
     }
 
@@ -371,7 +372,7 @@ export function App() {
         if (filters.selectedBrand !== 'all') {
           return song.brands[filters.selectedBrand as BrandId]?.audioType === 'guided_vocal';
         }
-        return Object.values(song.brands).some(b => b.available && b.audioType === 'guided_vocal');
+        return Object.values(song.brands).some(b => isBrandAvailable(b) && b.audioType === 'guided_vocal');
       });
     }
 

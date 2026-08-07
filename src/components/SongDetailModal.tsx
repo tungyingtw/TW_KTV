@@ -6,6 +6,7 @@ import { BrandVoteBar } from './BrandVoteBar';
 import { ReportModal } from './ReportModal';
 import { fetchSongVotes } from '../services/communityService';
 import { getLanguageStyle } from '../utils/languageStyle';
+import { isBrandAvailable } from '../utils/brandAvailability';
 
 interface SongDetailModalProps {
   song: Song | null;
@@ -343,7 +344,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 const status = song.brands[b.id];
                 const brandVote = songVotes[b.id];
 
-                if (!status || !status.available) {
+                if (!isBrandAvailable(status)) {
                   return (
                     <div
                       key={b.id}

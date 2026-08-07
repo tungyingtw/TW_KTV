@@ -6,6 +6,7 @@ import { Heart, Video, Disc, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
+import { isBrandAvailable } from '../utils/brandAvailability';
 
 interface MatrixViewProps {
   songs: Song[];
@@ -56,12 +57,12 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   const isFewBrands = activeBrands.length > 0 && activeBrands.length <= 4;
 
   const getCompactAvailability = (song: Song) => {
-    const availableBrands = activeBrands.filter(b => song.brands[b.id]?.available);
+    const availableBrands = activeBrands.filter(b => isBrandAvailable(song.brands[b.id]));
     const totalBrands = activeBrands.length || brandList.length;
 
     if (isSingleBrand && currentBrandInfo) {
       const status = song.brands[currentBrandInfo.id];
-      if (!status?.available) {
+      if (!isBrandAvailable(status)) {
         return { label: '未收錄', color: 'var(--text-muted, #94a3b8)' };
       }
 
@@ -76,13 +77,13 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   };
 
   const getCompactMvLabel = (song: Song) => {
-    const hasOfficialMv = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.mvType === 'official_mv');
+    const hasOfficialMv = activeBrands.some(b => isBrandAvailable(song.brands[b.id]) && song.brands[b.id]?.mvType === 'official_mv');
     if (hasOfficialMv) return { label: '有', color: '#38bdf8' };
     return { label: '-', color: 'var(--text-muted, #64748b)' };
   };
 
   const getCompactGuidedLabel = (song: Song) => {
-    const hasGuided = activeBrands.some(b => song.brands[b.id]?.available && song.brands[b.id]?.audioType === 'guided_vocal');
+    const hasGuided = activeBrands.some(b => isBrandAvailable(song.brands[b.id]) && song.brands[b.id]?.audioType === 'guided_vocal');
     if (hasGuided) return { label: '有', color: '#22d3ee' };
     return { label: '-', color: 'var(--text-muted, #64748b)' };
   };
@@ -464,7 +465,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   {activeBrands.map(b => {
                     const status = song.brands[b.id];
 
-                    if (!status || !status.available) {
+                    if (!isBrandAvailable(status)) {
                       return (
                         <td 
                           key={b.id} 

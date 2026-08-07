@@ -37,7 +37,7 @@ export type Language =
   | '藏語';
 
 export interface BrandSongStatus {
-  available: boolean;
+  available?: boolean;
   code?: string;
   audioType?: AudioType;
   mvType?: MvType;

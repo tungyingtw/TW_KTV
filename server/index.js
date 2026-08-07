@@ -1903,6 +1903,10 @@ async function getQuotaUsageStats(dirPath = getBackupsDir()) {
   };
 }
 
+function isCatalogBrandAvailable(status) {
+  return Boolean(status) && status.available !== false;
+}
+
 // ─────────────────────────────────────────────
 // 公開 API：歌曲搜尋
 // ─────────────────────────────────────────────
@@ -1924,7 +1928,7 @@ app.get('/api/songs', (req, res) => {
     });
   }
   if (brand && brand !== 'all') {
-    results = results.filter(s => s.brands[brand]?.available);
+    results = results.filter(s => isCatalogBrandAvailable(s.brands[brand]));
   }
   if (lang) {
     const langs = String(lang).split(',');
@@ -2261,7 +2265,7 @@ function sanitizeText(str) {
 
 function sanitizeBrandStatusSnapshot(status) {
   if (!status || typeof status !== 'object') return null;
-  const result = { available: Boolean(status.available) };
+  const result = { available: isCatalogBrandAvailable(status) };
   const code = sanitizeText(status.code).slice(0, 50);
   const audioType = sanitizeText(status.audioType);
   const mvType = sanitizeText(status.mvType);
@@ -2408,9 +2412,12 @@ async function updateSongBrandStatus({ songId, brandId, available, audioType, mv
   else if (available && before?.mvType) nextBrandStatus.mvType = before.mvType;
 
   if (!available) {
+    nextBrandStatus.available = false;
     nextBrandStatus.code = before?.code || 'N/A';
     delete nextBrandStatus.audioType;
     delete nextBrandStatus.mvType;
+  } else {
+    delete nextBrandStatus.available;
   }
 
   song.brands[brandId] = { ...nextBrandStatus };
@@ -3444,7 +3451,7 @@ async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
       const availabilityTotal = confirm + deny;
       if (availabilityTotal >= 3) {
         const confidence = getVoteConfidence(confirm, deny);
-        const currentStatus = brandData?.available ?? null;
+        const currentStatus = brandData ? isCatalogBrandAvailable(brandData) : null;
         const suggestedAvailability = confirm >= deny;
         const shouldQueueDisputed = (confidence === 'disputed' || confidence === 'uncertain') && currentStatus !== suggestedAvailability;
         const shouldQueueVerified = confidence === 'verified' && currentStatus !== true;
@@ -3877,7 +3884,7 @@ async function buildReviewItemSnapshotFromId(reviewItemId, fallback = {}) {
     songTitle: song?.title || songId,
     artist: song?.artist || '',
     currentValue: itemType === 'availability'
-      ? (brandData?.available ?? null)
+      ? (brandData ? isCatalogBrandAvailable(brandData) : null)
       : (itemType === 'guided' ? (brandData?.audioType || 'unknown') : (brandData?.mvType || 'unknown')),
     signalSummary: fallback.signalSummary || {},
   };
@@ -4102,7 +4109,8 @@ app.get('/api/admin/disputed', requirePermission('votes.view'), async (req, res)
     if (confidence === 'disputed' || confidence === 'uncertain') {
       const { songId, brandId } = await parseVoteKeyDynamic(key);
       const song = await getAdminSongById(songId);
-      const currentStatus = song?.brands?.[brandId]?.available ?? null;
+      const brandData = song?.brands?.[brandId] || null;
+      const currentStatus = brandData ? isCatalogBrandAvailable(brandData) : null;
       const suggestedAvailability = (data.confirm || 0) >= (data.deny || 0);
       if (currentStatus === suggestedAvailability) continue;
       disputed.push({
@@ -4133,7 +4141,8 @@ app.get('/api/admin/verified', requirePermission('votes.view'), async (req, res)
     if (getVoteConfidence(data.confirm || 0, data.deny || 0) !== 'verified') continue;
     const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = await getAdminSongById(songId);
-    const currentStatus = song?.brands?.[brandId]?.available ?? null;
+    const brandData = song?.brands?.[brandId] || null;
+    const currentStatus = brandData ? isCatalogBrandAvailable(brandData) : null;
     if (currentStatus === true) continue;
     verified.push({
       key, songId, brandId,
@@ -4224,7 +4233,7 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
       brandId,
       songTitle: song?.title || songId,
       artist: song?.artist || '',
-      currentAvailable: brandData?.available ?? false,
+      currentAvailable: isCatalogBrandAvailable(brandData),
       currentMvType,
       official,
       edited,
@@ -4237,17 +4246,6 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
   mvVotes.sort((a, b) => (b.total - a.total) || (b.official - a.official));
   res.json({ total: mvVotes.length, mvVotes: mvVotes.slice(0, limit) });
 });
-
-async function createEmptyBrandStatuses() {
-  const activeBrands = await getActiveBrands();
-  const acc = {};
-  for (const b of activeBrands) {
-    if (b && b.id) {
-      acc[b.id] = { available: false };
-    }
-  }
-  return acc;
-}
 
 async function normalizeAdminSongPayload(body, existingSong = null) {
   const validLanguages = ['國語', '台語', '粵語', '英語', '日語', '韓語', '陸歌', '客語', '兒歌', '原住民語', '藏語', 'MV', '樂'];
@@ -4262,11 +4260,7 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
   const language = String(body.language || existingSong?.language || '國語').trim();
   if (!validLanguages.includes(language)) throw new Error('歌曲語言不正確');
 
-  const defaultEmptyBrands = await createEmptyBrandStatuses();
-  const brands = {
-    ...defaultEmptyBrands,
-    ...(existingSong?.brands || {}),
-  };
+  const brands = { ...(existingSong?.brands || {}) };
 
   if (body.brands && typeof body.brands === 'object') {
     for (const brandId of Object.keys(body.brands)) {
@@ -4275,8 +4269,11 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
 
       const incoming = body.brands[brandId];
       if (!incoming || typeof incoming !== 'object') continue;
+      const hasIncomingDetails = ['code', 'audioType', 'mvType', 'note'].some(key => String(incoming[key] || '').trim());
+      if (!incoming.available && !brands[brandId] && !hasIncomingDetails) continue;
+
       const status = {
-        ...(brands[brandId] || { available: false }),
+        ...(brands[brandId] || {}),
         available: Boolean(incoming.available),
       };
 
@@ -4293,6 +4290,13 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
       const note = String(incoming.note || '').trim();
       if (note) status.note = note;
       else delete status.note;
+
+      if (status.available) delete status.available;
+      else {
+        status.available = false;
+        delete status.audioType;
+        delete status.mvType;
+      }
 
       brands[brandId] = status;
     }
@@ -4370,8 +4374,8 @@ app.get('/api/admin/songs', requirePermission('songs.view'), (req, res) => {
       return (Number(b.releaseYear) || 0) - (Number(a.releaseYear) || 0);
     }
     if (sortMode === 'brands_desc') {
-      const brandsA = Object.values(a.brands || {}).filter(s => s?.available).length;
-      const brandsB = Object.values(b.brands || {}).filter(s => s?.available).length;
+      const brandsA = Object.values(a.brands || {}).filter(isCatalogBrandAvailable).length;
+      const brandsB = Object.values(b.brands || {}).filter(isCatalogBrandAvailable).length;
       return brandsB - brandsA;
     }
 
@@ -4600,9 +4604,12 @@ app.patch('/api/admin/song/:songId/brand', requirePermission('brand.update'), as
   }
 
   if (!available) {
+    nextBrandStatus.available = false;
     nextBrandStatus.code = before?.code || 'N/A';
     delete nextBrandStatus.audioType;
     delete nextBrandStatus.mvType;
+  } else {
+    delete nextBrandStatus.available;
   }
 
   song.brands[brandId] = {
