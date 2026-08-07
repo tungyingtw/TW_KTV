@@ -47,6 +47,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
       onClick={onClose}
     >
       <div
+        className="legal-modal"
         style={{
           backgroundColor: 'var(--bg-card, #1e293b)',
           color: 'var(--text-primary, #f8fafc)',
@@ -65,6 +66,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         onClick={e => e.stopPropagation()}
       >
         <div
+          className="legal-modal-header"
           style={{
             padding: '18px 24px',
             borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
@@ -75,7 +77,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             flexShrink: 0,
           }}
         >
-          <div>
+          <div className="legal-modal-heading">
             <h3 id="legal-notice-title" style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary, #ffffff)' }}>
               關於本站與法律條款 (Terms & Privacy Policy)
             </h3>
@@ -106,6 +108,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
         {/* Modal Tabs Navigation */}
         <div
+          className="legal-modal-tabs"
           style={{
             display: 'flex',
             borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
@@ -117,6 +120,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           }}
         >
           <button
+            className="legal-modal-tab"
             onClick={() => setActiveTab('privacy')}
             style={{
               padding: '12px 16px',
@@ -137,6 +141,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           </button>
 
           <button
+            className="legal-modal-tab"
             onClick={() => setActiveTab('terms')}
             style={{
               padding: '12px 16px',
@@ -157,6 +162,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           </button>
 
           <button
+            className="legal-modal-tab"
             onClick={() => setActiveTab('about')}
             style={{
               padding: '12px 16px',
@@ -177,6 +183,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           </button>
 
           <button
+            className="legal-modal-tab"
             onClick={() => setActiveTab('contact')}
             style={{
               padding: '12px 16px',
@@ -199,6 +206,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
         {/* Modal Body Content */}
         <div
+          className="legal-modal-body"
           style={{
             padding: '24px',
             overflowY: 'auto',
@@ -210,7 +218,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           }}
         >
           {activeTab === 'privacy' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 4px 0', fontSize: '1.1rem' }}>
                 隱私權保護政策 (Privacy Policy)
               </h4>
@@ -253,7 +261,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           )}
 
           {activeTab === 'terms' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 4px 0', fontSize: '1.1rem' }}>
                 免責聲明與服務條款 (Terms of Service & Legal Disclaimer)
               </h4>
@@ -296,7 +304,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           )}
 
           {activeTab === 'about' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
                 關於「台灣 KTV 歌曲對照查詢網」 (About This Site)
               </h4>
@@ -317,7 +325,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           )}
 
           {activeTab === 'contact' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
                 聯絡我們 (Contact Us)
               </h4>
@@ -361,6 +369,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
                       fontWeight: 700,
                       color: '#38bdf8',
                       textDecoration: 'none',
+                      overflowWrap: 'anywhere',
                     }}
                   >
                     tyfunlab@gmail.com

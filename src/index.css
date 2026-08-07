@@ -477,6 +477,20 @@ textarea:focus {
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12), 0 0 18px rgba(128, 82, 255, 0.12);
 }
 
+.legal-modal,
+.legal-modal-body,
+.legal-modal-content {
+  min-width: 0;
+}
+
+.legal-modal-content {
+  overflow-wrap: anywhere;
+}
+
+.legal-modal-body a {
+  overflow-wrap: anywhere;
+}
+
 .home-hero {
   width: min(1400px, calc(100% - 40px));
   margin: 16px auto 0;
@@ -661,6 +675,74 @@ html, body {
     font-size: 0.7rem;
     white-space: nowrap;
     flex-shrink: 0;
+  }
+
+  .legal-modal {
+    width: 100% !important;
+    height: calc(100vh - 16px) !important;
+    max-height: calc(100vh - 16px) !important;
+    min-height: 0 !important;
+    border-radius: 14px !important;
+  }
+
+  .legal-modal-header {
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 14px 14px 12px !important;
+  }
+
+  .legal-modal-heading {
+    min-width: 0;
+  }
+
+  .legal-modal-heading h3 {
+    font-size: 1rem !important;
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .legal-modal-heading p {
+    font-size: 0.72rem !important;
+    line-height: 1.45 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .legal-modal-tabs {
+    padding: 0 10px !important;
+    min-height: 44px !important;
+    scrollbar-width: none;
+  }
+
+  .legal-modal-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .legal-modal-tab {
+    padding: 10px 12px !important;
+    font-size: 0.78rem !important;
+    flex: 0 0 auto;
+  }
+
+  .legal-modal-tab svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .legal-modal-body {
+    padding: 16px 14px !important;
+    font-size: 0.86rem !important;
+    line-height: 1.75 !important;
+  }
+
+  .legal-modal-content h4 {
+    font-size: 1rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .legal-modal-content h5 {
+    font-size: 0.92rem !important;
+    line-height: 1.45 !important;
   }
 
   /* 0. 隱藏極窄手機端不必要的重複按鈕文字 */
