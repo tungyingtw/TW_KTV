@@ -3612,6 +3612,101 @@ function getLocalDirStats(dirPath) {
   }
 }
 
+function readJsonFileSafe(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function summarizeArchiveRecords(records) {
+  if (Array.isArray(records)) return { records: records.length };
+  if (records && typeof records === 'object') return { records: Object.keys(records).length };
+  return { records: 0 };
+}
+
+function listLocalJsonArchives(dirPath) {
+  try {
+    if (!fs.existsSync(dirPath)) return [];
+    return fs.readdirSync(dirPath)
+      .filter(name => /^(\d{4}-\d{2}|unknown)\.json$/.test(name))
+      .map(name => {
+        const filePath = path.join(dirPath, name);
+        const payload = readJsonFileSafe(filePath, []);
+        return {
+          name,
+          month: name.replace(/\.json$/, ''),
+          source: 'local_json',
+          sizeBytes: getLocalFileSize(filePath),
+          ...summarizeArchiveRecords(payload),
+        };
+      })
+      .sort((a, b) => String(b.month).localeCompare(String(a.month)));
+  } catch {
+    return [];
+  }
+}
+
+async function listReviewActionRedisArchives() {
+  if (!USE_REDIS) return [];
+  try {
+    const keys = await redisCmd('keys', `${REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX}*`);
+    if (!Array.isArray(keys)) return [];
+    const archives = [];
+    for (const key of keys) {
+      const month = String(key).replace(REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX, '');
+      if (!/^(\d{4}-\d{2}|unknown)$/.test(month)) continue;
+      const raw = await redisCmd('get', key);
+      const payload = raw ? JSON.parse(raw) : [];
+      archives.push({
+        name: `${month}.json`,
+        month,
+        source: 'redis',
+        sizeBytes: Buffer.byteLength(JSON.stringify(payload), 'utf8'),
+        ...summarizeArchiveRecords(payload),
+      });
+    }
+    return archives.sort((a, b) => String(b.month).localeCompare(String(a.month)));
+  } catch (err) {
+    console.warn('[ReviewActions] Redis archive summary failed:', err.message);
+    return [];
+  }
+}
+
+async function buildAdminArchivesSummary() {
+  const votesArchive = await loadVotesArchiveStore();
+  const reports = listLocalJsonArchives(REPORTS_ARCHIVE_DIR);
+  const reviewActionsLocal = listLocalJsonArchives(REVIEW_ACTIONS_ARCHIVE_DIR);
+  const reviewActionsRedis = await listReviewActionRedisArchives();
+  const reviewActions = reviewActionsRedis.length ? reviewActionsRedis : reviewActionsLocal;
+  const votesPayloadSize = Buffer.byteLength(JSON.stringify(votesArchive || {}), 'utf8');
+  const votesRecords = Object.keys(votesArchive || {}).length;
+  return {
+    generatedAt: new Date().toISOString(),
+    archives: [
+      {
+        type: 'reports',
+        label: '\u5df2\u8655\u7406\u56de\u5831',
+        description: '\u5f8c\u53f0\u5df2\u8655\u7406\u7684\u4f7f\u7528\u8005\u56de\u5831\uff0c\u4f9d\u6708\u4efd\u5c01\u5b58\uff0c\u7528\u65bc\u8ffd\u67e5\u6b77\u53f2\u8655\u7406\u7d50\u679c\u3002',
+        files: reports,
+      },
+      {
+        type: 'review-actions',
+        label: '\u5be9\u6838\u8655\u7406\u7d00\u9304',
+        description: '\u7ba1\u7406\u8005\u5c0d\u5f85\u8655\u7406\u9805\u76ee\u7684\u5957\u7528\u6216\u99c1\u56de\u7d00\u9304\uff0c\u7528\u65bc\u56de\u6eaf\u8ab0\u5728\u4f55\u6642\u505a\u4e86\u4ec0\u9ebc\u8655\u7406\u3002',
+        files: reviewActions,
+      },
+      {
+        type: 'votes',
+        label: '\u5df2\u8655\u7406\u6295\u7968\u8a0a\u865f',
+        description: '\u5df2\u88ab\u5f8c\u53f0\u8655\u7406\u5b8c\u7684\u7fa4\u773e\u6295\u7968\u6458\u8981\uff0c\u4e3b\u8981\u7528\u65bc\u907f\u514d\u6295\u7968\u4e3b\u6a94\u7121\u9650\u81a8\u8139\u3002',
+        files: votesRecords ? [{ name: 'votes_archived_signals.json', month: 'all', source: USE_REDIS ? 'redis' : 'local_json', sizeBytes: votesPayloadSize, records: votesRecords }] : [],
+      },
+    ],
+  };
+}
+
 async function markReportReviewed(reportId, status, adminNote = '') {
   if (!reportId) return null;
   const reports = await loadReportsStore();
@@ -4893,6 +4988,52 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
 });
 
 // ── 下載七日每日備份快照 ──
+app.get('/api/admin/archives', requirePermission('dashboard.view'), async (req, res) => {
+  try {
+    res.json(await buildAdminArchivesSummary());
+  } catch (err) {
+    console.error('[Admin Archives Summary Error]', err);
+    res.status(503).json({ error: 'Archive summary failed: ' + err.message });
+  }
+});
+
+app.get('/api/admin/archives/:type/:name', requirePermission('backup.export'), async (req, res) => {
+  const type = String(req.params.type || '');
+  const name = String(req.params.name || '');
+  try {
+    let payload = null;
+
+    if (type === 'reports' || type === 'review-actions') {
+      if (!/^(\d{4}-\d{2}|unknown)\.json$/.test(name)) return res.status(400).json({ error: 'Invalid archive name' });
+      if (type === 'reports') {
+        const filePath = path.join(REPORTS_ARCHIVE_DIR, name);
+        if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Archive not found' });
+        payload = readJsonFileSafe(filePath, []);
+      } else if (USE_REDIS) {
+        const raw = await redisCmd('get', `${REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX}${name.replace(/\.json$/, '')}`);
+        if (raw) payload = JSON.parse(raw);
+      }
+      if (type === 'review-actions' && payload === null) {
+        const filePath = path.join(REVIEW_ACTIONS_ARCHIVE_DIR, name);
+        if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Archive not found' });
+        payload = readJsonFileSafe(filePath, []);
+      }
+    } else if (type === 'votes') {
+      if (name !== 'votes_archived_signals.json') return res.status(400).json({ error: 'Invalid archive name' });
+      payload = await loadVotesArchiveStore();
+    } else {
+      return res.status(400).json({ error: 'Invalid archive type' });
+    }
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
+    res.send(JSON.stringify(payload, null, 2));
+  } catch (err) {
+    console.error('[Admin Archive Download Error]', err);
+    res.status(503).json({ error: 'Archive download failed: ' + err.message });
+  }
+});
+
 app.get('/api/admin/backup/snapshots/:name', requirePermission('backup.export'), async (req, res) => {
   const { name } = req.params;
   if (!/^backup_\d{4}-\d{2}-\d{2}\.json$/.test(name)) {
