@@ -25,19 +25,7 @@
 
 ## 舊計畫書狀態
 
-以下文件的主要程式項目已完成，但文件內可能仍保留過期的「下一步」文字。後續判斷必須以本文件為準：
-
-1. `docs/admin-review-actions-archive-plan.md`
-2. `docs/admin-reports-archive-plan.md`
-3. `docs/admin-vote-signal-compaction-plan.md`
-4. `docs/render-free-tier-system-governance-plan.md`
-
-以下文件仍可作為操作驗證參考，但不代表還有同名功能必須重新實作：
-
-1. `docs/admin-review-workflow-second-pass.md`
-2. `docs/admin-review-workflow-qa-audit.md`
-3. `docs/admin-review-resolve-api-validation-runbook.md`
-4. `docs/美化相關/phase-5-frontstage-qa-summary.md`
+已完成的後台封存、投票壓縮、第二輪巡檢與前台 Phase 5 QA 細部文件已從版本內清除。後續判斷必須以本文件、`docs/legacy-plan-status-2026-08-07.md`、`docs/database-slimming-final-audit-2026-08-07.md` 與 `docs/render-online-validation-checklist.md` 為準。
 
 ## 仍需處理
 
