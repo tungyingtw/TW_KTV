@@ -51,8 +51,8 @@ export interface Song {
   lyricist: string;
   composer: string;
   language: Language;
-  zhuyin: string;
-  pinyin: string;
+  zhuyin?: string;
+  pinyin?: string;
   releaseYear: number;
   popularRank?: number;
   lyricsSnippet: string;
