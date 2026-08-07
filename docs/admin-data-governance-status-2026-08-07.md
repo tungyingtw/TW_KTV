@@ -71,6 +71,7 @@
 1. 已將 `available:true` 改為隱含規則，只保留 `available:false`。
 2. 已清除 `zhuyin:AUTO` 與 `pinyin:AUTO` 佔位值。
 3. 已清除不可信 `releaseYear` 預設值，保留覆寫檔內 1 筆 2019。
-4. 已重建 `public/songs_catalog.bin`，目前輸出約 35.49 MB。
+4. 已清除樣板 `lyricsSnippet` 與批次 YouTube 搜尋 URL。
+5. 已重建 `public/songs_catalog.bin`，目前輸出約 24.61 MB。
 
-下一步必須評估 `lyricsSnippet` 與 `youtubeUrl` 的資料策略。不得直接刪除，因為它們仍會影響搜尋、詳情頁與參考連結。
+下一步必須評估 `lyricist` 與 `composer` 是否大量等同 artist。不得直接刪除，因為它們仍會影響搜尋與詳情頁資訊。

@@ -44,6 +44,20 @@ function getSearchablePhonetic(value) {
   return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : '';
 }
 
+function isGeneratedLyricsSnippet(value) {
+  const text = String(value || '').trim();
+  return text.includes('全台 10 大 KTV') || /^.+《.+》KTV 歌曲資料待校對。$/.test(text);
+}
+
+function getMeaningfulLyricsSnippet(value) {
+  return isGeneratedLyricsSnippet(value) ? '' : String(value || '').trim();
+}
+
+function getMeaningfulYoutubeUrl(value) {
+  const url = String(value || '').trim();
+  return url.includes('youtube.com/results?search_query=') ? '' : url;
+}
+
 function readSongs(filePath) {
   if (!fs.existsSync(filePath)) throw new Error(`找不到檔案：${filePath}`);
   const songs = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -64,8 +78,8 @@ function hashFrontendShape(songs) {
       zhuyin: getSearchablePhonetic(song.zhuyin),
       pinyin: getSearchablePhonetic(song.pinyin),
       releaseYear: song.releaseYear,
-      lyricsSnippet: song.lyricsSnippet,
-      youtubeUrl: song.youtubeUrl,
+      lyricsSnippet: getMeaningfulLyricsSnippet(song.lyricsSnippet),
+      youtubeUrl: getMeaningfulYoutubeUrl(song.youtubeUrl),
       isMainlandViral: song.isMainlandViral,
       brands: Object.fromEntries(Object.entries(song.brands || {}).map(([brandId, status]) => [brandId, {
         available: isBrandAvailable(status),
@@ -87,7 +101,7 @@ function getSearchableText(song) {
     song.language,
     getSearchablePhonetic(song.zhuyin),
     getSearchablePhonetic(song.pinyin),
-    song.lyricsSnippet,
+    getMeaningfulLyricsSnippet(song.lyricsSnippet),
   ].filter(Boolean).join(' ').toLowerCase();
 }
 

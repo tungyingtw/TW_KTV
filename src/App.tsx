@@ -26,6 +26,7 @@ import { useIsMobile } from './hooks/useIsMobile';
 import { stripPunctuation, normalizeText } from './utils/stringUtils';
 import { expandFrontendQuery } from './utils/artistAliases';
 import { isBrandAvailable } from './utils/brandAvailability';
+import { getMeaningfulLyricsSnippet } from './utils/songReference';
 import { Sparkles, Music, ChevronDown, Mail } from 'lucide-react';
 
 function getSearchablePhonetic(value?: string): string {
@@ -137,7 +138,7 @@ export function App() {
         // 前台硬過濾防護牆 (Strict Sanitizer Guard)
         const sanitized = catalog.filter(s => {
           const t = s.title || '';
-          const snippet = s.lyricsSnippet || '';
+          const snippet = getMeaningfulLyricsSnippet(s);
           if (/\bVol\.\d+|\bVOL\.\d+|\bvol\.\d+|\bNo\.\d+/i.test(t)) return false;
           if (snippet.includes('10 大 KTV 歌號對照') || snippet.includes('包廂歡唱點歌碼')) return false;
           return true;
@@ -221,6 +222,7 @@ export function App() {
       minMatchCharLength: 1,
       ignoreLocation: true,
       useExtendedSearch: true,
+      getFn: (song, path) => path === 'lyricsSnippet' ? getMeaningfulLyricsSnippet(song as Song) : Fuse.config.getFn(song, path),
     });
   }, [allSongs]);
 
@@ -255,7 +257,8 @@ export function App() {
       const substringMatches = allSongs.filter(s => {
         const cleanTitle = stripPunctuation(s.title);
         const cleanArtist = stripPunctuation(s.artist);
-        const cleanLyrics = stripPunctuation(s.lyricsSnippet || '');
+        const lyricsSnippet = getMeaningfulLyricsSnippet(s);
+        const cleanLyrics = stripPunctuation(lyricsSnippet);
         const zhuyin = getSearchablePhonetic(s.zhuyin).toLowerCase();
         const pinyin = getSearchablePhonetic(s.pinyin).toLowerCase();
 
@@ -264,13 +267,13 @@ export function App() {
         return (
           s.title.includes(rawQuery) || 
           s.artist.includes(rawQuery) || 
-          (s.lyricsSnippet && s.lyricsSnippet.includes(rawQuery)) ||
+          (lyricsSnippet && lyricsSnippet.includes(rawQuery)) ||
           (cleanQuery && cleanTitle.includes(cleanQuery)) ||
           (cleanQuery && cleanArtist.includes(cleanQuery)) ||
           (cleanQuery && cleanLyrics.includes(cleanQuery)) ||
           (normalizedQuery && normalizeText(s.title).includes(normalizedQuery)) ||
           (normalizedQuery && normalizeText(s.artist).includes(normalizedQuery)) ||
-          (normalizedQuery && s.lyricsSnippet && normalizeText(s.lyricsSnippet).includes(normalizedQuery)) ||
+          (normalizedQuery && lyricsSnippet && normalizeText(lyricsSnippet).includes(normalizedQuery)) ||
           (zhuyin && zhuyin.includes(rawQuery.toLowerCase())) ||
           (pinyin && pinyin.includes(rawQuery.toLowerCase())) ||
           expandedTerms.some(term => (

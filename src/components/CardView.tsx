@@ -7,6 +7,7 @@ import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
+import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
 
 interface CardViewProps {
   songs: Song[];
@@ -236,7 +237,7 @@ export const CardView: React.FC<CardViewProps> = ({
                     {composer && <span>曲: {composer}</span>}
                   </div>
                 )}
-                {song.lyricsSnippet && !song.lyricsSnippet.includes('全台 10 大 KTV') && (
+                {getMeaningfulLyricsSnippet(song) && (
                   <p style={{
                     color: 'var(--text-muted)',
                     fontStyle: 'italic',
@@ -245,7 +246,7 @@ export const CardView: React.FC<CardViewProps> = ({
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}>
-                    辨識提示：{song.lyricsSnippet}
+                    辨識提示：{getMeaningfulLyricsSnippet(song)}
                   </p>
                 )}
               </div>
@@ -340,9 +341,9 @@ export const CardView: React.FC<CardViewProps> = ({
               paddingTop: '6px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {song.youtubeUrl ? (
+                {getYoutubeReferenceUrl(song) ? (
                   <a
-                    href={song.youtubeUrl}
+                    href={getYoutubeReferenceUrl(song)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={e => e.stopPropagation()}
