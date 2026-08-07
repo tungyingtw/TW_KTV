@@ -41,15 +41,9 @@
 
 ## 仍需處理
 
-1. 必須在線上 Render 環境執行完整驗證清單。
-2. 必須確認後台登入帳號實際權限能正確看到或下載封存資料。
-3. 必須實測「下載全站備份」後，JSON 是否包含 `data.archives`。
-4. 必須實測「匯入備份預覽」是否顯示封存資料總筆數。
-5. 必須確認冷啟動時，前台顯示載入/喚醒狀態，不得誤顯示為真正 0 筆結果。
-6. 必須確認後台處理項目後，項目不會重新出現在待處理列表。
-7. 必須線上驗證清理假 MV/音訊標記後，前台篩選不再顯示大量未驗證的原版 MV 結果。
-8. 必須依 `docs/database-slimming-validation-runbook.md` 評估 `available` 是否可改成隱含規則，不得直接批次覆寫正式 `database.json`。
-9. 必須依 `docs/database-slimming-semantic-audit-result.md` 的順序處理：已完成 `brand.note` 與假 `audioType/mvType` 清理，下一步評估 `available`。
+1. 已完成線上 Render 驗證，前台與後台主要流程目前不再列為待驗證項目。
+2. 若未來發現資料量或速度問題，必須先記錄 API、資料量、等待時間與操作步驟，再決定是否建立 review queue 永久索引。
+3. 若未來要整理 `brand.note`，必須先建立衝突資訊的替代結構，不得直接刪除。
 
 ## 暫不處理
 
@@ -60,9 +54,9 @@
 
 ## 下一步
 
-1. 執行 `docs/render-online-validation-checklist.md`。
-2. 驗證完成後，更新本文件的「仍需處理」。
-3. 若線上驗證發現資料量或速度問題，先記錄 API、資料量、等待時間與操作步驟，再決定是否建立 review queue 永久索引。
+1. 維持目前資料治理規則，不要重複執行已完成的舊計畫。
+2. 若使用者回報線上異常，先依 `docs/render-online-validation-checklist.md` 重現，再檢查靜態 catalog、Redis 覆寫與 API 回傳來源。
+3. 若需要新增資料匯入流程，必須另開新計畫，不得直接改動既有瘦身結果。
 
 ## 2026-08-07 補充：資料瘦身收尾
 
@@ -76,4 +70,4 @@
 6. 已清除 optional 欄位空字串與空 `brand.code`。
 7. 已重建 `public/songs_catalog.bin`，目前輸出約 19.30 MB。
 
-資料瘦身主要項目已完成。舊計畫文件狀態已整理至 `docs/legacy-plan-status-2026-08-07.md`。下一步必須先做線上 Render 驗證。
+資料瘦身主要項目已完成，線上 Render 驗證已由使用者確認完成。舊計畫文件狀態已整理至 `docs/legacy-plan-status-2026-08-07.md`。

@@ -31,7 +31,7 @@
 6. `docs/admin-review-workflow-qa-audit.md`
 7. `docs/admin-review-resolve-api-validation-runbook.md`
 
-後台目前下一步不是擴大重構，而是依 `docs/render-online-validation-checklist.md` 做線上互動驗證。
+後台目前不得擴大重構。線上互動驗證已由使用者確認完成；後續只在出現具體異常時依 `docs/render-online-validation-checklist.md` 重現。
 
 ## 美化相關文件
 
@@ -48,7 +48,6 @@
 
 ## 目前有效下一步
 
-1. 先做線上 Render 驗證。
-2. 驗證首頁載入、搜尋、品牌篩選、歌曲詳情、手機篩選與後台歌曲編輯。
-3. 若線上驗證通過，再視需要整理 UI 或新增資料匯入流程。
-4. 若線上驗證發現資料不一致，先檢查靜態 catalog、Redis 覆寫與 API 回傳來源，不要先刪資料。
+1. 不得重複執行已完成的資料瘦身、封存、投票壓縮與前台 Phase 5 修正。
+2. 若使用者回報線上異常，先依 `docs/render-online-validation-checklist.md` 重現，再檢查靜態 catalog、Redis 覆寫與 API 回傳來源。
+3. 若之後要新增資料匯入流程或繼續美化，必須另開新計畫並限定範圍。
