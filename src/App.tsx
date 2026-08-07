@@ -622,49 +622,49 @@ export function App() {
           <div style={{
             textAlign: 'center',
             padding: '60px 24px',
-            color: '#94a3b8',
-            background: 'rgba(30, 41, 59, 0.4)',
+            color: 'var(--text-secondary)',
+            background: 'var(--bg-card)',
             backdropFilter: 'blur(16px)',
             borderRadius: '20px',
             margin: '24px auto',
             maxWidth: '560px',
-            border: '1px solid rgba(236, 72, 153, 0.2)',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 18px 50px rgba(0,0,0,0.24)',
             opacity: isFadingOut ? 0 : 1,
             transform: isFadingOut ? 'scale(0.98)' : 'scale(1)',
             transition: 'opacity 0.38s ease-out, transform 0.38s ease-out',
             pointerEvents: isFadingOut ? 'none' : 'auto'
           }}>
             <div style={{ display: 'inline-block', marginBottom: '20px' }}>
-              <Music size={52} style={{ color: '#ec4899', filter: 'drop-shadow(0 0 12px rgba(236, 72, 153, 0.6))' }} />
+              <Music size={52} style={{ color: 'var(--accent-primary)', filter: 'drop-shadow(0 0 12px rgba(128, 82, 255, 0.45))' }} />
             </div>
 
-            <h3 style={{ fontSize: '1.3rem', color: '#f8fafc', fontWeight: 800, marginBottom: '8px' }}>
-              正在載入全台 KTV 歌庫資料
+            <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '8px' }}>
+              正在整理大家共同補完的歌庫資料
             </h3>
-            <p style={{ fontSize: '0.88rem', color: '#94a3b8', marginBottom: '24px' }}>
-              {catalogLoadError || (displayProgress >= 100 ? '歌庫資料已準備完成' : '正在讀取歌曲收錄、原唱導唱與 MV 標示資料')}
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+              {catalogLoadError || (displayProgress >= 100 ? '歌庫資料已準備完成' : '正在比對歌曲收錄、原聲原唱、導唱與 MV 標示')}
             </p>
 
             {/* 進度條容器 */}
             <div style={{
               width: '100%',
               height: '14px',
-              background: 'rgba(255, 255, 255, 0.08)',
+              background: 'rgba(128, 82, 255, 0.12)',
               borderRadius: '20px',
               overflow: 'hidden',
               position: 'relative',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--border-color)',
               boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4)'
             }}>
               {/* 平滑填滿進度條 (0% ~ 100%) */}
               <div style={{
                 width: `${displayProgress}%`,
                 height: '100%',
-                background: 'linear-gradient(90deg, #ec4899, #a855f7, #3b82f6)',
+                background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-pink), var(--accent-support))',
                 borderRadius: '20px',
                 transition: 'width 0.12s linear',
-                boxShadow: '0 0 15px rgba(236, 72, 153, 0.8)'
+                boxShadow: '0 0 15px rgba(128, 82, 255, 0.5)'
               }} />
             </div>
 
@@ -674,10 +674,10 @@ export function App() {
               marginTop: '10px',
               fontSize: '0.82rem',
               fontWeight: 700,
-              color: '#cbd5e1'
+              color: 'var(--text-secondary)'
             }}>
               <span>0%</span>
-              <span style={{ color: '#ec4899', fontSize: '0.95rem' }}>{displayProgress}%</span>
+              <span style={{ color: 'var(--accent-primary)', fontSize: '0.95rem' }}>{displayProgress}%</span>
               <span>100%</span>
             </div>
           </div>
@@ -685,15 +685,55 @@ export function App() {
           <div style={{
             textAlign: 'center',
             padding: '48px 24px',
-            color: '#cbd5e1',
-            background: 'rgba(30, 41, 59, 0.4)',
+            color: 'var(--text-secondary)',
+            background: 'var(--bg-card)',
             border: '1px solid rgba(248, 113, 113, 0.25)',
             borderRadius: '12px',
             margin: '24px auto',
             maxWidth: '560px',
           }}>
-            <h3 style={{ color: '#f8fafc', fontSize: '1.1rem', marginBottom: '8px' }}>歌庫資料暫時無法載入</h3>
-            <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem' }}>{catalogLoadError}</p>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', marginBottom: '8px' }}>歌庫資料暫時無法載入</h3>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{catalogLoadError}</p>
+          </div>
+        ) : filteredSongs.length === 0 ? (
+          <div className="empty-state-panel glass-panel" style={{
+            textAlign: 'center',
+            padding: isMobile ? '34px 18px' : '44px 28px',
+            margin: isMobile ? '14px 10px' : '24px auto',
+            maxWidth: '620px',
+          }}>
+            <Music size={42} style={{ color: 'var(--accent-highlight)', marginBottom: '14px' }} />
+            <h3 style={{ color: 'var(--text-primary)', fontSize: isMobile ? '1rem' : '1.15rem', marginBottom: '8px' }}>
+              目前沒有符合條件的歌曲
+            </h3>
+            <p style={{ margin: '0 auto 18px', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.75, maxWidth: '460px' }}>
+              可以調整搜尋字、切換品牌或放寬篩選條件。如果你確定現場有這首歌，也可以提供建議讓大家一起補完資料。
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  setFilters(prev => ({
+                    ...prev,
+                    searchQuery: '',
+                    selectedBrand: 'all',
+                    selectedBrands: [],
+                    selectedLanguages: [],
+                    selectedTitleLength: 'all',
+                    onlyOfficialMv: false,
+                    onlyOriginalVocal: false,
+                    onlyMainlandViral: false,
+                    onlyNicheSongs: false,
+                  }));
+                  setDisplayedCount(40);
+                }}
+              >
+                清除篩選
+              </button>
+              <button className="btn-primary" onClick={() => setIsSuggestModalOpen(true)}>
+                提供建議
+              </button>
+            </div>
           </div>
         ) : filters.viewMode === 'matrix' ? (
           <MatrixView

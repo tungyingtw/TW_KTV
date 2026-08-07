@@ -163,6 +163,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           }}
         >
           <button
+            className={`brand-chip ${!isMultiSelecting && selectedBrand === 'all' ? 'is-selected' : ''}`}
             onClick={handleAllClick}
             style={{
               height: '32px',
@@ -191,6 +192,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
 
             return (
               <button
+                className={`brand-chip ${isSelected ? 'is-selected' : ''}`}
                 key={brand.id}
                 onClick={() => handleBrandClick(brand.id)}
                 style={{
