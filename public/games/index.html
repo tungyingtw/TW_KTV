@@ -44,7 +44,7 @@
     }
 
     .nav {
-      width: min(100%, 1120px);
+      width: min(100%, 980px);
       margin: 0 auto;
       padding: 14px 20px;
       display: flex;
@@ -88,20 +88,20 @@
     }
 
     main {
-      width: min(100%, 1120px);
+      width: min(100%, 980px);
       margin: 0 auto;
-      padding: 34px 20px 72px;
+      padding: 30px 20px 68px;
     }
 
     .intro {
       display: grid;
       gap: 10px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-size: clamp(1.65rem, 3vw, 2.45rem);
       line-height: 1.12;
       letter-spacing: 0;
     }
@@ -113,25 +113,31 @@
       max-width: 760px;
     }
 
-    .game-grid {
+    .section-title {
+      margin: 26px 0 10px;
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 900;
+    }
+
+    .game-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
+      gap: 10px;
     }
 
     .game-card {
-      min-height: 220px;
+      min-height: 126px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: space-between;
-      gap: 18px;
-      padding: 18px;
+      gap: 16px;
+      padding: 14px 16px;
       border: 1px solid var(--line);
       border-radius: 8px;
       color: var(--text);
       text-decoration: none;
       background: linear-gradient(135deg, var(--panel), var(--panel-2));
-      box-shadow: 0 16px 42px rgba(0, 0, 0, .22);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
       transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
 
@@ -139,21 +145,26 @@
     .game-card:focus-visible {
       transform: translateY(-2px);
       border-color: rgba(244, 114, 182, .45);
-      box-shadow: 0 20px 52px rgba(244, 114, 182, .12);
+      box-shadow: 0 16px 40px rgba(244, 114, 182, .12);
       outline: none;
+    }
+
+    .game-main {
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .eyebrow {
       color: var(--gold);
-      font-size: .78rem;
+      font-size: .74rem;
       font-weight: 900;
       letter-spacing: .08em;
       text-transform: uppercase;
     }
 
     h2 {
-      margin: 6px 0 8px;
-      font-size: 1.35rem;
+      margin: 5px 0 6px;
+      font-size: 1.16rem;
       line-height: 1.25;
     }
 
@@ -161,6 +172,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-top: 10px;
     }
 
     .tag {
@@ -173,13 +185,49 @@
       background: rgba(255, 255, 255, .05);
     }
 
+    .status {
+      color: #86efac;
+      border-color: rgba(134, 239, 172, .26);
+      background: rgba(34, 197, 94, .08);
+    }
+
     .play {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid rgba(34, 211, 238, .28);
+      border-radius: 8px;
+      background: rgba(34, 211, 238, .08);
       color: var(--cyan);
       font-weight: 900;
     }
 
+    .planned-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .planned-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 14px;
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .035);
+      color: var(--muted);
+    }
+
+    .planned-item b {
+      color: var(--text);
+      font-size: .96rem;
+    }
+
     footer {
-      width: min(100%, 1120px);
+      width: min(100%, 980px);
       margin: 0 auto;
       padding: 0 20px 30px;
       color: rgba(170, 183, 206, .78);
@@ -190,7 +238,9 @@
       .nav { padding: 10px 14px; }
       .brand span:last-child { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       main { padding: 26px 14px 54px; }
-      .game-card { min-height: 200px; }
+      .game-card { align-items: flex-start; flex-direction: column; min-height: 0; }
+      .play { width: 100%; }
+      .planned-item { flex-direction: column; gap: 4px; }
     }
   </style>
 </head>
@@ -208,23 +258,36 @@
   <main>
     <section class="intro">
       <h1>KTV 小遊戲</h1>
-      <p>查歌之外的輕量遊戲區。這裡的遊戲以純網頁形式執行，不需要登入，也不影響歌曲查詢與後台資料流程。</p>
+      <p>查歌之外的輕量遊戲區。已上線的遊戲會出現在清單中，點選後即可進入遊玩。</p>
     </section>
 
-    <section class="game-grid" aria-label="遊戲列表">
+    <h2 class="section-title">已上線</h2>
+    <section class="game-list" aria-label="已上線遊戲列表">
       <a class="game-card" href="./neon-breakout/">
-        <span>
+        <span class="game-main">
           <span class="eyebrow">Arcade</span>
           <h2>霓虹星際反彈</h2>
-          <p>霓虹打磚塊結合太空射擊與 Boss 關卡，適合先作為小遊戲入口的單檔範例。</p>
-        </span>
-        <span class="tags" aria-label="遊戲特性">
-          <span class="tag">純前端</span>
-          <span class="tag">Canvas</span>
-          <span class="tag">單人</span>
+          <p>霓虹打磚塊結合太空射擊與 Boss 關卡。</p>
+          <span class="tags" aria-label="遊戲特性">
+            <span class="tag status">已上線</span>
+            <span class="tag">Canvas</span>
+            <span class="tag">單人</span>
+          </span>
         </span>
         <span class="play">開始遊玩</span>
       </a>
+    </section>
+
+    <h2 class="section-title">規劃中</h2>
+    <section class="planned-list" aria-label="規劃中遊戲列表">
+      <div class="planned-item">
+        <b>猜歌挑戰</b>
+        <span>使用歌曲資料產生題目</span>
+      </div>
+      <div class="planned-item">
+        <b>KTV Bingo</b>
+        <span>聚會前快速產生歌單格</span>
+      </div>
     </section>
   </main>
 
