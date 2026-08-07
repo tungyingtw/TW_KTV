@@ -8,6 +8,7 @@ import { fetchSongVotes } from '../services/communityService';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
+import { getMeaningfulComposer, getMeaningfulLyricist } from '../utils/songCredits';
 
 interface SongDetailModalProps {
   song: Song | null;
@@ -64,8 +65,8 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
   // 規範語言標示顯示
   const displayLanguage = song.language || '流行曲目';
-  const lyricist = song.lyricist?.trim();
-  const composer = song.composer?.trim();
+  const lyricist = getMeaningfulLyricist(song);
+  const composer = getMeaningfulComposer(song);
 
   return (
     <>

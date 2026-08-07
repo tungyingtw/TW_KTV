@@ -8,6 +8,7 @@ import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
+import { getMeaningfulComposer, getMeaningfulLyricist } from '../utils/songCredits';
 
 interface CardViewProps {
   songs: Song[];
@@ -122,8 +123,8 @@ export const CardView: React.FC<CardViewProps> = ({
     }}>
       {songs.map((song, index) => {
         const isFav = favorites.includes(song.id);
-        const lyricist = song.lyricist?.trim();
-        const composer = song.composer?.trim();
+        const lyricist = getMeaningfulLyricist(song);
+        const composer = getMeaningfulComposer(song);
 
         const displayBrands = isMultiSelecting
           ? selectedBrands.map(bId => sortedBrandList.find(b => b.id === bId) || BRANDS[bId]).filter(Boolean)

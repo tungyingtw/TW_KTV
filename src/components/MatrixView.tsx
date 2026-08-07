@@ -8,6 +8,7 @@ import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
 import { getYoutubeReferenceUrl } from '../utils/songReference';
+import { getMeaningfulComposer, getMeaningfulLyricist } from '../utils/songCredits';
 
 interface MatrixViewProps {
   songs: Song[];
@@ -368,6 +369,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
             {songs.map((song, index) => {
               const isFav = favorites.includes(song.id);
               const isSelected = selectedSongId === song.id;
+              const lyricist = getMeaningfulLyricist(song);
+              const composer = getMeaningfulComposer(song);
 
               return (
                 <React.Fragment key={song.id}>
@@ -434,9 +437,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span style={{ fontWeight: 600, color: 'var(--text-secondary, #cbd5e1)' }}>{song.artist}</span>
-                      {(song.lyricist || song.composer) && (
+                      {(lyricist || composer) && (
                         <span style={{ fontSize: '0.78rem', marginLeft: '6px', opacity: 0.8 }}>
-                          (詞: {song.lyricist || '—'} / 曲: {song.composer || '—'})
+                          (詞: {lyricist || '—'} / 曲: {composer || '—'})
                         </span>
                       )}
                     </div>
