@@ -434,6 +434,8 @@ const REPORTS_PATH = path.join(__dirname, 'reports.json');
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
 const REVIEW_ACTIONS_PATH = path.join(__dirname, 'review_actions.json');
 const ADMIN_LOG_PATH = resolveDataPath('ADMIN_ACTIONS_LOG_PATH', 'admin_actions.log');
+const ADMIN_LOG_MAX_LINES = Math.max(200, parseInt(process.env.ADMIN_LOG_MAX_LINES, 10) || 1000);
+const ADMIN_LOG_MAX_BYTES = Math.max(256 * 1024, parseInt(process.env.ADMIN_LOG_MAX_BYTES, 10) || 1024 * 1024);
 const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 const BRAND_SETTINGS_PATH = path.join(__dirname, 'brand_settings.json');
 const BRAND_SETTINGS_REDIS_KEY = 'ktv:brandSettings';
@@ -1245,6 +1247,7 @@ function logAdminAction(action, detail = {}, req = null) {
   const line = JSON.stringify(logObj) + '\n';
   try {
     fs.appendFileSync(ADMIN_LOG_PATH, line, 'utf8');
+    rotateLocalAdminLogIfNeeded();
   } catch (err) {
     console.warn('[AdminLog] Local log write failed:', err.message);
   }
@@ -3122,10 +3125,33 @@ function getLocalFileSize(filePath) {
   }
 }
 
+function rotateLocalAdminLogIfNeeded() {
+  try {
+    if (!fs.existsSync(ADMIN_LOG_PATH)) return;
+    const size = fs.statSync(ADMIN_LOG_PATH).size;
+    if (size <= ADMIN_LOG_MAX_BYTES) return;
+    const lines = fs.readFileSync(ADMIN_LOG_PATH, 'utf8').trim().split('\n').filter(Boolean);
+    const kept = lines.slice(-ADMIN_LOG_MAX_LINES);
+    fs.writeFileSync(ADMIN_LOG_PATH, kept.join('\n') + (kept.length ? '\n' : ''), 'utf8');
+  } catch (err) {
+    console.warn('[AdminLog] Local log rotation failed:', err.message);
+  }
+}
+
 function classifyDataGrowth(count, sizeBytes, warningCount, criticalCount) {
   if (count >= criticalCount || sizeBytes >= 5 * 1024 * 1024) return 'critical';
   if (count >= warningCount || sizeBytes >= 2 * 1024 * 1024) return 'warning';
   return 'healthy';
+}
+
+function countLocalLogLines(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return 0;
+    const content = fs.readFileSync(filePath, 'utf8').trim();
+    return content ? content.split('\n').length : 0;
+  } catch {
+    return 0;
+  }
 }
 
 async function markReportReviewed(reportId, status, adminNote = '') {
@@ -4333,6 +4359,7 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
     const votes = await loadVotesStore();
     const reviewActions = await loadReviewActionsStore();
     const logBytes = getLocalFileSize(ADMIN_LOG_PATH);
+    const logLines = countLocalLogLines(ADMIN_LOG_PATH);
     const reportStatusCounts = reports.reduce((acc, report) => {
       const status = report.status || 'unknown';
       acc[status] = (acc[status] || 0) + 1;
@@ -4378,11 +4405,11 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
         {
           key: 'admin_logs',
           label: '管理操作日誌',
-          count: null,
+          count: logLines,
           sizeBytes: logBytes,
-          risk: classifyDataGrowth(0, logBytes, 1000, 5000),
-          detail: {},
-          policy: '後台只顯示最近 100 筆；檔案需規劃輪替或截斷。',
+          risk: classifyDataGrowth(logLines, logBytes, Math.floor(ADMIN_LOG_MAX_LINES * 0.8), ADMIN_LOG_MAX_LINES),
+          detail: { maxLocalLines: ADMIN_LOG_MAX_LINES, maxLocalBytes: ADMIN_LOG_MAX_BYTES, redisRetention: 500 },
+          policy: `後台只顯示最近 100 筆；本機檔案超過 ${Math.round(ADMIN_LOG_MAX_BYTES / 1024)} KB 時自動保留最新 ${ADMIN_LOG_MAX_LINES} 行，Redis 保留最新 500 筆。`,
         },
       ],
     });
