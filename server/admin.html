@@ -2230,7 +2230,7 @@ async function loadReports() {
           ${(r.lang || r.lyricist || r.composer || r.hasOriginalVocal || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
             <div class="sub" style="margin-top:4px;color:#cbd5e1">
               ${r.lang ? `語種: <b>${r.lang}</b> &nbsp;` : ''}
-              ${r.mvType === 'official' ? `<span style="color:#38bdf8">官方原版 MV</span> &nbsp;` : (r.mvType === 'edited' ? `<span style="color:#fb923c">剪輯 MV</span> &nbsp;` : '')}
+              ${r.mvType === 'official' ? `<span style="color:#38bdf8">原版 MV</span> &nbsp;` : (r.mvType === 'edited' ? `<span style="color:#fb923c">伴唱畫面</span> &nbsp;` : '')}
               ${r.guidedVocalStatus === 'guided' ? `<span style="color:#22d3ee">有導唱</span> &nbsp;` : (r.guidedVocalStatus === 'none' ? `<span style="color:#fb923c">無導唱</span> &nbsp;` : (r.hasOriginalVocal ? `<span style="color:#ec4899">原唱人聲</span> &nbsp;` : ''))}
               ${r.lyricist ? `作詞: <b>${r.lyricist}</b> &nbsp;` : ''}
               ${r.composer ? `作曲: <b>${r.composer}</b>` : ''}
@@ -2959,7 +2959,7 @@ async function loadReports() {
           ${(r.lang || r.lyricist || r.composer || r.hasOriginalVocal || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
             <div class="sub" style="margin-top:4px;color:#cbd5e1">
               ${r.lang ? `語言: <b>${escapeHtml(r.lang)}</b> &nbsp;` : ''}
-              ${r.mvType === 'official' ? `<span style="color:#38bdf8">官方原版 MV</span> &nbsp;` : (r.mvType === 'edited' ? `<span style="color:#fb923c">剪輯 MV</span> &nbsp;` : '')}
+              ${r.mvType === 'official' ? `<span style="color:#38bdf8">原版 MV</span> &nbsp;` : (r.mvType === 'edited' ? `<span style="color:#fb923c">伴唱畫面</span> &nbsp;` : '')}
               ${r.guidedVocalStatus === 'guided' ? `<span style="color:#22d3ee">有導唱</span> &nbsp;` : (r.guidedVocalStatus === 'none' ? `<span style="color:#fb923c">無導唱</span> &nbsp;` : (r.hasOriginalVocal ? `<span style="color:#ec4899">原唱人聲</span> &nbsp;` : ''))}
               ${r.lyricist ? `作詞: <b>${escapeHtml(r.lyricist)}</b> &nbsp;` : ''}
               ${r.composer ? `作曲: <b>${escapeHtml(r.composer)}</b>` : ''}

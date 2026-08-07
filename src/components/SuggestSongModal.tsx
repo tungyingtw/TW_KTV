@@ -34,7 +34,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [language, setLanguage] = useState('國語');
   const [brandId, setBrandId] = useState<BrandId>('cashbox');
   const [suggestedSongBrandName, setSuggestedSongBrandName] = useState('');
-  const [hasOfficialMv, setHasOfficialMv] = useState(true);
+  const [mvStatus, setMvStatus] = useState<'unknown' | 'official' | 'karaoke'>('unknown');
   const [guidedVocalStatus, setGuidedVocalStatus] = useState<'unknown' | 'guided' | 'none'>('unknown');
   const [lyricsSnippet, setLyricsSnippet] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -68,7 +68,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         language,
         brandId,
         brandName: brandId === UNKNOWN_BRAND_ID ? suggestedSongBrandName.trim() : undefined,
-        hasOfficialMv,
+        mvStatus,
         guidedVocalStatus,
         lyricsSnippet: lyricsSnippet.trim(),
         youtubeUrl: youtubeUrl.trim(),
@@ -341,8 +341,16 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
 
                 <div style={{ display: 'flex', gap: '20px', margin: '4px 0', flexWrap: 'wrap' }}>
                   <label style={checkboxLabelStyle()}>
-                    <input type="checkbox" checked={hasOfficialMv} onChange={event => setHasOfficialMv(event.target.checked)} style={{ accentColor: '#ec4899', width: '16px', height: '16px' }} />
-                    有官方原版 MV
+                    <span>MV 畫面</span>
+                    <select
+                      value={mvStatus}
+                      onChange={event => setMvStatus(event.target.value as 'unknown' | 'official' | 'karaoke')}
+                      style={{ ...inputStyle(), width: '150px', fontSize: '0.82rem', padding: '6px 8px' }}
+                    >
+                      <option value="unknown" style={{ background: 'var(--bg-card, #1e293b)' }}>不確定</option>
+                      <option value="official" style={{ background: 'var(--bg-card, #1e293b)' }}>原版 MV</option>
+                      <option value="karaoke" style={{ background: 'var(--bg-card, #1e293b)' }}>伴唱畫面</option>
+                    </select>
                   </label>
 
                   <label style={checkboxLabelStyle()}>

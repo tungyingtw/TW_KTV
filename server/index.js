@@ -2340,6 +2340,12 @@ function reportGuidedVocalStatusToAudioType(report) {
   return undefined;
 }
 
+function reportMvTypeToCatalogMvType(report) {
+  if (report?.mvType === 'official') return 'official_mv';
+  if (report?.mvType === 'edited') return 'reedited_mv';
+  return undefined;
+}
+
 function isUnknownReportBrandId(brandId) {
   return String(brandId || '') === UNKNOWN_REPORT_BRAND_ID;
 }
@@ -3275,7 +3281,7 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
                 available: true,
                 code: report.songCode || '',
                 audioType: reportGuidedVocalStatusToAudioType(report),
-                mvType: report.mvType === 'official' ? 'official_mv' : undefined,
+                mvType: reportMvTypeToCatalogMvType(report),
               }
             },
           };
@@ -3286,7 +3292,7 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
             available: true,
             code: report.songCode || existingSong.brands[report.brandId]?.code || '',
             audioType: reportGuidedVocalStatusToAudioType(report) || existingSong.brands[report.brandId]?.audioType,
-            mvType: report.mvType === 'official' ? 'official_mv' : existingSong.brands[report.brandId]?.mvType,
+            mvType: reportMvTypeToCatalogMvType(report) || existingSong.brands[report.brandId]?.mvType,
           };
         }
         await persistCatalogMutation(existingSong);
