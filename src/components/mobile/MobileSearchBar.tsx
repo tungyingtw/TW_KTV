@@ -75,8 +75,8 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   };
 
   return (
-    <div style={{ padding: '10px 10px 6px', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0 }}>
-      <div className="glass-panel" style={{ padding: '12px 14px', borderRadius: '14px', width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
+    <div style={{ padding: '8px 10px 4px', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0 }}>
+      <div className="glass-panel" style={{ padding: '10px 12px', borderRadius: '14px', width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
           <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
             {isSearching ? (
@@ -122,7 +122,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             onClick={handleSearchComplete}
             aria-label="完成搜尋並查看結果"
             style={{
-              padding: '9px 11px',
+              padding: '8px 10px',
               borderRadius: '10px',
               border: '1px solid rgba(236, 72, 153, 0.42)',
               background: filters.searchQuery
@@ -143,14 +143,14 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           <button
             onClick={onOpenMobileFilters}
             className="btn-secondary"
-            style={{ padding: '9px 12px', borderRadius: '10px', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+            style={{ padding: '8px 10px', borderRadius: '10px', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             <SlidersHorizontal size={15} color={hasActiveFilters ? '#ec4899' : 'currentColor'} />
             <span>篩選</span>
           </button>
         </div>
 
-        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
+        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>語種：</span>
           {LANGUAGES.map(lang => {
             const isSelected = lang === '全部' ? filters.selectedLanguages.length === 0 : filters.selectedLanguages.includes(lang as Language);
@@ -179,7 +179,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           })}
         </div>
 
-        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
+        <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
           <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '2px' }}>
             <Hash size={12} color="var(--accent-purple)" />字數：
           </span>
@@ -208,7 +208,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           })}
         </div>
 
-        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+        <div style={{ marginTop: '8px', paddingTop: '7px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOfficialMv ? '#34d399' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
             <input
               type="checkbox"
@@ -230,7 +230,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           </label>
         </div>
 
-        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+        <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
           <div
             aria-live="polite"
             style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'normal', lineHeight: 1.45 }}
@@ -238,7 +238,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             {isSearching ? (
               <>正在即時比對...</>
             ) : filters.searchQuery.trim() ? (
-              <>已找到 <strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首，點完成查看結果</>
+              <>找到 <strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首</>
             ) : (
               <>結果：<strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首</>
             )}

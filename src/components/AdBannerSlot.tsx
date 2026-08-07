@@ -23,33 +23,33 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
   customBannerUrl,
   targetUrl,
 }) => {
-  const isRealAdSlot = Boolean(adClient && adSlot);
+  const isConfiguredAdSlot = Boolean(adClient && adSlot && adSlot !== 'auto');
   const bannerLink = targetUrl || '#';
 
   useEffect(() => {
-    if (!isRealAdSlot || typeof window === 'undefined') return;
+    if (!isConfiguredAdSlot || typeof window === 'undefined') return;
 
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (error) {
       console.warn('[AdSense] Push ad error:', error);
     }
-  }, [isRealAdSlot]);
+  }, [isConfiguredAdSlot]);
 
-  if (isRealAdSlot) {
+  if (isConfiguredAdSlot) {
     return (
       <div style={{
         maxWidth: slotType === 'modal' ? '100%' : '1400px',
-        margin: slotType === 'modal' ? '14px 0' : '12px auto 16px',
+        margin: slotType === 'modal' ? '14px 0' : '8px auto 10px',
         padding: slotType === 'modal' ? '0' : '0 20px',
         textAlign: 'center',
         overflow: 'hidden',
       }}>
         <ins
           className="adsbygoogle"
-          style={{ display: 'block', minHeight: '80px' }}
+          style={{ display: 'block', minHeight: slotType === 'header' ? '56px' : '72px' }}
           data-ad-client={adClient}
-          {...(adSlot && adSlot !== 'auto' ? { 'data-ad-slot': adSlot } : {})}
+          data-ad-slot={adSlot}
           data-ad-format={adFormat}
           data-full-width-responsive="true"
         />

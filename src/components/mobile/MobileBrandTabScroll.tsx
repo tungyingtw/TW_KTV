@@ -108,6 +108,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   };
 
   const isMultiSelecting = selectedBrands.length > 0;
+  const brandMatchLabel = brandFilterMode === 'all_of_them' ? '同時收錄' : '任一收錄';
+  const brandToggleLabel = brandFilterMode === 'all_of_them' ? '改成任一品牌有收錄即可' : '改成所有已選品牌都要收錄';
 
   useEffect(() => {
     checkScroll();
@@ -130,7 +132,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   };
 
   return (
-    <div style={{ padding: '0 10px 10px', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0, position: 'relative' }}>
+    <div style={{ padding: '0 10px 8px', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0, position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
         {canScrollLeft && (
           <button
@@ -142,7 +144,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           </button>
         )}
 
-        {/* 10大 KTV 廠牌全數呈現與觸控滑動 */}
+        {/* KTV 廠牌全數呈現與觸控滑動 */}
         <div
           ref={scrollRef}
           onScroll={checkScroll}
@@ -178,7 +180,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
               cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, boxSizing: 'border-box',
             }}
           >
-            全部廠牌 (10){formatCount(totalSongCount)}
+            全部廠牌 ({brandList.length}){formatCount(totalSongCount)}
           </button>
 
           {displayedBrands.map(brand => {
@@ -240,7 +242,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           gap: '6px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
-            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>複選 ({selectedBrands.length}):</span>
+            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>已選 {selectedBrands.length} 家，{brandMatchLabel}：</span>
             {selectedBrands.map(bId => {
               const b = brandList.find(x => x.id === bId);
               return (
@@ -279,9 +281,9 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                 }}
-                title={brandFilterMode === 'all_of_them' ? '切換為：任一家有收錄即可' : '切換為：選取廠牌都要有收錄'}
+                title={brandToggleLabel}
               >
-                {brandFilterMode === 'all_of_them' ? '全都有' : '任一家'}
+                {brandMatchLabel}
               </button>
             )}
 
@@ -293,7 +295,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                   cursor: 'pointer', fontSize: '0.72rem', textDecoration: 'underline', whiteSpace: 'nowrap',
                 }}
               >
-                重置
+                清除
               </button>
             )}
           </div>

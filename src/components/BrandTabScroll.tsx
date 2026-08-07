@@ -137,6 +137,8 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   };
 
   const isMultiSelecting = selectedBrands.length > 0;
+  const brandMatchLabel = brandFilterMode === 'all_of_them' ? '必須同時收錄於已選品牌' : '符合任一已選品牌';
+  const brandToggleLabel = brandFilterMode === 'all_of_them' ? '改成任一品牌有收錄即可' : '改成所有已選品牌都要收錄';
 
   const handleBrandClick = (brandId: BrandId) => {
     if (hasDragged) return;
@@ -154,7 +156,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   };
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto 16px auto', padding: '0 20px', position: 'relative' }}>
+    <div style={{ maxWidth: '1400px', margin: '0 auto 10px auto', padding: '0 20px', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {/* 向左滾動按鈕 (內容有溢出時才動態顯示) */}
         {canScrollLeft && (
@@ -324,8 +326,8 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
           flexWrap: 'wrap',
           gap: '8px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#c084fc', fontWeight: 700 }}>已複選 {selectedBrands.length} 家廠牌比對：</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <span style={{ color: '#c084fc', fontWeight: 700 }}>已選 {selectedBrands.length} 家品牌：</span>
             {selectedBrands.map(bId => {
               const b = brandList.find(x => x.id === bId);
               return (
@@ -339,6 +341,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                 </span>
               );
             })}
+            <span style={{ color: '#94a3b8', fontWeight: 600 }}>目前條件：{brandMatchLabel}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -356,9 +359,9 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                   fontWeight: 700,
                   cursor: 'pointer',
                 }}
-                title={brandFilterMode === 'all_of_them' ? '切換為：任一家有收錄即可' : '切換為：選取廠牌都要有收錄'}
+                title={brandToggleLabel}
               >
-                {brandFilterMode === 'all_of_them' ? '全部都有收錄' : '任一家有收錄'}
+                {brandFilterMode === 'all_of_them' ? '同時收錄' : '任一收錄'}
               </button>
             )}
 
@@ -371,7 +374,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                   cursor: 'pointer', fontSize: '0.78rem', textDecoration: 'underline',
                 }}
               >
-                重置全選
+                清除品牌篩選
               </button>
             )}
           </div>
