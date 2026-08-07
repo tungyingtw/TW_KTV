@@ -7,6 +7,7 @@ import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
+import { getYoutubeReferenceUrl } from '../utils/songReference';
 
 interface MatrixViewProps {
   songs: Song[];
@@ -611,9 +612,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
                   {/* Preview Link */}
                   <td style={{ textAlign: 'center', padding: '10px 6px' }}>
-                    {song.youtubeUrl ? (
+                    {getYoutubeReferenceUrl(song) ? (
                       <a
-                        href={song.youtubeUrl}
+                        href={getYoutubeReferenceUrl(song)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-secondary"

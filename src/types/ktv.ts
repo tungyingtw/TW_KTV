@@ -55,7 +55,7 @@ export interface Song {
   pinyin?: string;
   releaseYear?: number;
   popularRank?: number;
-  lyricsSnippet: string;
+  lyricsSnippet?: string;
   youtubeUrl?: string;
   isMainlandViral?: boolean;
   isNiche?: boolean; // 新增：是否為冷門/獨立/特定廠牌獨家歌曲

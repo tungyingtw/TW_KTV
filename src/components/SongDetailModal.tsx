@@ -7,6 +7,7 @@ import { ReportModal } from './ReportModal';
 import { fetchSongVotes } from '../services/communityService';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
+import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
 
 interface SongDetailModalProps {
   song: Song | null;
@@ -209,7 +210,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </div>
 
             {/* Song identification hint */}
-            {song.lyricsSnippet && !song.lyricsSnippet.includes('全台 10 大 KTV') ? (
+            {getMeaningfulLyricsSnippet(song) ? (
               <div
                 style={{
                   background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))',
@@ -226,7 +227,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   lineHeight: 1.6,
                 }}
               >
-                <span style={{ fontWeight: 700, color: 'var(--accent-pink, #ec4899)', fontStyle: 'normal' }}>歌曲辨識提示：</span> {song.lyricsSnippet}
+                <span style={{ fontWeight: 700, color: 'var(--accent-pink, #ec4899)', fontStyle: 'normal' }}>歌曲辨識提示：</span> {getMeaningfulLyricsSnippet(song)}
               </div>
             ) : (
               <div
@@ -292,9 +293,9 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </div>
 
             {/* YouTube Link Banner */}
-            {song.youtubeUrl && (
+            {getYoutubeReferenceUrl(song) && (
               <a
-                href={song.youtubeUrl}
+                href={getYoutubeReferenceUrl(song)}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
