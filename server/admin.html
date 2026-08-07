@@ -446,7 +446,7 @@
     <!-- ── 導唱票選 ── -->
     <div id="tab-guided" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">導唱票選清單</h2>
-      <p class="tab-help"><b>用途：</b>依社群回報修正歌曲音訊類型。<b>完成標準：</b>標記為導唱、原唱或純伴奏，並確認資料已儲存。</p>
+      <p class="tab-help"><b>用途：</b>依社群回報修正歌曲導唱功能。<b>完成標準：</b>標記為有導唱或純伴奏，並確認資料已儲存。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadGuidedVotes()">重新整理</button>
       </div>
@@ -2227,11 +2227,11 @@ async function loadReports() {
           ` : ''}
 
           ${r.songCode ? `<div class="sub" style="margin-top:4px;color:#fbbf24;font-size:0.9rem">建議點歌編號：<b style="background:rgba(251,191,36,0.15);padding:2px 6px;border-radius:4px;border:1px solid rgba(251,191,36,0.3)">${r.songCode}</b></div>` : ''}
-          ${(r.lang || r.lyricist || r.composer || r.hasOriginalVocal || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
+          ${(r.lang || r.lyricist || r.composer || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
             <div class="sub" style="margin-top:4px;color:#cbd5e1">
               ${r.lang ? `語種: <b>${r.lang}</b> &nbsp;` : ''}
               ${r.mvType === 'official' ? `<span style="color:#38bdf8">原版 MV</span> &nbsp;` : (r.mvType === 'edited' ? `<span style="color:#fb923c">伴唱畫面</span> &nbsp;` : '')}
-              ${r.guidedVocalStatus === 'guided' ? `<span style="color:#22d3ee">有導唱</span> &nbsp;` : (r.guidedVocalStatus === 'none' ? `<span style="color:#fb923c">無導唱</span> &nbsp;` : (r.hasOriginalVocal ? `<span style="color:#ec4899">原唱人聲</span> &nbsp;` : ''))}
+              ${r.guidedVocalStatus === 'guided' ? `<span style="color:#22d3ee">有導唱</span> &nbsp;` : (r.guidedVocalStatus === 'none' ? `<span style="color:#fb923c">無導唱</span> &nbsp;` : '')}
               ${r.lyricist ? `作詞: <b>${r.lyricist}</b> &nbsp;` : ''}
               ${r.composer ? `作曲: <b>${r.composer}</b>` : ''}
             </div>
@@ -2402,7 +2402,6 @@ async function loadGuidedVotes() {
 
 function audioTypeLabel(type) {
   const labels = {
-    original_vocal: '原聲原唱',
     guided_vocal: '導唱',
     backing_track: '純伴奏',
     unknown: '未標記',
@@ -2722,7 +2721,6 @@ function fillSongEditor(song) {
         <input class="brand-code" placeholder="點歌碼" value="${escapeAttr(status.code || '')}" />
         <select class="brand-audio">
           <option value="">音訊類型</option>
-          <option value="original_vocal" ${status.audioType === 'original_vocal' ? 'selected' : ''}>原聲原唱</option>
           <option value="guided_vocal" ${status.audioType === 'guided_vocal' ? 'selected' : ''}>導唱</option>
           <option value="backing_track" ${status.audioType === 'backing_track' ? 'selected' : ''}>伴奏</option>
         </select>
@@ -2956,11 +2954,11 @@ async function loadReports() {
             </div>
           ` : ''}
           ${r.songCode ? `<div class="sub" style="margin-top:4px;color:#fbbf24;font-size:0.9rem">歌曲編號：<b style="background:rgba(251,191,36,0.15);padding:2px 6px;border-radius:4px;border:1px solid rgba(251,191,36,0.3)">${escapeHtml(r.songCode)}</b></div>` : ''}
-          ${(r.lang || r.lyricist || r.composer || r.hasOriginalVocal || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
+          ${(r.lang || r.lyricist || r.composer || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
             <div class="sub" style="margin-top:4px;color:#cbd5e1">
               ${r.lang ? `語言: <b>${escapeHtml(r.lang)}</b> &nbsp;` : ''}
               ${r.mvType === 'official' ? `<span style="color:#38bdf8">原版 MV</span> &nbsp;` : (r.mvType === 'edited' ? `<span style="color:#fb923c">伴唱畫面</span> &nbsp;` : '')}
-              ${r.guidedVocalStatus === 'guided' ? `<span style="color:#22d3ee">有導唱</span> &nbsp;` : (r.guidedVocalStatus === 'none' ? `<span style="color:#fb923c">無導唱</span> &nbsp;` : (r.hasOriginalVocal ? `<span style="color:#ec4899">原唱人聲</span> &nbsp;` : ''))}
+              ${r.guidedVocalStatus === 'guided' ? `<span style="color:#22d3ee">有導唱</span> &nbsp;` : (r.guidedVocalStatus === 'none' ? `<span style="color:#fb923c">無導唱</span> &nbsp;` : '')}
               ${r.lyricist ? `作詞: <b>${escapeHtml(r.lyricist)}</b> &nbsp;` : ''}
               ${r.composer ? `作曲: <b>${escapeHtml(r.composer)}</b>` : ''}
             </div>
@@ -3660,3 +3658,4 @@ if (aliasEditorModalEl) {
 </script>
 </body>
 </html>
+

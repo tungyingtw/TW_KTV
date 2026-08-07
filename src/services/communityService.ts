@@ -25,7 +25,6 @@ export interface ReportPayload {
   composer?: string;
   mvType?: 'official' | 'edited' | 'unknown';
   note?: string;
-  hasOriginalVocal?: boolean;
   guidedVocalStatus?: 'unknown' | 'guided' | 'none';
   lyricsSnippet?: string;
   youtubeUrl?: string;

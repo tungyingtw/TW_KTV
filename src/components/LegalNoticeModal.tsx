@@ -287,7 +287,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>3. 音樂影音與著作權聲明 (Audio/Video Copyright Compliance)</h5>
               <p>
-                本網站<strong>不儲存、上傳、託管或散佈任何未經授權之 MP3、MP4 音訊、影片檔案或盜版影音資源</strong>。網站內展示之官方 MV 影片連結，均來自第三方公開影音平台（如 YouTube 官方頻道）之標準嵌入或超連結，版權均屬原唱片公司、創作者及原發布平台所有。
+                本網站<strong>不儲存、上傳、託管或散佈任何未經授權之 MP3、MP4 音訊、影片檔案或盜版影音資源</strong>。網站內展示之原版 MV 影片連結，均來自第三方公開影音平台（如 YouTube 官方頻道）之標準嵌入或超連結，版權均屬原唱片公司、創作者及原發布平台所有。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> We do NOT host, store, stream, or distribute copyrighted MP3/MP4 audio or video files. All media previews utilize standard embeds or hyperlinks directly to third-party public platforms (e.g., YouTube official channels).
@@ -309,7 +309,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
                 關於「台灣 KTV 歌曲對照查詢網」 (About This Site)
               </h4>
               <p>
-                「台灣 KTV 歌曲對照查詢網」成立旨在解決廣大歌友在全台各大 KTV 連鎖門市歡唱時，常遇到「找不到原聲原唱」及「不確定現場門市有無收錄」等痛點。
+                「台灣 KTV 歌曲對照查詢網」成立旨在解決廣大歌友在全台各大 KTV 連鎖門市歡唱時，常遇到「不確定現場門市有無收錄」及「不清楚能否使用導唱」等痛點。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
                 <b>English Summary:</b> Taiwan KTV Song Catalog is a crowdsourced reference directory helping users cross-check song availability, original vocals, and official MVs across top karaoke venue systems.
@@ -318,7 +318,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色 (Key Features)</h5>
               <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
                 <li><strong>跨廠牌門市對照</strong>：整合全台各大連鎖門市與伴唱機系統之動態歌曲對照目錄。</li>
-                <li><strong>原版 MV 與原聲原唱標示</strong>：明確註記歌曲是否提供原聲原唱或官方 MV 影音參考。</li>
+                <li><strong>原版 MV 與導唱標示</strong>：協助整理歌曲是否提供原版 MV 或現場導唱功能參考。</li>
                 <li><strong>眾包共識與現場勘誤</strong>：提供現場歌友實時參與歌曲收錄與對照勘誤回報。</li>
               </ul>
             </div>

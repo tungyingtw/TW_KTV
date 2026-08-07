@@ -9,13 +9,13 @@ export const SiteInfoGuide: React.FC = () => {
   const articles = [
     {
       id: 'vocal-mv-guide',
-      title: '原聲原唱 vs 人聲導唱 vs 伴奏切換完全解析',
+      title: '導唱功能 vs 純伴奏切換完全解析',
       icon: Mic2,
       tag: '音軌切換指南',
-      summary: '解密 KTV 門市伴唱機立體音軌與導唱切換原理，教您如何聽出歌手原音音軌。',
+      summary: '整理 KTV 門市導唱切換與純伴奏差異，協助判讀現場是否能開啟人聲輔助。',
       content: [
-        '在連鎖 KTV 門市歡唱時，許多歌友常困惑於「原聲原唱」與「人聲導唱」的差別。傳統伴唱機的導唱音軌主要利用立體聲左右聲道（L/R Channel）分離技術，將歌聲錄製在其中一個聲道；點歌機切換導唱時，系統會將包含人聲的聲道混合輸出。',
-        '而「原聲原唱（Original Track）」指的是音軌包含歌手原曲人聲，歡唱時可以聽到原唱聲線與錄音細節。它和「導唱功能」不是同一件事：導唱回答現場是否能開啟人聲輔助，原聲原唱回答該人聲來源是否為歌手原音。',
+        '在連鎖 KTV 門市歡唱時，使用者最需要知道的是這首歌現場能不能開啟導唱。導唱功能通常代表伴唱系統能提供人聲輔助，讓不熟歌曲的人可以跟著旋律與節奏進入狀態。',
+        '本站後續只整理「有導唱」與「無導唱」這類現場可操作狀態，不再把人聲來源拆成額外欄位。若未顯示導唱標示，代表目前資料尚未確認，實際狀態仍以現場設備為準。',
         '官方原版 MV（Official MV）則是唱片公司授權之官方拍攝影片，播放畫面為歌手親自演出之 MV，而非一般伴唱機常見的通用風景照或模特兒示範畫面，大幅提升包廂內的視覺歡唱氣氛。'
       ]
     },
@@ -128,7 +128,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                整合全台各大連鎖門市與營業型伴唱機系統之對照說明、原聲原唱標示與歡唱秘笈
+                整合全台各大連鎖門市與營業型伴唱機系統之對照說明、導唱功能標示與歡唱秘笈
               </p>
             </div>
           </div>
@@ -264,7 +264,7 @@ export const SiteInfoGuide: React.FC = () => {
                   lineHeight: 1.85,
                 }}
               >
-                本區整理本站的資料判讀方式：哪些資訊來自公開曲庫、哪些來自歌友現場回報，哪些需要透過投票累積共識。你可以把它視為查歌前的說明書，先理解「收錄」、「官方原版 MV」、「導唱功能」與「原聲原唱」各自代表什麼，再回到上方列表比較不同 KTV 品牌的實際狀態。
+                本區整理本站的資料判讀方式：哪些資訊來自公開曲庫、哪些來自歌友現場回報，哪些需要透過投票累積共識。你可以把它視為查歌前的說明書，先理解「收錄」、「原版 MV」與「導唱功能」各自代表什麼，再回到上方列表比較不同 KTV 品牌的實際狀態。
               </p>
             </div>
 
@@ -282,10 +282,10 @@ export const SiteInfoGuide: React.FC = () => {
               {[
                 { href: './how-to-use.html', label: '使用教學', desc: '搜尋、篩選與歌單整理方式' },
                 { href: './data-source.html', label: '資料來源', desc: '公開資訊、回報與人工校對' },
-                { href: './ktv-audio-types.html', label: '版本說明', desc: '原唱、導唱與 MV 標示差異' },
+                { href: './ktv-audio-types.html', label: '版本說明', desc: '導唱、伴奏與 MV 標示差異' },
                 { href: './community-verification.html', label: '社群驗證', desc: '收錄、原版 MV 與導唱投票說明' },
                 { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型差異', desc: '原版 MV、伴唱畫面與剪輯 MV 分類' },
-                { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '人聲導唱、原唱與純伴奏切換解析' },
+                { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '有導唱與純伴奏切換解析' },
                 { href: './ktv-song-availability-differences.html', label: '平台收錄差異', desc: '授權範圍、曲庫更新與門市差異' },
                 { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
               ].map(link => (
@@ -345,8 +345,7 @@ export const SiteInfoGuide: React.FC = () => {
                   {[
                     ['收錄', '回答這個品牌是否能點到這首歌。列表中的收錄數代表目前品牌範圍內有幾家收錄。'],
                     ['官方原版 MV', '回答播放畫面是否為唱片公司官方影片，不代表歌曲是否一定收錄，也不代表有導唱。'],
-                    ['導唱功能', '回答現場是否能開啟人聲輔助。導唱欄只表示有或沒有導唱，不等於原聲原唱。'],
-                    ['原聲原唱', '回答音軌是否包含歌手原曲人聲。它是音軌來源資訊，不應被放進導唱欄。'],
+                    ['導唱功能', '回答現場是否能開啟人聲輔助。導唱欄只表示有或沒有導唱，未標示代表尚未確認。'],
                   ].map(([term, desc]) => (
                     <div key={term} style={{ padding: '14px', background: 'var(--bg-glass, rgba(15, 23, 42, 0.45))', borderRight: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))' }}>
                       <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--text-primary, #f8fafc)' }}>{term}</strong>
@@ -373,10 +372,10 @@ export const SiteInfoGuide: React.FC = () => {
                 <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <CheckCircle2 size={18} />
-                    <span>2. 辨識原唱與導唱標示</span>
+                    <span>2. 辨識導唱與 MV 標示</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    歌曲卡片上標示 <strong>原聲原唱</strong> 代表該伴唱系統保留歌手原曲人聲音軌；標示 <strong>導唱</strong> 代表該系統可提供人聲輔助功能。兩者不是同一個欄位，若未顯示標籤，代表目前資料尚未確認，實際狀態仍以現場設備為準。
+                    歌曲卡片上標示 <strong>導唱</strong> 代表該系統可能可提供人聲輔助功能；標示 <strong>MV</strong> 則代表目前資料顯示可能有原版 MV。若未顯示標籤，代表目前資料尚未確認，實際狀態仍以現場設備為準。
                   </p>
                 </div>
 
@@ -494,10 +493,10 @@ export const SiteInfoGuide: React.FC = () => {
 
                 <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q2：如何區分 KTV 門市的「原聲原唱」與「官方原版 MV」標示？
+                    Q2：如何區分 KTV 門市的「導唱」與「原版 MV」標示？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：「原聲原唱」代表該伴唱系統包含歌手原曲人聲音軌；「導唱」代表現場可開啟人聲輔助；「官方原版 MV」代表門市播放畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。
+                    答：「導唱」代表現場可能可開啟人聲輔助；「原版 MV」代表門市播放畫面可能是唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。
                   </p>
                 </div>
 

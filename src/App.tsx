@@ -689,7 +689,7 @@ export function App() {
                     ? '伺服器已連線，正在套用最新回報修正與歌庫標示。'
                     : apiHealthStatus === 'unavailable'
                       ? '暫時無法確認伺服器狀態，仍會先載入可用的靜態歌庫資料。'
-                  : '正在比對歌曲收錄、原聲原唱、導唱與 MV 標示')}
+                  : '正在比對歌曲收錄、導唱與 MV 標示')}
             </p>
 
             {/* 進度條容器 */}
@@ -1000,7 +1000,7 @@ export function App() {
               <Sparkles size={14} color="#10b981" /> 原版MV標示
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Music size={14} color="#ec4899" /> 原聲原唱對照
+              <Music size={14} color="#ec4899" /> 導唱功能對照
             </span>
           </div>
         </div>

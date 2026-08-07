@@ -460,7 +460,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
               }}
             >
               <Film size={11} />
-              <span>伴唱 MV</span>
+              <span>伴唱畫面</span>
               <span style={{ fontSize: '0.62rem', opacity: 0.75, fontWeight: 400 }}>(風景帶)</span>
               {editedMvCount > 0 && <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '4px', padding: '0 4px', fontSize: '0.65rem' }}>{editedMvCount}</span>}
             </button>
