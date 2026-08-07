@@ -3707,6 +3707,83 @@ async function buildAdminArchivesSummary() {
   };
 }
 
+function loadReportsArchivesPayload() {
+  return Object.fromEntries(listLocalJsonArchives(REPORTS_ARCHIVE_DIR).map(file => [file.month, readJsonFileSafe(path.join(REPORTS_ARCHIVE_DIR, file.name), [])]));
+}
+
+async function loadReviewActionsArchivesPayload() {
+  const archives = {};
+  const redisArchives = await listReviewActionRedisArchives();
+  const sourceArchives = redisArchives.length ? redisArchives : listLocalJsonArchives(REVIEW_ACTIONS_ARCHIVE_DIR);
+  for (const file of sourceArchives) {
+    if (file.source === 'redis') {
+      const raw = await redisCmd('get', `${REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX}${file.month}`);
+      archives[file.month] = raw ? JSON.parse(raw) : [];
+    } else {
+      archives[file.month] = readJsonFileSafe(path.join(REVIEW_ACTIONS_ARCHIVE_DIR, file.name), []);
+    }
+  }
+  return archives;
+}
+
+async function loadBackupArchivesPayload() {
+  return {
+    reports: loadReportsArchivesPayload(),
+    reviewActions: await loadReviewActionsArchivesPayload(),
+    votesArchivedSignals: await loadVotesArchiveStore(),
+  };
+}
+
+function countArchivePayloadRecords(archives) {
+  if (!archives || typeof archives !== 'object') return 0;
+  return Object.values(archives).reduce((sum, records) => {
+    if (Array.isArray(records)) return sum + records.length;
+    if (records && typeof records === 'object') return sum + Object.keys(records).length;
+    return sum;
+  }, 0);
+}
+
+function normalizeArchiveMonth(month) {
+  const value = String(month || '');
+  return /^(\d{4}-\d{2}|unknown)$/.test(value) ? value : null;
+}
+
+async function restoreBackupArchivesPayload(archives) {
+  if (!archives || typeof archives !== 'object') return null;
+  let reportsArchivedRecords = 0;
+  let reviewActionsArchivedRecords = 0;
+  let votesArchivedSignalsCount = 0;
+
+  if (archives.reports && typeof archives.reports === 'object') {
+    fs.mkdirSync(REPORTS_ARCHIVE_DIR, { recursive: true });
+    for (const [month, records] of Object.entries(archives.reports)) {
+      const safeMonth = normalizeArchiveMonth(month);
+      if (!safeMonth || !Array.isArray(records)) continue;
+      reportsArchivedRecords += records.length;
+      safeAtomicWriteJson(path.join(REPORTS_ARCHIVE_DIR, `${safeMonth}.json`), mergeReportsById([], records));
+    }
+  }
+
+  if (archives.reviewActions && typeof archives.reviewActions === 'object') {
+    fs.mkdirSync(REVIEW_ACTIONS_ARCHIVE_DIR, { recursive: true });
+    for (const [month, records] of Object.entries(archives.reviewActions)) {
+      const safeMonth = normalizeArchiveMonth(month);
+      if (!safeMonth || !Array.isArray(records)) continue;
+      const merged = mergeReviewActionsById([], records);
+      reviewActionsArchivedRecords += merged.length;
+      safeAtomicWriteJson(path.join(REVIEW_ACTIONS_ARCHIVE_DIR, `${safeMonth}.json`), merged);
+      if (USE_REDIS) await redisCmd('set', `${REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX}${safeMonth}`, JSON.stringify(merged));
+    }
+  }
+
+  if (archives.votesArchivedSignals && typeof archives.votesArchivedSignals === 'object' && !Array.isArray(archives.votesArchivedSignals)) {
+    votesArchivedSignalsCount = Object.keys(archives.votesArchivedSignals).length;
+    await saveVotesArchiveStore(archives.votesArchivedSignals);
+  }
+
+  return { reportsArchivedRecords, reviewActionsArchivedRecords, votesArchivedSignalsCount };
+}
+
 async function markReportReviewed(reportId, status, adminNote = '') {
   if (!reportId) return null;
   const reports = await loadReportsStore();
@@ -5090,11 +5167,12 @@ async function buildBackupExportPayload() {
   const votes = await loadVotesStore();
   const artistAliasesOverrides = await loadArtistAliasesOverridesStore();
   const brandSettings = await loadBrandSettingsStore();
+  const archives = await loadBackupArchivesPayload();
   return {
     app: 'TW_KTV_CATALOG_SYSTEM',
-    exportVersion: '1.0',
+    exportVersion: '1.1',
     exportedAt: new Date().toISOString(),
-    data: { catalogOverrides: overrides, reports, votes, artistAliasesOverrides, brandSettings },
+    data: { catalogOverrides: overrides, reports, votes, artistAliasesOverrides, brandSettings, archives },
   };
 }
 
@@ -5107,6 +5185,9 @@ function summarizeBackupExportPayload(payload) {
     votes: data.votes && typeof data.votes === 'object' ? Object.keys(data.votes).length : 0,
     artistAliasesOverrides: data.artistAliasesOverrides && typeof data.artistAliasesOverrides === 'object' ? Object.keys(data.artistAliasesOverrides).length : 0,
     brands: data.brandSettings && typeof data.brandSettings === 'object' ? Object.keys(data.brandSettings.brands || {}).length : 0,
+    archivedReports: countArchivePayloadRecords(data.archives?.reports),
+    archivedReviewActions: countArchivePayloadRecords(data.archives?.reviewActions),
+    archivedVoteSignals: data.archives?.votesArchivedSignals && typeof data.archives.votesArchivedSignals === 'object' ? Object.keys(data.archives.votesArchivedSignals).length : 0,
   };
   const estimatedBytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
   return { generatedAt: new Date().toISOString(), estimatedBytes, counts, risk: estimatedBytes >= 8 * 1024 * 1024 ? 'warning' : 'healthy' };
@@ -5144,12 +5225,15 @@ app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (re
     return res.status(400).json({ valid: false, error: '資料格式不正確：無效的系統備份檔標號或資料區塊' });
   }
 
-  const { catalogOverrides, reports, votes, artistAliasesOverrides, brandSettings } = payload.data;
+  const { catalogOverrides, reports, votes, artistAliasesOverrides, brandSettings, archives } = payload.data;
   const overridesCount = catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides.songs || {}).length : 0;
   const reportsCount = Array.isArray(reports) ? reports.length : 0;
   const votesCount = votes && typeof votes === 'object' ? Object.keys(votes).length : 0;
   const aliasesOverridesCount = artistAliasesOverrides && typeof artistAliasesOverrides === 'object' ? Object.keys(artistAliasesOverrides).length : 0;
   const brandSettingsCount = brandSettings && typeof brandSettings === 'object' ? Object.keys(brandSettings.brands || {}).length : 0;
+  const archivedReportsCount = countArchivePayloadRecords(archives?.reports);
+  const archivedReviewActionsCount = countArchivePayloadRecords(archives?.reviewActions);
+  const archivedVoteSignalsCount = archives?.votesArchivedSignals && typeof archives.votesArchivedSignals === 'object' ? Object.keys(archives.votesArchivedSignals).length : 0;
 
   res.json({
     valid: true,
@@ -5160,6 +5244,9 @@ app.post('/api/admin/backup/validate', requirePermission('backup.validate'), (re
       votesCount,
       artistAliasesOverridesCount: aliasesOverridesCount,
       brandSettingsCount,
+      archivedReportsCount,
+      archivedReviewActionsCount,
+      archivedVoteSignalsCount,
     }
   });
 });
@@ -5185,7 +5272,7 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
       brandSettingsCount: Object.keys((await loadBrandSettingsStore()).brands || {}).length,
     };
 
-    const { catalogOverrides, reports, votes, artistAliasesOverrides, brandSettings } = payload.data;
+    const { catalogOverrides, reports, votes, artistAliasesOverrides, brandSettings, archives } = payload.data;
     if (catalogOverrides) {
       await saveCatalogOverridesStore(catalogOverrides);
       const baseSongs = loadInitialSongsDatabase({ applyLocalOverrides: !USE_REDIS });
@@ -5204,6 +5291,7 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
     if (brandSettings && typeof brandSettings === 'object') {
       await saveBrandSettingsStore(brandSettings, { requirePersistent: true });
     }
+    const restoredArchives = await restoreBackupArchivesPayload(archives);
 
     const afterCounts = {
       catalogOverridesCount: catalogOverrides && typeof catalogOverrides === 'object' ? Object.keys(catalogOverrides.songs || {}).length : 0,
@@ -5211,6 +5299,7 @@ app.post('/api/admin/backup/import', requirePermission('backup.import'), async (
       votesCount: votes && typeof votes === 'object' ? Object.keys(votes).length : 0,
       artistAliasesOverridesCount: artistAliasesOverrides && typeof artistAliasesOverrides === 'object' ? Object.keys(artistAliasesOverrides).length : 0,
       brandSettingsCount: brandSettings && typeof brandSettings === 'object' ? Object.keys(brandSettings.brands || {}).length : 0,
+      ...(restoredArchives || {}),
     };
 
     logAdminAction('IMPORT_SYSTEM_BACKUP', {
