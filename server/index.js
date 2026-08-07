@@ -1935,6 +1935,192 @@ async function persistCatalogMutation(song) {
   await saveCatalogOverrideSong(song);
 }
 
+async function updateSongBrandStatus({ songId, brandId, available, audioType, mvType, note = '' }) {
+  if (!brandId || typeof available !== 'boolean') {
+    const err = new Error('Missing required fields: brandId, available');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const isBrandValid = await brandExists(brandId, { activeOnly: false });
+  if (!isBrandValid) {
+    const err = new Error('Invalid brand ID: ' + brandId);
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track', ''];
+  const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv', ''];
+  if (audioType !== undefined && !validAudioTypes.includes(audioType)) {
+    const err = new Error('Invalid audio type');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (mvType !== undefined && !validMvTypes.includes(mvType)) {
+    const err = new Error('Invalid MV type');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  let idx = songsDatabase.findIndex(s => s.id === songId);
+  let song;
+  if (idx === -1) {
+    const existing = await getAdminSongById(songId);
+    song = existing ? JSON.parse(JSON.stringify(existing)) : {
+      id: songId,
+      title: 'Unknown title',
+      artist: 'Unknown artist',
+      language: '國語',
+      brands: {},
+    };
+    songsDatabase.push(song);
+    idx = songsDatabase.length - 1;
+  } else {
+    song = songsDatabase[idx];
+  }
+
+  const before = song.brands?.[brandId] ?? null;
+  if (!song.brands) song.brands = {};
+  const nextBrandStatus = {
+    ...before,
+    available,
+    code: before?.code || (available ? 'OK' : 'N/A'),
+  };
+
+  if (audioType !== undefined) nextBrandStatus.audioType = audioType || undefined;
+  else if (available && before?.audioType) nextBrandStatus.audioType = before.audioType;
+
+  if (mvType !== undefined) nextBrandStatus.mvType = mvType || undefined;
+  else if (available && before?.mvType) nextBrandStatus.mvType = before.mvType;
+
+  if (!available) {
+    nextBrandStatus.code = before?.code || 'N/A';
+    delete nextBrandStatus.audioType;
+    delete nextBrandStatus.mvType;
+  }
+
+  song.brands[brandId] = { ...nextBrandStatus };
+  songsDatabase[idx] = song;
+  await saveCatalogOverrideSong(song);
+  return { song, before, after: song.brands[brandId], note };
+}
+
+async function updateSongBrandMvType({ songId, brandId, mvType, note = '' }) {
+  if (!brandId) {
+    const err = new Error('Missing required field: brandId');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const isBrandValid = await brandExists(brandId, { activeOnly: false });
+  if (!isBrandValid) {
+    const err = new Error('Invalid brand ID: ' + brandId);
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv', ''];
+  if (mvType !== undefined && !validMvTypes.includes(mvType)) {
+    const err = new Error('Invalid MV type');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  let idx = songsDatabase.findIndex(s => s.id === songId);
+  let song;
+  if (idx === -1) {
+    const existing = await getAdminSongById(songId);
+    song = existing ? JSON.parse(JSON.stringify(existing)) : {
+      id: songId,
+      title: 'Unknown title',
+      artist: 'Unknown artist',
+      language: '國語',
+      brands: {},
+    };
+    songsDatabase.push(song);
+    idx = songsDatabase.length - 1;
+  } else {
+    song = songsDatabase[idx];
+  }
+
+  if (!song.brands) song.brands = {};
+  const before = song.brands[brandId] ?? { available: false };
+  const updatedBrandStatus = { ...before, mvType: mvType || undefined };
+  if (!mvType) delete updatedBrandStatus.mvType;
+
+  song.brands[brandId] = updatedBrandStatus;
+  songsDatabase[idx] = song;
+  await saveCatalogOverrideSong(song);
+  return { song, before, after: song.brands[brandId], note };
+}
+
+async function createBrandFromReportRecord({ reportId, body = {} }) {
+  const reports = await loadReportsStore();
+  const reportIndex = reports.findIndex(r => String(r.id) === String(reportId));
+  if (reportIndex === -1) {
+    const err = new Error('Report not found: ' + reportId);
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const report = reports[reportIndex];
+  if (report.issueType !== 'suggest_new_brand') {
+    const err = new Error('Report is not a new brand suggestion');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const rawId = String(body.id || report.shortName || report.brandName || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  const finalId = rawId && /^[a-z0-9_]{2,32}$/.test(rawId) ? rawId : 'brand_' + Date.now();
+  const name = String(body.name || report.brandName || report.brand || '').trim();
+  const shortName = String(body.shortName || report.shortName || report.brand || '').trim();
+  if (!name || !shortName) {
+    const err = new Error('Missing brand name or short name');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const store = await loadBrandSettingsStore();
+  if (store.brands && store.brands[finalId]) {
+    const err = new Error('Brand ID already exists: ' + finalId);
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const color = isValidBrandColor(String(body.color || '').trim()) ? String(body.color).trim() : '#38bdf8';
+  const existingOrders = Object.values(store.brands || {}).map(b => Number(b.sortOrder) || 0);
+  const maxSortOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : 0;
+  const now = new Date().toISOString();
+  const newBrand = {
+    id: finalId,
+    name,
+    shortName,
+    color,
+    badgeBg: buildBadgeBg(color),
+    description: String(body.description || report.note || report.description || '').trim(),
+    status: 'active',
+    sortOrder: maxSortOrder + 1,
+    source: 'suggestion',
+    sourceReportId: String(report.id),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  if (!store.brands) store.brands = {};
+  store.brands[finalId] = newBrand;
+  await saveBrandSettingsStore(store, { requirePersistent: true });
+
+  reports[reportIndex] = {
+    ...report,
+    status: 'resolved',
+    resolvedAt: now,
+    reviewedAt: now,
+    resolutionNote: 'Created brand on ' + now.slice(0, 10) + ' (ID: ' + finalId + ')',
+  };
+  await saveReportsStore(reports);
+  return { brand: newBrand, report: reports[reportIndex], reports, reportIndex };
+}
+
 // ─────────────────────────────────────────────
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
@@ -2900,6 +3086,219 @@ app.get('/api/admin/review-queue', requireSession, async (req, res) => {
       suggest_new_brand: items.filter(i => i.itemType === 'suggest_new_brand').length,
     },
   });
+});
+
+function hasAnyPermission(permissions, allowed) {
+  return allowed.some(permission => permissions.includes(permission));
+}
+
+function createReviewActionRecord({ reviewItemId, sourceType, sourceId, itemType, status, action, reason, snapshot, req, now }) {
+  return {
+    id: `${status === 'rejected' ? 'rvr' : 'rva'}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    reviewItemId,
+    sourceType: String(sourceType || snapshot?.sourceType || ''),
+    sourceId: String(sourceId || snapshot?.sourceId || ''),
+    itemType: String(itemType || snapshot?.itemType || ''),
+    status,
+    action: String(action || (status === 'rejected' ? 'reject' : 'adopt')),
+    reason: String(reason || '').trim(),
+    snapshot: snapshot || {},
+    adminId: req.admin?.id || 'unknown',
+    adminName: req.admin?.displayName || req.admin?.username || 'unknown',
+    reviewedAt: now,
+  };
+}
+
+async function markReportReviewed(reportId, status, adminNote = '') {
+  if (!reportId) return null;
+  const reports = await loadReportsStore();
+  const idx = reports.findIndex(r => String(r.id) === String(reportId));
+  if (idx === -1) return null;
+  reports[idx] = {
+    ...reports[idx],
+    status,
+    adminNote: adminNote || reports[idx].adminNote || '',
+    reviewedAt: new Date().toISOString(),
+  };
+  if (status === 'resolved' && !reports[idx].resolvedAt) reports[idx].resolvedAt = reports[idx].reviewedAt;
+  await saveReportsStore(reports);
+  return reports[idx];
+}
+
+async function buildReviewItemSnapshotFromId(reviewItemId, fallback = {}) {
+  if (fallback && fallback.id === reviewItemId && (fallback.songTitle || fallback.signalSummary || fallback.currentValue !== undefined)) return fallback;
+  if (reviewItemId.startsWith('report:')) {
+    const reportId = reviewItemId.slice('report:'.length);
+    const reports = await loadReportsStore();
+    const report = reports.find(r => String(r.id) === String(reportId));
+    if (!report) return { id: reviewItemId, sourceType: 'report', sourceId: reportId, itemType: 'report' };
+    const itemType = report.issueType === 'suggest_new_brand'
+      ? 'suggest_new_brand'
+      : (report.issueType === 'suggest_song' || report.issueType === 'missing_song' ? 'suggest_song' : 'report');
+    return {
+      id: reviewItemId,
+      sourceType: 'report',
+      sourceId: report.id,
+      itemType,
+      songId: report.songId,
+      songTitle: report.songTitle || report.songSnapshot?.title || '',
+      artist: report.artist || report.songSnapshot?.artist || '',
+      brandId: report.brandId,
+      currentValue: null,
+      suggestedValue: report.issueType,
+      signalSummary: {
+        issueType: report.issueType,
+        songCode: report.songCode || '',
+        note: report.note || '',
+        brandName: report.brandName || '',
+        shortName: report.shortName || '',
+      },
+      createdAt: report.timestamp,
+      updatedAt: report.reviewedAt || report.timestamp,
+    };
+  }
+
+  const votePrefixes = [
+    ['availability_vote:', 'availability_vote', 'availability'],
+    ['guided_vote:', 'guided_vote', 'guided'],
+    ['mv_vote:', 'mv_vote', 'mv'],
+  ];
+  const match = votePrefixes.find(([prefix]) => reviewItemId.startsWith(prefix));
+  if (!match) return { ...fallback, id: reviewItemId };
+
+  const [prefix, sourceType, itemType] = match;
+  const key = reviewItemId.slice(prefix.length);
+  const { songId, brandId } = await parseVoteKeyDynamic(key);
+  const song = await getAdminSongById(songId);
+  const brandData = song?.brands?.[brandId] || null;
+  return {
+    id: reviewItemId,
+    sourceType,
+    sourceId: key,
+    itemType,
+    songId,
+    brandId,
+    songTitle: song?.title || songId,
+    artist: song?.artist || '',
+    currentValue: itemType === 'availability'
+      ? (brandData?.available ?? null)
+      : (itemType === 'guided' ? (brandData?.audioType || 'unknown') : (brandData?.mvType || 'unknown')),
+    signalSummary: fallback.signalSummary || {},
+  };
+}
+
+app.post('/api/admin/review-queue/:reviewItemId/resolve', requireSession, async (req, res) => {
+  const permissions = req.admin?.permissions || [];
+  const { reviewItemId } = req.params;
+  const { decision = 'adopt', action = '', reason = '', payload = {}, snapshot: requestSnapshot = {} } = req.body || {};
+  const cleanDecision = String(decision || '').trim();
+  const cleanAction = String(action || '').trim();
+  const cleanReason = String(reason || '').trim();
+
+  if (!['adopt', 'reject'].includes(cleanDecision)) {
+    return res.status(400).json({ error: 'Invalid decision' });
+  }
+  if (cleanDecision === 'reject' && cleanReason.length < 4) {
+    return res.status(400).json({ error: '駁回原因至少需要 4 個字' });
+  }
+
+  const actions = await loadReviewActionsStore();
+  const existing = actions.find(a => String(a.reviewItemId) === String(reviewItemId) && (a.status === 'adopted' || a.status === 'rejected'));
+  if (existing) return res.status(409).json({ error: '此項目已被處理', action: existing });
+
+  const snapshot = await buildReviewItemSnapshotFromId(reviewItemId, requestSnapshot);
+  const sourceType = snapshot.sourceType || payload.sourceType || '';
+  const sourceId = snapshot.sourceId || payload.sourceId || '';
+  const itemType = snapshot.itemType || payload.itemType || '';
+  const songId = payload.songId || snapshot.songId;
+  const brandId = payload.brandId || snapshot.brandId;
+  const now = new Date().toISOString();
+
+  const allowedByAction = {
+    set_available: ['brand.update', 'reports.review'],
+    set_unavailable: ['brand.update', 'reports.review'],
+    set_guided_vocal: ['brand.update', 'reports.review'],
+    set_backing_track: ['brand.update', 'reports.review'],
+    set_official_mv: ['mv.update', 'brand.update'],
+    set_reedited_mv: ['mv.update', 'brand.update'],
+    create_brand: ['brands.manage'],
+    resolve_report: ['reports.review'],
+    reject: ['reports.review', 'brand.update', 'mv.update', 'brands.manage'],
+  };
+  const required = cleanDecision === 'reject' ? allowedByAction.reject : (allowedByAction[cleanAction] || []);
+  if (!required.length) return res.status(400).json({ error: 'Invalid action' });
+  if (!hasAnyPermission(permissions, required)) return res.status(403).json({ error: '缺少審核處理權限' });
+
+  const updated = {};
+  try {
+    if (cleanDecision === 'reject') {
+      if (sourceType === 'report' && sourceId) {
+        updated.report = await markReportReviewed(sourceId, 'rejected', cleanReason);
+      }
+    } else if (cleanAction === 'set_available' || cleanAction === 'set_unavailable') {
+      const result = await updateSongBrandStatus({
+        songId,
+        brandId,
+        available: cleanAction === 'set_available',
+        note: payload.note || cleanReason,
+      });
+      updated.songId = result.song.id;
+      updated.brandId = brandId;
+      updated.after = result.after;
+      if (sourceType === 'report' && sourceId) updated.report = await markReportReviewed(sourceId, 'resolved', cleanReason);
+    } else if (cleanAction === 'set_guided_vocal' || cleanAction === 'set_backing_track') {
+      const audioType = cleanAction === 'set_guided_vocal' ? 'guided_vocal' : 'backing_track';
+      const result = await updateSongBrandStatus({
+        songId,
+        brandId,
+        available: true,
+        audioType,
+        note: payload.note || cleanReason,
+      });
+      updated.songId = result.song.id;
+      updated.brandId = brandId;
+      updated.after = result.after;
+    } else if (cleanAction === 'set_official_mv' || cleanAction === 'set_reedited_mv') {
+      const mvType = cleanAction === 'set_official_mv' ? 'official_mv' : 'reedited_mv';
+      const result = await updateSongBrandMvType({
+        songId,
+        brandId,
+        mvType,
+        note: payload.note || cleanReason,
+      });
+      updated.songId = result.song.id;
+      updated.brandId = brandId;
+      updated.after = result.after;
+    } else if (cleanAction === 'create_brand') {
+      const reportId = sourceType === 'report' ? sourceId : payload.reportId;
+      const result = await createBrandFromReportRecord({ reportId, body: payload.brand || payload });
+      updated.brandIdCreated = result.brand.id;
+      updated.brand = result.brand;
+      updated.report = result.report;
+    } else if (cleanAction === 'resolve_report') {
+      updated.report = await markReportReviewed(sourceId || payload.reportId, 'resolved', cleanReason);
+    }
+
+    const record = createReviewActionRecord({
+      reviewItemId,
+      sourceType,
+      sourceId,
+      itemType,
+      status: cleanDecision === 'reject' ? 'rejected' : 'adopted',
+      action: cleanDecision === 'reject' ? 'reject' : cleanAction,
+      reason: cleanReason,
+      snapshot,
+      req,
+      now,
+    });
+    actions.push(record);
+    await saveReviewActionsStore(actions);
+    logAdminAction('RESOLVE_REVIEW_QUEUE_ITEM', { ...record, updated }, req);
+    res.json({ success: true, reviewItemId, decision: cleanDecision, action: record.action, reviewAction: record, updated });
+  } catch (err) {
+    console.error('[Admin Review Resolve Error]', err);
+    res.status(err.statusCode || 503).json({ error: err.message || '審核處理失敗' });
+  }
 });
 
 app.get('/api/admin/review-actions', requireSession, async (req, res) => {
