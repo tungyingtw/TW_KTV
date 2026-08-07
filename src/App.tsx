@@ -44,6 +44,7 @@ export function App() {
   // Main Catalog State
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(true);
+  const [isServerWaking, setIsServerWaking] = useState<boolean>(false);
   const [targetProgress, setTargetProgress] = useState<number>(0);
   const [displayProgress, setDisplayProgress] = useState<number>(0);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
@@ -121,8 +122,13 @@ export function App() {
 
   // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
   useEffect(() => {
+    const wakeTimer = window.setTimeout(() => {
+      setIsServerWaking(true);
+    }, 4500);
+
     fetchBrands();
     fetchFullCatalog((pct) => setTargetProgress(pct)).then(catalog => {
+      window.clearTimeout(wakeTimer);
       if (catalog && catalog.length > 0) {
         // 前台硬過濾防護牆 (Strict Sanitizer Guard)
         const sanitized = catalog.filter(s => {
@@ -134,11 +140,15 @@ export function App() {
         });
         setAllSongs(sanitized);
       }
+      setIsServerWaking(false);
       setTargetProgress(100);
     }).catch(() => {
-      setCatalogLoadError('歌庫資料暫時無法載入，請稍後重新整理頁面。');
+      window.clearTimeout(wakeTimer);
+      setIsServerWaking(false);
+      setCatalogLoadError('歌庫資料暫時無法載入。若伺服器剛從休眠喚醒，請稍候再試。');
       setTargetProgress(100);
     });
+    return () => window.clearTimeout(wakeTimer);
   }, []);
 
   // 平滑進度條插值器 (即使本地端極速連線，也能順暢呈現 0% -> 100% 填滿過程)
@@ -428,6 +438,10 @@ export function App() {
 
   const handleMobileSearchComplete = () => {
     if (!isMobile) return;
+    if (isLoadingCatalog) {
+      showToast(isServerWaking ? '伺服器正在喚醒，歌庫準備好後會自動顯示' : '歌庫正在準備中，請稍候');
+      return;
+    }
     const settleDelay = isSearching ? 360 : 120;
 
     window.setTimeout(() => {
@@ -503,6 +517,8 @@ export function App() {
           onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
           resultCount={filteredSongs.length}
           isSearching={isSearching}
+          isCatalogLoading={isLoadingCatalog}
+          isServerWaking={isServerWaking}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
           onSearchComplete={handleMobileSearchComplete}
         />
@@ -513,6 +529,8 @@ export function App() {
           onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
           resultCount={filteredSongs.length}
           isSearching={isSearching}
+          isCatalogLoading={isLoadingCatalog}
+          isServerWaking={isServerWaking}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
         />
       )}
@@ -640,10 +658,14 @@ export function App() {
             </div>
 
             <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '8px' }}>
-              正在整理大家共同補完的歌庫資料
+              {isServerWaking ? '伺服器正在喚醒歌庫資料' : '正在整理大家共同補完的歌庫資料'}
             </h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
-              {catalogLoadError || (displayProgress >= 100 ? '歌庫資料已準備完成' : '正在比對歌曲收錄、原聲原唱、導唱與 MV 標示')}
+              {catalogLoadError || (displayProgress >= 100
+                ? '歌庫資料已準備完成'
+                : isServerWaking
+                  ? '免費伺服器可能正在從休眠狀態啟動，這不是搜尋 0 筆，請先停留本頁稍候。'
+                  : '正在比對歌曲收錄、原聲原唱、導唱與 MV 標示')}
             </p>
 
             {/* 進度條容器 */}
