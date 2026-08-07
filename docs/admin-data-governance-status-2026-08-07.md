@@ -64,3 +64,12 @@
 2. 驗證完成後，更新本文件的「仍需處理」。
 3. 若線上驗證發現資料量或速度問題，先記錄 API、資料量、等待時間與操作步驟，再決定是否建立 review queue 永久索引。
 
+## 2026-08-07 補充：資料瘦身收尾
+
+已完成以下項目，後續不得重複執行同類清理：
+
+1. 已將 `available:true` 改為隱含規則，只保留 `available:false`。
+2. 已清除 `zhuyin:AUTO` 與 `pinyin:AUTO` 佔位值。
+3. 已重建 `public/songs_catalog.bin`，目前輸出約 37.47 MB。
+
+下一步必須先評估 `releaseYear` 的可信度與使用情境。不得直接刪除 `lyricsSnippet` 或 `youtubeUrl`，因為它們仍會影響搜尋、詳情頁與參考連結。

@@ -39,6 +39,11 @@ function isBrandAvailable(status) {
   return Boolean(status) && status.available !== false;
 }
 
+function getSearchablePhonetic(value) {
+  const normalized = String(value || '').trim();
+  return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : '';
+}
+
 function readSongs(filePath) {
   if (!fs.existsSync(filePath)) throw new Error(`找不到檔案：${filePath}`);
   const songs = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -56,8 +61,8 @@ function hashFrontendShape(songs) {
       lyricist: song.lyricist,
       composer: song.composer,
       language: song.language,
-      zhuyin: song.zhuyin,
-      pinyin: song.pinyin,
+      zhuyin: getSearchablePhonetic(song.zhuyin),
+      pinyin: getSearchablePhonetic(song.pinyin),
       releaseYear: song.releaseYear,
       lyricsSnippet: song.lyricsSnippet,
       youtubeUrl: song.youtubeUrl,
@@ -80,8 +85,8 @@ function getSearchableText(song) {
     song.lyricist,
     song.composer,
     song.language,
-    song.zhuyin,
-    song.pinyin,
+    getSearchablePhonetic(song.zhuyin),
+    getSearchablePhonetic(song.pinyin),
     song.lyricsSnippet,
   ].filter(Boolean).join(' ').toLowerCase();
 }

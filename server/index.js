@@ -1907,6 +1907,11 @@ function isCatalogBrandAvailable(status) {
   return Boolean(status) && status.available !== false;
 }
 
+function cleanCatalogPhonetic(value) {
+  const normalized = String(value || '').trim();
+  return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : undefined;
+}
+
 // ─────────────────────────────────────────────
 // 公開 API：歌曲搜尋
 // ─────────────────────────────────────────────
@@ -4310,8 +4315,8 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
     lyricist: String(body.lyricist || '').trim(),
     composer: String(body.composer || '').trim(),
     language,
-    zhuyin: String(body.zhuyin || existingSong?.zhuyin || 'AUTO').trim() || 'AUTO',
-    pinyin: String(body.pinyin || existingSong?.pinyin || 'AUTO').trim() || 'AUTO',
+    zhuyin: cleanCatalogPhonetic(body.zhuyin || existingSong?.zhuyin),
+    pinyin: cleanCatalogPhonetic(body.pinyin || existingSong?.pinyin),
     releaseYear: Number.parseInt(String(body.releaseYear || existingSong?.releaseYear || new Date().getFullYear()), 10) || new Date().getFullYear(),
     popularRank: body.popularRank ? Number.parseInt(String(body.popularRank), 10) : existingSong?.popularRank,
     lyricsSnippet: String(body.lyricsSnippet || '').trim(),
