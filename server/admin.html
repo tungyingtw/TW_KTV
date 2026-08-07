@@ -2631,7 +2631,7 @@ function updateSingleSongRowInDOM(songId, payload) {
   if (langEl) langEl.textContent = payload.language || '未分類';
 
   if (brandsEl && payload.brands) {
-    const availableCount = Object.values(payload.brands).filter(b => b?.available).length;
+    const availableCount = Object.values(payload.brands).filter(isAdminBrandAvailable).length;
     brandsEl.textContent = `${availableCount} 家收錄`;
   }
 }
@@ -2711,12 +2711,12 @@ function fillSongEditor(song) {
   document.getElementById('song-niche').checked = Boolean(song.isNiche);
 
   document.getElementById('song-brand-editor').innerHTML = getAdminBrands().map(([brandId, label]) => {
-    const status = song.brands?.[brandId] || { available: false };
+    const status = song.brands?.[brandId] || {};
     return `
-      <div class="brand-editor-card" data-brand-id="${brandId}">
+      <div class="brand-editor-card" data-brand-id="${brandId}" data-has-status="${song.brands?.[brandId] ? '1' : '0'}">
         <div class="brand-title">${label}</div>
         <label style="display:flex;align-items:center;gap:6px;color:#cbd5e1;">
-          <input class="brand-available" type="checkbox" ${status.available ? 'checked' : ''} style="width:auto;" />有收錄
+          <input class="brand-available" type="checkbox" ${isAdminBrandAvailable(status) ? 'checked' : ''} style="width:auto;" />有收錄
         </label>
         <input class="brand-code" placeholder="點歌碼" value="${escapeAttr(status.code || '')}" />
         <select class="brand-audio">
@@ -2741,13 +2741,15 @@ function collectSongEditorPayload() {
   const brands = {};
   document.querySelectorAll('.brand-editor-card').forEach(card => {
     const brandId = card.dataset.brandId;
-    brands[brandId] = {
+    const payload = {
       available: card.querySelector('.brand-available').checked,
       code: card.querySelector('.brand-code').value.trim(),
       audioType: card.querySelector('.brand-audio').value,
       mvType: card.querySelector('.brand-mv').value,
       note: card.querySelector('.brand-note').value.trim(),
     };
+    const hasDetails = payload.code || payload.audioType || payload.mvType || payload.note;
+    if (payload.available || hasDetails || card.dataset.hasStatus === '1') brands[brandId] = payload;
   });
 
   return {
@@ -2891,11 +2893,15 @@ window.addEventListener('keydown', e => {
 });
 
 function countAvailableBrands(song) {
-  return Object.values(song.brands || {}).filter(status => status?.available).length;
+  return Object.values(song.brands || {}).filter(isAdminBrandAvailable).length;
 }
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+function isAdminBrandAvailable(status) {
+  return Boolean(status) && status.available !== false;
 }
 
 function escapeAttr(value) {

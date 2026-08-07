@@ -2,6 +2,7 @@ import React from 'react';
 import type { Song } from '../types/ktv';
 import { useBrands } from '../hooks/useBrands';
 import { X, Heart, Trash2, Mic2, CheckCircle2 } from 'lucide-react';
+import { isBrandAvailable } from '../utils/brandAvailability';
 
 interface FavoritesDrawerProps {
   isOpen: boolean;
@@ -149,7 +150,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
                 }}>
                   {brandList.map(b => {
                     const status = song.brands[b.id];
-                    if (!status || !status.available) return null;
+                    if (!isBrandAvailable(status)) return null;
 
                     return (
                       <span

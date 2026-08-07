@@ -6,6 +6,7 @@ import { Heart, Video, Disc, ChevronRight, CheckCircle2, Flag } from 'lucide-rea
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
+import { isBrandAvailable } from '../utils/brandAvailability';
 
 interface CardViewProps {
   songs: Song[];
@@ -127,7 +128,7 @@ export const CardView: React.FC<CardViewProps> = ({
           ? selectedBrands.map(bId => sortedBrandList.find(b => b.id === bId) || BRANDS[bId]).filter(Boolean)
           : (selectedBrand === 'all'
             ? (() => {
-                const availableInSong = sortedBrandList.filter(b => song.brands?.[b.id]?.available);
+                const availableInSong = sortedBrandList.filter(b => isBrandAvailable(song.brands?.[b.id]));
                 return availableInSong.length > 0 ? availableInSong.slice(0, 4) : sortedBrandList.slice(0, 4);
               })()
             : [sortedBrandList.find(b => b.id === selectedBrand) || BRANDS[selectedBrand]].filter(Boolean));
@@ -261,7 +262,7 @@ export const CardView: React.FC<CardViewProps> = ({
               {displayBrands.map(b => {
                 const status = song.brands[b.id];
 
-                if (!status || !status.available) {
+                if (!isBrandAvailable(status)) {
                   return (
                     <div 
                       key={b.id} 

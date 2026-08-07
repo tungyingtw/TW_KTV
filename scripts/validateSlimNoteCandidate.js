@@ -35,6 +35,10 @@ function printHelp() {
   ].join('\n'));
 }
 
+function isBrandAvailable(status) {
+  return Boolean(status) && status.available !== false;
+}
+
 function readSongs(filePath) {
   if (!fs.existsSync(filePath)) throw new Error(`找不到檔案：${filePath}`);
   const songs = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -59,7 +63,7 @@ function hashFrontendShape(songs) {
       youtubeUrl: song.youtubeUrl,
       isMainlandViral: song.isMainlandViral,
       brands: Object.fromEntries(Object.entries(song.brands || {}).map(([brandId, status]) => [brandId, {
-        available: status.available,
+        available: isBrandAvailable(status),
         code: status.code,
         audioType: status.audioType,
         mvType: status.mvType,
@@ -152,12 +156,12 @@ function validate(source, candidate) {
   }
 
   result.sampleFilterMatches.officialMv = {
-    source: countFilterMatches(source, song => Object.values(song.brands || {}).some(status => status.available && status.mvType === 'official_mv')),
-    candidate: countFilterMatches(candidate, song => Object.values(song.brands || {}).some(status => status.available && status.mvType === 'official_mv')),
+    source: countFilterMatches(source, song => Object.values(song.brands || {}).some(status => isBrandAvailable(status) && status.mvType === 'official_mv')),
+    candidate: countFilterMatches(candidate, song => Object.values(song.brands || {}).some(status => isBrandAvailable(status) && status.mvType === 'official_mv')),
   };
   result.sampleFilterMatches.guidedVocal = {
-    source: countFilterMatches(source, song => Object.values(song.brands || {}).some(status => status.available && status.audioType === 'guided_vocal')),
-    candidate: countFilterMatches(candidate, song => Object.values(song.brands || {}).some(status => status.available && status.audioType === 'guided_vocal')),
+    source: countFilterMatches(source, song => Object.values(song.brands || {}).some(status => isBrandAvailable(status) && status.audioType === 'guided_vocal')),
+    candidate: countFilterMatches(candidate, song => Object.values(song.brands || {}).some(status => isBrandAvailable(status) && status.audioType === 'guided_vocal')),
   };
 
   return result;
