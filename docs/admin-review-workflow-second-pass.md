@@ -45,4 +45,4 @@
 
 本文件保留為後台操作巡檢參考。功能面已完成待處理列表刷新、已採納/已駁回查詢、資料封存與備份納入封存資料。
 
-後續必須優先執行線上互動驗證，不得直接擴大重構後台流程。請依 `docs/render-online-validation-checklist.md` 檢查。
+線上互動驗證已由使用者確認完成。後續不得直接擴大重構後台流程；若再次出現異常，請依 `docs/render-online-validation-checklist.md` 重現。
