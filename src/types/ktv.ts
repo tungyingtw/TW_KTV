@@ -109,7 +109,7 @@ export interface FilterOptions {
   selectedLanguages: Language[];
   selectedTitleLength: TitleLengthFilter;
   onlyOfficialMv: boolean;
-  onlyOriginalVocal: boolean;
+  onlyGuidedVocal: boolean;
   onlyMainlandViral: boolean;
   onlyNicheSongs: boolean; // 僅看冷門/獨立私房對照歌曲
   viewMode: 'matrix' | 'cards';

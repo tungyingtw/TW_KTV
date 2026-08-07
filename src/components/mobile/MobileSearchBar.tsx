@@ -27,7 +27,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   onOpenSuggestSong,
   onSearchComplete,
 }) => {
-  const hasActiveFilters = filters.onlyOfficialMv || filters.onlyOriginalVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
+  const hasActiveFilters = filters.onlyOfficialMv || filters.onlyGuidedVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
   const inputRef = useRef<HTMLInputElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
@@ -58,7 +58,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
     parts.push(filters.selectedLanguages.length > 0 ? filters.selectedLanguages.join('、') : '全部語種');
     parts.push(filters.selectedTitleLength === 'all' ? '全部字數' : `${filters.selectedTitleLength}字歌`);
     if (filters.onlyOfficialMv) parts.push('原版 MV');
-    if (filters.onlyOriginalVocal) parts.push('原聲原唱');
+    if (filters.onlyGuidedVocal) parts.push('有導唱');
     return parts.join(' · ');
   };
 

@@ -48,7 +48,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
       selectedLanguages: [],
       selectedTitleLength: 'all',
       onlyOfficialMv: false,
-      onlyOriginalVocal: false,
+      onlyGuidedVocal: false,
       onlyMainlandViral: false,
       onlyNicheSongs: false,
       sortBy: 'length',
@@ -226,13 +226,13 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               cursor: 'pointer',
             }}>
               <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
-                僅顯示原聲原唱 (Original Vocal)
+                有導唱功能
               </span>
               <input
                 type="checkbox"
-                checked={filters.onlyOriginalVocal}
-                onChange={(e) => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
-                style={{ accentColor: '#ec4899', width: '18px', height: '18px', cursor: 'pointer' }}
+                checked={filters.onlyGuidedVocal}
+                onChange={(e) => setFilters(prev => ({ ...prev, onlyGuidedVocal: e.target.checked }))}
+                style={{ accentColor: '#22d3ee', width: '18px', height: '18px', cursor: 'pointer' }}
               />
             </label>
           </div>

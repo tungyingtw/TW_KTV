@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, SlidersHorizontal, Video, Disc, Hash, Loader2, PlusCircle } from 'lucide-react';
+import { Search, X, SlidersHorizontal, Video, Mic2, Hash, Loader2, PlusCircle } from 'lucide-react';
 import type { FilterOptions, Language, TitleLengthFilter } from '../types/ktv';
 import { getLanguageStyle } from '../utils/languageStyle';
 
@@ -38,7 +38,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   isServerUnavailable = false,
   onOpenSuggestSong,
 }) => {
-  const hasActiveFilters = filters.onlyOfficialMv || filters.onlyOriginalVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
+  const hasActiveFilters = filters.onlyOfficialMv || filters.onlyGuidedVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
@@ -250,18 +250,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 alignItems: 'center',
                 gap: '5px',
                 fontSize: '0.82rem',
-                color: filters.onlyOriginalVocal ? '#f472b6' : 'var(--text-secondary)',
+                color: filters.onlyGuidedVocal ? '#22d3ee' : 'var(--text-secondary)',
                 cursor: 'pointer',
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
               }}>
                 <input
                   type="checkbox"
-                  checked={filters.onlyOriginalVocal}
-                  onChange={e => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
-                  style={{ accentColor: '#ec4899', cursor: 'pointer' }}
+                  checked={filters.onlyGuidedVocal}
+                  onChange={e => setFilters(prev => ({ ...prev, onlyGuidedVocal: e.target.checked }))}
+                  style={{ accentColor: '#22d3ee', cursor: 'pointer' }}
                 />
-                <Disc size={14} /> 僅原聲原唱
+                <Mic2 size={14} /> 僅有導唱
               </label>
             </div>
 

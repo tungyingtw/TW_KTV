@@ -77,7 +77,7 @@ export function App() {
       selectedLanguages: [],
       selectedTitleLength: 'all',
       onlyOfficialMv: false,
-      onlyOriginalVocal: false,
+      onlyGuidedVocal: false,
       onlyMainlandViral: false,
       onlyNicheSongs: false,
       viewMode: initialViewMode,
@@ -122,7 +122,7 @@ export function App() {
     filters.selectedLanguages,
     filters.selectedTitleLength,
     filters.onlyOfficialMv,
-    filters.onlyOriginalVocal,
+    filters.onlyGuidedVocal,
     filters.onlyMainlandViral,
     filters.onlyNicheSongs,
     filters.sortBy,
@@ -365,13 +365,13 @@ export function App() {
       });
     }
 
-    // 6. Original Vocal Filter
-    if (filters.onlyOriginalVocal) {
+    // 6. Guided Vocal Filter
+    if (filters.onlyGuidedVocal) {
       result = result.filter(song => {
         if (filters.selectedBrand !== 'all') {
-          return song.brands[filters.selectedBrand as BrandId]?.audioType === 'original_vocal';
+          return song.brands[filters.selectedBrand as BrandId]?.audioType === 'guided_vocal';
         }
-        return Object.values(song.brands).some(b => b.available && b.audioType === 'original_vocal');
+        return Object.values(song.brands).some(b => b.available && b.audioType === 'guided_vocal');
       });
     }
 
@@ -411,7 +411,7 @@ export function App() {
     filters.selectedLanguages,
     filters.selectedTitleLength,
     filters.onlyOfficialMv,
-    filters.onlyOriginalVocal,
+    filters.onlyGuidedVocal,
     filters.onlyMainlandViral,
     filters.onlyNicheSongs,
     filters.sortBy,
@@ -780,7 +780,7 @@ export function App() {
                     selectedLanguages: [],
                     selectedTitleLength: 'all',
                     onlyOfficialMv: false,
-                    onlyOriginalVocal: false,
+                    onlyGuidedVocal: false,
                     onlyMainlandViral: false,
                     onlyNicheSongs: false,
                   }));
