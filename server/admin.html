@@ -892,6 +892,7 @@
         <li>歌庫覆寫修正：<b id="diff-overrides-count" style="color:var(--text)">0</b> 筆</li>
         <li>使用者錯誤回報：<b id="diff-reports-count" style="color:var(--text)">0</b> 筆</li>
         <li>社群投票對照紀錄：<b id="diff-votes-count" style="color:var(--text)">0</b> 筆</li>
+        <li>封存資料：<b id="diff-archives-count" style="color:var(--text)">0</b> 筆</li>
       </ul>
     </div>
     <div class="form-group">
@@ -1963,6 +1964,9 @@ function renderBackupExportSummary(container, data) {
       <span class="badge badge-reviewed">刪除標記 ${Number(c.deletedSongs || 0).toLocaleString()}</span>
       <span class="badge badge-reviewed">歌手別名 ${Number(c.artistAliasesOverrides || 0).toLocaleString()}</span>
       <span class="badge badge-reviewed">品牌 ${Number(c.brands || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">封存回報 ${Number(c.archivedReports || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">封存審核 ${Number(c.archivedReviewActions || 0).toLocaleString()}</span>
+      <span class="badge badge-reviewed">封存投票 ${Number(c.archivedVoteSignals || 0).toLocaleString()}</span>
     </div>
   `;
 }
@@ -2143,6 +2147,7 @@ async function handleImportBackup(e) {
     document.getElementById('diff-overrides-count').textContent = result.diff?.catalogOverridesCount || 0;
     document.getElementById('diff-reports-count').textContent = result.diff?.reportsCount || 0;
     document.getElementById('diff-votes-count').textContent = result.diff?.votesCount || 0;
+    document.getElementById('diff-archives-count').textContent = Number(result.diff?.archivedReportsCount || 0) + Number(result.diff?.archivedReviewActionsCount || 0) + Number(result.diff?.archivedVoteSignalsCount || 0);
     document.getElementById('backup-import-reason').value = '';
 
     document.getElementById('backup-preview-modal').style.display = 'flex';
