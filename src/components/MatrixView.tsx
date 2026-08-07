@@ -190,6 +190,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
                 return (
                   <tr
+                    className="song-list-click-target"
                     key={song.id}
                     onClick={() => onSelectSongDetail(song)}
                     style={{
@@ -369,6 +370,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               return (
                 <React.Fragment key={song.id}>
                 <tr
+                  className="song-list-click-target"
                   onClick={() => onSelectSongDetail(song)}
                   style={{
                     background: isSelected
@@ -376,14 +378,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       : index % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.02)',
                     borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
                     borderLeft: isSelected ? '3px solid var(--accent-pink, #ec4899)' : '3px solid transparent',
-                    transition: 'background 0.15s ease',
                     cursor: 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) e.currentTarget.style.background = 'rgba(236, 72, 153, 0.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) e.currentTarget.style.background = index % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.02)';
                   }}
                 >
                   {/* Favorite Toggle */}
