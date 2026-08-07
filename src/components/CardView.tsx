@@ -120,6 +120,8 @@ export const CardView: React.FC<CardViewProps> = ({
     }}>
       {songs.map((song, index) => {
         const isFav = favorites.includes(song.id);
+        const lyricist = song.lyricist?.trim();
+        const composer = song.composer?.trim();
 
         const displayBrands = isMultiSelecting
           ? selectedBrands.map(bId => sortedBrandList.find(b => b.id === bId) || BRANDS[bId]).filter(Boolean)
@@ -226,7 +228,13 @@ export const CardView: React.FC<CardViewProps> = ({
                 marginTop: '8px',
                 lineHeight: 1.4,
               }}>
-                <div>詞: {song.lyricist} | 曲: {song.composer}</div>
+                {(lyricist || composer) && (
+                  <div>
+                    {lyricist && <span>詞: {lyricist}</span>}
+                    {lyricist && composer && <span> | </span>}
+                    {composer && <span>曲: {composer}</span>}
+                  </div>
+                )}
                 {song.lyricsSnippet && !song.lyricsSnippet.includes('全台 10 大 KTV') && (
                   <p style={{
                     color: 'var(--text-muted)',

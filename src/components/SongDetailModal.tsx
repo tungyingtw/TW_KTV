@@ -62,6 +62,8 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
   // 規範語言標示顯示
   const displayLanguage = song.language || '流行曲目';
+  const lyricist = song.lyricist?.trim();
+  const composer = song.composer?.trim();
 
   return (
     <>
@@ -196,11 +198,11 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 歌手：{song.artist}
               </p>
 
-              {(song.lyricist || song.composer) && (
+              {(lyricist || composer) && (
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)' }}>
-                  {song.lyricist && <span>作詞：{song.lyricist}</span>}
-                  {song.lyricist && song.composer && <span style={{ margin: '0 6px' }}>|</span>}
-                  {song.composer && <span>作曲：{song.composer}</span>}
+                  {lyricist && <span>作詞：{lyricist}</span>}
+                  {lyricist && composer && <span style={{ margin: '0 6px' }}>|</span>}
+                  {composer && <span>作曲：{composer}</span>}
                 </div>
               )}
             </div>
