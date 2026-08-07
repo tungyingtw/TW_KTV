@@ -206,6 +206,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
         >
           {/* 全部廠牌 Tab */}
           <button
+            className={`brand-chip ${!isMultiSelecting && selectedBrand === 'all' ? 'is-selected' : ''}`}
             onClick={handleAllClick}
             style={{
               height: '36px',
@@ -242,6 +243,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
 
             return (
               <button
+                className={`brand-chip ${isSelected ? 'is-selected' : ''}`}
                 key={brand.id}
                 onClick={() => handleBrandClick(brand.id)}
                 style={{
