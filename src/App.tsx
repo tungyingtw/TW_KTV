@@ -477,6 +477,24 @@ export function App() {
         />
       )}
 
+      <section className="home-hero" aria-labelledby="home-hero-title">
+        <div className="home-hero-kicker">
+          <Sparkles size={14} />
+          <span>歌友共同校對的 KTV 現場資料</span>
+        </div>
+        <h1 id="home-hero-title" className="home-hero-title">
+          一起確認 KTV 現場到底有沒有這首歌
+        </h1>
+        <p className="home-hero-copy">
+          查詢各 KTV 品牌的收錄狀態，並一起補完原版 MV、伴唱帶、導唱與現場版本差異。
+        </p>
+        <div className="home-hero-metrics" aria-label="目前資料概況">
+          <span>{allSongs.length.toLocaleString()} 首歌曲</span>
+          <span>{brandList.length.toLocaleString()} 個品牌</span>
+          <span>收錄 / MV / 導唱對照</span>
+        </div>
+      </section>
+
       {/* Main Search Controls */}
       {isMobile ? (
         <MobileSearchBar
