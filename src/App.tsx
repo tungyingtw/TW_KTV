@@ -44,6 +44,7 @@ export function App() {
   // Main Catalog State
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(true);
+  const [isCatalogReady, setIsCatalogReady] = useState<boolean>(false);
   const [apiHealthStatus, setApiHealthStatus] = useState<'checking' | 'waking' | 'online' | 'unavailable'>('checking');
   const [targetProgress, setTargetProgress] = useState<number>(0);
   const [displayProgress, setDisplayProgress] = useState<number>(0);
@@ -134,9 +135,11 @@ export function App() {
           return true;
         });
         setAllSongs(sanitized);
+        setIsCatalogReady(sanitized.length > 0);
       }
       setTargetProgress(100);
     }).catch(() => {
+      setIsCatalogReady(false);
       setCatalogLoadError('歌庫資料暫時無法載入。請稍候再試，或確認網路連線後重新整理。');
       setTargetProgress(100);
     });
@@ -447,7 +450,7 @@ export function App() {
 
   const handleMobileSearchComplete = () => {
     if (!isMobile) return;
-    if (isLoadingCatalog) {
+    if (!isCatalogReady) {
       showToast(apiHealthStatus === 'waking' ? '伺服器正在喚醒，歌庫準備好後會自動顯示' : '歌庫正在準備中，請稍候');
       return;
     }
@@ -526,7 +529,7 @@ export function App() {
           onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
           resultCount={filteredSongs.length}
           isSearching={isSearching}
-          isCatalogLoading={isLoadingCatalog}
+          isCatalogLoading={!isCatalogReady}
           isServerWaking={apiHealthStatus === 'waking'}
           isServerUnavailable={apiHealthStatus === 'unavailable'}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
@@ -539,7 +542,7 @@ export function App() {
           onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
           resultCount={filteredSongs.length}
           isSearching={isSearching}
-          isCatalogLoading={isLoadingCatalog}
+          isCatalogLoading={!isCatalogReady}
           isServerWaking={apiHealthStatus === 'waking'}
           isServerUnavailable={apiHealthStatus === 'unavailable'}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
@@ -647,7 +650,7 @@ export function App() {
 
       {/* Main Content Area */}
       <main ref={resultsRegionRef} style={{ flex: 1, paddingBottom: '60px', scrollMarginTop: isMobile ? '12px' : '24px' }}>
-        {isLoadingCatalog ? (
+        {isLoadingCatalog || (!isCatalogReady && !catalogLoadError) ? (
           <div style={{
             textAlign: 'center',
             padding: '60px 24px',
@@ -732,7 +735,7 @@ export function App() {
             <h3 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', marginBottom: '8px' }}>歌庫資料暫時無法載入</h3>
             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{catalogLoadError}</p>
           </div>
-        ) : filteredSongs.length === 0 ? (
+        ) : isCatalogReady && filteredSongs.length === 0 ? (
           <div className="empty-state-panel glass-panel" style={{
             textAlign: 'center',
             padding: isMobile ? '34px 18px' : '44px 28px',
