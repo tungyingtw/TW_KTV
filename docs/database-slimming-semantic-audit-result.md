@@ -196,3 +196,27 @@ node scripts/validateSlimNoteCandidate.js --candidate C:\tmp\database.slim-note.
 | 有導唱 | 0 | 0 |
 
 下一步可以進入正式套用前確認。正式套用仍必須獨立 commit，且套用後必須執行 `npm run build`。
+
+## Phase 3 正式套用狀態
+
+已正式套用第一批 `brand.note` 瘦身。
+
+套用結果：
+
+1. `server/database.json` 已改為 minified JSON。
+2. `brand.note` 筆數：268,640 -> 3,766。
+3. 固定匯入 note 已移除：264,874。
+4. 含 `點歌碼衝突` 的 note 已保留。
+5. 歌曲數仍為 109,363。
+6. 品牌狀態數仍為 268,640。
+7. `public/songs_catalog.bin` 已重新產生。
+8. build 顯示 catalog 大小：54.41 MB。
+
+已執行驗證：
+
+1. `node --check scripts/createSlimNoteCandidate.js`。
+2. `node --check scripts/validateSlimNoteCandidate.js`。
+3. `node scripts/validateSlimNoteCandidate.js --candidate C:\tmp\database.slim-note.json`。
+4. `npm run build`。
+
+下一步必須審查 `brand.audioType` 與 `brand.mvType` 的資料來源可信度，不得直接批次清除。

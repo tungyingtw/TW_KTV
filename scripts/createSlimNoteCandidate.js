@@ -78,6 +78,7 @@ try {
 
   if (!fs.existsSync(sourcePath)) throw new Error(`找不到來源資料庫：${sourcePath}`);
 
+  const sourceMb = fileSizeMb(sourcePath);
   const raw = fs.readFileSync(sourcePath, 'utf8');
   const songs = JSON.parse(raw);
   if (!Array.isArray(songs)) throw new Error('database.json 必須是歌曲陣列');
@@ -90,7 +91,6 @@ try {
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   fs.writeFileSync(targetPath, JSON.stringify(songs, null, args.pretty ? 2 : 0), 'utf8');
 
-  const sourceMb = fileSizeMb(sourcePath);
   const targetMb = fileSizeMb(targetPath);
 
   console.log(JSON.stringify({

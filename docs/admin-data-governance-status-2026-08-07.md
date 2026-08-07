@@ -21,6 +21,7 @@
 15. 全站備份 `exportVersion: 1.1` 已包含封存資料。
 16. 備份匯入預覽已顯示封存資料總筆數。
 17. 舊版 `exportVersion: 1.0` 備份仍必須可匯入；沒有封存欄位時，不得覆寫現有封存資料。
+18. `brand.note` 第一批瘦身已正式套用，固定匯入 note 已移除，含 `點歌碼衝突` 的 note 已保留。
 
 ## 舊計畫書狀態
 
@@ -46,11 +47,9 @@
 4. 必須實測「匯入備份預覽」是否顯示封存資料總筆數。
 5. 必須確認冷啟動時，前台顯示載入/喚醒狀態，不得誤顯示為真正 0 筆結果。
 6. 必須確認後台處理項目後，項目不會重新出現在待處理列表。
-7. 必須執行 `docs/database-slimming-semantic-audit-plan.md`，先確認 `brand.note`、`brand.audioType`、`brand.mvType` 與 `brand.available` 是否可安全瘦身。
-8. 必須依 `docs/database-slimming-validation-runbook.md` 產生候選檔並驗證，不得直接批次覆寫正式 `database.json`。
-9. 必須依 `docs/database-slimming-semantic-audit-result.md` 的順序處理：先 `brand.note`，再審查 `audioType/mvType`，最後評估 `available`。
-10. 必須用候選檔完成前台搜尋與後台編輯流程驗證後，才可正式套用 `brand.note` 第一批瘦身。
-11. `brand.note` 候選檔已通過資料一致性、搜尋樣本與篩選樣本驗證；正式套用前仍必須確認是否接受移除固定匯入 note。
+7. 必須審查 `brand.audioType` 與 `brand.mvType` 的資料來源可信度，確認大量 `original_vocal` 與 `official_mv` 是否為可信資料或匯入預設值。
+8. 必須依 `docs/database-slimming-validation-runbook.md` 產生下一批候選檔並驗證，不得直接批次覆寫正式 `database.json`。
+9. 必須依 `docs/database-slimming-semantic-audit-result.md` 的順序處理：已完成 `brand.note`，下一步審查 `audioType/mvType`，最後評估 `available`。
 
 ## 暫不處理
 
