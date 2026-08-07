@@ -2276,7 +2276,7 @@ async function openSongEditorFromReport(reportId) {
     language: snapshot.language || report.lang || '國語',
     zhuyin: snapshot.zhuyin || '',
     pinyin: snapshot.pinyin || '',
-    releaseYear: snapshot.releaseYear || new Date().getFullYear(),
+    releaseYear: snapshot.releaseYear || undefined,
     lyricsSnippet: snapshot.lyricsSnippet || report.lyricsSnippet || '',
     youtubeUrl: snapshot.youtubeUrl || report.youtubeUrl || '',
     isMainlandViral: Boolean(snapshot.isMainlandViral),
@@ -2672,7 +2672,7 @@ async function openSongEditor(songIdValue = '') {
       lyricist: '',
       composer: '',
       language: '國語',
-      releaseYear: new Date().getFullYear(),
+      releaseYear: undefined,
       lyricsSnippet: '',
       youtubeUrl: '',
       isMainlandViral: false,
@@ -2702,7 +2702,7 @@ function fillSongEditor(song) {
   document.getElementById('song-title').value = song.title || '';
   document.getElementById('song-artist').value = song.artist || '';
   document.getElementById('song-language').value = song.language || '國語';
-  document.getElementById('song-release-year').value = song.releaseYear || new Date().getFullYear();
+  document.getElementById('song-release-year').value = song.releaseYear || '';
   document.getElementById('song-lyricist').value = song.lyricist || '';
   document.getElementById('song-composer').value = song.composer || '';
   document.getElementById('song-youtube-url').value = song.youtubeUrl || '';
@@ -2756,7 +2756,7 @@ function collectSongEditorPayload() {
     title: document.getElementById('song-title').value.trim(),
     artist: document.getElementById('song-artist').value.trim(),
     language: document.getElementById('song-language').value,
-    releaseYear: Number(document.getElementById('song-release-year').value || new Date().getFullYear()),
+    releaseYear: document.getElementById('song-release-year').value ? Number(document.getElementById('song-release-year').value) : undefined,
     lyricist: document.getElementById('song-lyricist').value.trim(),
     composer: document.getElementById('song-composer').value.trim(),
     youtubeUrl: document.getElementById('song-youtube-url').value.trim(),

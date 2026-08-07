@@ -1912,6 +1912,11 @@ function cleanCatalogPhonetic(value) {
   return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : undefined;
 }
 
+function cleanCatalogReleaseYear(value) {
+  const year = Number.parseInt(String(value || ''), 10);
+  return Number.isInteger(year) && year >= 1900 && year <= 2100 ? year : undefined;
+}
+
 // ─────────────────────────────────────────────
 // 公開 API：歌曲搜尋
 // ─────────────────────────────────────────────
@@ -2307,7 +2312,7 @@ function sanitizeSongSnapshot(snapshot, fallback = {}) {
     language: sanitizeText(snapshot.language || fallback.lang) || '??',
     zhuyin: sanitizeText(snapshot.zhuyin).slice(0, 120),
     pinyin: sanitizeText(snapshot.pinyin).slice(0, 120),
-    releaseYear: Number.parseInt(String(snapshot.releaseYear || new Date().getFullYear()), 10) || new Date().getFullYear(),
+    releaseYear: cleanCatalogReleaseYear(snapshot.releaseYear),
     popularRank: Number.isFinite(Number(snapshot.popularRank)) ? Number(snapshot.popularRank) : undefined,
     lyricsSnippet: sanitizeText(snapshot.lyricsSnippet).slice(0, 500),
     youtubeUrl: sanitizeText(snapshot.youtubeUrl).slice(0, 500) || undefined,
@@ -2330,7 +2335,7 @@ function buildReportSongSnapshot(report) {
     language: sanitizeText(report.lang) || '??',
     zhuyin: '',
     pinyin: '',
-    releaseYear: new Date().getFullYear(),
+    releaseYear: undefined,
     lyricsSnippet: sanitizeText(report.lyricsSnippet),
     youtubeUrl: sanitizeText(report.youtubeUrl) || undefined,
     brands: {},
@@ -3282,7 +3287,7 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
             language: report.lang || '國語',
             zhuyin: '',
             pinyin: '',
-            releaseYear: new Date().getFullYear(),
+            releaseYear: undefined,
             lyricsSnippet: report.lyricsSnippet || '',
             youtubeUrl: report.youtubeUrl || undefined,
             brands: {
@@ -4317,7 +4322,7 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
     language,
     zhuyin: cleanCatalogPhonetic(body.zhuyin || existingSong?.zhuyin),
     pinyin: cleanCatalogPhonetic(body.pinyin || existingSong?.pinyin),
-    releaseYear: Number.parseInt(String(body.releaseYear || existingSong?.releaseYear || new Date().getFullYear()), 10) || new Date().getFullYear(),
+    releaseYear: cleanCatalogReleaseYear(body.releaseYear || existingSong?.releaseYear),
     popularRank: body.popularRank ? Number.parseInt(String(body.popularRank), 10) : existingSong?.popularRank,
     lyricsSnippet: String(body.lyricsSnippet || '').trim(),
     youtubeUrl: String(body.youtubeUrl || '').trim() || undefined,

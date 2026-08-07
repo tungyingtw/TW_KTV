@@ -53,7 +53,7 @@ export interface Song {
   language: Language;
   zhuyin?: string;
   pinyin?: string;
-  releaseYear: number;
+  releaseYear?: number;
   popularRank?: number;
   lyricsSnippet: string;
   youtubeUrl?: string;
@@ -113,5 +113,5 @@ export interface FilterOptions {
   onlyMainlandViral: boolean;
   onlyNicheSongs: boolean; // 僅看冷門/獨立私房對照歌曲
   viewMode: 'matrix' | 'cards';
-  sortBy: 'length' | 'stroke' | 'popular' | 'newest' | 'title';
+  sortBy: 'length' | 'stroke' | 'popular' | 'title';
 }
