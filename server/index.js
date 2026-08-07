@@ -2332,6 +2332,13 @@ async function persistCatalogMutation(song) {
   await saveCatalogOverrideSong(song);
 }
 
+function reportGuidedVocalStatusToAudioType(report) {
+  if (report?.guidedVocalStatus === 'guided') return 'guided_vocal';
+  if (report?.guidedVocalStatus === 'none') return 'backing_track';
+  if (report?.hasOriginalVocal) return 'original_vocal';
+  return undefined;
+}
+
 async function updateSongBrandStatus({ songId, brandId, available, audioType, mvType, note = '' }) {
   if (!brandId || typeof available !== 'boolean') {
     const err = new Error('Missing required fields: brandId, available');
@@ -2535,6 +2542,7 @@ app.post('/api/report', async (req, res) => {
     mvType,
     note,
     hasOriginalVocal,
+    guidedVocalStatus,
     lyricsSnippet,
     youtubeUrl,
     brandName,
@@ -2573,6 +2581,7 @@ app.post('/api/report', async (req, res) => {
   const cleanNote = sanitizeText(note).slice(0, 500);
   const cleanLyricsSnippet = sanitizeText(lyricsSnippet).slice(0, 500);
   const cleanYoutubeUrl = sanitizeText(youtubeUrl).slice(0, 500);
+  const cleanGuidedVocalStatus = ['guided', 'none', 'unknown'].includes(String(guidedVocalStatus)) ? String(guidedVocalStatus) : 'unknown';
   const cleanSongSnapshot = sanitizeSongSnapshot(songSnapshot, { songId, songTitle, artist, lang });
 
   const newReport = {
@@ -2588,6 +2597,7 @@ app.post('/api/report', async (req, res) => {
     composer: cleanComposer,
     mvType: mvType || 'unknown',
     hasOriginalVocal: !!hasOriginalVocal,
+    guidedVocalStatus: cleanGuidedVocalStatus,
     lyricsSnippet: cleanLyricsSnippet,
     youtubeUrl: cleanYoutubeUrl,
     brandName: cleanBrandName,
@@ -3256,7 +3266,7 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
               [report.brandId]: {
                 available: true,
                 code: report.songCode || '',
-                audioType: report.hasOriginalVocal ? 'original_vocal' : undefined,
+                audioType: reportGuidedVocalStatusToAudioType(report),
                 mvType: report.mvType === 'official' ? 'official_mv' : undefined,
               }
             },
@@ -3267,7 +3277,7 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
           existingSong.brands[report.brandId] = {
             available: true,
             code: report.songCode || existingSong.brands[report.brandId]?.code || '',
-            audioType: report.hasOriginalVocal ? 'original_vocal' : existingSong.brands[report.brandId]?.audioType,
+            audioType: reportGuidedVocalStatusToAudioType(report) || existingSong.brands[report.brandId]?.audioType,
             mvType: report.mvType === 'official' ? 'official_mv' : existingSong.brands[report.brandId]?.mvType,
           };
         }

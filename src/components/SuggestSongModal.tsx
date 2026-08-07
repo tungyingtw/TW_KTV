@@ -33,7 +33,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [language, setLanguage] = useState('國語');
   const [brandId, setBrandId] = useState<BrandId>('cashbox');
   const [hasOfficialMv, setHasOfficialMv] = useState(true);
-  const [hasOriginalVocal, setHasOriginalVocal] = useState(true);
+  const [guidedVocalStatus, setGuidedVocalStatus] = useState<'unknown' | 'guided' | 'none'>('unknown');
   const [lyricsSnippet, setLyricsSnippet] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
 
@@ -66,7 +66,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         language,
         brandId,
         hasOfficialMv,
-        hasOriginalVocal,
+        guidedVocalStatus,
         lyricsSnippet: lyricsSnippet.trim(),
         youtubeUrl: youtubeUrl.trim(),
       });
@@ -89,10 +89,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
     setIsSubmitting(true);
     const res = await submitSuggestBrand({
       brandName: brandName.trim(),
-      shortName: shortName.trim() || brandName.trim().substring(0, 4),
-      systemType: systemType.trim() || '通用伴唱系統',
-      codeFormat: codeFormat.trim() || '未提供',
-      storeLocations: storeLocations.trim() || '未提供',
+      shortName: brandName.trim().substring(0, 4),
       note: brandNote.trim(),
     });
     setIsSubmitting(false);
@@ -330,8 +327,16 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   </label>
 
                   <label style={checkboxLabelStyle()}>
-                    <input type="checkbox" checked={hasOriginalVocal} onChange={event => setHasOriginalVocal(event.target.checked)} style={{ accentColor: '#8b5cf6', width: '16px', height: '16px' }} />
-                    支援原聲原唱
+                    <span>導唱功能</span>
+                    <select
+                      value={guidedVocalStatus}
+                      onChange={event => setGuidedVocalStatus(event.target.value as 'unknown' | 'guided' | 'none')}
+                      style={{ ...inputStyle(), width: '150px', fontSize: '0.82rem', padding: '6px 8px' }}
+                    >
+                      <option value="unknown" style={{ background: 'var(--bg-card, #1e293b)' }}>不確定</option>
+                      <option value="guided" style={{ background: 'var(--bg-card, #1e293b)' }}>有導唱</option>
+                      <option value="none" style={{ background: 'var(--bg-card, #1e293b)' }}>無導唱</option>
+                    </select>
                   </label>
                 </div>
 
@@ -371,10 +376,10 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   color: 'var(--text-primary, #e0f2fe)',
                   lineHeight: 1.5,
                 }}>
-                  發現未收錄的連鎖 KTV、獨立歡唱門市或伴唱系統時，可提供名稱、系統類型與主要據點，方便後續整理。
+                  發現未收錄的連鎖 KTV、獨立歡唱門市或伴唱系統時，提供名稱與補充線索即可，簡稱與細節會由管理者採納時整理。
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#38bdf8', marginBottom: '5px', fontWeight: 700 }}>
                       KTV 廠牌 / 門市體系名稱 <span style={{ color: '#f87171' }}>*</span>
@@ -382,7 +387,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                     <input type="text" value={brandName} onChange={event => setBrandName(event.target.value)} placeholder="例：晴空歡唱連鎖 KTV" style={inputStyle('rgba(56, 189, 248, 0.35)')} />
                   </div>
 
-                  <div>
+                  <div style={{ display: 'none' }}>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#f472b6', marginBottom: '5px', fontWeight: 700 }}>
                       顯示簡稱
                     </label>
@@ -390,7 +395,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'none', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={smallLabelStyle()}>系統 / 伴唱機類型</label>
                     <input type="text" value={systemType} onChange={event => setSystemType(event.target.value)} placeholder="例：自助伴唱系統" style={inputStyle()} />
@@ -402,7 +407,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   </div>
                 </div>
 
-                <div>
+                <div style={{ display: 'none' }}>
                   <label style={smallLabelStyle()}>門市 / 主要據點區域</label>
                   <input type="text" value={storeLocations} onChange={event => setStoreLocations(event.target.value)} placeholder="例：台中、彰化地區" style={inputStyle()} />
                 </div>

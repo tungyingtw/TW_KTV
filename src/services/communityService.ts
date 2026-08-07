@@ -26,6 +26,7 @@ export interface ReportPayload {
   mvType?: 'official' | 'edited' | 'unknown';
   note?: string;
   hasOriginalVocal?: boolean;
+  guidedVocalStatus?: 'unknown' | 'guided' | 'none';
   lyricsSnippet?: string;
   youtubeUrl?: string;
   // 新廠牌建議特有欄位
@@ -61,7 +62,7 @@ export async function submitSuggestSong(payload: {
   songCode?: string;
   brandId: BrandId;
   hasOfficialMv?: boolean;
-  hasOriginalVocal?: boolean;
+  guidedVocalStatus?: 'unknown' | 'guided' | 'none';
   lyricsSnippet?: string;
   youtubeUrl?: string;
 }): Promise<{ success: boolean; reportId?: string; error?: string }> {
@@ -76,10 +77,10 @@ export async function submitSuggestSong(payload: {
     lyricist: payload.lyricist,
     composer: payload.composer,
     mvType: payload.hasOfficialMv ? 'official' : 'unknown',
-    hasOriginalVocal: payload.hasOriginalVocal,
+    guidedVocalStatus: payload.guidedVocalStatus || 'unknown',
     lyricsSnippet: payload.lyricsSnippet,
     youtubeUrl: payload.youtubeUrl,
-    note: `[新歌建議] 語種:${payload.language} | MV:${payload.hasOfficialMv ? '有' : '無'} | 原唱:${payload.hasOriginalVocal ? '有' : '無'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
+    note: `[新歌建議] 語種:${payload.language} | 官方MV:${payload.hasOfficialMv ? '有' : '不確定'} | 導唱:${payload.guidedVocalStatus || 'unknown'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
   });
 }
 
