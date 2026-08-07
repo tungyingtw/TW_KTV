@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Search, X, SlidersHorizontal, Video, Disc, Hash, Loader2, PlusCircle } from 'lucide-react';
-import type { FilterOptions, Language, TitleLengthFilter } from '../../types/ktv';
-import { getLanguageStyle } from '../../utils/languageStyle';
+import { Search, X, SlidersHorizontal, Loader2, PlusCircle } from 'lucide-react';
+import type { FilterOptions } from '../../types/ktv';
 
 interface MobileSearchBarProps {
   filters: FilterOptions;
@@ -12,18 +11,6 @@ interface MobileSearchBarProps {
   onOpenSuggestSong?: () => void;
   onSearchComplete?: () => void;
 }
-
-const LANGUAGES: Array<Language | '全部'> = ['全部', '國語', '台語', '粵語', '客語', '兒歌', '原住民語', '陸歌', '日語', '韓語', '英語'];
-const TITLE_LENGTHS: { id: TitleLengthFilter; label: string }[] = [
-  { id: 'all', label: '全部' },
-  { id: '1', label: '1字' },
-  { id: '2', label: '2字' },
-  { id: '3', label: '3字' },
-  { id: '4', label: '4字' },
-  { id: '5', label: '5字' },
-  { id: '6', label: '6字' },
-  { id: '7+', label: '7字+' },
-];
 
 export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   filters,
@@ -60,18 +47,13 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
     }
   };
 
-  const toggleLanguage = (lang: Language | '全部') => {
-    setFilters(prev => {
-      if (lang === '全部') return { ...prev, selectedLanguages: [] };
-
-      const exists = prev.selectedLanguages.includes(lang);
-      return {
-        ...prev,
-        selectedLanguages: exists
-          ? prev.selectedLanguages.filter(item => item !== lang)
-          : [...prev.selectedLanguages, lang as Language],
-      };
-    });
+  const getFilterSummary = () => {
+    const parts: string[] = [];
+    parts.push(filters.selectedLanguages.length > 0 ? filters.selectedLanguages.join('、') : '全部語種');
+    parts.push(filters.selectedTitleLength === 'all' ? '全部字數' : `${filters.selectedTitleLength}字歌`);
+    if (filters.onlyOfficialMv) parts.push('原版 MV');
+    if (filters.onlyOriginalVocal) parts.push('原聲原唱');
+    return parts.join(' · ');
   };
 
   return (
@@ -150,85 +132,32 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           </button>
         </div>
 
-        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>語種：</span>
-          {LANGUAGES.map(lang => {
-            const isSelected = lang === '全部' ? filters.selectedLanguages.length === 0 : filters.selectedLanguages.includes(lang as Language);
-            const lStyle = getLanguageStyle(lang);
-            return (
-              <button
-                key={lang}
-                onClick={() => toggleLanguage(lang)}
-                style={{
-                  background: isSelected ? lStyle.bg : 'var(--bg-card-hover)',
-                  color: isSelected ? lStyle.color : 'var(--text-secondary)',
-                  border: `1px solid ${isSelected ? lStyle.border : 'var(--border-color)'}`,
-                  padding: '3px 9px',
-                  borderRadius: '20px',
-                  fontSize: '0.75rem',
-                  fontWeight: isSelected ? 700 : 500,
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                  whiteSpace: 'nowrap',
-                  boxShadow: isSelected ? `0 0 8px ${lStyle.border}` : 'none',
-                }}
-              >
-                {lang}
-              </button>
-            );
-          })}
-        </div>
-
-        <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', width: '100%', minWidth: 0, paddingBottom: '2px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '2px' }}>
-            <Hash size={12} color="var(--accent-purple)" />字數：
+        <button
+          onClick={onOpenMobileFilters}
+          aria-label="開啟篩選條件"
+          style={{
+            marginTop: '8px',
+            width: '100%',
+            minWidth: 0,
+            border: `1px solid ${hasActiveFilters ? 'rgba(236, 72, 153, 0.42)' : 'var(--border-color)'}`,
+            background: hasActiveFilters ? 'rgba(236, 72, 153, 0.1)' : 'var(--bg-card-hover)',
+            color: hasActiveFilters ? 'var(--accent-pink, #ec4899)' : 'var(--text-secondary)',
+            borderRadius: '10px',
+            padding: '7px 9px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            cursor: 'pointer',
+            boxSizing: 'border-box',
+          }}
+        >
+          <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', fontWeight: 700, whiteSpace: 'nowrap' }}>篩選</span>
+          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', fontSize: '0.78rem', fontWeight: 700 }}>
+            {getFilterSummary()}
           </span>
-          {TITLE_LENGTHS.map(item => {
-            const isSelected = filters.selectedTitleLength === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id }))}
-                style={{
-                  background: isSelected ? 'rgba(168, 85, 247, 0.25)' : 'var(--bg-card-hover)',
-                  color: isSelected ? '#c084fc' : 'var(--text-secondary)',
-                  border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.5)' : 'var(--border-color)'}`,
-                  padding: '3px 9px',
-                  borderRadius: '20px',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div style={{ marginTop: '8px', paddingTop: '7px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOfficialMv ? '#34d399' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
-            <input
-              type="checkbox"
-              checked={filters.onlyOfficialMv}
-              onChange={e => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
-              style={{ accentColor: '#10b981', cursor: 'pointer' }}
-            />
-            <Video size={13} /> 原版 MV
-          </label>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: filters.onlyOriginalVocal ? '#f472b6' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
-            <input
-              type="checkbox"
-              checked={filters.onlyOriginalVocal}
-              onChange={e => setFilters(prev => ({ ...prev, onlyOriginalVocal: e.target.checked }))}
-              style={{ accentColor: '#ec4899', cursor: 'pointer' }}
-            />
-            <Disc size={13} /> 原聲原唱
-          </label>
-        </div>
+          <SlidersHorizontal size={14} />
+        </button>
 
         <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
           <div
