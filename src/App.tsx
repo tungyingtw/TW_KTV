@@ -717,6 +717,10 @@ export function App() {
               <span style={{ color: 'var(--accent-primary)', fontSize: '0.95rem' }}>{displayProgress}%</span>
               <span>100%</span>
             </div>
+
+            <div className="loading-equalizer" aria-hidden="true">
+              {Array.from({ length: 18 }).map((_, index) => <span key={index} />)}
+            </div>
           </div>
         ) : catalogLoadError ? (
           <div style={{
