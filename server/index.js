@@ -3114,6 +3114,20 @@ function createReviewActionRecord({ reviewItemId, sourceType, sourceId, itemType
   };
 }
 
+function getLocalFileSize(filePath) {
+  try {
+    return fs.existsSync(filePath) ? fs.statSync(filePath).size : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function classifyDataGrowth(count, sizeBytes, warningCount, criticalCount) {
+  if (count >= criticalCount || sizeBytes >= 5 * 1024 * 1024) return 'critical';
+  if (count >= warningCount || sizeBytes >= 2 * 1024 * 1024) return 'warning';
+  return 'healthy';
+}
+
 async function markReportReviewed(reportId, status, adminNote = '') {
   if (!reportId) return null;
   const reports = await loadReportsStore();
@@ -4310,6 +4324,70 @@ app.get('/api/admin/quota-status', requirePermission('dashboard.view'), async (r
     res.json(stats);
   } catch (err) {
     res.status(500).json({ error: '無法獲取容量狀態：' + err.message });
+  }
+});
+
+app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), async (req, res) => {
+  try {
+    const reports = await loadReportsStore();
+    const votes = await loadVotesStore();
+    const reviewActions = await loadReviewActionsStore();
+    const logBytes = getLocalFileSize(ADMIN_LOG_PATH);
+    const reportStatusCounts = reports.reduce((acc, report) => {
+      const status = report.status || 'unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+    const voteEntries = Object.keys(votes || {}).length;
+    const actionStatusCounts = reviewActions.reduce((acc, action) => {
+      const status = action.status || 'unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    res.json({
+      generatedAt: new Date().toISOString(),
+      stores: [
+        {
+          key: 'reports',
+          label: '使用者回報',
+          count: reports.length,
+          sizeBytes: getLocalFileSize(REPORTS_PATH),
+          risk: classifyDataGrowth(reports.length, getLocalFileSize(REPORTS_PATH), 1000, 5000),
+          detail: reportStatusCounts,
+          policy: '已分頁顯示；資料本體需規劃日期封存，不建議直接刪除。',
+        },
+        {
+          key: 'votes',
+          label: '群眾投票',
+          count: voteEntries,
+          sizeBytes: getLocalFileSize(VOTES_PATH),
+          risk: classifyDataGrowth(voteEntries, getLocalFileSize(VOTES_PATH), 2000, 10000),
+          detail: {},
+          policy: '需保留社群訊號；已處理項目未來應做壓縮或封存。',
+        },
+        {
+          key: 'review_actions',
+          label: '審核處理紀錄',
+          count: reviewActions.length,
+          sizeBytes: getLocalFileSize(REVIEW_ACTIONS_PATH),
+          risk: classifyDataGrowth(reviewActions.length, getLocalFileSize(REVIEW_ACTIONS_PATH), 1000, 5000),
+          detail: actionStatusCounts,
+          policy: '需保留追溯性；未來以月份封存，不建議手動清除。',
+        },
+        {
+          key: 'admin_logs',
+          label: '管理操作日誌',
+          count: null,
+          sizeBytes: logBytes,
+          risk: classifyDataGrowth(0, logBytes, 1000, 5000),
+          detail: {},
+          policy: '後台只顯示最近 100 筆；檔案需規劃輪替或截斷。',
+        },
+      ],
+    });
+  } catch (err) {
+    res.status(500).json({ error: '無法獲取資料成長狀態：' + err.message });
   }
 });
 

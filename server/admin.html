@@ -576,6 +576,12 @@
         </ul>
       </div>
 
+      <div class="card" style="border-color:rgba(251,191,36,0.25);margin-bottom:16px;">
+        <h3 style="margin-bottom:8px; font-size:0.95rem;">後台資料成長摘要</h3>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.7;margin-bottom:10px;">這裡只顯示資料累積狀態，不提供直接清除，避免誤刪可追溯的回報、投票或審核紀錄。</p>
+        <div id="data-growth-list"><div class="empty">正在載入資料成長狀態...</div></div>
+      </div>
+
       <div class="card" style="border-color:rgba(255,255,255,0.08);">
         <h3 style="margin-bottom:12px; font-size:0.95rem;">七日每日自動備份清單 (7-Day Rolling Snapshots)</h3>
         <div id="quota-backups-list"><div class="empty">正在載入資料...</div></div>
@@ -1795,13 +1801,20 @@ async function saveResetAdminPassword() {
 // ── 備份與容量健康監控 ──
 async function loadQuotaStatus() {
   const backupsListEl = document.getElementById('quota-backups-list');
+  const dataGrowthEl = document.getElementById('data-growth-list');
   const alertWarnEl = document.getElementById('alert-backup-warning');
   const alertTextEl = document.getElementById('alert-backup-warning-text');
   if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">正在載入資料...</div>';
+  if (dataGrowthEl) dataGrowthEl.innerHTML = '<div class="empty">正在載入資料成長狀態...</div>';
 
   try {
-    const res = await apiFetch('/api/admin/quota-status');
+    const [res, growthRes] = await Promise.all([
+      apiFetch('/api/admin/quota-status'),
+      apiFetch('/api/admin/data-growth-status'),
+    ]);
     const data = await res.json();
+    const growthData = await growthRes.json().catch(() => ({}));
+    if (dataGrowthEl) renderDataGrowthStatus(dataGrowthEl, growthRes.ok ? growthData : null);
 
     const healthEl = document.getElementById('quota-health-status');
     const usageEl = document.getElementById('quota-usage-percent');
@@ -1884,7 +1897,53 @@ async function loadQuotaStatus() {
   } catch (err) {
     console.error('[Load Quota Error]', err);
     if (backupsListEl) backupsListEl.innerHTML = '<div class="empty" style="color:var(--red);">容量狀態載入失敗，請重新整理</div>';
+    if (dataGrowthEl) dataGrowthEl.innerHTML = '<div class="empty" style="color:var(--red);">資料成長狀態載入失敗，請重新整理</div>';
   }
+}
+
+function formatBytes(bytes) {
+  const value = Number(bytes || 0);
+  if (value >= 1024 * 1024) return `${(value / 1024 / 1024).toFixed(2)} MB`;
+  if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${value} B`;
+}
+
+function dataGrowthRiskBadge(risk) {
+  if (risk === 'critical') return '<span class="badge badge-rejected">需要治理</span>';
+  if (risk === 'warning') return '<span class="badge badge-pending">持續觀察</span>';
+  return '<span class="badge badge-resolved">正常</span>';
+}
+
+function renderDataGrowthStatus(container, data) {
+  if (!data?.stores?.length) {
+    container.innerHTML = '<div class="empty">目前無法取得資料成長狀態</div>';
+    return;
+  }
+  container.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--muted);">
+          <th style="padding:10px 8px;">資料集</th>
+          <th style="padding:10px 8px;">筆數</th>
+          <th style="padding:10px 8px;">估算大小</th>
+          <th style="padding:10px 8px;">狀態</th>
+          <th style="padding:10px 8px;">治理策略</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.stores.map(store => `
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:10px 8px;color:var(--text);font-weight:700;">${escapeHtml(store.label)}</td>
+            <td style="padding:10px 8px;color:var(--muted);">${store.count === null ? '依檔案大小' : Number(store.count || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px;color:var(--muted);">${formatBytes(store.sizeBytes)}</td>
+            <td style="padding:10px 8px;">${dataGrowthRiskBadge(store.risk)}</td>
+            <td style="padding:10px 8px;color:var(--muted);line-height:1.6;">${escapeHtml(store.policy || '')}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <div style="color:var(--muted);font-size:0.75rem;margin-top:8px;">更新時間：${escapeHtml(data.generatedAt?.slice(0,19).replace('T',' ') || '-')}</div>
+  `;
 }
 
 async function downloadSnapshot(name) {
