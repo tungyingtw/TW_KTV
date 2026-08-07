@@ -456,7 +456,7 @@
     <!-- ── MV 類型票選 ── -->
     <div id="tab-mv" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">MV 類型社群票選清單</h2>
-      <p class="tab-help"><b>用途：</b>依社群票選修正 MV 類型。<b>完成標準：</b>標記為官方 MV、Live MV、剪輯 MV 或動畫 MV。</p>
+      <p class="tab-help"><b>用途：</b>依社群票選修正 MV 類型。<b>完成標準：</b>標記為原版 MV、Live MV、伴唱畫面或動畫 MV。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadMvVotes()">重新整理</button>
       </div>
@@ -1068,7 +1068,7 @@ function applyAdminWorkflowLabels() {
     'tab-disputed': ['收錄狀態待確認', '查看群眾對「此品牌是否收錄此歌」意見分歧或票數不足的項目，人工查證後採納為有收錄或未收錄。'],
     'tab-verified': ['群眾確認收錄', '查看群眾高度一致認為有收錄的項目，確認後可快速採納為正式收錄資料。'],
     'tab-guided': ['導唱功能待確認', '查看群眾回報的導唱/純伴奏訊號，確認後更新該品牌歌曲的音訊類型。'],
-    'tab-mv': ['MV 類型待確認', '查看群眾回報的官方 MV/剪輯 MV 訊號，確認後更新該品牌歌曲的 MV 類型。'],
+    'tab-mv': ['MV 類型待確認', '查看群眾回報的原版 MV/伴唱畫面訊號，確認後更新該品牌歌曲的 MV 類型。'],
     'tab-songs': ['歌曲資料庫', '搜尋、新增、編輯或刪除正式歌曲資料。此頁是主資料維護工具，不是日常審核入口。'],
     'tab-brands': ['KTV 品牌', '維護 KTV 品牌名稱、簡稱、顏色與啟用狀態。新品牌建議優先從使用者回報採納。'],
     'tab-aliases': ['歌手別名', '維護歌手別名與搜尋展開規則，讓不同寫法能找到同一位歌手。'],
@@ -2461,7 +2461,7 @@ async function loadMvVotes() {
           <div class="sub">門市/廠牌：<b>${escapeHtml(formatBrandName(d.brandId))}</b> &nbsp;|&nbsp; 收錄狀態：<b>${d.currentAvailable ? '有收錄' : '未收錄'}</b> &nbsp;|&nbsp; 目前 MV 標記：<b>${mvTypeLabel(d.currentMvType)}</b></div>
           <div class="vote-bar">
             <span class="vote-confirm">原版 MV ${d.official}</span>
-            <span class="vote-deny">伴唱 MV ${d.edited}</span>
+            <span class="vote-deny">伴唱畫面 ${d.edited}</span>
             <span class="badge badge-verified">原版 MV 比例 ${d.officialPct}%</span>
             ${d.isLowSample ? `<span class="badge badge-uncertain" style="background:rgba(251,191,36,0.15);color:#fbbf24;margin-left:6px;padding:2px 6px;border-radius:4px;">樣本不足 (${d.total}票)</span>` : ''}
           </div>
@@ -2469,12 +2469,12 @@ async function loadMvVotes() {
         <div class="card-actions">
           ${d.isLowSample ? `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
-            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記官方 MV</button>
-            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記剪輯 MV</button>
+            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記原版 MV</button>
+            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記伴唱畫面</button>
           ` : `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
-            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記官方 MV</button>
-            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記剪輯 MV</button>
+            <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記原版 MV</button>
+            <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記伴唱畫面</button>
           `}
         </div>
       </div>
@@ -2484,9 +2484,9 @@ async function loadMvVotes() {
 
 function mvTypeLabel(type) {
   const labels = {
-    official_mv: '官方 MV',
+    official_mv: '原版 MV',
     live_mv: 'Live MV',
-    reedited_mv: '剪輯 MV',
+    reedited_mv: '伴唱畫面',
     anime_mv: '動畫 MV',
     unknown: '未標記',
   };
@@ -2728,9 +2728,9 @@ function fillSongEditor(song) {
         </select>
         <select class="brand-mv">
           <option value="">MV 類型</option>
-          <option value="official_mv" ${status.mvType === 'official_mv' ? 'selected' : ''}>官方 MV</option>
+          <option value="official_mv" ${status.mvType === 'official_mv' ? 'selected' : ''}>原版 MV</option>
           <option value="live_mv" ${status.mvType === 'live_mv' ? 'selected' : ''}>Live MV</option>
-          <option value="reedited_mv" ${status.mvType === 'reedited_mv' ? 'selected' : ''}>剪輯 MV</option>
+          <option value="reedited_mv" ${status.mvType === 'reedited_mv' ? 'selected' : ''}>伴唱畫面</option>
           <option value="anime_mv" ${status.mvType === 'anime_mv' ? 'selected' : ''}>動畫 MV</option>
         </select>
         <input class="brand-note" placeholder="內部備註" value="${escapeAttr(status.note || '')}" />
@@ -3013,7 +3013,7 @@ function reviewQueueSignalLabel(item) {
   const s = item.signalSummary || {};
   if (item.itemType === 'availability') return `確認 ${s.confirm || 0} / 否定 ${s.deny || 0} / 共 ${s.total || 0} 票`;
   if (item.itemType === 'guided') return `有導唱 ${s.guided || 0} / 無導唱 ${s.noGuided || 0} / 共 ${s.total || 0} 票`;
-  if (item.itemType === 'mv') return `官方 MV ${s.official || 0} / 剪輯 MV ${s.edited || 0} / 共 ${s.total || 0} 票`;
+  if (item.itemType === 'mv') return `原版 MV ${s.official || 0} / 伴唱畫面 ${s.edited || 0} / 共 ${s.total || 0} 票`;
   return s.note ? `備註：${s.note}` : '使用者送出的待審資料';
 }
 
@@ -3032,8 +3032,8 @@ function renderReviewQueueActions(item) {
   }
   if (item.itemType === 'mv') {
     return `
-      <button class="btn btn-blue" onclick="adoptMvFromReviewQueue(${jsArg(item.id)}, 'official_mv')">採納為官方 MV</button>
-      <button class="btn btn-yellow" onclick="adoptMvFromReviewQueue(${jsArg(item.id)}, 'reedited_mv')">採納為剪輯 MV</button>
+      <button class="btn btn-blue" onclick="adoptMvFromReviewQueue(${jsArg(item.id)}, 'official_mv')">採納為原版 MV</button>
+      <button class="btn btn-yellow" onclick="adoptMvFromReviewQueue(${jsArg(item.id)}, 'reedited_mv')">採納為伴唱畫面</button>
     `;
   }
   if (item.itemType === 'suggest_new_brand') return `<button class="btn btn-green" onclick="createBrandFromReviewQueue(${jsArg(item.id)})">建立品牌並結案</button>`;
