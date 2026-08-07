@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
+import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
 import type { FilterOptions } from '../types/ktv';
 
 interface NavbarProps {
@@ -227,6 +227,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>提供建議</span>
             </button>
           )}
+
+          <a
+            href="./games/"
+            className="btn-secondary"
+            style={{
+              borderColor: 'rgba(34, 211, 238, 0.35)',
+              color: '#38bdf8',
+              background: 'rgba(34, 211, 238, 0.08)',
+              textDecoration: 'none',
+            }}
+            title="前往 KTV 小遊戲列表"
+          >
+            <Gamepad2 size={16} />
+            <span>小遊戲</span>
+          </a>
 
           {/* Favorite Songs Button */}
           <button

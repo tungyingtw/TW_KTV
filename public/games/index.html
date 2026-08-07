@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KTV 小遊戲 | 台灣 KTV 歌曲查詢</title>
+  <meta name="description" content="台灣 KTV 歌曲查詢的小遊戲入口，提供輕量純網頁遊戲。">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <style>
+    :root {
+      --bg: #080b1a;
+      --panel: rgba(18, 25, 45, .86);
+      --panel-2: rgba(23, 33, 58, .78);
+      --line: rgba(255, 255, 255, .1);
+      --text: #f8fafc;
+      --muted: #aab7ce;
+      --pink: #f472b6;
+      --cyan: #22d3ee;
+      --gold: #fbbf24;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(244, 114, 182, .16), transparent 32rem),
+        radial-gradient(circle at 92% 8%, rgba(34, 211, 238, .13), transparent 30rem),
+        linear-gradient(180deg, #080b1a, #10162a 52%, #080b1a);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 11, 26, .82);
+      backdrop-filter: blur(14px);
+    }
+
+    .nav {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--pink), #a78bfa);
+      box-shadow: 0 0 18px rgba(244, 114, 182, .28);
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid rgba(34, 211, 238, .35);
+      border-radius: 8px;
+      color: var(--cyan);
+      text-decoration: none;
+      font-size: .92rem;
+      font-weight: 800;
+      background: rgba(34, 211, 238, .08);
+    }
+
+    main {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      padding: 34px 20px 72px;
+    }
+
+    .intro {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 760px;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .game-card {
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--panel), var(--panel-2));
+      box-shadow: 0 16px 42px rgba(0, 0, 0, .22);
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .game-card:hover,
+    .game-card:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(244, 114, 182, .45);
+      box-shadow: 0 20px 52px rgba(244, 114, 182, .12);
+      outline: none;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 6px 0 8px;
+      font-size: 1.35rem;
+      line-height: 1.25;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 800;
+      background: rgba(255, 255, 255, .05);
+    }
+
+    .play {
+      color: var(--cyan);
+      font-weight: 900;
+    }
+
+    footer {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      padding: 0 20px 30px;
+      color: rgba(170, 183, 206, .78);
+      font-size: .86rem;
+    }
+
+    @media (max-width: 640px) {
+      .nav { padding: 10px 14px; }
+      .brand span:last-child { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      main { padding: 26px 14px 54px; }
+      .game-card { min-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav" aria-label="小遊戲導覽">
+      <a class="brand" href="../">
+        <span class="logo" aria-hidden="true">♪</span>
+        <span>台灣 KTV 歌曲查詢</span>
+      </a>
+      <a class="back" href="../">回查歌</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro">
+      <h1>KTV 小遊戲</h1>
+      <p>查歌之外的輕量遊戲區。這裡的遊戲以純網頁形式執行，不需要登入，也不影響歌曲查詢與後台資料流程。</p>
+    </section>
+
+    <section class="game-grid" aria-label="遊戲列表">
+      <a class="game-card" href="./neon-breakout/">
+        <span>
+          <span class="eyebrow">Arcade</span>
+          <h2>霓虹星際反彈</h2>
+          <p>霓虹打磚塊結合太空射擊與 Boss 關卡，適合先作為小遊戲入口的單檔範例。</p>
+        </span>
+        <span class="tags" aria-label="遊戲特性">
+          <span class="tag">純前端</span>
+          <span class="tag">Canvas</span>
+          <span class="tag">單人</span>
+        </span>
+        <span class="play">開始遊玩</span>
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    小遊戲為附加娛樂內容；KTV 收錄資料仍以主查詢頁為準。
+  </footer>
+</body>
+</html>
