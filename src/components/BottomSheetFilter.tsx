@@ -133,7 +133,6 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
             {[
               { id: 'length', label: '字數排序（預設）' },
               { id: 'popular', label: '熱門程度' },
-              { id: 'newest', label: '最新發行' },
               { id: 'stroke', label: '首字筆劃' },
               { id: 'title', label: '注音與字典序' },
             ].map(item => (

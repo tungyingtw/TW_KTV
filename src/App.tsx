@@ -399,8 +399,6 @@ export function App() {
         return a.title.localeCompare(b.title, 'zh-Hant-u-co-stroke');
       } else if (filters.sortBy === 'popular') {
         return (a.popularRank || 999) - (b.popularRank || 999);
-      } else if (filters.sortBy === 'newest') {
-        return b.releaseYear - a.releaseYear;
       } else {
         return a.title.localeCompare(b.title, 'zh-Hant');
       }
