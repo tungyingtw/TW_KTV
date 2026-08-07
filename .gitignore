@@ -61,4 +61,6 @@ server/catalog_overrides.json
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+# Local Web Game Conceptual Sandbox
+網頁遊戲構想/
+
