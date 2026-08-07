@@ -586,6 +586,12 @@
         <div id="data-growth-list"><div class="empty">正在載入資料成長狀態...</div></div>
       </div>
 
+      <div class="card" style="border-color:rgba(34,197,94,0.25);margin-bottom:16px;">
+        <h3 style="margin-bottom:8px; font-size:0.95rem;">封存資料查詢</h3>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.7;margin-bottom:10px;">已處理回報、審核處理記錄與已處理投票訊號會保留在封存區，管理者可依月份下載追查，不會重新塞回待處理列表。</p>
+        <div id="archive-status-list"><div class="empty">正在載入封存資料...</div></div>
+      </div>
+
       <div class="card" style="border-color:rgba(255,255,255,0.08);">
         <h3 style="margin-bottom:12px; font-size:0.95rem;">七日每日自動備份清單 (7-Day Rolling Snapshots)</h3>
         <div id="quota-backups-list"><div class="empty">正在載入資料...</div></div>
@@ -1806,24 +1812,29 @@ async function saveResetAdminPassword() {
 async function loadQuotaStatus() {
   const backupsListEl = document.getElementById('quota-backups-list');
   const dataGrowthEl = document.getElementById('data-growth-list');
+  const archiveStatusEl = document.getElementById('archive-status-list');
   const backupExportSummaryEl = document.getElementById('backup-export-summary');
   const alertWarnEl = document.getElementById('alert-backup-warning');
   const alertTextEl = document.getElementById('alert-backup-warning-text');
   if (backupsListEl) backupsListEl.innerHTML = '<div class="empty">正在載入資料...</div>';
   if (dataGrowthEl) dataGrowthEl.innerHTML = '<div class="empty">正在載入資料成長狀態...</div>';
+  if (archiveStatusEl) archiveStatusEl.innerHTML = '<div class="empty">正在載入封存資料...</div>';
 
   if (backupExportSummaryEl) backupExportSummaryEl.innerHTML = '<div class="empty">正在載入備份匯出摘要...</div>';
 
   try {
-    const [res, growthRes, exportSummaryRes] = await Promise.all([
+    const [res, growthRes, archiveRes, exportSummaryRes] = await Promise.all([
       apiFetch('/api/admin/quota-status'),
       apiFetch('/api/admin/data-growth-status'),
+      apiFetch('/api/admin/archives'),
       apiFetch('/api/admin/backup/export-summary'),
     ]);
     const data = await res.json();
     const growthData = await growthRes.json().catch(() => ({}));
+    const archiveData = await archiveRes.json().catch(() => ({}));
     const exportSummaryData = await exportSummaryRes.json().catch(() => ({}));
     if (dataGrowthEl) renderDataGrowthStatus(dataGrowthEl, growthRes.ok ? growthData : null);
+    if (archiveStatusEl) renderArchiveStatus(archiveStatusEl, archiveRes.ok ? archiveData : null);
     if (backupExportSummaryEl) renderBackupExportSummary(backupExportSummaryEl, exportSummaryRes.ok ? exportSummaryData : null);
 
     const healthEl = document.getElementById('quota-health-status');
@@ -1906,6 +1917,7 @@ async function loadQuotaStatus() {
     }
   } catch (err) {
     console.error('[Load Quota Error]', err);
+    if (archiveStatusEl) archiveStatusEl.innerHTML = '<div class="empty" style="color:var(--red);">封存資料載入失敗，請重新整理</div>';
     if (backupsListEl) backupsListEl.innerHTML = '<div class="empty" style="color:var(--red);">容量狀態載入失敗，請重新整理</div>';
     if (dataGrowthEl) dataGrowthEl.innerHTML = '<div class="empty" style="color:var(--red);">資料成長狀態載入失敗，請重新整理</div>';
   }
@@ -1985,6 +1997,60 @@ function renderDataGrowthStatus(container, data) {
     </table>
     <div style="color:var(--muted);font-size:0.75rem;margin-top:8px;">更新時間：${escapeHtml(data.generatedAt?.slice(0,19).replace('T',' ') || '-')}</div>
   `;
+}
+
+function renderArchiveStatus(container, data) {
+  if (!data?.archives?.length) {
+    container.innerHTML = '<div class="empty">目前沒有封存資料</div>';
+    return;
+  }
+  container.innerHTML = data.archives.map(group => {
+    const files = Array.isArray(group.files) ? group.files : [];
+    const totalRecords = files.reduce((sum, item) => sum + Number(item.records || 0), 0);
+    const totalSize = files.reduce((sum, item) => sum + Number(item.sizeBytes || 0), 0);
+    return `
+      <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:800;color:var(--text);">${escapeHtml(group.label || group.type)}</div>
+            <div style="color:var(--muted);font-size:0.8rem;line-height:1.6;margin-top:4px;">${escapeHtml(group.description || '')}</div>
+          </div>
+          <div style="color:var(--muted);font-size:0.78rem;text-align:right;">${Number(totalRecords).toLocaleString()} 筆 / ${formatBytes(totalSize)}</div>
+        </div>
+        ${files.length ? `
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            ${files.map(file => `
+              <button class="btn btn-ghost" style="padding:6px 10px;font-size:0.78rem;" onclick="downloadArchive(${jsArg(group.type)},${jsArg(file.name)})">
+                ${escapeHtml(file.month || file.name)} · ${Number(file.records || 0).toLocaleString()} 筆 · ${formatBytes(file.sizeBytes)}
+              </button>
+            `).join('')}
+          </div>
+        ` : '<div class="empty" style="padding:10px 0 0;">尚無封存檔</div>'}
+      </div>
+    `;
+  }).join('');
+}
+
+async function downloadArchive(type, name) {
+  try {
+    const res = await apiFetch(`/api/admin/archives/${encodeURIComponent(type)}/${encodeURIComponent(name)}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('下載封存失敗：' + (err.error || res.statusText));
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type}_${name}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('下載封存發生錯誤：' + err.message);
+  }
 }
 
 async function downloadSnapshot(name) {
