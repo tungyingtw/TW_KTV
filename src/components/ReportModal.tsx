@@ -70,7 +70,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 10500,
+        position: 'fixed', inset: 0, zIndex: 13000,
         background: 'var(--bg-overlay, rgba(15, 23, 42, 0.82))',
         backdropFilter: 'blur(10px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
