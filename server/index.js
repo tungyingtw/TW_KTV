@@ -432,6 +432,7 @@ function requirePermission(permissionCode) {
 const CATALOG_PATH = path.join(__dirname, '../public/songs_catalog.json');
 const REPORTS_PATH = path.join(__dirname, 'reports.json');
 const VOTES_PATH   = path.join(__dirname, 'votes.json');
+const VOTES_ARCHIVE_PATH = resolveDataPath('VOTES_ARCHIVE_PATH', 'votes_archived_signals.json');
 const REVIEW_ACTIONS_PATH = path.join(__dirname, 'review_actions.json');
 const REVIEW_ACTIONS_ARCHIVE_DIR = process.env.REVIEW_ACTIONS_ARCHIVE_DIR
   ? path.resolve(process.env.REVIEW_ACTIONS_ARCHIVE_DIR)
@@ -974,7 +975,20 @@ function loadVotes() {
   try { return JSON.parse(fs.readFileSync(VOTES_PATH, 'utf8')); } catch { return {}; }
 }
 function saveVotes(data) {
-  fs.writeFileSync(VOTES_PATH, JSON.stringify(data, null, 2), 'utf8');
+  safeAtomicWriteJson(VOTES_PATH, data);
+}
+
+function loadVotesArchive() {
+  try {
+    const data = JSON.parse(fs.readFileSync(VOTES_ARCHIVE_PATH, 'utf8'));
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveVotesArchive(data) {
+  safeAtomicWriteJson(VOTES_ARCHIVE_PATH, data && typeof data === 'object' ? data : {});
 }
 
 function loadReviewActions() {
@@ -1047,6 +1061,129 @@ async function saveVotesStore(data) {
   try { saveVotes(data); } catch (err) {
     console.warn('[Votes] Local JSON backup write failed:', err.message);
   }
+}
+
+async function loadVotesArchiveStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', VOTES_ARCHIVE_REDIS_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && typeof data === 'object' && !Array.isArray(data)) return data;
+      }
+    } catch (err) {
+      console.warn('[Votes] Archive Redis read failed:', err.message);
+    }
+  }
+  return loadVotesArchive();
+}
+
+async function saveVotesArchiveStore(data) {
+  const archive = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', VOTES_ARCHIVE_REDIS_KEY, JSON.stringify(archive));
+      try { saveVotesArchive(archive); } catch (err) {
+        console.warn('[Votes] Archive local backup write failed:', err.message);
+      }
+      return;
+    } catch (err) {
+      try { saveVotesArchive(archive); } catch (localErr) {
+        console.warn('[Votes] Archive local backup write failed:', localErr.message);
+      }
+      throw new Error(`Votes archive persistent write failed: ${err.message}`);
+    }
+  }
+  saveVotesArchive(archive);
+}
+
+function getHandledVoteDimensions(source) {
+  const dimensionsByKey = {};
+  const reviewItemIds = Array.isArray(source)
+    ? source
+        .filter(action => action && ['adopted', 'rejected'].includes(action.status))
+        .map(action => String(action.reviewItemId || ''))
+    : Object.keys(source || {});
+  for (const reviewItemId of reviewItemIds) {
+    const match = String(reviewItemId).match(/^(availability_vote|guided_vote|mv_vote):(.+)$/);
+    if (!match) continue;
+    const [, sourceType, key] = match;
+    const dimension = sourceType === 'availability_vote' ? 'availability' : (sourceType === 'guided_vote' ? 'guided' : 'mv');
+    if (!dimensionsByKey[key]) dimensionsByKey[key] = new Set();
+    dimensionsByKey[key].add(dimension);
+  }
+  return dimensionsByKey;
+}
+
+function hasAnyVoteSignal(data) {
+  return ['confirm', 'deny', 'guidedVocal', 'noGuidedVocal', 'officialMv', 'editedMv']
+    .some(field => (data?.[field] || 0) > 0);
+}
+
+function clearHandledVoteDimension(data, dimension) {
+  const archived = {};
+  if (dimension === 'availability') {
+    archived.confirm = data.confirm || 0;
+    archived.deny = data.deny || 0;
+    data.confirm = 0;
+    data.deny = 0;
+  } else if (dimension === 'guided') {
+    archived.guidedVocal = data.guidedVocal || 0;
+    archived.noGuidedVocal = data.noGuidedVocal || 0;
+    data.guidedVocal = 0;
+    data.noGuidedVocal = 0;
+  } else if (dimension === 'mv') {
+    archived.officialMv = data.officialMv || 0;
+    archived.editedMv = data.editedMv || 0;
+    data.officialMv = 0;
+    data.editedMv = 0;
+  }
+  return Object.values(archived).some(value => value > 0) ? archived : null;
+}
+
+async function compactHandledVoteSignalsStore(handledState) {
+  const dimensionsByKey = getHandledVoteDimensions(handledState);
+  const keys = Object.keys(dimensionsByKey);
+  if (!keys.length) return { compactedEntries: 0, compactedDimensions: 0, removedEntries: 0 };
+
+  const votes = await loadVotesStore();
+  const archive = await loadVotesArchiveStore();
+  let compactedEntries = 0;
+  let compactedDimensions = 0;
+  let removedEntries = 0;
+
+  for (const key of keys) {
+    const voteData = votes[key];
+    if (!voteData) continue;
+    let touched = false;
+    if (!archive[key]) archive[key] = { dimensions: {}, updatedAt: '' };
+
+    for (const dimension of dimensionsByKey[key]) {
+      const archivedCounts = clearHandledVoteDimension(voteData, dimension);
+      if (!archivedCounts) continue;
+      archive[key].dimensions[dimension] = {
+        ...(archive[key].dimensions[dimension] || {}),
+        ...archivedCounts,
+        compactedAt: new Date().toISOString(),
+      };
+      compactedDimensions++;
+      touched = true;
+    }
+
+    if (!touched) continue;
+    archive[key].updatedAt = new Date().toISOString();
+    compactedEntries++;
+    if (!hasAnyVoteSignal(voteData)) {
+      delete votes[key];
+      removedEntries++;
+    }
+  }
+
+  if (!compactedEntries) return { compactedEntries: 0, compactedDimensions: 0, removedEntries: 0 };
+  await saveVotesArchiveStore(archive);
+  await saveVotesStore(votes);
+  logAdminAction('COMPACT_HANDLED_VOTE_SIGNALS', { compactedEntries, compactedDimensions, removedEntries });
+  return { compactedEntries, compactedDimensions, removedEntries };
 }
 
 async function loadReviewActionsStore() {
@@ -1181,6 +1318,9 @@ async function syncReviewActionsHandledState(actions) {
 
 async function saveReviewActionsStore(data) {
   const state = await syncReviewActionsHandledState(data);
+  try { await compactHandledVoteSignalsStore(data); } catch (err) {
+    console.warn('[Votes] Handled signal compaction failed:', err.message);
+  }
   const { active, archived } = compactReviewActions(data);
   let storeData = Array.isArray(data) ? data : [];
   if (archived.length) {
@@ -1822,6 +1962,7 @@ const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
 const STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits';
 const VOTES_REDIS_KEY = 'ktv:votes';
+const VOTES_ARCHIVE_REDIS_KEY = 'ktv:votesArchivedSignals';
 const REPORTS_REDIS_KEY = 'ktv:reports';
 const REVIEW_ACTIONS_REDIS_KEY = 'ktv:reviewActions';
 const REVIEW_ACTIONS_HANDLED_REDIS_KEY = 'ktv:reviewActionsHandled';
@@ -4537,6 +4678,7 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
   try {
     const reports = await loadReportsStore();
     const votes = await loadVotesStore();
+    const votesArchive = await loadVotesArchiveStore();
     const reviewActions = await loadReviewActionsStore();
     const handledReviewActions = await loadReviewActionsHandledStateStore();
     const reviewActionArchives = getLocalDirStats(REVIEW_ACTIONS_ARCHIVE_DIR);
@@ -4548,6 +4690,7 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
       return acc;
     }, {});
     const voteEntries = Object.keys(votes || {}).length;
+    const archivedVoteEntries = Object.keys(votesArchive || {}).length;
     const actionStatusCounts = reviewActions.reduce((acc, action) => {
       const status = action.status || 'unknown';
       acc[status] = (acc[status] || 0) + 1;
@@ -4568,12 +4711,12 @@ app.get('/api/admin/data-growth-status', requirePermission('dashboard.view'), as
         },
         {
           key: 'votes',
-          label: '群眾投票',
+          label: '\u7fa4\u773e\u6295\u7968\u8a0a\u865f',
           count: voteEntries,
-          sizeBytes: getLocalFileSize(VOTES_PATH),
+          sizeBytes: getLocalFileSize(VOTES_PATH) + getLocalFileSize(VOTES_ARCHIVE_PATH),
           risk: classifyDataGrowth(voteEntries, getLocalFileSize(VOTES_PATH), 2000, 10000),
-          detail: {},
-          policy: '需保留社群訊號；已處理項目未來應做壓縮或封存。',
+          detail: { activeEntries: voteEntries, archivedEntries: archivedVoteEntries },
+          policy: '\u5df2\u7531\u5f8c\u53f0\u8655\u7406\u7684\u6295\u7968\u7dad\u5ea6\u6703\u8f49\u5165\u8f15\u91cf\u5c01\u5b58\u6458\u8981\uff1b\u4e3b\u6a94\u53ea\u4fdd\u7559\u4ecd\u53ef\u80fd\u5f71\u97ff\u524d\u53f0\u986f\u793a\u6216\u5f8c\u53f0\u5f85\u8655\u7406\u7684\u6295\u7968\u8a0a\u865f\u3002',
         },
         {
           key: 'review_actions',
