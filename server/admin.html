@@ -404,16 +404,23 @@
       <h2 style="font-size:1.05rem; margin-bottom:12px;">使用者回報</h2>
       <p class="tab-help"><b>用途：</b>處理前台送出的錯誤回報與新增歌曲建議。<b>完成標準：</b>每筆回報都標記為已解決、已審查或已拒絕。</p>
       <div class="filter-row">
-        <select id="report-filter" onchange="loadReports()">
+        <select id="report-filter" onchange="resetReportsPageAndLoad()">
           <option value="">全部狀態</option>
           <option value="pending" selected>待處理 (pending)</option>
           <option value="reviewed">已審查 (reviewed)</option>
           <option value="resolved">已解決 (resolved)</option>
           <option value="rejected">已拒絕 (rejected)</option>
         </select>
+        <select id="report-limit" onchange="resetReportsPageAndLoad()">
+          <option value="25">每頁 25 筆</option>
+          <option value="50" selected>每頁 50 筆</option>
+          <option value="100">每頁 100 筆</option>
+        </select>
         <button class="btn btn-ghost" onclick="loadReports()">重新整理</button>
       </div>
+      <div id="reports-summary" style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">尚未載入回報資料</div>
       <div id="reports-list"><div class="empty">正在載入資料...</div></div>
+      <div id="reports-pagination" class="filter-row" style="margin-top:12px;"></div>
     </div>
 
     <!-- ── 收錄狀態待確認 ── -->
@@ -895,6 +902,7 @@ const API = isLocalEnv
 let currentSongEditorMode = 'create';
 let currentSongEditorData = null;
 let currentReportsById = {};
+let currentReportsPage = 1;
 let currentReviewQueueById = {};
 let currentFixReviewItemId = '';
 let dynamicBrands = [];
@@ -2718,11 +2726,26 @@ function jsArg(value) {
 
 async function loadReports() {
   const status = document.getElementById('report-filter').value;
-  const url = '/api/admin/reports' + (status ? `?status=${encodeURIComponent(status)}` : '');
+  const limit = document.getElementById('report-limit')?.value || '50';
+  const params = new URLSearchParams({ page: String(currentReportsPage || 1), limit });
+  if (status) params.set('status', status);
+  const url = '/api/admin/reports?' + params.toString();
   const res = await apiFetch(url);
   const data = await res.json();
   const el = document.getElementById('reports-list');
+  const summary = document.getElementById('reports-summary');
+  const pager = document.getElementById('reports-pagination');
   currentReportsById = Object.fromEntries((data.reports || []).map(r => [String(r.id), r]));
+  currentReportsPage = data.page || 1;
+  if (summary) summary.textContent = `共 ${data.total || 0} 筆符合回報（頁次 ${data.page || 1} / ${data.totalPages || 1}，每頁 ${data.limit || limit} 筆）`;
+  if (pager) {
+    const totalPages = data.totalPages || 1;
+    pager.innerHTML = `
+      <button class="btn btn-ghost" ${currentReportsPage <= 1 ? 'disabled' : ''} onclick="changeReportsPage(-1, ${Number(totalPages)})">上一頁</button>
+      <span style="color:var(--muted);font-size:0.82rem;">第 ${currentReportsPage} / ${totalPages} 頁</span>
+      <button class="btn btn-ghost" ${currentReportsPage >= totalPages ? 'disabled' : ''} onclick="changeReportsPage(1, ${Number(totalPages)})">下一頁</button>
+    `;
+  }
 
   if (!data.reports?.length) {
     el.innerHTML = '<div class="empty">目前沒有符合條件的回報</div>';
@@ -2880,6 +2903,16 @@ async function loadReviewQueue() {
       </div>
     </div>
   `).join('');
+}
+
+function resetReportsPageAndLoad() {
+  currentReportsPage = 1;
+  loadReports();
+}
+
+function changeReportsPage(delta, totalPages) {
+  currentReportsPage = Math.min(Math.max(1, currentReportsPage + delta), totalPages || 1);
+  loadReports();
 }
 
 function openReviewQueueSource(itemId) {

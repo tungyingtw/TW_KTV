@@ -2808,9 +2808,14 @@ app.post('/api/admin/admins/:adminId/password', requirePermission('admins.manage
 // ── 查看所有回報 ──
 app.get('/api/admin/reports', requirePermission('reports.view'), async (req, res) => {
   const reports = await loadReportsStore();
-  const { status } = req.query;
+  const { status, page = 1, limit = 50 } = req.query;
   const filtered = status ? reports.filter(r => r.status === status) : reports;
-  res.json({ total: filtered.length, reports: filtered.reverse() });
+  const limitNum = Math.min(100, Math.max(10, Number.parseInt(String(limit), 10) || 50));
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / limitNum) || 1;
+  const pageNum = Math.min(totalPages, Math.max(1, Number.parseInt(String(page), 10) || 1));
+  const start = (pageNum - 1) * limitNum;
+  res.json({ total, page: pageNum, limit: limitNum, totalPages, reports: [...filtered].reverse().slice(start, start + limitNum) });
 });
 
 // ── 更新回報狀態 ──
