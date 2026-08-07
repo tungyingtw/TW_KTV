@@ -50,6 +50,7 @@
 8. 必須依 `docs/database-slimming-validation-runbook.md` 產生候選檔並驗證，不得直接批次覆寫正式 `database.json`。
 9. 必須依 `docs/database-slimming-semantic-audit-result.md` 的順序處理：先 `brand.note`，再審查 `audioType/mvType`，最後評估 `available`。
 10. 必須用候選檔完成前台搜尋與後台編輯流程驗證後，才可正式套用 `brand.note` 第一批瘦身。
+11. `brand.note` 候選檔已通過資料一致性、搜尋樣本與篩選樣本驗證；正式套用前仍必須確認是否接受移除固定匯入 note。
 
 ## 暫不處理
 

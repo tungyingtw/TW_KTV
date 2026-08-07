@@ -153,3 +153,46 @@
 2. 管理者後續新增的非固定匯入 note。
 
 下一步必須先用候選檔做前台搜尋與後台編輯流程驗證。驗證通過後，才可以用 `node scripts/createSlimNoteCandidate.js --apply` 正式套用第一批瘦身。
+
+## Phase 2 驗證結果
+
+已建立 `scripts/validateSlimNoteCandidate.js`。
+
+驗證指令：
+
+```powershell
+node scripts/validateSlimNoteCandidate.js --candidate C:\tmp\database.slim-note.json
+```
+
+驗證結果：
+
+1. `success`：true。
+2. 歌曲數一致：109,363。
+3. 品牌狀態數一致：268,640。
+4. 前台使用資料形狀一致：true。
+5. 歌曲 id/title/artist 不一致數：0。
+6. 除 `note` 以外的 brand 欄位變更數：0。
+7. 非白名單 note 被移除數：0。
+8. 已移除 note：264,874。
+9. 已保留 note：3,766。
+
+搜尋樣本結果一致：
+
+| 查詢 | 正式檔 | 候選檔 |
+|---|---:|---:|
+| 周杰倫 | 266 | 266 |
+| 五月天 | 216 | 216 |
+| 蔡依林 | 209 | 209 |
+| 陳奕迅 | 325 | 325 |
+| Selina | 32 | 32 |
+| 國語 | 65,307 | 65,307 |
+| 台語 | 20,788 | 20,788 |
+
+篩選樣本結果一致：
+
+| 篩選 | 正式檔 | 候選檔 |
+|---|---:|---:|
+| 原版 MV | 61,030 | 61,030 |
+| 有導唱 | 0 | 0 |
+
+下一步可以進入正式套用前確認。正式套用仍必須獨立 commit，且套用後必須執行 `npm run build`。

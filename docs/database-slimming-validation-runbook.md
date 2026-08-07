@@ -43,7 +43,8 @@ node scripts/createSlimNoteCandidate.js --out C:\tmp\database.slim-note.json
 
 ```powershell
 node --check scripts/createSlimNoteCandidate.js
-node -e "const fs=require('fs');const src=JSON.parse(fs.readFileSync('server/database.json','utf8'));const cand=JSON.parse(fs.readFileSync('C:/tmp/database.slim-note.json','utf8'));let brandSrc=0,brandCand=0,changed=0,bad=0;for(let i=0;i<src.length;i++){if(src[i].id!==cand[i].id||src[i].title!==cand[i].title) bad++;const sb=src[i].brands||{},cb=cand[i].brands||{};brandSrc+=Object.keys(sb).length;brandCand+=Object.keys(cb).length;for(const id of Object.keys(sb)){const a={...sb[id]},b={...cb[id]};delete a.note;delete b.note;if(JSON.stringify(a)!==JSON.stringify(b)) changed++;}}console.log(JSON.stringify({sourceSongs:src.length,candidateSongs:cand.length,sourceBrands:brandSrc,candidateBrands:brandCand,nonNoteBrandChanges:changed,idTitleMismatches:bad,candidateFileMb:Number((fs.statSync('C:/tmp/database.slim-note.json').size/1024/1024).toFixed(2))},null,2));"
+node --check scripts/validateSlimNoteCandidate.js
+node scripts/validateSlimNoteCandidate.js --candidate C:\tmp\database.slim-note.json
 ```
 
 正式套用前必須確認：
@@ -53,6 +54,9 @@ node -e "const fs=require('fs');const src=JSON.parse(fs.readFileSync('server/dat
 3. `nonNoteBrandChanges` 必須等於 0。
 4. `idTitleMismatches` 必須等於 0。
 5. 候選檔必須保留所有包含 `點歌碼衝突` 的 note。
+6. `frontendShapeMatches` 必須為 true。
+7. `sampleSearchMatches` 每個查詢的正式檔與候選檔數量必須一致。
+8. `sampleFilterMatches` 每個篩選的正式檔與候選檔數量必須一致。
 
 ## 前台驗證
 
