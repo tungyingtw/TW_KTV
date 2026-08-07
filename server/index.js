@@ -439,6 +439,7 @@ const REVIEW_ACTIONS_ARCHIVE_DIR = process.env.REVIEW_ACTIONS_ARCHIVE_DIR
   : path.join(__dirname, 'review_actions_archive');
 const REVIEW_ACTIONS_HANDLED_PATH = resolveDataPath('REVIEW_ACTIONS_HANDLED_PATH', 'review_actions_handled.json');
 const REVIEW_ACTIONS_ACTIVE_LIMIT = Math.max(300, parseInt(process.env.REVIEW_ACTIONS_ACTIVE_LIMIT, 10) || 2000);
+const REVIEW_QUEUE_CACHE_TTL_MS = Math.max(1000, parseInt(process.env.REVIEW_QUEUE_CACHE_TTL_MS, 10) || 10000);
 const ADMIN_LOG_PATH = resolveDataPath('ADMIN_ACTIONS_LOG_PATH', 'admin_actions.log');
 const ADMIN_LOG_MAX_LINES = Math.max(200, parseInt(process.env.ADMIN_LOG_MAX_LINES, 10) || 1000);
 const ADMIN_LOG_MAX_BYTES = Math.max(256 * 1024, parseInt(process.env.ADMIN_LOG_MAX_BYTES, 10) || 1024 * 1024);
@@ -687,6 +688,7 @@ async function saveBrandSettingsStore(data, options = {}) {
       try { saveBrandSettingsToDisk(data); } catch (err) {
         console.warn('[BrandSettings] Local JSON backup write failed:', err.message);
       }
+      invalidateReviewQueueCache();
       return;
     } catch (err) {
       try { saveBrandSettingsToDisk(data); } catch (localErr) {
@@ -703,6 +705,7 @@ async function saveBrandSettingsStore(data, options = {}) {
   try { saveBrandSettingsToDisk(data); } catch (err) {
     console.warn('[BrandSettings] Local JSON write failed:', err.message);
   }
+  invalidateReviewQueueCache();
 }
 
 async function getActiveBrands() {
@@ -972,6 +975,7 @@ async function saveReportsStore(data) {
       try { saveReports(data); } catch (err) {
         console.warn('[Reports] Local JSON backup write failed:', err.message);
       }
+      invalidateReviewQueueCache();
       return;
     } catch (err) {
       try { saveReports(data); } catch (localErr) {
@@ -984,6 +988,7 @@ async function saveReportsStore(data) {
   try { saveReports(data); } catch (err) {
     console.warn('[Reports] Local JSON backup write failed:', err.message);
   }
+  invalidateReviewQueueCache();
 }
 
 function loadVotes() {
@@ -1064,6 +1069,7 @@ async function saveVotesStore(data) {
       try { saveVotes(data); } catch (err) {
         console.warn('[Votes] Local JSON backup write failed:', err.message);
       }
+      invalidateReviewQueueCache();
       return;
     } catch (err) {
       try { saveVotes(data); } catch (localErr) {
@@ -1076,6 +1082,7 @@ async function saveVotesStore(data) {
   try { saveVotes(data); } catch (err) {
     console.warn('[Votes] Local JSON backup write failed:', err.message);
   }
+  invalidateReviewQueueCache();
 }
 
 async function loadVotesArchiveStore() {
@@ -1361,6 +1368,7 @@ async function saveReviewActionsStore(data) {
       try { saveReviewActions(storeData); } catch (err) {
         console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
       }
+      invalidateReviewQueueCache();
       return;
     } catch (err) {
       try { saveReviewActions(storeData); } catch (localErr) {
@@ -1373,6 +1381,7 @@ async function saveReviewActionsStore(data) {
   try { saveReviewActions(storeData); } catch (err) {
     console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
   }
+  invalidateReviewQueueCache();
 }
 
 async function loadCatalogOverridesStore() {
@@ -1448,6 +1457,7 @@ async function saveCatalogOverrideSong(song) {
   overrides.deletedIds = overrides.deletedIds.filter(id => id !== song.id);
   overrides.songs[song.id] = song;
   await saveCatalogOverridesStore(overrides);
+  invalidateReviewQueueCache();
 }
 
 async function saveCatalogDeletedSong(songId) {
@@ -1457,6 +1467,7 @@ async function saveCatalogDeletedSong(songId) {
   delete overrides.songs[songId];
   if (!overrides.deletedIds.includes(songId)) overrides.deletedIds.push(songId);
   await saveCatalogOverridesStore(overrides);
+  invalidateReviewQueueCache();
 }
 
 async function loadCatalogOverrideSong(songId) {
@@ -3270,19 +3281,21 @@ async function loadHandledReviewItemIds() {
   ]);
 }
 
-app.get('/api/admin/review-queue', requireSession, async (req, res) => {
-  const permissions = req.admin?.permissions || [];
-  const canViewReports = permissions.includes('reports.view');
-  const canViewVotes = permissions.includes('votes.view');
-  if (!canViewReports && !canViewVotes) return res.status(403).json({ error: '缺少待處理資料查看權限' });
+const reviewQueueCache = new Map();
 
-  const typeFilter = String(req.query.type || 'all');
-  const limit = Math.min(300, Math.max(10, Number.parseInt(String(req.query.limit || '120'), 10) || 120));
+function getReviewQueueCacheKey(canViewReports, canViewVotes) {
+  return `${canViewReports ? 'reports' : 'no-reports'}:${canViewVotes ? 'votes' : 'no-votes'}`;
+}
+
+function invalidateReviewQueueCache() {
+  reviewQueueCache.clear();
+}
+
+async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
   const items = [];
   const handledReviewItemIds = await loadHandledReviewItemIds();
   const pushItem = (item) => {
     if (handledReviewItemIds.has(String(item.id))) return;
-    if (typeFilter !== 'all' && item.itemType !== typeFilter && item.sourceType !== typeFilter) return;
     items.push({ status: 'pending', priority: 0, updatedAt: item.createdAt || new Date().toISOString(), ...item });
   };
 
@@ -3397,18 +3410,48 @@ app.get('/api/admin/review-queue', requireSession, async (req, res) => {
   }
 
   items.sort((a, b) => (b.priority - a.priority) || String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+  return items;
+}
+
+async function loadReviewQueueItemsCached({ canViewReports, canViewVotes }) {
+  const cacheKey = getReviewQueueCacheKey(canViewReports, canViewVotes);
+  const cached = reviewQueueCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && cached.expiresAt > now) return { items: cached.items, cache: 'hit' };
+  const items = await buildReviewQueueItems({ canViewReports, canViewVotes });
+  reviewQueueCache.set(cacheKey, { items, expiresAt: now + REVIEW_QUEUE_CACHE_TTL_MS });
+  return { items, cache: 'miss' };
+}
+
+function summarizeReviewQueueFilters(items) {
+  return {
+    all: items.length,
+    report: items.filter(i => i.itemType === 'report').length,
+    availability: items.filter(i => i.itemType === 'availability').length,
+    guided: items.filter(i => i.itemType === 'guided').length,
+    mv: items.filter(i => i.itemType === 'mv').length,
+    suggest_song: items.filter(i => i.itemType === 'suggest_song').length,
+    suggest_new_brand: items.filter(i => i.itemType === 'suggest_new_brand').length,
+  };
+}
+
+app.get('/api/admin/review-queue', requireSession, async (req, res) => {
+  const permissions = req.admin?.permissions || [];
+  const canViewReports = permissions.includes('reports.view');
+  const canViewVotes = permissions.includes('votes.view');
+  if (!canViewReports && !canViewVotes) return res.status(403).json({ error: '缺少待處理資料查看權限' });
+
+  const typeFilter = String(req.query.type || 'all');
+  const limit = Math.min(300, Math.max(10, Number.parseInt(String(req.query.limit || '120'), 10) || 120));
+  const { items, cache } = await loadReviewQueueItemsCached({ canViewReports, canViewVotes });
+  const filteredItems = typeFilter === 'all'
+    ? items
+    : items.filter(item => item.itemType === typeFilter || item.sourceType === typeFilter);
   res.json({
-    total: items.length,
-    items: items.slice(0, limit),
-    filters: {
-      all: items.length,
-      report: items.filter(i => i.itemType === 'report').length,
-      availability: items.filter(i => i.itemType === 'availability').length,
-      guided: items.filter(i => i.itemType === 'guided').length,
-      mv: items.filter(i => i.itemType === 'mv').length,
-      suggest_song: items.filter(i => i.itemType === 'suggest_song').length,
-      suggest_new_brand: items.filter(i => i.itemType === 'suggest_new_brand').length,
-    },
+    total: filteredItems.length,
+    items: filteredItems.slice(0, limit),
+    filters: summarizeReviewQueueFilters(items),
+    meta: { cache, ttlMs: REVIEW_QUEUE_CACHE_TTL_MS },
   });
 });
 
