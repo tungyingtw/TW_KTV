@@ -206,7 +206,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               cursor: 'pointer',
             }}>
               <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
-                僅顯示官方原版 MV (Official MV)
+                原版 MV
               </span>
               <input
                 type="checkbox"
@@ -226,7 +226,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               cursor: 'pointer',
             }}>
               <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
-                有導唱功能
+                有導唱
               </span>
               <input
                 type="checkbox"
