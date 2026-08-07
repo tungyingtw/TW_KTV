@@ -242,7 +242,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   onChange={e => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
                   style={{ accentColor: '#10b981', cursor: 'pointer' }}
                 />
-                <Video size={14} /> 僅原版 MV
+                <Video size={14} /> 原版 MV
               </label>
 
               <label style={{
@@ -261,7 +261,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   onChange={e => setFilters(prev => ({ ...prev, onlyGuidedVocal: e.target.checked }))}
                   style={{ accentColor: '#22d3ee', cursor: 'pointer' }}
                 />
-                <Mic2 size={14} /> 僅有導唱
+                <Mic2 size={14} /> 有導唱
               </label>
             </div>
 
