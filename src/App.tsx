@@ -18,7 +18,7 @@ import { FavoritesDrawer } from './components/FavoritesDrawer';
 import { ToastNotification } from './components/ToastNotification';
 import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
-import { fetchFullCatalog } from './services/apiService';
+import { checkApiHealth, fetchFullCatalog } from './services/apiService';
 import { fetchBrands } from './data/brands';
 import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
@@ -44,7 +44,7 @@ export function App() {
   // Main Catalog State
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(true);
-  const [isServerWaking, setIsServerWaking] = useState<boolean>(false);
+  const [apiHealthStatus, setApiHealthStatus] = useState<'checking' | 'waking' | 'online' | 'unavailable'>('checking');
   const [targetProgress, setTargetProgress] = useState<number>(0);
   const [displayProgress, setDisplayProgress] = useState<number>(0);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
@@ -122,13 +122,8 @@ export function App() {
 
   // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
   useEffect(() => {
-    const wakeTimer = window.setTimeout(() => {
-      setIsServerWaking(true);
-    }, 4500);
-
     fetchBrands();
     fetchFullCatalog((pct) => setTargetProgress(pct)).then(catalog => {
-      window.clearTimeout(wakeTimer);
       if (catalog && catalog.length > 0) {
         // 前台硬過濾防護牆 (Strict Sanitizer Guard)
         const sanitized = catalog.filter(s => {
@@ -140,15 +135,29 @@ export function App() {
         });
         setAllSongs(sanitized);
       }
-      setIsServerWaking(false);
       setTargetProgress(100);
     }).catch(() => {
-      window.clearTimeout(wakeTimer);
-      setIsServerWaking(false);
-      setCatalogLoadError('歌庫資料暫時無法載入。若伺服器剛從休眠喚醒，請稍候再試。');
+      setCatalogLoadError('歌庫資料暫時無法載入。請稍候再試，或確認網路連線後重新整理。');
       setTargetProgress(100);
     });
-    return () => window.clearTimeout(wakeTimer);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const wakeTimer = window.setTimeout(() => {
+      if (!cancelled) setApiHealthStatus(prev => prev === 'checking' ? 'waking' : prev);
+    }, 4500);
+
+    checkApiHealth(12000).then(health => {
+      if (cancelled) return;
+      window.clearTimeout(wakeTimer);
+      setApiHealthStatus(health.ok ? 'online' : 'unavailable');
+    });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(wakeTimer);
+    };
   }, []);
 
   // 平滑進度條插值器 (即使本地端極速連線，也能順暢呈現 0% -> 100% 填滿過程)
@@ -439,7 +448,7 @@ export function App() {
   const handleMobileSearchComplete = () => {
     if (!isMobile) return;
     if (isLoadingCatalog) {
-      showToast(isServerWaking ? '伺服器正在喚醒，歌庫準備好後會自動顯示' : '歌庫正在準備中，請稍候');
+      showToast(apiHealthStatus === 'waking' ? '伺服器正在喚醒，歌庫準備好後會自動顯示' : '歌庫正在準備中，請稍候');
       return;
     }
     const settleDelay = isSearching ? 360 : 120;
@@ -518,7 +527,8 @@ export function App() {
           resultCount={filteredSongs.length}
           isSearching={isSearching}
           isCatalogLoading={isLoadingCatalog}
-          isServerWaking={isServerWaking}
+          isServerWaking={apiHealthStatus === 'waking'}
+          isServerUnavailable={apiHealthStatus === 'unavailable'}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
           onSearchComplete={handleMobileSearchComplete}
         />
@@ -530,7 +540,8 @@ export function App() {
           resultCount={filteredSongs.length}
           isSearching={isSearching}
           isCatalogLoading={isLoadingCatalog}
-          isServerWaking={isServerWaking}
+          isServerWaking={apiHealthStatus === 'waking'}
+          isServerUnavailable={apiHealthStatus === 'unavailable'}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
         />
       )}
@@ -658,13 +669,17 @@ export function App() {
             </div>
 
             <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '8px' }}>
-              {isServerWaking ? '伺服器正在喚醒歌庫資料' : '正在整理大家共同補完的歌庫資料'}
+              {apiHealthStatus === 'waking' ? '伺服器正在喚醒資料服務' : '正在整理大家共同補完的歌庫資料'}
             </h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
               {catalogLoadError || (displayProgress >= 100
                 ? '歌庫資料已準備完成'
-                : isServerWaking
-                  ? '免費伺服器可能正在從休眠狀態啟動，這不是搜尋 0 筆，請先停留本頁稍候。'
+                : apiHealthStatus === 'waking'
+                  ? '正在確認 Render API 是否已醒來。這不是搜尋 0 筆，請先停留本頁稍候。'
+                  : apiHealthStatus === 'online'
+                    ? '伺服器已連線，正在套用最新回報修正與歌庫標示。'
+                    : apiHealthStatus === 'unavailable'
+                      ? '暫時無法確認伺服器狀態，仍會先載入可用的靜態歌庫資料。'
                   : '正在比對歌曲收錄、原聲原唱、導唱與 MV 標示')}
             </p>
 

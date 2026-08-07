@@ -11,6 +11,7 @@ interface SearchBarProps {
   isSearching?: boolean;
   isCatalogLoading?: boolean;
   isServerWaking?: boolean;
+  isServerUnavailable?: boolean;
   onOpenSuggestSong?: () => void;
 }
 
@@ -34,6 +35,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   isSearching = false,
   isCatalogLoading = false,
   isServerWaking = false,
+  isServerUnavailable = false,
   onOpenSuggestSong,
 }) => {
   const hasActiveFilters = filters.onlyOfficialMv || filters.onlyOriginalVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
@@ -266,7 +268,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                 {isCatalogLoading ? (
-                  <span style={{ color: 'var(--accent-highlight)' }}>{isServerWaking ? '伺服器喚醒中' : '歌庫準備中'}</span>
+                  <span style={{ color: 'var(--accent-highlight)' }}>{isServerWaking ? '伺服器喚醒中' : isServerUnavailable ? '伺服器暫時未連線' : '歌庫準備中'}</span>
                 ) : (
                   <>結果：<strong style={{ color: 'var(--accent-pink)' }}>{resultCount.toLocaleString()}</strong> 首</>
                 )}

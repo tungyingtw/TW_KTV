@@ -9,6 +9,24 @@ const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTV
 const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
 
+export async function checkApiHealth(timeoutMs = 10000): Promise<{ ok: boolean; persistent?: boolean; storage?: string; error?: string }> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${API_BASE}/api/health?t=${Date.now()}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    if (!response.ok) return { ok: false, error: `HTTP ${response.status}` };
+    const data = await response.json();
+    return { ok: Boolean(data.ok), persistent: Boolean(data.persistent), storage: data.storage };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'API health check failed' };
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
