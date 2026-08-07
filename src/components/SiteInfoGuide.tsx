@@ -15,7 +15,7 @@ export const SiteInfoGuide: React.FC = () => {
       summary: '解密 KTV 門市伴唱機立體音軌與導唱切換原理，教您如何聽出歌手原音音軌。',
       content: [
         '在連鎖 KTV 門市歡唱時，許多歌友常困惑於「原聲原唱」與「人聲導唱」的差別。傳統伴唱機的導唱音軌主要利用立體聲左右聲道（L/R Channel）分離技術，將歌聲錄製在其中一個聲道；點歌機切換導唱時，系統會將包含人聲的聲道混合輸出。',
-        '而真正的「原聲原唱（Original Track）」則是唱片公司直接提供原曲的多軌母帶人聲，歡唱時可以清晰聽到歌手原汁原味的聲線與呼吸細節，而非合聲老師或後製重錄的人聲。',
+        '而「原聲原唱（Original Track）」指的是音軌包含歌手原曲人聲，歡唱時可以聽到原唱聲線與錄音細節。它和「導唱功能」不是同一件事：導唱回答現場是否能開啟人聲輔助，原聲原唱回答該人聲來源是否為歌手原音。',
         '官方原版 MV（Official MV）則是唱片公司授權之官方拍攝影片，播放畫面為歌手親自演出之 MV，而非一般伴唱機常見的通用風景照或模特兒示範畫面，大幅提升包廂內的視覺歡唱氣氛。'
       ]
     },
@@ -251,10 +251,32 @@ export const SiteInfoGuide: React.FC = () => {
 
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '10px',
                 marginBottom: '20px',
+                padding: '18px 0 2px',
+                maxWidth: '980px',
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  color: 'var(--text-secondary, #cbd5e1)',
+                  fontSize: '0.98rem',
+                  lineHeight: 1.85,
+                }}
+              >
+                本區整理本站的資料判讀方式：哪些資訊來自公開曲庫、哪些來自歌友現場回報，哪些需要透過投票累積共識。你可以把它視為查歌前的說明書，先理解「收錄」、「官方原版 MV」、「導唱功能」與「原聲原唱」各自代表什麼，再回到上方列表比較不同 KTV 品牌的實際狀態。
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+                gap: '1px',
+                marginBottom: '24px',
+                overflow: 'hidden',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                borderRadius: '10px',
               }}
             >
               {[
@@ -273,10 +295,8 @@ export const SiteInfoGuide: React.FC = () => {
                   style={{
                     display: 'block',
                     textDecoration: 'none',
-                    background: 'var(--bg-glass, rgba(15, 23, 42, 0.45))',
-                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                    borderRadius: '8px',
-                    padding: '10px 12px',
+                    background: 'var(--bg-card, rgba(15, 23, 42, 0.72))',
+                    padding: '12px 14px',
                   }}
                 >
                   <div style={{ color: '#38bdf8', fontSize: '0.86rem', fontWeight: 700, marginBottom: '2px' }}>
@@ -291,20 +311,13 @@ export const SiteInfoGuide: React.FC = () => {
 
             {/* Tab 1: Overview */}
             {activeTab === 'overview' && (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: '24px',
-                  fontSize: '0.88rem',
-                  lineHeight: 1.65,
-                }}
-              >
+              <div style={{ fontSize: '0.92rem', lineHeight: 1.8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px', alignItems: 'start' }}>
                 {/* Column 1: System Differences & Brands */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
                     <Music2 size={18} />
-                    <span>1. 跨廠牌收錄狀態與伴唱系統對照說明</span>
+                    <span>為什麼需要歌友共同回報現場資訊</span>
                   </div>
                   <p style={{ margin: 0 }}>
                     全台連鎖門市與自助式伴唱系統採用的曲庫與影音版本各不相同，主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
@@ -312,33 +325,34 @@ export const SiteInfoGuide: React.FC = () => {
                   <p style={{ margin: 0 }}>
                     本網站透過大眾共識校對與數據彙整，為歌友提供動態擴充的跨廠牌門市收錄對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
                   </p>
-                </div>
-
-                {/* Column 2: Original Vocal & MV Explanation */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700 }}>
-                    <BookOpen size={18} />
-                    <span>2. 原聲原唱與官方 MV 標示指引</span>
-                  </div>
                   <p style={{ margin: 0 }}>
-                    在 KTV 點歌時，「原聲原唱」與「官方原版 MV」是影響歡唱體驗的核心因素。
+                    KTV 現場設備會因門市、包廂機型、曲庫更新批次與授權範圍不同而有差異。公開資料通常只能回答大方向，真正能補齊「這家店今天到底能不能點、畫面是不是原版 MV、是否能開導唱」的，是實際到店使用者的回報與投票。
                   </p>
-                  <ul style={{ paddingLeft: '18px', margin: 0 }}>
-                    <li><strong>原聲原唱標示</strong>：代表該伴唱系統含有歌手原聲人聲導唱音軌，切換導唱時可聆聽原唱聲線。</li>
-                    <li><strong>官方原版 MV 標示</strong>：代表該門市播放之畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。</li>
-                  </ul>
                 </div>
 
-                {/* Column 3: FAQ & Common Questions */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <aside style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', borderRadius: '10px', background: 'var(--bg-card, rgba(15, 23, 42, 0.72))' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700 }}>
                     <HelpCircle size={18} />
-                    <span>3. 社群校對與回報</span>
+                    <span>資料使用提醒</span>
                   </div>
                   <p style={{ margin: 0 }}>
-                    <strong>現場資訊校對</strong>：<br />
-                    若現場點歌時發現門市歌曲收錄狀況有變更，可透過本站回報功能提供線索。系統會彙整使用者回饋，作為後續資料校正參考。
+                    本站提供的是歌友共同維護的查詢參考，不是任何 KTV 品牌的官方保證。出發前可先查詢與收藏，現場仍請以門市點歌系統實際顯示為準。
                   </p>
+                </aside>
+                </div>
+
+                <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', borderRadius: '10px', overflow: 'hidden' }}>
+                  {[
+                    ['收錄', '回答這個品牌是否能點到這首歌。列表中的收錄數代表目前品牌範圍內有幾家收錄。'],
+                    ['官方原版 MV', '回答播放畫面是否為唱片公司官方影片，不代表歌曲是否一定收錄，也不代表有導唱。'],
+                    ['導唱功能', '回答現場是否能開啟人聲輔助。導唱欄只表示有或沒有導唱，不等於原聲原唱。'],
+                    ['原聲原唱', '回答音軌是否包含歌手原曲人聲。它是音軌來源資訊，不應被放進導唱欄。'],
+                  ].map(([term, desc]) => (
+                    <div key={term} style={{ padding: '14px', background: 'var(--bg-glass, rgba(15, 23, 42, 0.45))', borderRight: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))' }}>
+                      <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--text-primary, #f8fafc)' }}>{term}</strong>
+                      <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)', fontSize: '0.84rem', lineHeight: 1.65 }}>{desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -362,7 +376,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>2. 辨識原唱與導唱標示</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    歌曲卡片上標示 <strong>原唱</strong> 代表該伴唱系統保留歌手原聲音軌；標示 <strong>導唱</strong> 代表該系統可提供人聲導唱輔助。若未顯示標籤，代表目前資料尚未確認，實際狀態仍以現場設備為準。
+                    歌曲卡片上標示 <strong>原聲原唱</strong> 代表該伴唱系統保留歌手原曲人聲音軌；標示 <strong>導唱</strong> 代表該系統可提供人聲輔助功能。兩者不是同一個欄位，若未顯示標籤，代表目前資料尚未確認，實際狀態仍以現場設備為準。
                   </p>
                 </div>
 
@@ -483,7 +497,7 @@ export const SiteInfoGuide: React.FC = () => {
                     Q2：如何區分 KTV 門市的「原聲原唱」與「官方原版 MV」標示？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：「原聲原唱」代表該伴唱系統包含歌手原聲人聲導唱音軌，切換導唱時可聆聽原唱聲線；「官方原版 MV」代表門市播放畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。
+                    答：「原聲原唱」代表該伴唱系統包含歌手原曲人聲音軌；「導唱」代表現場可開啟人聲輔助；「官方原版 MV」代表門市播放畫面為唱片公司授權之官方拍攝原版影片，非風景照或通用模特兒畫面。
                   </p>
                 </div>
 
