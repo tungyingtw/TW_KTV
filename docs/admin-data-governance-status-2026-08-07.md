@@ -48,6 +48,7 @@
 6. 必須確認後台處理項目後，項目不會重新出現在待處理列表。
 7. 必須執行 `docs/database-slimming-semantic-audit-plan.md`，先確認 `brand.note`、`brand.audioType`、`brand.mvType` 與 `brand.available` 是否可安全瘦身。
 8. 必須依 `docs/database-slimming-validation-runbook.md` 產生候選檔並驗證，不得直接批次覆寫正式 `database.json`。
+9. 必須依 `docs/database-slimming-semantic-audit-result.md` 的順序處理：先 `brand.note`，再審查 `audioType/mvType`，最後評估 `available`。
 
 ## 暫不處理
 
