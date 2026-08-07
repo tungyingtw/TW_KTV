@@ -76,4 +76,4 @@
 6. 已清除 optional 欄位空字串與空 `brand.code`。
 7. 已重建 `public/songs_catalog.bin`，目前輸出約 19.30 MB。
 
-資料瘦身主要項目已完成。下一步必須先做線上 Render 驗證，之後再整理舊計畫文件內過期的下一步文字。
+資料瘦身主要項目已完成。舊計畫文件狀態已整理至 `docs/legacy-plan-status-2026-08-07.md`。下一步必須先做線上 Render 驗證。
