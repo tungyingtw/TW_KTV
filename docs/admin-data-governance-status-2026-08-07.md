@@ -47,9 +47,9 @@
 4. 必須實測「匯入備份預覽」是否顯示封存資料總筆數。
 5. 必須確認冷啟動時，前台顯示載入/喚醒狀態，不得誤顯示為真正 0 筆結果。
 6. 必須確認後台處理項目後，項目不會重新出現在待處理列表。
-7. 必須審查 `brand.audioType` 與 `brand.mvType` 的資料來源可信度，確認大量 `original_vocal` 與 `official_mv` 是否為可信資料或匯入預設值。
-8. 必須依 `docs/database-slimming-validation-runbook.md` 產生下一批候選檔並驗證，不得直接批次覆寫正式 `database.json`。
-9. 必須依 `docs/database-slimming-semantic-audit-result.md` 的順序處理：已完成 `brand.note`，下一步審查 `audioType/mvType`，最後評估 `available`。
+7. 必須線上驗證清理假 MV/音訊標記後，前台篩選不再顯示大量未驗證的原版 MV 結果。
+8. 必須依 `docs/database-slimming-validation-runbook.md` 評估 `available` 是否可改成隱含規則，不得直接批次覆寫正式 `database.json`。
+9. 必須依 `docs/database-slimming-semantic-audit-result.md` 的順序處理：已完成 `brand.note` 與假 `audioType/mvType` 清理，下一步評估 `available`。
 
 ## 暫不處理
 
@@ -63,3 +63,4 @@
 1. 執行 `docs/render-online-validation-checklist.md`。
 2. 驗證完成後，更新本文件的「仍需處理」。
 3. 若線上驗證發現資料量或速度問題，先記錄 API、資料量、等待時間與操作步驟，再決定是否建立 review queue 永久索引。
+

@@ -60,11 +60,11 @@
 
 ## MV 與音訊語意風險
 
-1. `brand.mvType` 目前 191,810 筆全部為 `official_mv`。
-2. `brand.audioType` 目前 191,810 筆全部為 `original_vocal`。
+1. 清理前 `brand.mvType` 有 191,810 筆全部為 `official_mv`。
+2. 清理前 `brand.audioType` 有 191,810 筆全部為舊版假標記。
 3. 這兩個分布不像逐首逐品牌驗證後的自然結果。
 4. 在確認資料來源前，不得把它們當作可信的現場功能資料。
-5. 若確認只是匯入預設值，必須改成未標記，避免前台誤顯示大量「原版 MV」或「原聲原唱」。
+5. 若確認只是匯入預設值，必須改成未標記，避免前台誤顯示大量「原版 MV」或「導唱」。
 
 ## 節省空間估算
 
@@ -94,9 +94,9 @@
 
 執行以下規則：
 
-1. 先確認匯入來源是否真的能證明 `official_mv` 或 `original_vocal`。
-2. 若無法證明，將批次預設值改成未標記。
-3. 保留後台採納、社群投票或人工編輯產生的明確值。
+1. 已確認目前批次值為暫時假資料。
+2. 已將批次預設的 `mvType` 與 `audioType` 清回未標記。
+3. 後台採納、社群投票或人工編輯後，才可重新寫入明確值。
 4. 前台必須把未標記呈現為未知，不得呈現為否定。
 
 ### 第三批：`available`
@@ -219,4 +219,26 @@ node scripts/validateSlimNoteCandidate.js --candidate C:\tmp\database.slim-note.
 3. `node scripts/validateSlimNoteCandidate.js --candidate C:\tmp\database.slim-note.json`。
 4. `npm run build`。
 
-下一步必須審查 `brand.audioType` 與 `brand.mvType` 的資料來源可信度，不得直接批次清除。
+已完成假 `brand.audioType` 與 `brand.mvType` 清理。下一步必須評估 `brand.available` 是否可改為隱含規則，不得直接批次清除。
+
+## Phase 4 假 MV/音訊標記清理狀態
+
+已建立 `scripts/clearFakeMediaMetadata.js` 並正式套用。
+
+套用結果：
+
+1. `server/database.json` 移除 `audioType`：191,810。
+2. `server/database.json` 移除 `mvType`：191,810。
+3. `server/catalog_overrides.json` 移除 `audioType`：17。
+4. `server/catalog_overrides.json` 移除 `mvType`：17。
+5. `server/database.json` 大小：54.41 MB -> 44.90 MB。
+6. `public/songs_catalog.bin` 已重新產生，build 顯示 catalog 大小：44.90 MB。
+7. 目前資料庫內 `audioType` 與 `mvType` 分布皆為空。
+
+已執行驗證：
+
+1. `node --check server/index.js`。
+2. 後台 HTML script parse。
+3. `node --check scripts/clearFakeMediaMetadata.js`。
+4. `npm run build`。
+

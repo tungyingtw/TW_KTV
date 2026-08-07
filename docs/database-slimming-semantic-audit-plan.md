@@ -12,7 +12,7 @@
 2. 品牌收錄狀態數：268,640。
 3. `brand.available`：268,640 筆皆為 `true`。
 4. `brand.note`：268,640 筆皆有值，多數為匯入批次字串。
-5. `brand.audioType`：191,810 筆皆為 `original_vocal`。
+5. 清理前 `brand.audioType`：191,810 筆皆為舊版假音訊標記。
 6. `brand.mvType`：191,810 筆皆為 `official_mv`。
 7. `lyricsSnippet`、`youtubeUrl`、`lyricist`、`composer`、`zhuyin`、`pinyin`、`releaseYear` 目前仍被前台搜尋、排序或詳情頁使用，不得直接刪除。
 
@@ -107,3 +107,4 @@
 3. 暫不刪除 `lyricist`、`composer` 與 `releaseYear`。
 4. 暫不把資料庫遷移到外部資料庫。
 5. 暫不把 `available` 改成隱含規則，除非前後台讀取點都已完成相容調整。
+

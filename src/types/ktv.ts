@@ -21,7 +21,7 @@ export interface BrandInfo {
   description: string;
 }
 
-export type AudioType = 'original_vocal' | 'guided_vocal' | 'backing_track';
+export type AudioType = 'guided_vocal' | 'backing_track';
 export type MvType = 'official_mv' | 'live_mv' | 'reedited_mv' | 'anime_mv';
 export type Language =
   | '國語'

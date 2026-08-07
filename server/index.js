@@ -1967,7 +1967,7 @@ async function getAutoVoteCatalogOverrides() {
       brandPatch.audioType = 'guided_vocal';
     }
 
-    // 2. MV 類型自動標記門檻：只要「官方 MV」>= 2 票且高於「伴唱 MV」
+    // 2. MV 類型自動標記門檻：只要「原版 MV」>= 2 票且高於「伴唱畫面」
     if (official >= 2 && official > edited) {
       if (!brandPatch) brandPatch = {};
       brandPatch.mvType = 'official_mv';
@@ -2267,7 +2267,7 @@ function sanitizeBrandStatusSnapshot(status) {
   const mvType = sanitizeText(status.mvType);
   const note = sanitizeText(status.note).slice(0, 200);
   if (code) result.code = code;
-  if (['original_vocal', 'guided_vocal', 'backing_track'].includes(audioType)) result.audioType = audioType;
+  if (['guided_vocal', 'backing_track'].includes(audioType)) result.audioType = audioType;
   if (['official_mv', 'live_mv', 'reedited_mv', 'anime_mv'].includes(mvType)) result.mvType = mvType;
   if (note) result.note = note;
   return result;
@@ -2336,7 +2336,6 @@ async function persistCatalogMutation(song) {
 function reportGuidedVocalStatusToAudioType(report) {
   if (report?.guidedVocalStatus === 'guided') return 'guided_vocal';
   if (report?.guidedVocalStatus === 'none') return 'backing_track';
-  if (report?.hasOriginalVocal) return 'original_vocal';
   return undefined;
 }
 
@@ -2364,7 +2363,7 @@ async function updateSongBrandStatus({ songId, brandId, available, audioType, mv
     throw err;
   }
 
-  const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track', ''];
+  const validAudioTypes = ['guided_vocal', 'backing_track', ''];
   const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv', ''];
   if (audioType !== undefined && !validAudioTypes.includes(audioType)) {
     const err = new Error('Invalid audio type');
@@ -2552,7 +2551,6 @@ app.post('/api/report', async (req, res) => {
     composer,
     mvType,
     note,
-    hasOriginalVocal,
     guidedVocalStatus,
     lyricsSnippet,
     youtubeUrl,
@@ -2607,7 +2605,6 @@ app.post('/api/report', async (req, res) => {
     lyricist: cleanLyricist,
     composer: cleanComposer,
     mvType: mvType || 'unknown',
-    hasOriginalVocal: !!hasOriginalVocal,
     guidedVocalStatus: cleanGuidedVocalStatus,
     lyricsSnippet: cleanLyricsSnippet,
     youtubeUrl: cleanYoutubeUrl,
@@ -4254,7 +4251,7 @@ async function createEmptyBrandStatuses() {
 
 async function normalizeAdminSongPayload(body, existingSong = null) {
   const validLanguages = ['國語', '台語', '粵語', '英語', '日語', '韓語', '陸歌', '客語', '兒歌', '原住民語', '藏語', 'MV', '樂'];
-  const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track'];
+  const validAudioTypes = ['guided_vocal', 'backing_track'];
   const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv'];
 
   const title = String(body.title || '').trim();
@@ -4556,7 +4553,7 @@ app.patch('/api/admin/song/:songId/brand', requirePermission('brand.update'), as
     return res.status(400).json({ error: `無效或不存在的品牌 ID: "${brandId}"` });
   }
 
-  const validAudioTypes = ['original_vocal', 'guided_vocal', 'backing_track', ''];
+  const validAudioTypes = ['guided_vocal', 'backing_track', ''];
   const validMvTypes = ['official_mv', 'live_mv', 'reedited_mv', 'anime_mv', ''];
   if (audioType !== undefined && !validAudioTypes.includes(audioType)) {
     return res.status(400).json({ error: '音訊類型不正確' });
@@ -5498,3 +5495,4 @@ app.listen(PORT, () => {
   console.log(`[Server] Single admin mode: ${getSingleAdminUser() ? 'configured' : 'not configured'}`);
   startDailyBackupScheduler();
 });
+
