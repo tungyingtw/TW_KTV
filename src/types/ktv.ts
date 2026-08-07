@@ -48,8 +48,8 @@ export interface Song {
   id: string;
   title: string;
   artist: string;
-  lyricist: string;
-  composer: string;
+  lyricist?: string;
+  composer?: string;
   language: Language;
   zhuyin?: string;
   pinyin?: string;

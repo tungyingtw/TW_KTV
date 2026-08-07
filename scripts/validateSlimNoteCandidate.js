@@ -58,6 +58,16 @@ function getMeaningfulYoutubeUrl(value) {
   return url.includes('youtube.com/results?search_query=') ? '' : url;
 }
 
+function isGeneratedCredit(value, artist) {
+  const credit = String(value || '').trim().toLowerCase();
+  const artistName = String(artist || '').trim().toLowerCase();
+  return Boolean(credit && artistName && credit === artistName);
+}
+
+function getMeaningfulCredit(value, artist) {
+  return isGeneratedCredit(value, artist) ? '' : String(value || '').trim();
+}
+
 function readSongs(filePath) {
   if (!fs.existsSync(filePath)) throw new Error(`找不到檔案：${filePath}`);
   const songs = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -72,8 +82,8 @@ function hashFrontendShape(songs) {
       id: song.id,
       title: song.title,
       artist: song.artist,
-      lyricist: song.lyricist,
-      composer: song.composer,
+      lyricist: getMeaningfulCredit(song.lyricist, song.artist),
+      composer: getMeaningfulCredit(song.composer, song.artist),
       language: song.language,
       zhuyin: getSearchablePhonetic(song.zhuyin),
       pinyin: getSearchablePhonetic(song.pinyin),
@@ -96,8 +106,8 @@ function getSearchableText(song) {
   return [
     song.title,
     song.artist,
-    song.lyricist,
-    song.composer,
+    getMeaningfulCredit(song.lyricist, song.artist),
+    getMeaningfulCredit(song.composer, song.artist),
     song.language,
     getSearchablePhonetic(song.zhuyin),
     getSearchablePhonetic(song.pinyin),

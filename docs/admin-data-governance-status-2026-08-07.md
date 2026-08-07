@@ -72,6 +72,7 @@
 2. 已清除 `zhuyin:AUTO` 與 `pinyin:AUTO` 佔位值。
 3. 已清除不可信 `releaseYear` 預設值，保留覆寫檔內 1 筆 2019。
 4. 已清除樣板 `lyricsSnippet` 與批次 YouTube 搜尋 URL。
-5. 已重建 `public/songs_catalog.bin`，目前輸出約 24.61 MB。
+5. 已清除等同 artist 的批次 `lyricist` 與 `composer`。
+6. 已重建 `public/songs_catalog.bin`，目前輸出約 22.20 MB。
 
-下一步必須評估 `lyricist` 與 `composer` 是否大量等同 artist。不得直接刪除，因為它們仍會影響搜尋與詳情頁資訊。
+下一步必須重新盤點剩餘可疑欄位與文件待辦，確認是否已無大型資料瘦身項目。
