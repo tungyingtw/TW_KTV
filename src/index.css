@@ -494,13 +494,14 @@ textarea:focus {
 }
 
 .home-hero-title {
-  max-width: 820px;
+  max-width: 980px;
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(1.9rem, 4vw, 3.15rem);
+  font-size: clamp(1.9rem, 3.35vw, 3rem);
   line-height: 1.08;
   font-weight: 900;
   letter-spacing: 0;
+  text-wrap: balance;
 }
 
 .home-hero-copy {
