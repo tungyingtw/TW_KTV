@@ -62,7 +62,7 @@ export async function submitSuggestSong(payload: {
   songCode?: string;
   brandId: BrandId;
   brandName?: string;
-  hasOfficialMv?: boolean;
+  mvStatus?: 'unknown' | 'official' | 'karaoke';
   guidedVocalStatus?: 'unknown' | 'guided' | 'none';
   lyricsSnippet?: string;
   youtubeUrl?: string;
@@ -78,11 +78,11 @@ export async function submitSuggestSong(payload: {
     songCode: payload.songCode,
     lyricist: payload.lyricist,
     composer: payload.composer,
-    mvType: payload.hasOfficialMv ? 'official' : 'unknown',
+    mvType: payload.mvStatus === 'official' ? 'official' : (payload.mvStatus === 'karaoke' ? 'edited' : 'unknown'),
     guidedVocalStatus: payload.guidedVocalStatus || 'unknown',
     lyricsSnippet: payload.lyricsSnippet,
     youtubeUrl: payload.youtubeUrl,
-    note: `[新歌建議] 語種:${payload.language} | 官方MV:${payload.hasOfficialMv ? '有' : '不確定'} | 導唱:${payload.guidedVocalStatus || 'unknown'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
+    note: `[新歌建議] 語種:${payload.language} | MV:${payload.mvStatus || 'unknown'} | 導唱:${payload.guidedVocalStatus || 'unknown'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
   });
 }
 
