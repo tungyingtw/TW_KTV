@@ -73,6 +73,7 @@
 3. 已清除不可信 `releaseYear` 預設值，保留覆寫檔內 1 筆 2019。
 4. 已清除樣板 `lyricsSnippet` 與批次 YouTube 搜尋 URL。
 5. 已清除等同 artist 的批次 `lyricist` 與 `composer`。
-6. 已重建 `public/songs_catalog.bin`，目前輸出約 22.20 MB。
+6. 已清除 optional 欄位空字串與空 `brand.code`。
+7. 已重建 `public/songs_catalog.bin`，目前輸出約 19.30 MB。
 
-下一步必須重新盤點剩餘可疑欄位與文件待辦，確認是否已無大型資料瘦身項目。
+資料瘦身主要項目已完成。下一步必須先做線上 Render 驗證，之後再整理舊計畫文件內過期的下一步文字。
