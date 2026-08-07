@@ -50,6 +50,13 @@ export function App() {
   const [displayProgress, setDisplayProgress] = useState<number>(0);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
   const [catalogLoadError, setCatalogLoadError] = useState<string | null>(null);
+  const equalizerBars = useMemo(() => (
+    Array.from({ length: 18 }, () => ({
+      delay: `${-(Math.random() * 0.9).toFixed(2)}s`,
+      duration: `${(0.72 + Math.random() * 0.56).toFixed(2)}s`,
+      peak: `${18 + Math.round(Math.random() * 18)}px`,
+    }))
+  ), []);
 
   // Filter Options State (Default: length = 字數 > 注音/筆劃)
   const [filters, setFilters] = useState<FilterOptions>(() => {
@@ -124,7 +131,7 @@ export function App() {
   // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
   useEffect(() => {
     fetchBrands();
-    fetchFullCatalog((pct) => setTargetProgress(pct)).then(catalog => {
+    fetchFullCatalog((pct) => setTargetProgress(Math.min(96, pct))).then(catalog => {
       if (catalog && catalog.length > 0) {
         // 前台硬過濾防護牆 (Strict Sanitizer Guard)
         const sanitized = catalog.filter(s => {
@@ -170,7 +177,8 @@ export function App() {
       setDisplayProgress(prev => {
         if (prev < targetProgress) {
           const diff = targetProgress - prev;
-          const step = Math.max(1.5, diff * 0.15);
+          const isFinalStretch = targetProgress >= 100 && prev >= 96;
+          const step = isFinalStretch ? Math.max(0.16, diff * 0.045) : Math.max(1.5, diff * 0.15);
           const next = Math.min(targetProgress, prev + step);
           return Math.round(next * 10) / 10;
         }
@@ -185,10 +193,11 @@ export function App() {
   // 100% 達成且資料狀態確定後再切換，避免 loading 與列表之間出現空白空檔
   useEffect(() => {
     if (displayProgress >= 100 && targetProgress >= 100 && (isCatalogReady || catalogLoadError)) {
+      setIsFadingOut(true);
       const timer = setTimeout(() => {
         setIsFadingOut(false);
         setIsLoadingCatalog(false);
-      }, 120);
+      }, 360);
       return () => clearTimeout(timer);
     }
   }, [catalogLoadError, displayProgress, isCatalogReady, targetProgress]);
@@ -719,7 +728,16 @@ export function App() {
             </div>
 
             <div className="loading-equalizer" aria-hidden="true">
-              {Array.from({ length: 18 }).map((_, index) => <span key={index} />)}
+              {equalizerBars.map((bar, index) => (
+                <span
+                  key={index}
+                  style={{
+                    '--equalizer-delay': bar.delay,
+                    '--equalizer-duration': bar.duration,
+                    '--equalizer-peak': bar.peak,
+                  } as React.CSSProperties}
+                />
+              ))}
             </div>
           </div>
         ) : catalogLoadError ? (
