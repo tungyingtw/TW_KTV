@@ -182,19 +182,16 @@ export function App() {
     return () => cancelAnimationFrame(animationFrame);
   }, [targetProgress]);
 
-  // 100% 達成後的平滑淡出過場
+  // 100% 達成且資料狀態確定後再切換，避免 loading 與列表之間出現空白空檔
   useEffect(() => {
-    if (displayProgress >= 100 && targetProgress >= 100) {
-      const timer1 = setTimeout(() => {
-        setIsFadingOut(true);
-        const timer2 = setTimeout(() => {
-          setIsLoadingCatalog(false);
-        }, 380);
-        return () => clearTimeout(timer2);
-      }, 250);
-      return () => clearTimeout(timer1);
+    if (displayProgress >= 100 && targetProgress >= 100 && (isCatalogReady || catalogLoadError)) {
+      const timer = setTimeout(() => {
+        setIsFadingOut(false);
+        setIsLoadingCatalog(false);
+      }, 120);
+      return () => clearTimeout(timer);
     }
-  }, [displayProgress, targetProgress]);
+  }, [catalogLoadError, displayProgress, isCatalogReady, targetProgress]);
 
   // Sync favorites to localStorage
   useEffect(() => {
