@@ -74,7 +74,7 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '2mb' }));
 
-// 告訴搜尋引擎爬蟲：此伺服器為後端 API，請集中索引 https://tungyingtw.github.io/ 正式網站
+// 告訴搜尋引擎爬蟲：此伺服器為後端 API，請集中索引 https://tyfunlab.com/ 正式網站
 app.use((req, res, next) => {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   next();
@@ -89,7 +89,7 @@ app.get('/robots.txt', (req, res) => {
 // 301 永久重導向：將 Render 根目錄與所有前端路由導向正式 GitHub Pages
 // 目的：讓 Google PageRank 完全傳遞給正式網站，防止 Render 搶佔 SEO 排名
 // ─────────────────────────────────────────────
-const OFFICIAL_SITE = 'https://tungyingtw.github.io/TW_KTV/';
+const OFFICIAL_SITE = 'https://tyfunlab.com/';
 const OFFICIAL_SITE_ORIGIN = new URL(OFFICIAL_SITE).origin;
 const ADMIN_ACCESS_MODE = process.env.ADMIN_ACCESS_MODE || 'official_site';
 const DEFAULT_ALLOWED_ORIGINS = `${OFFICIAL_SITE_ORIGIN},https://tw-ktv.onrender.com`;
