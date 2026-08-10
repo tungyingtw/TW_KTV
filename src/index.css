@@ -631,11 +631,16 @@ textarea:focus {
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  border: 1px solid rgba(236, 72, 153, 0.24);
+  border: 1px solid rgba(236, 72, 153, 0.46);
   border-radius: 8px;
-  background: rgba(30, 41, 59, 0.72);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+  background:
+    linear-gradient(135deg, rgba(236, 72, 153, 0.14), rgba(251, 191, 36, 0.07) 42%, rgba(30, 41, 59, 0.76) 100%),
+    rgba(30, 41, 59, 0.72);
+  box-shadow:
+    0 10px 26px rgba(15, 23, 42, 0.18),
+    0 0 24px rgba(236, 72, 153, 0.22);
   overflow: hidden;
+  animation: collabNoticeGlowPulse 5.8s ease-in-out infinite;
 }
 
 .collab-notice::before {
@@ -643,15 +648,15 @@ textarea:focus {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(115deg, rgba(236, 72, 153, 0.18), rgba(251, 191, 36, 0.58), rgba(56, 189, 248, 0.2), rgba(236, 72, 153, 0.18));
-  background-size: 220% 220%;
+  padding: 3px;
+  background: linear-gradient(115deg, rgba(236, 72, 153, 0.72), rgba(251, 191, 36, 1), rgba(56, 189, 248, 0.72), rgba(236, 72, 153, 0.72));
+  background-size: 260% 260%;
   pointer-events: none;
-  opacity: 0.75;
+  opacity: 0.9;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: collabNoticeBorderGlow 7s ease-in-out infinite;
+  animation: collabNoticeBorderGlow 4.8s ease-in-out infinite;
 }
 
 .collab-notice > * {
@@ -662,21 +667,56 @@ textarea:focus {
 @keyframes collabNoticeBorderGlow {
   0%, 100% {
     background-position: 0% 50%;
-    opacity: 0.46;
+    opacity: 0.76;
   }
   50% {
     background-position: 100% 50%;
-    opacity: 0.92;
+    opacity: 1;
+  }
+}
+
+@keyframes collabNoticeGlowPulse {
+  0%, 100% {
+    box-shadow:
+      0 10px 26px rgba(15, 23, 42, 0.18),
+      0 0 20px rgba(236, 72, 153, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 12px 30px rgba(15, 23, 42, 0.22),
+      0 0 34px rgba(251, 191, 36, 0.28);
   }
 }
 
 [data-theme="light"] .collab-notice {
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  border-color: rgba(219, 39, 119, 0.56);
+  background:
+    linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(245, 158, 11, 0.13) 42%, rgba(255, 255, 255, 0.92) 100%),
+    rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.08),
+    0 0 28px rgba(219, 39, 119, 0.24);
 }
 
 [data-theme="light"] .collab-notice::before {
-  background: linear-gradient(115deg, rgba(236, 72, 153, 0.16), rgba(245, 158, 11, 0.46), rgba(14, 165, 233, 0.22), rgba(236, 72, 153, 0.16));
+  background: linear-gradient(115deg, rgba(219, 39, 119, 0.76), rgba(245, 158, 11, 1), rgba(14, 165, 233, 0.74), rgba(219, 39, 119, 0.76));
+}
+
+[data-theme="light"] .collab-notice {
+  animation-name: collabNoticeLightGlowPulse;
+}
+
+@keyframes collabNoticeLightGlowPulse {
+  0%, 100% {
+    box-shadow:
+      0 10px 24px rgba(15, 23, 42, 0.08),
+      0 0 22px rgba(219, 39, 119, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 12px 28px rgba(15, 23, 42, 0.11),
+      0 0 42px rgba(245, 158, 11, 0.34);
+  }
 }
 
 .collab-notice-copy {
@@ -798,8 +838,12 @@ html, body {
     transform: none !important;
   }
 
+  .collab-notice,
   .collab-notice::before {
     animation: none !important;
+  }
+
+  .collab-notice::before {
     opacity: 0.58;
   }
 }
