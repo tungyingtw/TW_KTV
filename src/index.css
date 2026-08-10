@@ -626,6 +626,7 @@ textarea:focus {
   width: min(1400px, calc(100% - 40px));
   margin: 12px auto 10px;
   padding: 12px 14px;
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -634,11 +635,48 @@ textarea:focus {
   border-radius: 8px;
   background: rgba(30, 41, 59, 0.72);
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+.collab-notice::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(115deg, rgba(236, 72, 153, 0.18), rgba(251, 191, 36, 0.58), rgba(56, 189, 248, 0.2), rgba(236, 72, 153, 0.18));
+  background-size: 220% 220%;
+  pointer-events: none;
+  opacity: 0.75;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: collabNoticeBorderGlow 7s ease-in-out infinite;
+}
+
+.collab-notice > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes collabNoticeBorderGlow {
+  0%, 100% {
+    background-position: 0% 50%;
+    opacity: 0.46;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.92;
+  }
 }
 
 [data-theme="light"] .collab-notice {
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .collab-notice::before {
+  background: linear-gradient(115deg, rgba(236, 72, 153, 0.16), rgba(245, 158, 11, 0.46), rgba(14, 165, 233, 0.22), rgba(236, 72, 153, 0.16));
 }
 
 .collab-notice-copy {
@@ -758,6 +796,11 @@ html, body {
   .heart-icon-btn:hover,
   .brand-chip:hover {
     transform: none !important;
+  }
+
+  .collab-notice::before {
+    animation: none !important;
+    opacity: 0.58;
   }
 }
 
