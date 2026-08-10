@@ -30,6 +30,24 @@ export function normalizeText(str: string): string {
 }
 
 /**
+ * 將大型人數轉為台灣使用者較容易閱讀的中文縮寫。
+ */
+export function formatCompactZhNumber(value: number): string {
+  const num = Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+  const units = [
+    { value: 1000000000000, label: '兆' },
+    { value: 100000000, label: '億' },
+    { value: 10000, label: '萬' },
+  ];
+  const unit = units.find(item => num >= item.value);
+  if (!unit) return num.toLocaleString();
+
+  const scaled = num / unit.value;
+  const digits = scaled >= 100 ? 0 : 1;
+  return `${scaled.toFixed(digits).replace(/\.0$/, '')}${unit.label}`;
+}
+
+/**
  * 在文字中高亮顯示與搜尋關鍵字匹配的子字串
  */
 export function getHighlightedParts(text: string, query: string): { text: string; isMatch: boolean }[] {
