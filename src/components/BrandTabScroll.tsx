@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BrandId } from '../types/ktv';
 import { useBrands } from '../hooks/useBrands';
+import { formatCompactZhNumber } from '../utils/stringUtils';
 
 interface BrandTabScrollProps {
   selectedBrand: BrandId | 'all';
@@ -130,10 +131,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
 
   const formatCount = (count?: number) => {
     if (count === undefined) return '';
-    if (count === 0) return ' (0)';
-    if (count >= 10000) return ` (${(count / 10000).toFixed(1)}萬)`;
-    if (count >= 1000) return ` (${(count / 1000).toFixed(1)}k)`;
-    return ` (${count})`;
+    return ` (${formatCompactZhNumber(count)})`;
   };
 
   const isMultiSelecting = selectedBrands.length > 0;
@@ -232,7 +230,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
               boxSizing: 'border-box',
             }}
           >
-            全部廠牌 ({brandList.length}){totalSongCount ? ` · ${totalSongCount >= 10000 ? (totalSongCount / 10000).toFixed(1) + '萬首' : totalSongCount + '首'}` : ''}
+            全部廠牌 ({brandList.length}){totalSongCount ? ` · ${formatCompactZhNumber(totalSongCount)}首` : ''}
           </button>
 
           {/* 各大 KTV 廠牌 - 動態依【收錄歌曲數量】由多至少優先排序！ */}

@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BrandId } from '../../types/ktv';
 import { useBrands } from '../../hooks/useBrands';
+import { formatCompactZhNumber } from '../../utils/stringUtils';
 
 interface MobileBrandTabScrollProps {
   selectedBrand: BrandId | 'all';
@@ -101,10 +102,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
 
   const formatCount = (count?: number) => {
     if (count === undefined) return '';
-    if (count === 0) return ' (0)';
-    if (count >= 10000) return ` (${(count / 10000).toFixed(1)}萬)`;
-    if (count >= 1000) return ` (${(count / 1000).toFixed(1)}k)`;
-    return ` (${count})`;
+    return ` (${formatCompactZhNumber(count)})`;
   };
 
   const isMultiSelecting = selectedBrands.length > 0;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
 import type { FilterOptions } from '../../types/ktv';
+import { formatCompactZhNumber } from '../../utils/stringUtils';
 
 interface MobileNavbarProps {
   filters: FilterOptions;
@@ -41,6 +42,9 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
   const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
   const [isStatsError, setIsStatsError] = useState<boolean>(false);
   const [isStatsPersistent, setIsStatsPersistent] = useState<boolean>(true);
+  const totalVisitsValue = totalVisits ?? 1;
+  const totalVisitsFullText = totalVisitsValue.toLocaleString();
+  const totalVisitsCompactText = formatCompactZhNumber(totalVisitsValue);
 
   useEffect(() => {
     let isMounted = true;
@@ -124,8 +128,8 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 isStatsError
                   ? '全站累積查詢人數暫時無法連線同步'
                   : !isStatsPersistent
-                    ? '全台歌友累積查詢數 (本機模式)'
-                    : '全台歌友累積查詢與使用人數 (12小時去重與 Redis 全站同步)'
+                    ? `全台歌友累積查詢數 ${totalVisitsFullText} 人 (本機模式)`
+                    : `全台歌友累積查詢與使用人數 ${totalVisitsFullText} 人 (12小時去重與 Redis 全站同步)`
               }
               style={{
                 display: 'inline-flex', alignItems: 'center', padding: '2px 7px',
@@ -142,7 +146,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                   ? '同步中...'
                   : isStatsError
                     ? '未同步'
-                    : `${isStatsPersistent ? '累積' : '本機'} ${totalVisits?.toLocaleString() ?? 1} 人`}
+                    : `${isStatsPersistent ? '累積' : '本機'} ${totalVisitsCompactText} 人`}
               </span>
             </div>
           </div>
