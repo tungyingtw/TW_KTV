@@ -28,12 +28,15 @@ import { expandFrontendQuery } from './utils/artistAliases';
 import { isBrandAvailable } from './utils/brandAvailability';
 import { getMeaningfulLyricsSnippet } from './utils/songReference';
 import { getMeaningfulComposer, getMeaningfulLyricist } from './utils/songCredits';
-import { Sparkles, Music, ChevronDown, Mail } from 'lucide-react';
+import { Sparkles, Music, ChevronDown, Mail, X } from 'lucide-react';
 
 function getSearchablePhonetic(value?: string): string {
   const normalized = (value || '').trim();
   return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : '';
 }
+
+const COLLAB_NOTICE_DISMISSED_UNTIL_KEY = 'tw_ktv_collab_notice_dismissed_until';
+const COLLAB_NOTICE_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function App() {
   const isMobile = useIsMobile();
@@ -110,6 +113,14 @@ export function App() {
   const [reportModalSong, setReportModalSong] = useState<Song | null>(null);
   const [legalNoticeTab, setLegalNoticeTab] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showCollabNotice, setShowCollabNotice] = useState<boolean>(() => {
+    try {
+      const dismissedUntil = Number(localStorage.getItem(COLLAB_NOTICE_DISMISSED_UNTIL_KEY) || 0);
+      return !dismissedUntil || Date.now() > dismissedUntil;
+    } catch {
+      return true;
+    }
+  });
 
   // Pagination / Load More limit state (Default display: 40)
   const [displayedCount, setDisplayedCount] = useState<number>(40);
@@ -504,6 +515,13 @@ export function App() {
     return allSongs.filter(s => favorites.includes(s.id));
   }, [favorites, allSongs]);
 
+  const dismissCollabNotice = () => {
+    setShowCollabNotice(false);
+    try {
+      localStorage.setItem(COLLAB_NOTICE_DISMISSED_UNTIL_KEY, String(Date.now() + COLLAB_NOTICE_DISMISS_MS));
+    } catch {}
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Navbar */}
@@ -569,6 +587,26 @@ export function App() {
           isServerUnavailable={apiHealthStatus === 'unavailable'}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
         />
+      )}
+
+      {showCollabNotice && (
+        <section className="collab-notice" aria-label="協作提示">
+          <div className="collab-notice-copy">
+            <h2>讓這份歌庫越來越準</h2>
+            <p>
+              KTV 的收錄、導唱和 MV 類型常常只有現場點過才知道。若你發現歌曲缺漏、資料不對，或能確認某首歌的現場狀態，歡迎使用「新增歌曲」或歌曲內的「回報」功能，一起讓查歌結果更可靠。
+            </p>
+          </div>
+          <button
+            type="button"
+            className="collab-notice-close"
+            onClick={dismissCollabNotice}
+            aria-label="關閉協作提示"
+            title="關閉提示，7 天內不再顯示"
+          >
+            <X size={16} />
+          </button>
+        </section>
       )}
 
       {/* 頂部廣告區 */}
