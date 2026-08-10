@@ -315,7 +315,7 @@
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px;" id="overview-cards">
         <div class="card" style="border-color:rgba(236,72,153,0.3)">
           <div style="font-size:1.8rem;font-weight:800;color:#ec4899" id="ov-catalog">—</div>
-          <div style="color:var(--muted);margin-top:4px;">歌曲資料庫總量</div>
+          <div style="color:var(--muted);margin-top:4px;">後端載入歌曲數</div>
         </div>
         <div class="card" style="border-color:rgba(251,191,36,0.3)">
           <div style="font-size:1.8rem;font-weight:800;color:var(--yellow)" id="ov-pending">—</div>
@@ -327,7 +327,7 @@
         </div>
         <div class="card" style="border-color:rgba(74,222,128,0.3)">
           <div style="font-size:1.8rem;font-weight:800;color:var(--green)" id="ov-verified">—</div>
-          <div style="color:var(--muted);margin-top:4px;">社群已驗證筆數</div>
+          <div style="color:var(--muted);margin-top:4px;">群眾投票確認收錄項目</div>
         </div>
       </div>
 
@@ -1370,13 +1370,43 @@ function applyAdminPermissionsUI(admin) {
 
 // ── 統計 ──
 async function loadStats() {
-  const res = await apiFetch('/api/admin/stats');
-  if (!res.ok) return;
-  const data = await res.json();
-  document.getElementById('ov-catalog').textContent = data.catalog?.total?.toLocaleString() ?? '—';
-  document.getElementById('ov-pending').textContent = data.reports?.pending ?? '—';
-  document.getElementById('ov-disputed').textContent = data.votes?.disputed ?? '—';
-  document.getElementById('ov-verified').textContent = data.votes?.verified ?? '—';
+  const asCount = value => {
+    const num = Number(value);
+    return Number.isFinite(num) && num >= 0 ? num : 0;
+  };
+
+  let data;
+  try {
+    const res = await apiFetch('/api/admin/stats');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (err) {
+    document.getElementById('stats-bar').innerHTML = `<div class="stat-chip"><b style="color:var(--red)">統計載入失敗</b></div>`;
+    ['ov-catalog', 'ov-pending', 'ov-disputed', 'ov-verified'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '0';
+    });
+    showToast('統計資料載入失敗，請重新登入或稍後再試', 'error');
+    return;
+  }
+
+  const catalogTotal = asCount(data.catalog?.total);
+  const pendingReports = asCount(data.reports?.pending);
+  const disputedVotes = asCount(data.votes?.disputed);
+  const verifiedVotes = asCount(data.votes?.verified);
+  const guidedQueue = asCount(data.votes?.guided);
+  const mvQueue = asCount(data.votes?.mv);
+  const storageInfo = data.storage || {};
+  const storageLabel = storageInfo.label || data.storageLabel || 'Local JSON snapshot';
+  const storageNote = data.storageMode === 'redis'
+    ? ''
+    : (storageInfo.redisConfigured === false ? ' (Redis 未設定)' : (storageInfo.redisAvailable === false ? ' (Redis 連線失敗)' : ''));
+  const storageColor = data.storageMode === 'redis' ? 'var(--green)' : 'var(--yellow)';
+
+  document.getElementById('ov-catalog').textContent = catalogTotal.toLocaleString();
+  document.getElementById('ov-pending').textContent = pendingReports.toLocaleString();
+  document.getElementById('ov-disputed').textContent = disputedVotes.toLocaleString();
+  document.getElementById('ov-verified').textContent = verifiedVotes.toLocaleString();
 
   const dashReports = document.getElementById('dash-reports-count');
   const dashDisputed = document.getElementById('dash-disputed-count');
@@ -1384,23 +1414,20 @@ async function loadStats() {
   const dashMv = document.getElementById('dash-mv-count');
   const dashStorage = document.getElementById('dash-storage-label');
 
-  if (dashReports) dashReports.textContent = `${data.reports?.pending || 0} 筆`;
-  if (dashDisputed) dashDisputed.textContent = `${data.votes?.disputed || 0} 筆`;
-  if (dashGuided) dashGuided.textContent = `${data.votes?.guided || 0} 筆`;
-  if (dashMv) dashMv.textContent = `${data.votes?.mv || 0} 筆`;
-  if (dashStorage) dashStorage.textContent = data.storageLabel || 'Local JSON';
+  if (dashReports) dashReports.textContent = `${pendingReports.toLocaleString()} 筆`;
+  if (dashDisputed) dashDisputed.textContent = `${disputedVotes.toLocaleString()} 筆`;
+  if (dashGuided) dashGuided.textContent = `${guidedQueue.toLocaleString()} 筆`;
+  if (dashMv) dashMv.textContent = `${mvQueue.toLocaleString()} 筆`;
+  if (dashStorage) {
+    dashStorage.textContent = `${storageLabel}${storageNote}`;
+    dashStorage.style.color = storageColor;
+  }
 
   document.getElementById('stats-bar').innerHTML = `
-    <div class="stat-chip">資料庫 <b>${(data.catalog?.total||0).toLocaleString()}</b> 首</div>
-    <div class="stat-chip">待審回報 <b style="color:var(--yellow)">${data.reports?.pending||0}</b></div>
-    <div class="stat-chip">收錄狀態待確認 <b style="color:var(--red)">${data.votes?.disputed||0}</b></div>
-    <div class="stat-chip">儲存媒介 <b style="color:var(--green)">${data.storageLabel||'Local JSON'}</b></div>
-  `;
-  document.getElementById('stats-bar').innerHTML = `
-    <div class="stat-chip">歌曲資料 <b>${(data.catalog?.total||0).toLocaleString()}</b> 筆</div>
-    <div class="stat-chip">待審回報 <b style="color:var(--yellow)">${data.reports?.pending||0}</b></div>
-    <div class="stat-chip">收錄狀態待確認 <b style="color:var(--red)">${data.votes?.disputed||0}</b></div>
-    <div class="stat-chip">儲存模式 <b style="color:var(--green)">${data.storageLabel||'Local JSON'}</b></div>
+    <div class="stat-chip">後端載入歌曲 <b>${catalogTotal.toLocaleString()}</b> 筆</div>
+    <div class="stat-chip">待審回報 <b style="color:var(--yellow)">${pendingReports.toLocaleString()}</b></div>
+    <div class="stat-chip">收錄狀態待確認 <b style="color:var(--red)">${disputedVotes.toLocaleString()}</b></div>
+    <div class="stat-chip">儲存模式 <b style="color:${storageColor}">${escapeHtml(`${storageLabel}${storageNote}`)}</b></div>
   `;
   applyAdminWorkflowLabels();
 }

@@ -4966,6 +4966,16 @@ async function buildAdminStatsSummary() {
   const reports = await loadReportsStore();
   const votes = await loadVotesStore();
   const reviewQueueItems = await buildReviewQueueItems({ canViewReports: true, canViewVotes: true });
+  let redisAvailable = null;
+
+  if (USE_REDIS) {
+    try {
+      await redisCmd('ping');
+      redisAvailable = true;
+    } catch {
+      redisAvailable = false;
+    }
+  }
 
   const pendingReports = reports.filter(r => r.status === 'pending').length;
   const resolvedReports = reports.filter(r => r.status === 'resolved').length;
@@ -4985,7 +4995,7 @@ async function buildAdminStatsSummary() {
   const reviewQueueCounts = summarizeReviewQueueFilters(reviewQueueItems);
 
   return {
-    catalog: { total: songsDatabase.length },
+    catalog: { total: songsDatabase.length, staticCatalogSkipped: SKIP_STATIC_CATALOG },
     reports: { total: reports.length, pending: pendingReports, resolved: resolvedReports },
     votes: {
       totalEntries: totalVoteEntries,
@@ -4999,6 +5009,14 @@ async function buildAdminStatsSummary() {
     reviewQueue: reviewQueueCounts,
     storageMode: USE_REDIS ? 'redis' : 'local_json',
     storageLabel: USE_REDIS ? 'Upstash Redis persistent' : 'Local JSON snapshot',
+    storage: {
+      mode: USE_REDIS ? 'redis' : 'local_json',
+      label: USE_REDIS ? 'Upstash Redis persistent' : 'Local JSON snapshot',
+      redisConfigured: USE_REDIS,
+      redisAvailable,
+      staticCatalogSkipped: SKIP_STATIC_CATALOG,
+      loadStaticCatalog: LOAD_STATIC_CATALOG,
+    },
   };
 }
 
