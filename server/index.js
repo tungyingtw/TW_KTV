@@ -2182,12 +2182,11 @@ app.get('/api/stats/ping', async (req, res) => {
       const COOLDOWN_SEC = 12 * 60 * 60; // 12 小時 TTL
 
       // 檢查此訪客在 12 小時內是否已計算過（Redis key 有 TTL，自動過期）
-      const alreadyVisited = await redisCmd('exists', VISIT_KEY);
+      const visitReserved = await redisCmd('set', VISIT_KEY, 1, 'EX', COOLDOWN_SEC, 'NX');
 
-      if (!alreadyVisited) {
+      if (visitReserved) {
         // 新訪客（或冷卻已過）：原子遞增，並設定 12h TTL 去重 key
         const newTotal = await redisCmd('incr', TOTAL_KEY);
-        await redisCmd('setex', VISIT_KEY, COOLDOWN_SEC, 1);
         totalVisits = typeof newTotal === 'number' ? newTotal : parseInt(String(newTotal), 10);
       } else {
         // 已訪問過：只讀取當前累積值，不重複計數
@@ -4966,6 +4965,7 @@ app.post('/api/admin/brand/from-report/:reportId', requirePermission('brands.man
 async function buildAdminStatsSummary() {
   const reports = await loadReportsStore();
   const votes = await loadVotesStore();
+  const reviewQueueItems = await buildReviewQueueItems({ canViewReports: true, canViewVotes: true });
 
   const pendingReports = reports.filter(r => r.status === 'pending').length;
   const resolvedReports = reports.filter(r => r.status === 'resolved').length;
@@ -4982,10 +4982,21 @@ async function buildAdminStatsSummary() {
     if ((data.officialMv || 0) + (data.editedMv || 0) > 0) mvVotesCount++;
   }
 
+  const reviewQueueCounts = summarizeReviewQueueFilters(reviewQueueItems);
+
   return {
     catalog: { total: songsDatabase.length },
     reports: { total: reports.length, pending: pendingReports, resolved: resolvedReports },
-    votes: { totalEntries: totalVoteEntries, disputed: disputedCount, verified: verifiedCount, guided: guidedVotesCount, mv: mvVotesCount },
+    votes: {
+      totalEntries: totalVoteEntries,
+      disputed: disputedCount,
+      verified: verifiedCount,
+      guided: reviewQueueCounts.guided,
+      mv: reviewQueueCounts.mv,
+      rawGuided: guidedVotesCount,
+      rawMv: mvVotesCount,
+    },
+    reviewQueue: reviewQueueCounts,
     storageMode: USE_REDIS ? 'redis' : 'local_json',
     storageLabel: USE_REDIS ? 'Upstash Redis persistent' : 'Local JSON snapshot',
   };
