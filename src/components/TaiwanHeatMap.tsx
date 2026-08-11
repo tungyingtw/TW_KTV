@@ -43,6 +43,7 @@ type TaiwanHeatMapProps = {
   showJoinAction?: boolean;
   joinActionDisabled?: boolean;
   joinActionLabel?: string;
+  actionMessage?: string;
 };
 
 const FULL_TAIWAN_VIEW_BOX = '0 0 1000 1000';
@@ -104,6 +105,7 @@ export function TaiwanHeatMap({
   showJoinAction = true,
   joinActionDisabled,
   joinActionLabel,
+  actionMessage,
 }: TaiwanHeatMapProps) {
   const [pointer, setPointer] = useState<PointerState | null>(null);
   const [mapScale, setMapScale] = useState(DEFAULT_MAP_SCALE);
@@ -310,7 +312,12 @@ export function TaiwanHeatMap({
           </div>
         )}
         {selectedRegion && showJoinAction && (
-          <div className="taiwan-demo-map-action">
+          <div
+            className="taiwan-demo-map-action"
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
             <div>
               <span>目前選取</span>
               <strong>{regionLabels[selectedRegion.id] || selectedRegion.name}</strong>
@@ -323,6 +330,7 @@ export function TaiwanHeatMap({
             >
               {joinActionLabel || (selectedRegion.id === userRegionId ? '已在這裡' : '我在這裡')}
             </button>
+            {actionMessage && <em>{actionMessage}</em>}
           </div>
         )}
       </div>

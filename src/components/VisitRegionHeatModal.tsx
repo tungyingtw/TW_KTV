@@ -192,6 +192,7 @@ export function VisitRegionHeatContent({ onClose }: VisitRegionHeatContentProps)
             showJoinAction
             joinActionDisabled={joinActionDisabled}
             joinActionLabel={joinActionLabel}
+            actionMessage={actionMessage}
           />
           <VisitStatsPanel
             totalVisits={totalVisits}
