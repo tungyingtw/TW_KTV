@@ -93,7 +93,6 @@ function hashFrontendShape(songs) {
       isMainlandViral: song.isMainlandViral,
       brands: Object.fromEntries(Object.entries(song.brands || {}).map(([brandId, status]) => [brandId, {
         available: isBrandAvailable(status),
-        code: status.code,
         audioType: status.audioType,
         mvType: status.mvType,
       }])),

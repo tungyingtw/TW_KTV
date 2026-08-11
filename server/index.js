@@ -1536,7 +1536,7 @@ async function saveCatalogOverrideSong(song) {
   if (!overrides.songs || typeof overrides.songs !== 'object') overrides.songs = {};
   if (!Array.isArray(overrides.deletedIds)) overrides.deletedIds = [];
   overrides.deletedIds = overrides.deletedIds.filter(id => id !== song.id);
-  overrides.songs[song.id] = song;
+  overrides.songs[song.id] = stripSongCodesFromSong(song);
   await saveCatalogOverridesStore(overrides);
   invalidateAdminDerivedCaches();
 }
@@ -1960,7 +1960,7 @@ app.get('/api/songs', (req, res) => {
   const limitNum = Math.min(parseInt(String(limit), 10) || 40, 200);
   const start = (pageNum - 1) * limitNum;
 
-  res.json({ total: results.length, page: pageNum, limit: limitNum, songs: results.slice(start, start + limitNum) });
+  res.json({ total: results.length, page: pageNum, limit: limitNum, songs: stripSongCodesFromSongs(results.slice(start, start + limitNum)) });
 });
 
 function getSearchablePhonetic(value) {
@@ -2043,7 +2043,7 @@ app.get('/api/catalog-overrides', async (req, res) => {
     }
   }
 
-  const songs = Object.values(mergedSongsMap);
+  const songs = stripSongCodesFromSongs(Object.values(mergedSongsMap));
   const deletedIds = Array.isArray(overrides?.deletedIds) ? overrides.deletedIds : [];
   res.json({ songs, deletedIds });
 });
@@ -2283,14 +2283,41 @@ function sanitizeText(str) {
     .trim();
 }
 
+function stripSongCodesFromSong(song) {
+  if (!song || typeof song !== 'object') return song;
+  const cleanSong = { ...song };
+  if (song.brands && typeof song.brands === 'object') {
+    cleanSong.brands = {};
+    for (const [brandId, status] of Object.entries(song.brands)) {
+      if (status && typeof status === 'object') {
+        const cleanStatus = { ...status };
+        delete cleanStatus.code;
+        if (typeof cleanStatus.note === 'string') {
+          cleanStatus.note = cleanStatus.note
+            .replace(/[；;]?\s*點歌碼衝突已清空，待使用者回報或管理者校正/g, '')
+            .replace(/點碼對照更新/g, '資料對照更新')
+            .replace(/點歌碼|點歌編號|歌曲編號/g, '現場編號')
+            .trim();
+        }
+        cleanSong.brands[brandId] = cleanStatus;
+      } else {
+        cleanSong.brands[brandId] = status;
+      }
+    }
+  }
+  return cleanSong;
+}
+
+function stripSongCodesFromSongs(songs) {
+  return Array.isArray(songs) ? songs.map(stripSongCodesFromSong) : [];
+}
+
 function sanitizeBrandStatusSnapshot(status) {
   if (!status || typeof status !== 'object') return null;
   const result = { available: isCatalogBrandAvailable(status) };
-  const code = sanitizeText(status.code).slice(0, 50);
   const audioType = sanitizeText(status.audioType);
   const mvType = sanitizeText(status.mvType);
   const note = sanitizeText(status.note).slice(0, 200);
-  if (code) result.code = code;
   if (['guided_vocal', 'backing_track'].includes(audioType)) result.audioType = audioType;
   if (['official_mv', 'live_mv', 'reedited_mv', 'anime_mv'].includes(mvType)) result.mvType = mvType;
   if (note) result.note = note;
@@ -2422,7 +2449,6 @@ async function updateSongBrandStatus({ songId, brandId, available, audioType, mv
   const nextBrandStatus = {
     ...before,
     available,
-    code: before?.code || (available ? 'OK' : 'N/A'),
   };
 
   if (audioType !== undefined) nextBrandStatus.audioType = audioType || undefined;
@@ -2433,7 +2459,6 @@ async function updateSongBrandStatus({ songId, brandId, available, audioType, mv
 
   if (!available) {
     nextBrandStatus.available = false;
-    nextBrandStatus.code = before?.code || 'N/A';
     delete nextBrandStatus.audioType;
     delete nextBrandStatus.mvType;
   } else {
@@ -2573,7 +2598,6 @@ app.post('/api/report', async (req, res) => {
     brandId,
     issueType,
     lang,
-    songCode,
     lyricist,
     composer,
     mvType,
@@ -2584,7 +2608,6 @@ app.post('/api/report', async (req, res) => {
     brandName,
     shortName,
     systemType,
-    codeFormat,
     storeLocations,
     songSnapshot,
   } = req.body;
@@ -2606,13 +2629,11 @@ app.post('/api/report', async (req, res) => {
   // 100% 進行 XSS 與惡意 script 安全清處過濾
   const cleanTitle = sanitizeText(songTitle);
   const cleanArtist = sanitizeText(artist);
-  const cleanCode = sanitizeText(songCode);
   const cleanLyricist = sanitizeText(lyricist);
   const cleanComposer = sanitizeText(composer);
   const cleanBrandName = sanitizeText(brandName);
   const cleanShortName = sanitizeText(shortName);
   const cleanSystemType = sanitizeText(systemType);
-  const cleanCodeFormat = sanitizeText(codeFormat);
   const cleanStoreLocations = sanitizeText(storeLocations);
   const cleanNote = sanitizeText(note).slice(0, 500);
   const cleanLyricsSnippet = sanitizeText(lyricsSnippet).slice(0, 500);
@@ -2628,7 +2649,6 @@ app.post('/api/report', async (req, res) => {
     brandId: sanitizeText(brandId),
     issueType,
     lang: sanitizeText(lang),
-    songCode: cleanCode,
     lyricist: cleanLyricist || undefined,
     composer: cleanComposer || undefined,
     mvType: mvType || 'unknown',
@@ -2638,7 +2658,6 @@ app.post('/api/report', async (req, res) => {
     brandName: cleanBrandName,
     shortName: cleanShortName,
     systemType: cleanSystemType,
-    codeFormat: cleanCodeFormat,
     storeLocations: cleanStoreLocations,
     note: cleanNote,
     songSnapshot: cleanSongSnapshot || undefined,
@@ -3303,7 +3322,6 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
             brands: {
               [report.brandId]: {
                 available: true,
-                code: report.songCode || '',
                 audioType: reportGuidedVocalStatusToAudioType(report),
                 mvType: reportMvTypeToCatalogMvType(report),
               }
@@ -3314,7 +3332,6 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
           if (!existingSong.brands) existingSong.brands = {};
           existingSong.brands[report.brandId] = {
             available: true,
-            code: report.songCode || existingSong.brands[report.brandId]?.code || '',
             audioType: reportGuidedVocalStatusToAudioType(report) || existingSong.brands[report.brandId]?.audioType,
             mvType: reportMvTypeToCatalogMvType(report) || existingSong.brands[report.brandId]?.mvType,
           };
@@ -3335,7 +3352,6 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
             targetSong.brands[report.brandId] = {
               ...targetSong.brands[report.brandId],
               available: true,
-              code: report.songCode || targetSong.brands[report.brandId]?.code || 'OK',
               note: '管理員審核更正為有收錄',
             };
           }
@@ -3445,7 +3461,6 @@ async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
         suggestedValue: report.issueType,
         signalSummary: {
           issueType: report.issueType,
-          songCode: report.songCode || '',
           note: report.note || '',
           brandName: report.brandName || '',
           shortName: report.shortName || '',
@@ -3871,7 +3886,6 @@ async function buildReviewItemSnapshotFromId(reviewItemId, fallback = {}) {
       suggestedValue: report.issueType,
       signalSummary: {
         issueType: report.issueType,
-        songCode: report.songCode || '',
         note: report.note || '',
         brandName: report.brandName || '',
         shortName: report.shortName || '',
@@ -4289,7 +4303,7 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
 
       const incoming = body.brands[brandId];
       if (!incoming || typeof incoming !== 'object') continue;
-      const hasIncomingDetails = ['code', 'audioType', 'mvType', 'note'].some(key => String(incoming[key] || '').trim());
+      const hasIncomingDetails = ['audioType', 'mvType', 'note'].some(key => String(incoming[key] || '').trim());
       if (!incoming.available && !brands[brandId] && !hasIncomingDetails) continue;
 
       const status = {
@@ -4297,9 +4311,7 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
         available: Boolean(incoming.available),
       };
 
-      const code = String(incoming.code || '').trim();
-      if (code) status.code = code;
-      else delete status.code;
+      delete status.code;
 
       if (validAudioTypes.includes(incoming.audioType)) status.audioType = incoming.audioType;
       else delete status.audioType;
@@ -4608,7 +4620,6 @@ app.patch('/api/admin/song/:songId/brand', requirePermission('brand.update'), as
   const nextBrandStatus = {
     ...before,
     available,
-    code: before?.code || (available ? 'OK' : 'N/A'),
   };
 
   if (audioType !== undefined) {
@@ -4625,7 +4636,6 @@ app.patch('/api/admin/song/:songId/brand', requirePermission('brand.update'), as
 
   if (!available) {
     nextBrandStatus.available = false;
-    nextBrandStatus.code = before?.code || 'N/A';
     delete nextBrandStatus.audioType;
     delete nextBrandStatus.mvType;
   } else {

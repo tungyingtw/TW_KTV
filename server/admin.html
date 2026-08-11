@@ -2248,12 +2248,11 @@ async function loadReports() {
           ${r.issueType === 'suggest_new_brand' ? `
             <div class="sub" style="margin-top:6px;background:rgba(2,132,199,0.15);padding:10px 14px;border-radius:8px;border:1px solid rgba(2,132,199,0.35);color:#e0f2fe">
               <div style="font-weight:700;color:#38bdf8;font-size:0.95rem">廠牌全名：${r.brandName || r.songTitle || '未提供'} (簡稱: <b style="color:#f472b6">${r.shortName || '無'}</b>)</div>
-              <div style="margin-top:4px">系統點歌號類型：<b>${r.systemType || '通用'}</b> | 點歌碼格式：<b>${r.codeFormat || '未註明'}</b></div>
+              <div style="margin-top:4px">系統型態：<b>${r.systemType || '通用'}</b></div>
               <div style="margin-top:2px">門市/區域分佈：<b>${r.storeLocations || '全台'}</b></div>
             </div>
           ` : ''}
 
-          ${r.songCode ? `<div class="sub" style="margin-top:4px;color:#fbbf24;font-size:0.9rem">建議點歌編號：<b style="background:rgba(251,191,36,0.15);padding:2px 6px;border-radius:4px;border:1px solid rgba(251,191,36,0.3)">${r.songCode}</b></div>` : ''}
           ${(r.lang || r.lyricist || r.composer || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
             <div class="sub" style="margin-top:4px;color:#cbd5e1">
               ${r.lang ? `語種: <b>${r.lang}</b> &nbsp;` : ''}
@@ -2314,8 +2313,8 @@ async function openSongEditorFromReport(reportId) {
   if (report.brandId && report.brandId !== '__unknown_brand__' && report.issueType !== 'other') {
     const previous = song.brands[report.brandId] || {};
     if (report.issueType === 'no_song') song.brands[report.brandId] = { ...previous, available: false, note: report.note || previous.note || '管理員依使用者回報修正為未收錄' };
-    if (report.issueType === 'has_song') song.brands[report.brandId] = { ...previous, available: true, code: report.songCode || previous.code || 'OK', note: report.note || previous.note || '管理員依使用者回報修正為有收錄' };
-    if (report.issueType === 'wrong_info') song.brands[report.brandId] = { ...previous, available: previous.available !== false, code: report.songCode || previous.code || '' };
+    if (report.issueType === 'has_song') song.brands[report.brandId] = { ...previous, available: true, note: report.note || previous.note || '管理員依使用者回報修正為有收錄' };
+    if (report.issueType === 'wrong_info') song.brands[report.brandId] = { ...previous, available: previous.available !== false };
   }
 
   currentSongEditorMode = 'edit';
@@ -2568,7 +2567,7 @@ function getSongCompleteness(song) {
   const missing = [];
   if (!hasYoutube) missing.push('無YT');
   if (!hasSnippet) missing.push('無歌詞');
-  if (!hasBrands) missing.push('無點歌碼');
+  if (!hasBrands) missing.push('無廠牌收錄狀態');
 
   return `<span class="badge badge-uncertain" title="資料尚有缺漏項目：${missing.join('、')}">待補 (${missing.join('·')})</span>`;
 }
@@ -2745,7 +2744,6 @@ function fillSongEditor(song) {
         <label style="display:flex;align-items:center;gap:6px;color:#cbd5e1;">
           <input class="brand-available" type="checkbox" ${isAdminBrandAvailable(status) ? 'checked' : ''} style="width:auto;" />有收錄
         </label>
-        <input class="brand-code" placeholder="點歌碼" value="${escapeAttr(status.code || '')}" />
         <select class="brand-audio">
           <option value="">音訊類型</option>
           <option value="guided_vocal" ${status.audioType === 'guided_vocal' ? 'selected' : ''}>導唱</option>
@@ -2770,12 +2768,11 @@ function collectSongEditorPayload() {
     const brandId = card.dataset.brandId;
     const payload = {
       available: card.querySelector('.brand-available').checked,
-      code: card.querySelector('.brand-code').value.trim(),
       audioType: card.querySelector('.brand-audio').value,
       mvType: card.querySelector('.brand-mv').value,
       note: card.querySelector('.brand-note').value.trim(),
     };
-    const hasDetails = payload.code || payload.audioType || payload.mvType || payload.note;
+    const hasDetails = payload.audioType || payload.mvType || payload.note;
     if (payload.available || hasDetails || card.dataset.hasStatus === '1') brands[brandId] = payload;
   });
 
@@ -2982,11 +2979,10 @@ async function loadReports() {
           ${r.issueType === 'suggest_new_brand' ? `
             <div class="sub" style="margin-top:6px;background:rgba(2,132,199,0.15);padding:10px 14px;border-radius:8px;border:1px solid rgba(2,132,199,0.35);color:#e0f2fe">
               <div style="font-weight:700;color:#38bdf8;font-size:0.95rem">廠牌全名：${escapeHtml(r.brandName || r.songTitle || '未提供')} (簡稱: <b style="color:#f472b6">${escapeHtml(r.shortName || '無')}</b>)</div>
-              <div style="margin-top:4px">系統型態：<b>${escapeHtml(r.systemType || '未提供')}</b> | 編號格式：<b>${escapeHtml(r.codeFormat || '未提供')}</b></div>
+              <div style="margin-top:4px">系統型態：<b>${escapeHtml(r.systemType || '未提供')}</b></div>
               <div style="margin-top:2px">店點/可用地區：<b>${escapeHtml(r.storeLocations || '未提供')}</b></div>
             </div>
           ` : ''}
-          ${r.songCode ? `<div class="sub" style="margin-top:4px;color:#fbbf24;font-size:0.9rem">歌曲編號：<b style="background:rgba(251,191,36,0.15);padding:2px 6px;border-radius:4px;border:1px solid rgba(251,191,36,0.3)">${escapeHtml(r.songCode)}</b></div>` : ''}
           ${(r.lang || r.lyricist || r.composer || r.guidedVocalStatus || (r.mvType && r.mvType !== 'unknown')) ? `
             <div class="sub" style="margin-top:4px;color:#cbd5e1">
               ${r.lang ? `語言: <b>${escapeHtml(r.lang)}</b> &nbsp;` : ''}
@@ -3036,7 +3032,7 @@ function reviewQueueValueLabel(item) {
   if (item.itemType === 'guided') return `目前：${audioTypeLabel(item.currentValue)} / 建議：${audioTypeLabel(item.suggestedValue)}`;
   if (item.itemType === 'mv') return `目前：${mvTypeLabel(item.currentValue)} / 建議：${mvTypeLabel(item.suggestedValue)}`;
   if (item.itemType === 'suggest_new_brand') return `品牌：${item.signalSummary?.brandName || item.songTitle || '未提供'} / 簡稱：${item.signalSummary?.shortName || '未提供'}`;
-  if (item.itemType === 'suggest_song') return `歌曲編號：${item.signalSummary?.songCode || '未提供'}`;
+  if (item.itemType === 'suggest_song') return `新歌建議：${item.songTitle || '未提供'}`;
   return `回報類型：${item.signalSummary?.issueType || '未提供'}`;
 }
 

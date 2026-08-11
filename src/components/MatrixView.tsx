@@ -68,8 +68,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
         return { label: '未收錄', color: 'var(--text-muted, #94a3b8)' };
       }
 
-      const codeText = status.code && status.code !== 'OK' ? ` ${status.code}` : '';
-      return { label: `有收錄${codeText}`, color: currentBrandInfo.color };
+      return { label: '有收錄', color: currentBrandInfo.color };
     }
 
     return {
@@ -525,19 +524,6 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             }}>
                               <CheckCircle2 size={15} color={b.color} />
                               <span>有收錄</span>
-                              {status.code && status.code !== 'OK' && (
-                                <span style={{
-                                  background: 'rgba(255,255,255,0.15)',
-                                  padding: '2px 8px',
-                                  borderRadius: '6px',
-                                  fontSize: '0.82rem',
-                                  color: '#fff',
-                                  fontWeight: 800,
-                                  border: '1px solid rgba(255,255,255,0.2)',
-                                }}>
-                                  🔢 碼: {status.code}
-                                </span>
-                              )}
                             </div>
                             
                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>

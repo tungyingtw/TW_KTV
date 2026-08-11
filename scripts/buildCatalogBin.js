@@ -58,6 +58,40 @@ function hasValidChunkedCatalog(dirPath) {
   }
 }
 
+function stripSongCodesFromCatalog(catalog) {
+  if (!Array.isArray(catalog)) return { catalog, removed: 0, noteUpdates: 0 };
+  let removed = 0;
+  let noteUpdates = 0;
+  const cleaned = catalog.map(song => {
+    if (!song || typeof song !== 'object' || !song.brands || typeof song.brands !== 'object') return song;
+    const cleanSong = { ...song, brands: {} };
+    for (const [brandId, status] of Object.entries(song.brands)) {
+      if (status && typeof status === 'object') {
+        const cleanStatus = { ...status };
+        if (Object.prototype.hasOwnProperty.call(cleanStatus, 'code')) {
+          delete cleanStatus.code;
+          removed++;
+        }
+        if (typeof cleanStatus.note === 'string') {
+          const cleanNote = cleanStatus.note
+            .replace(/[；;]?\s*點歌碼衝突已清空，待使用者回報或管理者校正/g, '')
+            .replace(/點碼對照更新/g, '資料對照更新')
+            .replace(/點歌碼|點歌編號|歌曲編號/g, '現場編號');
+          if (cleanNote !== cleanStatus.note) {
+            cleanStatus.note = cleanNote.trim();
+            noteUpdates++;
+          }
+        }
+        cleanSong.brands[brandId] = cleanStatus;
+      } else {
+        cleanSong.brands[brandId] = status;
+      }
+    }
+    return cleanSong;
+  });
+  return { catalog: cleaned, removed, noteUpdates };
+}
+
 export function generateBinCatalog() {
   let sourceJsonPath = null;
 
@@ -81,7 +115,20 @@ export function generateBinCatalog() {
   }
 
   console.log(`🔒 [Build Catalog Bin] 讀取 ${path.basename(sourceJsonPath)} 開始進行二進位混淆與加密打包...`);
-  const jsonContent = fs.readFileSync(sourceJsonPath, 'utf8');
+  let jsonContent = fs.readFileSync(sourceJsonPath, 'utf8');
+  try {
+    const parsedCatalog = JSON.parse(jsonContent);
+    const stripped = stripSongCodesFromCatalog(parsedCatalog);
+    jsonContent = JSON.stringify(stripped.catalog);
+    if (stripped.removed > 0) {
+      console.log(`🧹 [Build Catalog Bin] 已移除公開歌庫點歌碼欄位：${stripped.removed} 筆`);
+    }
+    if (stripped.noteUpdates > 0) {
+      console.log(`🧹 [Build Catalog Bin] 已清理公開歌庫點歌碼相關備註：${stripped.noteUpdates} 筆`);
+    }
+  } catch (err) {
+    console.warn('[Build Catalog Bin] 公開歌庫點歌碼清理略過：JSON 解析失敗', err.message);
+  }
   const jsonBytes = Buffer.from(jsonContent, 'utf8');
 
   // 同步更新備份 server/database.json 為開發主要資料庫

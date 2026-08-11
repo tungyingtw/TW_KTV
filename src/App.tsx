@@ -152,7 +152,7 @@ export function App() {
           const t = s.title || '';
           const snippet = getMeaningfulLyricsSnippet(s);
           if (/\bVol\.\d+|\bVOL\.\d+|\bvol\.\d+|\bNo\.\d+/i.test(t)) return false;
-          if (snippet.includes('10 大 KTV 歌號對照') || snippet.includes('包廂歡唱點歌碼')) return false;
+          if (snippet.includes('10 大 KTV 歌號對照') || (snippet.includes('包廂歡唱') && snippet.includes('歌號'))) return false;
           return true;
         });
         setAllSongs(sanitized);
