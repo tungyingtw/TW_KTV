@@ -3,7 +3,6 @@ import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from
 import type { FilterOptions } from '../../types/ktv';
 import { formatCompactZhNumber } from '../../utils/stringUtils';
 import { getKtvVisitorId } from '../../services/apiService';
-import { VisitRegionHeatModal } from '../VisitRegionHeatModal';
 
 interface MobileNavbarProps {
   filters: FilterOptions;
@@ -20,6 +19,13 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
   onOpenFavorites,
   onOpenSuggestSong,
 }) => {
+  const openVisitRegionPage = () => {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set('view', 'visit-region-stats');
+    nextUrl.hash = '';
+    window.location.assign(`${nextUrl.pathname}${nextUrl.search}`);
+  };
+
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     try {
       return (localStorage.getItem('tw_ktv_theme') as 'dark' | 'light') || 'dark';
@@ -44,7 +50,6 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
   const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
   const [isStatsError, setIsStatsError] = useState<boolean>(false);
   const [isStatsPersistent, setIsStatsPersistent] = useState<boolean>(true);
-  const [isVisitRegionOpen, setIsVisitRegionOpen] = useState(false);
   const totalVisitsValue = totalVisits ?? 1;
   const totalVisitsFullText = totalVisitsValue.toLocaleString();
   const totalVisitsCompactText = formatCompactZhNumber(totalVisitsValue);
@@ -124,7 +129,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
             </div>
             <button
               type="button"
-              onClick={() => setIsVisitRegionOpen(true)}
+              onClick={openVisitRegionPage}
               className="visit-region-trigger"
               title={
                 isStatsError
@@ -249,7 +254,6 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
           </div>
         </div>
       </div>
-      <VisitRegionHeatModal isOpen={isVisitRegionOpen} onClose={() => setIsVisitRegionOpen(false)} />
     </header>
   );
 };
