@@ -38,6 +38,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [guidedVocalStatus, setGuidedVocalStatus] = useState<'unknown' | 'guided' | 'none'>('unknown');
   const [lyricsSnippet, setLyricsSnippet] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [helperNickname, setHelperNickname] = useState('');
 
   const [brandName, setBrandName] = useState('');
   const [shortName, setShortName] = useState('');
@@ -71,6 +72,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         guidedVocalStatus,
         lyricsSnippet: lyricsSnippet.trim(),
         youtubeUrl: youtubeUrl.trim(),
+        helperNickname: helperNickname.trim(),
       });
       setIsSubmitting(false);
 
@@ -93,6 +95,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
       brandName: brandName.trim(),
       shortName: brandName.trim().substring(0, 4),
       note: brandNote.trim(),
+      helperNickname: helperNickname.trim(),
     });
     setIsSubmitting(false);
 
@@ -446,6 +449,18 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 </div>
               </div>
             )}
+
+            <div style={{ marginTop: '14px' }}>
+              <label style={smallLabelStyle()}>暱稱（選填）</label>
+              <input
+                type="text"
+                value={helperNickname}
+                onChange={event => setHelperNickname(event.target.value)}
+                maxLength={24}
+                placeholder="方便管理者辨識協助者，處理後會清除"
+                style={{ ...inputStyle(), fontSize: '0.85rem' }}
+              />
+            </div>
 
             {error && (
               <div style={{
