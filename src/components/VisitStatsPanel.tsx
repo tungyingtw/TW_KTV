@@ -1,5 +1,6 @@
 import { MapPinned, TrendingUp, UsersRound } from 'lucide-react';
 import type { RegionPath } from './TaiwanHeatMap';
+import type { VisitRegionStat } from '../services/apiService';
 
 type VisitStatsPanelProps = {
   totalVisits: number;
@@ -8,6 +9,7 @@ type VisitStatsPanelProps = {
   selectedVisits: number;
   selectedPercent: string;
   sortedRegions: RegionPath[];
+  otherRegions?: VisitRegionStat[];
   visitCounts: Record<string, number>;
   regionLabels: Record<string, string>;
   onSelectRegion: (regionId: string) => void;
@@ -30,6 +32,7 @@ export function VisitStatsPanel({
   selectedVisits,
   selectedPercent,
   sortedRegions,
+  otherRegions = [],
   visitCounts,
   regionLabels,
   onSelectRegion,
@@ -88,6 +91,13 @@ export function VisitStatsPanel({
             </button>
           );
         })}
+        {otherRegions.map((region) => (
+          <div key={region.city_code} className="taiwan-demo-ranking-extra">
+            <span>境外</span>
+            <strong>{region.city_name}</strong>
+            <em>{formatCount(region.total_count)}</em>
+          </div>
+        ))}
       </div>
     </aside>
   );

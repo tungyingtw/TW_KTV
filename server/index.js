@@ -545,6 +545,12 @@ const VISIT_REGION_DEDUP_RETENTION_DAYS = 7;
 const VISIT_REGION_BACKUP_RETENTION_COUNT = 10;
 const VISIT_REGION_DAILY_CORRECTION_LIMIT = 3;
 const VISIT_REGION_HASH_SECRET = process.env.VISIT_STATS_HASH_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dev-visit-region-stats-secret');
+const VISIT_REGION_OTHER_CODE = 'ZZOTHER';
+const VISIT_REGION_OTHER_NAME = '其他國家';
+const VISIT_REGION_ALL_CODES = [...VISIT_REGION_CODES, [VISIT_REGION_OTHER_CODE, VISIT_REGION_OTHER_NAME]];
+const VISIT_REGION_AUTO_GEOIP = process.env.VISIT_REGION_AUTO_GEOIP !== 'false';
+const VISIT_REGION_GEOIP_ENDPOINT = process.env.VISIT_REGION_GEOIP_ENDPOINT || 'https://ipwho.is';
+const VISIT_REGION_GEOIP_TIMEOUT_MS = Math.max(800, parseInt(process.env.VISIT_REGION_GEOIP_TIMEOUT_MS, 10) || 1800);
 
 const DEFAULT_BRAND_SETTINGS = {
   brands: {
@@ -890,7 +896,7 @@ function safeAtomicWriteJson(filePath, data) {
 
 function createDefaultVisitRegionStats(nowIso = new Date().toISOString()) {
   const regions = {};
-  for (const [code, name] of VISIT_REGION_CODES) {
+  for (const [code, name] of VISIT_REGION_ALL_CODES) {
     regions[code] = {
       name,
       seed_count: 0,
@@ -931,7 +937,7 @@ function normalizeVisitRegionAliasText(value) {
 }
 
 function isValidVisitRegionCode(code) {
-  return typeof code === 'string' && VISIT_REGION_CODE_SET.has(code);
+  return typeof code === 'string' && (VISIT_REGION_CODE_SET.has(code) || code === VISIT_REGION_OTHER_CODE);
 }
 
 function normalizeTaiwanVisitRegionCode(value) {
@@ -987,6 +993,7 @@ function getGeoIpCountryCode(value) {
 function isVisitRegionGeoIpAnonymous(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const traits = value.traits && typeof value.traits === 'object' ? value.traits : {};
+  const security = value.security && typeof value.security === 'object' ? value.security : {};
   return Boolean(
     traits.isAnonymous ||
     traits.isAnonymousProxy ||
@@ -999,7 +1006,12 @@ function isVisitRegionGeoIpAnonymous(value) {
     value.proxy ||
     value.vpn ||
     value.tor ||
-    value.hosting
+    value.hosting ||
+    security.anonymous ||
+    security.proxy ||
+    security.vpn ||
+    security.tor ||
+    security.hosting
   );
 }
 
@@ -1013,7 +1025,7 @@ function resolveVisitRegionGeoIpResult(geoIpResult) {
 
   const countryCode = getGeoIpCountryCode(geoIpResult);
   if (countryCode && countryCode !== 'TW') {
-    return { cityCode: null, shouldRecord: false, reason: 'non_taiwan_ip' };
+    return { cityCode: VISIT_REGION_OTHER_CODE, shouldRecord: true, reason: 'other_country' };
   }
 
   const cityCode = normalizeTaiwanVisitRegionCode(geoIpResult);
@@ -1026,6 +1038,38 @@ function resolveVisitRegionGeoIpResult(geoIpResult) {
 function getRequestClientIp(req) {
   const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
   return forwarded || req.socket?.remoteAddress || 'unknown';
+}
+
+function isPublicLookupIp(ip) {
+  const value = String(ip || '').trim().replace(/^::ffff:/, '');
+  if (!value || value === 'unknown' || value === '::1' || value === '127.0.0.1' || value === 'localhost') return false;
+  if (/^(10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(value)) return false;
+  if (/^(fc|fd|fe80):/i.test(value)) return false;
+  return /^[0-9a-fA-F:.]+$/.test(value);
+}
+
+async function lookupVisitRegionGeoIp(req) {
+  if (!VISIT_REGION_AUTO_GEOIP) return { cityCode: null, shouldRecord: false, reason: 'geoip_disabled' };
+  const clientIp = getRequestClientIp(req);
+  if (!isPublicLookupIp(clientIp)) return { cityCode: null, shouldRecord: false, reason: 'geoip_private_ip' };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), VISIT_REGION_GEOIP_TIMEOUT_MS);
+  try {
+    const endpoint = VISIT_REGION_GEOIP_ENDPOINT.replace(/\/+$/, '');
+    const response = await fetch(`${endpoint}/${encodeURIComponent(clientIp)}?fields=success,country_code,region,region_code,city,security`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) return { cityCode: null, shouldRecord: false, reason: `geoip_http_${response.status}` };
+    const data = await response.json();
+    if (data?.success === false) return { cityCode: null, shouldRecord: false, reason: 'geoip_failed' };
+    return resolveVisitRegionGeoIpResult(data);
+  } catch (err) {
+    return { cityCode: null, shouldRecord: false, reason: err?.name === 'AbortError' ? 'geoip_timeout' : 'geoip_error' };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function getVisitRegionDateKey(now = new Date()) {
@@ -1101,7 +1145,7 @@ function getRecentVisitRegionDateSet(days = VISIT_REGION_DEDUP_RETENTION_DAYS, n
 function normalizeVisitRegionDedupEntry(entry) {
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
   const cityCode = typeof entry.city_code === 'string' ? entry.city_code : '';
-  if (!VISIT_REGION_CODE_SET.has(cityCode)) return null;
+  if (!isValidVisitRegionCode(cityCode)) return null;
   const source = typeof entry.source === 'string' && entry.source.trim() ? entry.source.trim().slice(0, 40) : 'auto_joined';
   const updatedAt = typeof entry.updated_at === 'string' ? entry.updated_at : new Date().toISOString();
   const correctionCount = Math.min(VISIT_REGION_DAILY_CORRECTION_LIMIT, normalizeVisitRegionCount(entry.correction_count));
@@ -1151,7 +1195,7 @@ function normalizeVisitRegionStats(rawStats) {
     ? source.regions
     : {};
 
-  for (const [code, name] of VISIT_REGION_CODES) {
+  for (const [code, name] of VISIT_REGION_ALL_CODES) {
     const sourceRegion = sourceRegions[code] && typeof sourceRegions[code] === 'object' && !Array.isArray(sourceRegions[code])
       ? sourceRegions[code]
       : {};
@@ -1264,7 +1308,7 @@ function ensureVisitRegionLiveWriteReady(stats) {
   return null;
 }
 
-async function recordVisitRegionStatsLocal(cityCode, req) {
+async function recordVisitRegionStatsLocal(cityCode, req, source = 'manual_joined') {
   if (!isValidVisitRegionCode(cityCode)) {
     return { ok: false, status: 400, error: '無效的縣市代碼' };
   }
@@ -1292,7 +1336,7 @@ async function recordVisitRegionStatsLocal(cityCode, req) {
       ok: true,
       counted: false,
       city_code: existing.city_code,
-      stats: buildVisitRegionStatsResponse(stats),
+      stats: buildVisitRegionStatsResponse(stats, req),
     };
   }
 
@@ -1301,7 +1345,7 @@ async function recordVisitRegionStatsLocal(cityCode, req) {
   stats.liveStartedAt = stats.liveStartedAt || nowIso;
   stats.dailyDedup[dateKey][dailyHash] = {
     city_code: cityCode,
-    source: 'manual_joined',
+    source,
     corrected: false,
     correction_count: 0,
     updated_at: nowIso,
@@ -1311,7 +1355,7 @@ async function recordVisitRegionStatsLocal(cityCode, req) {
     ok: true,
     counted: true,
     city_code: cityCode,
-    stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
+    stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats), req),
   };
 }
 
@@ -1356,7 +1400,7 @@ async function correctVisitRegionStatsLocal(cityCode, req) {
       created: true,
       from_city_code: null,
       city_code: cityCode,
-      stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
+      stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats), req),
     };
   }
 
@@ -1375,7 +1419,7 @@ async function correctVisitRegionStatsLocal(cityCode, req) {
       created: false,
       from_city_code: cityCode,
       city_code: cityCode,
-      stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
+      stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats), req),
     };
   }
 
@@ -1398,13 +1442,25 @@ async function correctVisitRegionStatsLocal(cityCode, req) {
     created: false,
     from_city_code: fromCityCode,
     city_code: cityCode,
-    stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
+    stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats), req),
   };
 }
 
-function buildVisitRegionStatsResponse(stats) {
+function getVisitRegionUserEntry(stats, req) {
+  if (!req) return null;
+  const dailyHash = getVisitRegionWindowHash(req);
+  if (!dailyHash) return null;
+  for (const dateKey of getRecentVisitRegionDateSet(2)) {
+    const entry = stats.dailyDedup?.[dateKey]?.[dailyHash];
+    if (entry && isValidVisitRegionCode(entry.city_code)) return entry;
+  }
+  return null;
+}
+
+function buildVisitRegionStatsResponse(stats, req = null) {
   const normalized = normalizeVisitRegionStats(stats);
-  const regions = VISIT_REGION_CODES.map(([code, name]) => {
+  const userEntry = getVisitRegionUserEntry(normalized, req);
+  const regions = VISIT_REGION_ALL_CODES.map(([code, name]) => {
     const region = normalized.regions[code] || {};
     const seedCount = normalizeVisitRegionCount(region.seed_count);
     const liveCount = normalizeVisitRegionCount(region.live_count);
@@ -1422,6 +1478,9 @@ function buildVisitRegionStatsResponse(stats) {
     total_count: regions.reduce((sum, region) => sum + region.total_count, 0),
     total_seed_count: normalized.totalSeedCount,
     total_live_count: regions.reduce((sum, region) => sum + region.live_count, 0),
+    user_region_code: userEntry?.city_code || null,
+    user_region_source: userEntry?.source || null,
+    user_region_corrected: userEntry?.corrected === true,
     seeded_at: normalized.seededAt,
     live_started_at: normalized.liveStartedAt,
     seed_baseline_total: normalized.seedBaselineTotal,
@@ -2824,9 +2883,10 @@ app.get('/api/stats/total', async (req, res) => {
 });
 
 app.get('/api/stats/ping', async (req, res) => {
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const clientIp = getRequestClientIp(req);
   const visitorId = (req.query.vid && typeof req.query.vid === 'string') ? req.query.vid : clientIp;
   const now = Date.now();
+  let visitRegionAuto = null;
 
   // 1. 即時線上人數心跳紀錄（以裝置 UUID 為 Key）
   activeVisitors.set(visitorId, now);
@@ -2852,6 +2912,17 @@ app.get('/api/stats/ping', async (req, res) => {
         // 新訪客（或冷卻已過）：原子遞增，並設定 12h TTL 去重 key
         const newTotal = await redisCmd('incr', TOTAL_KEY);
         totalVisits = typeof newTotal === 'number' ? newTotal : parseInt(String(newTotal), 10);
+        try {
+          const geoIpResult = await lookupVisitRegionGeoIp(req);
+          visitRegionAuto = geoIpResult;
+          if (geoIpResult.shouldRecord && geoIpResult.cityCode) {
+            const source = geoIpResult.cityCode === VISIT_REGION_OTHER_CODE ? 'auto_other_country' : 'auto_geoip';
+            await recordVisitRegionStatsLocal(geoIpResult.cityCode, req, source);
+          }
+        } catch (geoErr) {
+          visitRegionAuto = { cityCode: null, shouldRecord: false, reason: 'geoip_record_error' };
+          console.warn('[VisitRegionStats] Auto GeoIP record failed:', geoErr.message);
+        }
       } else {
         // 已訪問過：只讀取當前累積值，不重複計數
         const val = await redisCmd('get', TOTAL_KEY);
@@ -2891,13 +2962,14 @@ app.get('/api/stats/ping', async (req, res) => {
     online: activeVisitors.size,
     totalVisits: isNaN(totalVisits) ? 1 : totalVisits,
     persistent: USE_REDIS,
+    visitRegionAuto,
     timestamp: now
   });
 });
 
 app.get('/api/visit-region-stats', async (req, res) => {
   try {
-    res.json(buildVisitRegionStatsResponse(await readVisitRegionStatsStore()));
+    res.json(buildVisitRegionStatsResponse(await readVisitRegionStatsStore(), req));
   } catch (err) {
     console.error('[VisitRegionStats] Public read failed:', err);
     res.status(503).json({ error: '到訪紀錄暫時無法讀取' });

@@ -7,12 +7,13 @@
 1. 確認地區熱度是否已和既有 `/api/stats/ping` 的 `tw_ktv_vid` 與 12 小時去重規則對齊。
 2. 不要建立獨立的 IP 自動計數流程；累積查詢是主帳本，縣市熱度只能作為同一筆到訪的分布欄位。
 3. 確認 `POST /api/visit-region-stats/record` 若要自動追加縣市，只能在 `/api/stats/ping` 實際讓累積查詢加 1 的同一事件後執行。
-4. 若 `record` 尚未接入 GeoIP 自動判斷，不要啟用自動到訪追加；只允許使用者在 modal 內透過「我在這裡」手動修正同一個 `visitor_id` 的地區。
+4. 確認自動到訪追加只接在 `/api/stats/ping` 實際新增累積查詢的同一事件，不得建立獨立計數流程。
 5. 確認正式環境已設定 `VISIT_STATS_HASH_SECRET`，且不得使用開發 fallback secret。
 6. 確認正式環境已設定 `UPSTASH_REDIS_REST_URL` 與 `UPSTASH_REDIS_REST_TOKEN`。
-7. 若要啟用自動 IP 推估，先設定 `GEOIP_CITY_DB_PATH` 指向可讀取的 MaxMind GeoLite2 City 或 GeoIP2 City MMDB。
-8. 若未設定 `GEOIP_CITY_DB_PATH`，不得宣稱網站會自動判斷縣市；前端只能保留手動「我在這裡」修正流程。
-9. 確認地區熱度使用 Upstash Redis key `ktv:visitRegionStats`；Render 免費方案不得要求 Persistent Disk。
+7. 自動 IP 推估預設使用 ipwhois.io free endpoint；不得在失敗、timeout 或超量時阻塞查歌或累積查詢。
+8. 若要停用自動推估，設定 `VISIT_REGION_AUTO_GEOIP=false`，前端仍保留手動「我在這裡」修正流程。
+9. 境外 IP 必須記錄到「其他國家」，不得硬分配到台灣縣市。
+10. 確認地區熱度使用 Upstash Redis key `ktv:visitRegionStats`；Render 免費方案不得要求 Persistent Disk。
 
 ## Seed 與 Top-Up
 
@@ -58,6 +59,8 @@ npm run build
 6. 再次選擇另一縣市並送出，確認原縣市扣回、新縣市增加。
 7. 重新讀取 `GET /api/visit-region-stats`，確認總數未因修正重複膨脹。
 8. 在手機尺寸測試 modal 開啟、捲動、關閉與「我在這裡」按鈕可見性。
+9. 確認新訪客觸發 `/api/stats/ping` 時，只有 Redis 12 小時去重成功新增累積查詢的同一事件會呼叫 GeoIP 並追加地區熱度。
+10. 確認 GeoIP API 失敗時，`/api/stats/ping` 仍正常回傳累積查詢資料。
 
 ## 回滾方式
 

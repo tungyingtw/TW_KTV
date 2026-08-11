@@ -275,34 +275,31 @@ node scripts/seedVisitRegionStats.js --apply --top-up
 
 ## Phase 5：加入 IP 縣市推估
 
-1. 先評估部署環境是否能使用本地 GeoIP 資料庫。
-2. 優先使用本地 GeoIP 資料庫，避免每次請求打外部 API。
-3. 若必須使用外部 GeoIP API，必須加上快取與失敗 fallback。
+1. Render 免費方案不得要求本地 GeoIP 資料庫。
+2. 使用 server-side 外部 GeoIP API，且只在累積查詢真的新增時計算。
+3. 外部 GeoIP API 必須加上 timeout 與失敗 fallback。
 4. 將 GeoIP 回傳縣市正規化成 SVG id。
-5. 無法判斷或非台灣 IP 時，使用 `UNKNOWN_TW` 暫存或直接不計入地圖；第一版建議不計入地圖，只增加全站總數需另行評估。
+5. 無法判斷時不增加地區熱度；非台灣 IP 記錄到「其他國家」，不得硬分配到台灣地圖。
 
 ### Phase 5A GeoIP 方案決策
 
-第一版必須採用本地 MaxMind GeoLite2 City / GeoIP2 City MMDB 查詢作為主方案，不得在每次前台到訪時直接呼叫外部 GeoIP API。
+第一版正式採用 ipwhois.io free endpoint 作為 server-side GeoIP 來源，不得在瀏覽器端查詢。
 
 採用本地 MMDB 的原因：
 
-1. 避免把使用者 IP 傳給額外第三方 API。
-2. 避免免費 API 的每日流量限制、CORS/domain 限制與無 SLA 風險。
-3. 查詢延遲低，後端可在同一個 request 內完成粗略縣市推估。
-4. 可在後端自行加快取與 fallback，不影響查歌流程。
-
-必須使用 `@maxmind/geoip2-node` 或等效 server-side MMDB reader，不得在瀏覽器端查詢。必須使用環境變數指定資料庫路徑：
+Render 免費方案不能放置 MMDB 檔，正式版必須使用 server-side 外部 GeoIP 查詢，不得在瀏覽器端查詢。預設使用 ipwhois.io free endpoint，只在 `/api/stats/ping` 的 Redis 12 小時去重成功新增累積查詢時呼叫一次。
 
 ```text
-GEOIP_CITY_DB_PATH=/absolute/path/to/GeoLite2-City.mmdb
+VISIT_REGION_AUTO_GEOIP=true
+VISIT_REGION_GEOIP_ENDPOINT=https://ipwho.is
+VISIT_REGION_GEOIP_TIMEOUT_MS=1800
 ```
 
-部署前必須完成 MaxMind / GeoLite 授權、資料庫下載與更新流程。若部署環境無法放置 MMDB 檔，才允許改用外部 API；外部 API 必須具備以下保護：
+外部 API 必須具備以下保護：
 
-1. 後端快取 IP hash 的查詢結果，至少 12 小時。
-2. API 失敗時不得阻塞查歌或統計 API。
-3. 超過限制或回傳非台灣地區時不得硬分配到任一縣市。
+1. API 失敗時不得阻塞查歌或統計 API。
+2. timeout 或超量時不得硬分配到任一縣市。
+3. 回傳非台灣地區時必須記錄到「其他國家」。
 4. 不得把外部 API 的原始 response 存進統計資料。
 
 GeoIP 結果只能作為「初始推估」。正式 UI 必須保留「我在這裡」讓使用者修正；修正後以使用者選擇為準。
@@ -319,7 +316,7 @@ GeoIP 結果只能作為「初始推估」。正式 UI 必須保留「我在這�
 6. `city.name`、`city.names`
 7. `city`
 
-若 GeoIP 回傳 `country.isoCode`、`country_code` 或等效欄位，且值不是 `TW`，必須回傳 `null`，不得硬分配到台灣縣市。
+若 GeoIP 回傳 `country.isoCode`、`country_code` 或等效欄位，且值不是 `TW`，必須回傳「其他國家」，不得硬分配到台灣縣市。
 
 必須支援以下格式：
 
@@ -339,12 +336,12 @@ GeoIP 結果只能作為「初始推估」。正式 UI 必須保留「我在這�
 
 第一版 fallback 規則如下：
 
-1. GeoIP 查詢失敗、缺檔、timeout 或回傳空值時，回傳 `geoip_missing`，不得增加任何縣市 `live_count`。
-2. GeoIP 回傳非台灣 country code 時，回傳 `non_taiwan_ip`，不得硬分配到台灣縣市。
+1. GeoIP 查詢失敗、timeout 或回傳空值時，回傳 `geoip_missing` 或對應 reason，不得增加任何縣市 `live_count`。
+2. GeoIP 回傳非台灣 country code 時，回傳 `other_country` 並記錄到「其他國家」，不得硬分配到台灣縣市。
 3. GeoIP 回傳 VPN、proxy、Tor、hosting 或匿名網路標記時，回傳 `anonymous_network`，不得硬分配到台灣縣市。
 4. GeoIP 回傳台灣但無法對應 22 縣市時，回傳 `unknown_taiwan_region`，不得硬分配到鄰近縣市。
 5. GeoIP 沒有 country code 且無法對應縣市時，回傳 `unknown_country`，不得硬分配。
-6. 只有 `shouldRecord: true` 且 `cityCode` 為 22 個 SVG id 時，才允許進入 `recordVisitRegionStatsLocal` 增加 `live_count`。
+6. 只有 `shouldRecord: true` 且 `cityCode` 為 22 個 SVG id 或「其他國家」代碼時，才允許進入 `recordVisitRegionStatsLocal` 增加 `live_count`。
 
 fallback reason 只允許作為暫時計算流程或除錯日誌，不得寫入永久統計資料，不得回傳 IP 或匿名 hash。
 
@@ -394,7 +391,7 @@ fallback reason 只允許作為暫時計算流程或除錯日誌，不得寫入�
 - Redis 統計資料可被備份與還原。
 - 上線後發現 GeoIP 異常時，可快速關閉 `POST record`，保留 `GET` 顯示既有 seed 資料。
 
-上線前必須另外執行 `docs/taiwan-map-visit-stats-release-checklist.md`。地區熱度必須配合既有 `/api/stats/ping` 的 `tw_ktv_vid` 與 12 小時去重規則，不得建立獨立的 IP 自動計數流程。若 `POST /api/visit-region-stats/record` 尚未接入 GeoIP 自動判斷，不得啟用自動到訪追加；只保留使用者在 modal 內透過「我在這裡」手動修正同一筆到訪的地區。
+上線前必須另外執行 `docs/taiwan-map-visit-stats-release-checklist.md`。地區熱度必須配合既有 `/api/stats/ping` 的 `tw_ktv_vid` 與 12 小時去重規則，不得建立獨立的 IP 自動計數流程。自動 GeoIP 只能在 `/api/stats/ping` 實際新增累積查詢的同一事件後追加地區熱度；使用者仍可在地圖頁透過「我在這裡」修正同一筆到訪的地區。
 
 ## 隱私與文案規則
 
@@ -512,9 +509,9 @@ hash 修正成功
 - Phase 3A：已完成。已確認正式累積查詢總數來源為 Upstash Redis key `ktv:totalVisits`，且不得用 `/api/stats/ping` 當 seed 讀取來源。
 - Phase 3B：已完成。已建立 `scripts/seedVisitRegionStats.js` dry-run 分配腳本。
 - Phase 3C：已完成。已建立正式寫入、重複 seed 防護與上線前差額 `--top-up` 模式。
-- Phase 5A：已完成。已決定第一版 GeoIP 採用本地 MaxMind GeoLite2 City / GeoIP2 City MMDB，外部 API 只作備案。
+- Phase 5A：已完成。已決定第一版 GeoIP 採用 ipwhois.io free endpoint，並限制只在累積查詢新增事件呼叫。
 - Phase 5B：已完成。已建立台灣縣市正規化對照，可將 GeoIP 結果轉成 22 個 SVG id。
-- Phase 5C：已完成。已建立 GeoIP unknown、海外、匿名網路 fallback，無法判斷時不硬分配到縣市。
+- Phase 5C：已完成。已建立 GeoIP unknown、境外、匿名網路 fallback；境外記錄到「其他國家」，無法判斷時不硬分配到縣市。
 - Phase 6A：已完成。已新增前端統計 API service，封裝讀取統計、記錄到訪與修正縣市。
 - Phase 6B：已完成。已將既有「累積查詢」標籤改為可點擊入口，點擊後開啟全台歌友熱度 modal；桌機與手機導覽列都使用同一個 modal，不新增獨立入口按鈕。
 - Phase 6C：已完成。已將「我在這裡」接到正式 modal，選取縣市後可送出修正，成功後更新統計並顯示 `+1 / -1` 回饋。

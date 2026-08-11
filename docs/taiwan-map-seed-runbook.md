@@ -9,7 +9,7 @@
 3. 在正式環境設定 `VISIT_STATS_HASH_SECRET`，並使用長隨機字串。
 4. 不要為 Render 免費方案設定 Disk；地區熱度正式資料會寫入 Upstash Redis key `ktv:visitRegionStats`。
 5. 若需要自訂 Redis key，才設定 `VISIT_REGION_STATS_REDIS_KEY`。
-6. 若本版不啟用 GeoIP 自動分配，不要設定或宣稱 `GEOIP_CITY_DB_PATH` 已啟用。
+6. 自動 GeoIP 預設使用 ipwhois.io free endpoint；若要暫停自動分配，設定 `VISIT_REGION_AUTO_GEOIP=false`。
 7. 確認正式統計尚未 seed；若已 seed，只能使用 top-up。
 
 ## Dry Run
