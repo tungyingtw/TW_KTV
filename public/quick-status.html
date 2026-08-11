@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <title>KTV 待處理快查</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0f172a; --panel:#172033; --line:rgba(148,163,184,.24); --text:#f8fafc; --muted:#94a3b8; --pink:#f472b6; --green:#4ade80; --yellow:#fbbf24; --red:#fb7185; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top left, rgba(244,114,182,.16), transparent 36%), var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; padding: 24px; }
+    main { width: min(620px, 100%); }
+    .panel { background: rgba(23,32,51,.94); border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.42); }
+    h1 { margin: 0 0 8px; font-size: clamp(1.5rem, 4vw, 2.1rem); letter-spacing: 0; }
+    p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .status { margin-top: 20px; padding: 22px; border-radius: 12px; background: #0b1220; border: 1px solid var(--line); text-align: center; }
+    .mark { width: 76px; height: 76px; display: grid; place-items: center; margin: 0 auto 14px; border-radius: 999px; font-size: 2.2rem; font-weight: 900; background: rgba(74,222,128,.14); color: var(--green); border: 1px solid rgba(74,222,128,.36); }
+    .mark.warn { background: rgba(251,191,36,.14); color: var(--yellow); border-color: rgba(251,191,36,.42); }
+    .state { font-size: 1.45rem; font-weight: 900; }
+    .hint { margin-top: 10px; }
+    .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+    button, a.button { border: 1px solid rgba(244,114,182,.46); background: linear-gradient(135deg, #ec4899, #a855f7); color: #fff; border-radius: 10px; padding: 12px 16px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-width: 112px; }
+    button.secondary { background: rgba(148,163,184,.12); border-color: var(--line); color: var(--text); }
+    .meta { margin-top: 14px; font-size: .86rem; color: var(--muted); display: grid; gap: 4px; }
+    .error { color: var(--red); margin-top: 14px; font-weight: 700; }
+    @media (max-width: 620px) { body { padding: 14px; place-items: start center; } .panel { padding: 18px; } .state { font-size: 1.25rem; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel">
+      <h1>KTV 待處理快查</h1>
+      <p>這頁只會顯示目前是否有群眾資料需要處理，不公開數量、分類或詳細內容。</p>
+      <div id="error" class="error" hidden></div>
+      <div class="status">
+        <div id="mark" class="mark">...</div>
+        <div id="state" class="state">查詢中...</div>
+        <p id="hint" class="hint">正在確認目前狀態。</p>
+        <div class="actions">
+          <button id="refreshBtn" type="button" class="secondary">重新查詢</button>
+          <a class="button" href="https://tw-ktv.onrender.com/sys-admin-panel">開後台</a>
+        </div>
+        <div class="meta">
+          <span id="checkedAt">尚未完成查詢</span>
+          <span>頁面開啟時會每 60 秒自動更新一次。</span>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const API_BASE = location.hostname.includes('tyfunlab.com') ? 'https://tw-ktv.onrender.com' : '';
+    const errorBox = document.getElementById('error');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const mark = document.getElementById('mark');
+    const state = document.getElementById('state');
+    const hint = document.getElementById('hint');
+    const checkedAt = document.getElementById('checkedAt');
+
+    function render(data) {
+      mark.textContent = data.needsAction ? '!' : '✓';
+      mark.className = data.needsAction ? 'mark warn' : 'mark';
+      state.textContent = data.needsAction ? '有資料待處理' : '目前不用處理';
+      hint.textContent = data.needsAction ? '請找時間進入後台查看與處理。' : '可以先不用進後台檢查。';
+      checkedAt.textContent = `查詢時間：${new Date(data.checkedAt).toLocaleString('zh-TW')}`;
+    }
+
+    async function checkStatus() {
+      errorBox.hidden = true;
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = '查詢中...';
+      try {
+        const res = await fetch(`${API_BASE}/api/quick-status?t=${Date.now()}`, { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || '查詢失敗');
+        render(data);
+      } catch (err) {
+        errorBox.hidden = false;
+        errorBox.textContent = err.message || '查詢失敗，請稍後再試。';
+        mark.textContent = '?';
+        mark.className = 'mark warn';
+        state.textContent = '暫時無法確認';
+        hint.textContent = '可以稍後重試，或直接進入後台確認。';
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = '重新查詢';
+      }
+    }
+
+    refreshBtn.addEventListener('click', checkStatus);
+    checkStatus();
+    setInterval(checkStatus, 60000);
+  </script>
+</body>
+</html>
