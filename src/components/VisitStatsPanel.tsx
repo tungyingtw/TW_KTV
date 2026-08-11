@@ -55,7 +55,7 @@ export function VisitStatsPanel({
 
       {showUserRegion && (
         <div className="taiwan-demo-user-region">
-          <span>你的歌友地區</span>
+          <span>目前記錄位置</span>
           <strong>{userRegionName}</strong>
           <p>如果不在這裡，點選你的縣市後按「我在這裡」。</p>
         </div>

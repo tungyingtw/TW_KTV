@@ -703,6 +703,45 @@ textarea:focus {
   }
 }
 
+.taiwan-demo-user-marker {
+  pointer-events: none;
+  filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.75));
+}
+
+.taiwan-demo-user-marker circle:first-child {
+  fill: rgba(34, 211, 238, 0.18);
+  stroke: rgba(34, 211, 238, 0.52);
+  stroke-width: 2;
+  animation: taiwanUserMarkerPulse 1.8s ease-in-out infinite;
+}
+
+.taiwan-demo-user-marker circle:nth-child(2) {
+  fill: #f8fafc;
+  stroke: #22d3ee;
+  stroke-width: 3;
+}
+
+.taiwan-demo-user-marker text {
+  paint-order: stroke;
+  stroke: rgba(2, 6, 23, 0.96);
+  stroke-width: 6;
+  fill: #ecfeff;
+  font-size: 22px;
+  font-weight: 900;
+  text-anchor: middle;
+}
+
+@keyframes taiwanUserMarkerPulse {
+  0%, 100% {
+    opacity: 0.72;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
 .taiwan-demo-tooltip {
   position: fixed;
   z-index: 20;
