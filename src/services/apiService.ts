@@ -29,6 +29,9 @@ export interface VisitRegionStatsResponse {
   seed_baseline_total: number;
   seed_baseline_captured_at: string | null;
   updated_at: string;
+  user_region_code: VisitRegionCode | null;
+  user_region_source: string | null;
+  user_region_corrected: boolean;
   regions: VisitRegionStat[];
 }
 
@@ -78,7 +81,8 @@ export async function checkApiHealth(timeoutMs = 10000): Promise<{ ok: boolean; 
 }
 
 export async function fetchVisitRegionStats(): Promise<VisitRegionStatsResponse> {
-  const response = await fetch(`${API_BASE}/api/visit-region-stats?t=${Date.now()}`, { cache: 'no-store' });
+  const params = new URLSearchParams({ t: String(Date.now()), vid: getKtvVisitorId() });
+  const response = await fetch(`${API_BASE}/api/visit-region-stats?${params.toString()}`, { cache: 'no-store' });
   return parseVisitRegionApiResponse<VisitRegionStatsResponse>(response, '到訪紀錄暫時無法讀取');
 }
 

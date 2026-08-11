@@ -78,6 +78,7 @@ export function VisitRegionHeatContent({ onClose }: VisitRegionHeatContentProps)
         if (!isMounted) return;
         setRegions(parseTaiwanMapSvg(svgText));
         setStats(nextStats);
+        setConfirmedRegionId(nextStats.user_region_code || '');
       })
       .catch(() => {
         if (isMounted) setError('熱度暫時無法讀取');
@@ -118,7 +119,9 @@ export function VisitRegionHeatContent({ onClose }: VisitRegionHeatContentProps)
 
   const maxVisits = useMemo(() => Math.max(1, ...Object.values(visitCounts)), [visitCounts]);
   const totalVisits = stats?.total_count || 0;
+  const mapRegionIds = useMemo(() => new Set(regions.map((region) => region.id)), [regions]);
   const sortedRegions = useMemo(() => [...regions].sort((a, b) => (visitCounts[b.id] || 0) - (visitCounts[a.id] || 0)), [regions, visitCounts]);
+  const otherRegions = useMemo(() => (stats?.regions || []).filter((region) => !mapRegionIds.has(region.city_code) && region.total_count > 0), [mapRegionIds, stats]);
   const selectedRegion = selectedId ? regions.find((region) => region.id === selectedId) : undefined;
   const selectedVisits = selectedRegion ? visitCounts[selectedRegion.id] || 0 : 0;
   const selectedPercent = totalVisits && selectedVisits ? ((selectedVisits / totalVisits) * 100).toFixed(1) : '0.0';
@@ -197,6 +200,7 @@ export function VisitRegionHeatContent({ onClose }: VisitRegionHeatContentProps)
             selectedVisits={selectedVisits}
             selectedPercent={selectedPercent}
             sortedRegions={sortedRegions}
+            otherRegions={otherRegions}
             visitCounts={visitCounts}
             regionLabels={regionLabels}
             onSelectRegion={setSelectedId}
