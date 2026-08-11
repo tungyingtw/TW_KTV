@@ -110,7 +110,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               className="navbar-title"
               style={{ fontSize: '1.05rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
             >
-              台灣 KTV 歌曲查詢
+              TYFunLab 台灣KTV歌曲查詢
             </h1>
           </div>
 
@@ -249,3 +249,5 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
     </header>
   );
 };
+
+
