@@ -215,6 +215,17 @@ function handleAdminPageServe(req, res) {
 app.get('/sys-admin-panel', handleAdminPageServe);
 app.get('/admin', handleAdminPageServe);
 app.get('/admin.html', handleAdminPageServe);
+app.get('/quick-status', (req, res) => {
+  const quickStatusPath = path.join(__dirname, '../public/quick-status.html');
+  if (fs.existsSync(quickStatusPath)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(quickStatusPath);
+  } else {
+    res.status(404).send('Quick Status Page Not Found');
+  }
+});
 
 // Render sitemap requests should point crawlers to the official GitHub Pages sitemap.
 app.get('/sitemap.xml', (req, res) => {
@@ -5027,6 +5038,20 @@ async function loadAdminStatsCached() {
   adminStatsCache = { data, expiresAt: now + ADMIN_STATS_CACHE_TTL_MS };
   return { data, cache: 'miss' };
 }
+
+app.get('/api/quick-status', async (req, res) => {
+  const { data, cache } = await loadAdminStatsCached();
+  const queue = data.reviewQueue || {};
+  const pendingTotal = Number(queue.all || 0);
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({
+    ok: true,
+    needsAction: pendingTotal > 0,
+    statusText: pendingTotal > 0 ? '有資料待處理' : '目前不用處理',
+    checkedAt: new Date().toISOString(),
+    meta: { cache, ttlMs: ADMIN_STATS_CACHE_TTL_MS },
+  });
+});
 
 app.get('/api/admin/stats', requirePermission('dashboard.view'), async (req, res) => {
   const { data, cache } = await loadAdminStatsCached();
