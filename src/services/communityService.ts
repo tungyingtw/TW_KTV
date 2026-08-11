@@ -33,6 +33,7 @@ export interface ReportPayload {
   systemType?: string;
   storeLocations?: string;
   songSnapshot?: Song;
+  helperNickname?: string;
 }
 
 export async function submitReport(payload: ReportPayload): Promise<{ success: boolean; reportId?: string; error?: string }> {
@@ -62,6 +63,7 @@ export async function submitSuggestSong(payload: {
   guidedVocalStatus?: 'unknown' | 'guided' | 'none';
   lyricsSnippet?: string;
   youtubeUrl?: string;
+  helperNickname?: string;
 }): Promise<{ success: boolean; reportId?: string; error?: string }> {
   return submitReport({
     songId: 'suggest_new_song',
@@ -77,6 +79,7 @@ export async function submitSuggestSong(payload: {
     guidedVocalStatus: payload.guidedVocalStatus || 'unknown',
     lyricsSnippet: payload.lyricsSnippet,
     youtubeUrl: payload.youtubeUrl,
+    helperNickname: payload.helperNickname,
     note: `[新歌建議] 語種:${payload.language} | MV:${payload.mvStatus || 'unknown'} | 導唱:${payload.guidedVocalStatus || 'unknown'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
   });
 }
@@ -87,6 +90,7 @@ export async function submitSuggestBrand(payload: {
   systemType?: string;
   storeLocations?: string;
   note?: string;
+  helperNickname?: string;
 }): Promise<{ success: boolean; reportId?: string; error?: string }> {
   return submitReport({
     songId: 'suggest_new_brand',
@@ -98,6 +102,7 @@ export async function submitSuggestBrand(payload: {
     shortName: payload.shortName,
     systemType: payload.systemType,
     storeLocations: payload.storeLocations,
+    helperNickname: payload.helperNickname,
     note: `[新廠牌建議] 系統:${payload.systemType || ''} | 據點:${payload.storeLocations || ''} | 備註:${payload.note || ''}`,
   });
 }

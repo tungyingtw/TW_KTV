@@ -3052,6 +3052,13 @@ function sanitizeText(str) {
     .trim();
 }
 
+function clearHandledReportTransientFields(report) {
+  if (!report || report.status === 'pending') return report;
+  const cleanReport = { ...report };
+  delete cleanReport.helperNickname;
+  return cleanReport;
+}
+
 function stripSongCodesFromSong(song) {
   if (!song || typeof song !== 'object') return song;
   const cleanSong = { ...song };
@@ -3345,13 +3352,13 @@ async function createBrandFromReportRecord({ reportId, body = {} }) {
   store.brands[finalId] = newBrand;
   await saveBrandSettingsStore(store, { requirePersistent: true });
 
-  reports[reportIndex] = {
-    ...report,
-    status: 'resolved',
-    resolvedAt: now,
-    reviewedAt: now,
-    resolutionNote: 'Created brand on ' + now.slice(0, 10) + ' (ID: ' + finalId + ')',
-  };
+    reports[reportIndex] = clearHandledReportTransientFields({
+      ...report,
+      status: 'resolved',
+      resolvedAt: now,
+      reviewedAt: now,
+      resolutionNote: 'Created brand on ' + now.slice(0, 10) + ' (ID: ' + finalId + ')',
+    });
   await saveReportsStore(reports);
   return { brand: newBrand, report: reports[reportIndex], reports, reportIndex };
 }
@@ -3379,6 +3386,7 @@ app.post('/api/report', async (req, res) => {
     systemType,
     storeLocations,
     songSnapshot,
+    helperNickname,
   } = req.body;
   if (!songId || !brandId || !issueType) return res.status(400).json({ error: '缺少必要欄位' });
 
@@ -3404,6 +3412,7 @@ app.post('/api/report', async (req, res) => {
   const cleanShortName = sanitizeText(shortName);
   const cleanSystemType = sanitizeText(systemType);
   const cleanStoreLocations = sanitizeText(storeLocations);
+  const cleanHelperNickname = sanitizeText(helperNickname).slice(0, 24);
   const cleanNote = sanitizeText(note).slice(0, 500);
   const cleanLyricsSnippet = sanitizeText(lyricsSnippet).slice(0, 500);
   const cleanYoutubeUrl = sanitizeText(youtubeUrl).slice(0, 500);
@@ -3428,6 +3437,7 @@ app.post('/api/report', async (req, res) => {
     shortName: cleanShortName,
     systemType: cleanSystemType,
     storeLocations: cleanStoreLocations,
+    helperNickname: cleanHelperNickname || undefined,
     note: cleanNote,
     songSnapshot: cleanSongSnapshot || undefined,
     timestamp: new Date().toISOString(),
@@ -4063,6 +4073,7 @@ app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), as
   report.status = status;
   report.adminNote = adminNote || '';
   report.reviewedAt = new Date().toISOString();
+  if (status !== 'pending') delete report.helperNickname;
 
   if (status === 'resolved') {
     try {
@@ -4233,6 +4244,7 @@ async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
           note: report.note || '',
           brandName: report.brandName || '',
           shortName: report.shortName || '',
+          helperNickname: report.helperNickname || '',
         },
         priority: itemType === 'suggest_new_brand' ? 95 : (itemType === 'suggest_song' ? 90 : 70),
         createdAt: report.timestamp,
@@ -4621,12 +4633,12 @@ async function markReportReviewed(reportId, status, adminNote = '') {
   const reports = await loadReportsStore();
   const idx = reports.findIndex(r => String(r.id) === String(reportId));
   if (idx === -1) return null;
-  reports[idx] = {
+  reports[idx] = clearHandledReportTransientFields({
     ...reports[idx],
     status,
     adminNote: adminNote || reports[idx].adminNote || '',
     reviewedAt: new Date().toISOString(),
-  };
+  });
   if (status === 'resolved' && !reports[idx].resolvedAt) reports[idx].resolvedAt = reports[idx].reviewedAt;
   await saveReportsStore(reports);
   return reports[idx];
@@ -4658,6 +4670,7 @@ async function buildReviewItemSnapshotFromId(reviewItemId, fallback = {}) {
         note: report.note || '',
         brandName: report.brandName || '',
         shortName: report.shortName || '',
+        helperNickname: report.helperNickname || '',
       },
       createdAt: report.timestamp,
       updatedAt: report.reviewedAt || report.timestamp,
@@ -4884,12 +4897,12 @@ app.post('/api/admin/review-queue/:reviewItemId/reject', requireSession, async (
     const reports = await loadReportsStore();
     const idx = reports.findIndex(r => String(r.id) === String(record.sourceId));
     if (idx !== -1 && reports[idx].status === 'pending') {
-      reports[idx] = {
+      reports[idx] = clearHandledReportTransientFields({
         ...reports[idx],
         status: 'rejected',
         adminNote: cleanReason,
         reviewedAt: now,
-      };
+      });
       await saveReportsStore(reports);
     }
   }
@@ -5731,12 +5744,12 @@ app.post('/api/admin/brand/from-report/:reportId', requirePermission('brands.man
     await saveBrandSettingsStore(store, { requirePersistent: true });
 
     // 將回報標記為 resolved
-    reports[reportIndex] = {
+    reports[reportIndex] = clearHandledReportTransientFields({
       ...report,
       status: 'resolved',
       resolvedAt: new Date().toISOString(),
       resolutionNote: `已於 ${new Date().toISOString().slice(0,10)} 轉換為正式品牌 (ID: ${finalId})`,
-    };
+    });
     await saveReportsStore(reports);
 
     logAdminAction('CREATE_BRAND_FROM_REPORT', { reportId, brandId: finalId, name }, req);

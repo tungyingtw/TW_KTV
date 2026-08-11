@@ -22,6 +22,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
   const [selectedBrand, setSelectedBrand] = useState<BrandId | ''>('');
   const [issueType, setIssueType] = useState<IssueType | ''>(defaultIssueType || 'no_song');
   const [note, setNote] = useState('');
+  const [helperNickname, setHelperNickname] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -54,6 +55,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
       brandId: (selectedBrand || 'cashbox') as BrandId,
       issueType: issueType as IssueType,
       note,
+      helperNickname: helperNickname.trim(),
       songSnapshot: song,
     });
 
@@ -203,6 +205,30 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                   color: 'var(--text-primary, #fff)',
                   fontSize: '0.88rem',
                   resize: 'vertical',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '18px' }}>
+              <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
+                暱稱（選填）
+              </label>
+              <input
+                type="text"
+                value={helperNickname}
+                onChange={e => setHelperNickname(e.target.value)}
+                maxLength={24}
+                placeholder="方便管理者辨識協助者，處理後會清除"
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-glass, rgba(255,255,255,0.04))',
+                  border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  color: 'var(--text-primary, #fff)',
+                  fontSize: '0.88rem',
                   fontFamily: 'inherit',
                   boxSizing: 'border-box',
                 }}
