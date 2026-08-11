@@ -19,7 +19,7 @@
     .state { font-size: 1.45rem; font-weight: 900; }
     .hint { margin-top: 10px; }
     .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
-    button, a.button { border: 1px solid rgba(244,114,182,.46); background: linear-gradient(135deg, #ec4899, #a855f7); color: #fff; border-radius: 10px; padding: 12px 16px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-width: 112px; }
+    button { border: 1px solid rgba(244,114,182,.46); background: linear-gradient(135deg, #ec4899, #a855f7); color: #fff; border-radius: 10px; padding: 12px 16px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; min-width: 112px; }
     button.secondary { background: rgba(148,163,184,.12); border-color: var(--line); color: var(--text); }
     .meta { margin-top: 14px; font-size: .86rem; color: var(--muted); display: grid; gap: 4px; }
     .error { color: var(--red); margin-top: 14px; font-weight: 700; }
@@ -38,7 +38,6 @@
         <p id="hint" class="hint">正在確認目前狀態。</p>
         <div class="actions">
           <button id="refreshBtn" type="button" class="secondary">重新查詢</button>
-          <a class="button" href="https://tw-ktv.onrender.com/sys-admin-panel">開後台</a>
         </div>
         <div class="meta">
           <span id="checkedAt">尚未完成查詢</span>
@@ -60,7 +59,7 @@
       mark.textContent = data.needsAction ? '!' : '✓';
       mark.className = data.needsAction ? 'mark warn' : 'mark';
       state.textContent = data.needsAction ? '有資料待處理' : '目前不用處理';
-      hint.textContent = data.needsAction ? '請找時間進入後台查看與處理。' : '可以先不用進後台檢查。';
+      hint.textContent = data.needsAction ? '請找時間查看管理後台。' : '可以先不用檢查管理後台。';
       checkedAt.textContent = `查詢時間：${new Date(data.checkedAt).toLocaleString('zh-TW')}`;
     }
 
@@ -79,7 +78,7 @@
         mark.textContent = '?';
         mark.className = 'mark warn';
         state.textContent = '暫時無法確認';
-        hint.textContent = '可以稍後重試，或直接進入後台確認。';
+        hint.textContent = '可以稍後重試，或自行確認管理後台。';
       } finally {
         refreshBtn.disabled = false;
         refreshBtn.textContent = '重新查詢';
