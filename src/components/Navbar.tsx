@@ -3,7 +3,6 @@ import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from
 import type { FilterOptions } from '../types/ktv';
 import { formatCompactZhNumber } from '../utils/stringUtils';
 import { getKtvVisitorId } from '../services/apiService';
-import { VisitRegionHeatModal } from './VisitRegionHeatModal';
 
 interface NavbarProps {
   filters: FilterOptions;
@@ -20,6 +19,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFavorites,
   onOpenSuggestSong,
 }) => {
+  const openVisitRegionPage = () => {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set('view', 'visit-region-stats');
+    nextUrl.hash = '';
+    window.location.assign(`${nextUrl.pathname}${nextUrl.search}`);
+  };
+
   // 日間/夜間 莫蘭迪主題模式切換
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     try {
@@ -45,7 +51,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
   const [isStatsError, setIsStatsError] = useState<boolean>(false);
   const [isStatsPersistent, setIsStatsPersistent] = useState<boolean>(true);
-  const [isVisitRegionOpen, setIsVisitRegionOpen] = useState(false);
   const totalVisitsValue = totalVisits ?? 1;
   const totalVisitsFullText = totalVisitsValue.toLocaleString();
   const totalVisitsCompactText = formatCompactZhNumber(totalVisitsValue);
@@ -164,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Accumulated Visitor Counter Badge */}
             <button
               type="button"
-              onClick={() => setIsVisitRegionOpen(true)}
+              onClick={openVisitRegionPage}
               className="visit-region-trigger"
               title={
                 isStatsError
@@ -321,7 +326,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </div>
-      <VisitRegionHeatModal isOpen={isVisitRegionOpen} onClose={() => setIsVisitRegionOpen(false)} />
     </header>
   );
 };

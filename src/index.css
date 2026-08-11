@@ -116,6 +116,27 @@
   animation: modalContentPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+.visit-region-page {
+  min-height: 100vh;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.12), transparent 36%),
+    var(--bg-primary);
+}
+
+.visit-region-page-topbar {
+  width: min(1180px, 100%);
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+}
+
+.visit-region-page-card {
+  margin: 0 auto;
+  max-height: none;
+  overflow: visible;
+}
+
 .visit-region-modal-header {
   position: sticky;
   top: 0;
@@ -964,6 +985,15 @@ textarea:focus {
     width: 100%;
     max-height: 92vh;
     border-radius: 14px 14px 8px 8px;
+  }
+
+  .visit-region-page {
+    padding: 10px;
+  }
+
+  .visit-region-page-card {
+    max-height: none;
+    border-radius: 12px;
   }
 
   .visit-region-modal-header {

@@ -9,6 +9,10 @@ type VisitRegionHeatModalProps = {
   onClose: () => void;
 };
 
+type VisitRegionHeatContentProps = {
+  onClose?: () => void;
+};
+
 const FALLBACK_REGION_LABELS: Record<string, string> = {
   TWCHA: '彰化縣',
   TWCYI: '嘉義市',
@@ -45,7 +49,7 @@ function parseTaiwanMapSvg(svgText: string): RegionPath[] {
     .filter((path) => path.id && path.d);
 }
 
-export function VisitRegionHeatModal({ isOpen, onClose }: VisitRegionHeatModalProps) {
+export function VisitRegionHeatContent({ onClose }: VisitRegionHeatContentProps) {
   const [regions, setRegions] = useState<RegionPath[]>([]);
   const [stats, setStats] = useState<VisitRegionStatsResponse | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -58,7 +62,6 @@ export function VisitRegionHeatModal({ isOpen, onClose }: VisitRegionHeatModalPr
   const pulseTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
     let isMounted = true;
     setIsLoading(true);
     setError('');
@@ -86,16 +89,16 @@ export function VisitRegionHeatModal({ isOpen, onClose }: VisitRegionHeatModalPr
     return () => {
       isMounted = false;
     };
-  }, [isOpen]);
+  }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!onClose) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [onClose]);
 
   useEffect(() => () => {
     if (pulseTimeoutRef.current) window.clearTimeout(pulseTimeoutRef.current);
@@ -151,10 +154,67 @@ export function VisitRegionHeatModal({ isOpen, onClose }: VisitRegionHeatModalPr
     }
   };
 
-  if (!isOpen) return null;
-
   const joinActionDisabled = isSubmitting || selectedRegion?.id === confirmedRegionId;
   const joinActionLabel = isSubmitting ? '更新中...' : selectedRegion?.id === confirmedRegionId ? '已在這裡' : '我在這裡';
+
+  return (
+    <>
+      <header className="visit-region-modal-header">
+        <div>
+          <span><Activity size={15} /> 全台 KTV 歌友</span>
+          <h2 id="visit-region-modal-title">歌友熱度分布</h2>
+        </div>
+        {onClose && (
+          <button type="button" onClick={onClose} aria-label="關閉歌友熱度分布">
+            <X size={20} />
+          </button>
+        )}
+      </header>
+
+      {isLoading && <div className="visit-region-modal-state">熱度讀取中...</div>}
+      {!isLoading && error && <div className="visit-region-modal-state is-error">{error}</div>}
+      {!isLoading && !error && (
+        <div className="visit-region-modal-grid">
+          <TaiwanHeatMap
+            regions={regions}
+            selectedRegion={selectedRegion}
+            selectedId={selectedId}
+            userRegionId={confirmedRegionId}
+            visitCounts={visitCounts}
+            maxVisits={maxVisits}
+            regionLabels={regionLabels}
+            regionPulses={regionPulses}
+            onSelectRegion={setSelectedId}
+            onJoinSelectedRegion={handleJoinSelectedRegion}
+            showJoinAction
+            joinActionDisabled={joinActionDisabled}
+            joinActionLabel={joinActionLabel}
+          />
+          <VisitStatsPanel
+            totalVisits={totalVisits}
+            userRegionId={confirmedRegionId}
+            selectedRegion={selectedRegion}
+            selectedVisits={selectedVisits}
+            selectedPercent={selectedPercent}
+            sortedRegions={sortedRegions}
+            visitCounts={visitCounts}
+            regionLabels={regionLabels}
+            onSelectRegion={setSelectedId}
+            onJoinSelectedRegion={handleJoinSelectedRegion}
+            showUserRegion={Boolean(confirmedRegionId)}
+            showJoinAction
+            joinActionDisabled={joinActionDisabled}
+            joinActionLabel={joinActionLabel}
+            actionMessage={actionMessage}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+export function VisitRegionHeatModal({ isOpen, onClose }: VisitRegionHeatModalProps) {
+  if (!isOpen) return null;
 
   return (
     <div
@@ -167,54 +227,7 @@ export function VisitRegionHeatModal({ isOpen, onClose }: VisitRegionHeatModalPr
       }}
     >
       <section className="visit-region-modal">
-        <header className="visit-region-modal-header">
-          <div>
-            <span><Activity size={15} /> 全台 KTV 歌友</span>
-            <h2 id="visit-region-modal-title">歌友熱度分布</h2>
-          </div>
-          <button type="button" onClick={onClose} aria-label="關閉歌友熱度分布">
-            <X size={20} />
-          </button>
-        </header>
-
-        {isLoading && <div className="visit-region-modal-state">熱度讀取中...</div>}
-        {!isLoading && error && <div className="visit-region-modal-state is-error">{error}</div>}
-        {!isLoading && !error && (
-          <div className="visit-region-modal-grid">
-            <TaiwanHeatMap
-              regions={regions}
-              selectedRegion={selectedRegion}
-              selectedId={selectedId}
-              userRegionId={confirmedRegionId}
-              visitCounts={visitCounts}
-              maxVisits={maxVisits}
-              regionLabels={regionLabels}
-              regionPulses={regionPulses}
-              onSelectRegion={setSelectedId}
-              onJoinSelectedRegion={handleJoinSelectedRegion}
-              showJoinAction
-              joinActionDisabled={joinActionDisabled}
-              joinActionLabel={joinActionLabel}
-            />
-            <VisitStatsPanel
-              totalVisits={totalVisits}
-              userRegionId={confirmedRegionId}
-              selectedRegion={selectedRegion}
-              selectedVisits={selectedVisits}
-              selectedPercent={selectedPercent}
-              sortedRegions={sortedRegions}
-              visitCounts={visitCounts}
-              regionLabels={regionLabels}
-              onSelectRegion={setSelectedId}
-              onJoinSelectedRegion={handleJoinSelectedRegion}
-              showUserRegion={Boolean(confirmedRegionId)}
-              showJoinAction
-              joinActionDisabled={joinActionDisabled}
-              joinActionLabel={joinActionLabel}
-              actionMessage={actionMessage}
-            />
-          </div>
-        )}
+        <VisitRegionHeatContent onClose={onClose} />
       </section>
     </div>
   );
