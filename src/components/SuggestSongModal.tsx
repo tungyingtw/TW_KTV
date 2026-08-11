@@ -42,7 +42,6 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [brandName, setBrandName] = useState('');
   const [shortName, setShortName] = useState('');
   const [systemType, setSystemType] = useState('');
-  const [codeFormat, setCodeFormat] = useState('');
   const [storeLocations, setStoreLocations] = useState('');
   const [brandNote, setBrandNote] = useState('');
 
@@ -422,15 +421,10 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   </div>
                 </div>
 
-                <div style={{ display: 'none', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'none', gridTemplateColumns: '1fr', gap: '12px' }}>
                   <div>
                     <label style={smallLabelStyle()}>系統 / 伴唱機類型</label>
                     <input type="text" value={systemType} onChange={event => setSystemType(event.target.value)} placeholder="例：自助伴唱系統" style={inputStyle()} />
-                  </div>
-
-                  <div>
-                    <label style={smallLabelStyle()}>曲庫 / 版本線索</label>
-                    <input type="text" value={codeFormat} onChange={event => setCodeFormat(event.target.value)} placeholder="例：原版 MV 較多、導唱版本完整" style={inputStyle()} />
                   </div>
                 </div>
 

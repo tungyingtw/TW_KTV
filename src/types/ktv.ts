@@ -38,7 +38,6 @@ export type Language =
 
 export interface BrandSongStatus {
   available?: boolean;
-  code?: string;
   audioType?: AudioType;
   mvType?: MvType;
   note?: string;

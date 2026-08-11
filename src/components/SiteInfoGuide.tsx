@@ -358,6 +358,7 @@ export const SiteInfoGuide: React.FC = () => {
 
             {/* Tab 2: How to Use (系統操作指引與教學) */}
             {activeTab === 'how_to_use' && (
+              <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
                 <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
@@ -399,6 +400,20 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              <div style={{
+                marginTop: '18px',
+                background: 'rgba(251, 191, 36, 0.1)',
+                border: '1px solid rgba(251, 191, 36, 0.28)',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                color: 'var(--text-secondary, #cbd5e1)',
+                fontSize: '0.86rem',
+                lineHeight: 1.7,
+              }}>
+                本站不提供點歌碼查詢，也不建議將本站資料作為現場輸入點歌碼使用；實際點歌方式與歌曲編號請以各門市包廂內點歌系統顯示為準。
+              </div>
+              </>
             )}
 
             {/* Tab 3: Articles (Knowledge Hub) */}

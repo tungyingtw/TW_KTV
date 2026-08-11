@@ -20,7 +20,6 @@ export interface ReportPayload {
   brandId: BrandId;
   issueType: IssueType;
   lang?: string;
-  songCode?: string;
   lyricist?: string;
   composer?: string;
   mvType?: 'official' | 'edited' | 'unknown';
@@ -32,7 +31,6 @@ export interface ReportPayload {
   brandName?: string;
   shortName?: string;
   systemType?: string;
-  codeFormat?: string;
   storeLocations?: string;
   songSnapshot?: Song;
 }
@@ -58,7 +56,6 @@ export async function submitSuggestSong(payload: {
   lyricist?: string;
   composer?: string;
   language: string;
-  songCode?: string;
   brandId: BrandId;
   brandName?: string;
   mvStatus?: 'unknown' | 'official' | 'karaoke';
@@ -74,7 +71,6 @@ export async function submitSuggestSong(payload: {
     issueType: 'suggest_song',
     brandName: payload.brandName,
     lang: payload.language,
-    songCode: payload.songCode,
     lyricist: payload.lyricist,
     composer: payload.composer,
     mvType: payload.mvStatus === 'official' ? 'official' : (payload.mvStatus === 'karaoke' ? 'edited' : 'unknown'),
@@ -89,7 +85,6 @@ export async function submitSuggestBrand(payload: {
   brandName: string;
   shortName: string;
   systemType?: string;
-  codeFormat?: string;
   storeLocations?: string;
   note?: string;
 }): Promise<{ success: boolean; reportId?: string; error?: string }> {
@@ -102,9 +97,8 @@ export async function submitSuggestBrand(payload: {
     brandName: payload.brandName,
     shortName: payload.shortName,
     systemType: payload.systemType,
-    codeFormat: payload.codeFormat,
     storeLocations: payload.storeLocations,
-    note: `[新廠牌建議] 系統:${payload.systemType || ''} | 曲庫/版本線索:${payload.codeFormat || ''} | 據點:${payload.storeLocations || ''} | 備註:${payload.note || ''}`,
+    note: `[新廠牌建議] 系統:${payload.systemType || ''} | 據點:${payload.storeLocations || ''} | 備註:${payload.note || ''}`,
   });
 }
 
