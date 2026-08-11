@@ -102,7 +102,7 @@
 - 需要決定 GeoIP 供應方式。
 - 需要新增環境變數或部署設定。
 - `npm run build` 或後端 smoke test 失敗。
-- 統計檔持久化位置不明確。
+- Render 免費方案不支援 Persistent Disk；正式地區熱度必須沿用 Upstash Redis。
 - 使用者介面方向與目前 demo 定案規格衝突。
 
 ## 小階段拆分總表
@@ -166,17 +166,17 @@
 
 ## Phase 2：建立後端統計儲存層
 
-1. 在 `server/index.js` 建立統計檔案讀寫 helper。
-2. 將統計檔案放在既有後端可持久化的位置；若專案已有持久化資料 helper，必須沿用既有模式。
+1. 在 `server/index.js` 建立地區熱度資料讀寫 helper。
+2. 正式環境必須使用 Upstash Redis key `ktv:visitRegionStats` 保存地區熱度，不得要求 Render 免費方案啟用 Disk。
 3. 實作 atomic write：先寫暫存檔，再覆蓋正式檔，避免寫入中斷造成 JSON 損壞。
 4. 建立預設 22 縣市資料，缺欄位時自動補齊。
 5. 加入每日去重資料清理，只保留最近 7 天。
 
 驗收標準：
 
-- 後端啟動時統計檔不存在也能自動建立。
-- 統計檔格式錯誤時必須保留備份並重建空白資料，不得讓 API 全站掛掉。
-- 不得在統計檔保存原始 IP。
+- 後端啟動時 Redis 統計資料不存在也能回傳空白資料。
+- Redis 統計資料格式錯誤時不得讓 API 全站掛掉。
+- 不得在統計資料保存原始 IP。
 
 ## Phase 3：建立 seed 初始化腳本
 
@@ -193,7 +193,7 @@
 
 ### Phase 3A 來源確認結果
 
-production 累積查詢總數的正式來源必須使用 Upstash Redis key `ktv:totalVisits`。現有程式在 `server/index.js` 內以 `STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits'` 定義此 key；正式環境設定 `UPSTASH_REDIS_REST_URL` 與 `UPSTASH_REDIS_REST_TOKEN` 時，`/api/stats/ping` 會以 Redis 原子遞增此 key，並把結果作為前台累積查詢顯示。
+production 累積查詢總數的正式來源必須使用 Upstash Redis key `ktv:totalVisits`。地區熱度統計的正式來源必須使用 Upstash Redis key `ktv:visitRegionStats`。現有程式在 `server/index.js` 內以 `STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits'` 定義累積查詢 key；正式環境設定 `UPSTASH_REDIS_REST_URL` 與 `UPSTASH_REDIS_REST_TOKEN` 時，`/api/stats/ping` 會以 Redis 原子遞增此 key，並把結果作為前台累積查詢顯示。
 
 不得使用 `/api/stats/ping` 作為 seed 讀取來源，因為此 API 會進行 12 小時去重與可能遞增 `ktv:totalVisits`。seed 腳本必須直接讀取 Upstash Redis REST 的 `GET ktv:totalVisits`，或讀取一個無副作用的後台唯讀 API。若沒有 Redis 環境變數，腳本必須拒絕 production seed；只有本機 dry-run 可以退回讀取 `server/stats.json`。
 
@@ -231,7 +231,7 @@ node scripts/seedVisitRegionStats.js --apply
 node scripts/seedVisitRegionStats.js --apply --top-up
 ```
 
-`--apply` 不得搭配 `--baseline-total`。正式寫入缺少 `UPSTASH_REDIS_REST_URL` 或 `UPSTASH_REDIS_REST_TOKEN` 時必須停止。統計檔已有 `seed_count` 時不得重複 seed；若只是補上線前差額，必須使用 `--top-up`；若要重寫，必須明確使用 `--force` 並先確認不會覆蓋正式資料。
+`--apply` 不得搭配 `--baseline-total`。正式寫入缺少 `UPSTASH_REDIS_REST_URL` 或 `UPSTASH_REDIS_REST_TOKEN` 時必須停止。Redis key `ktv:visitRegionStats` 已有 `seed_count` 時不得重複 seed；若只是補上線前差額，必須使用 `--top-up`；若要重寫，必須明確使用 `--force` 並先備份正式 Redis key。
 
 建議初始權重：
 
@@ -303,7 +303,7 @@ GEOIP_CITY_DB_PATH=/absolute/path/to/GeoLite2-City.mmdb
 1. 後端快取 IP hash 的查詢結果，至少 12 小時。
 2. API 失敗時不得阻塞查歌或統計 API。
 3. 超過限制或回傳非台灣地區時不得硬分配到任一縣市。
-4. 不得把外部 API 的原始 response 存進統計檔。
+4. 不得把外部 API 的原始 response 存進統計資料。
 
 GeoIP 結果只能作為「初始推估」。正式 UI 必須保留「我在這裡」讓使用者修正；修正後以使用者選擇為準。
 
@@ -346,7 +346,7 @@ GeoIP 結果只能作為「初始推估」。正式 UI 必須保留「我在這�
 5. GeoIP 沒有 country code 且無法對應縣市時，回傳 `unknown_country`，不得硬分配。
 6. 只有 `shouldRecord: true` 且 `cityCode` 為 22 個 SVG id 時，才允許進入 `recordVisitRegionStatsLocal` 增加 `live_count`。
 
-fallback reason 只允許作為暫時計算流程或除錯日誌，不得寫入永久統計檔，不得回傳 IP 或匿名 hash。
+fallback reason 只允許作為暫時計算流程或除錯日誌，不得寫入永久統計資料，不得回傳 IP 或匿名 hash。
 
 驗收標準：
 
@@ -391,7 +391,7 @@ fallback reason 只允許作為暫時計算流程或除錯日誌，不得寫入�
 驗收標準：
 
 - 正式功能不影響查歌、品牌篩選、收藏、建議歌曲與回報流程。
-- 統計檔可被備份與還原。
+- Redis 統計資料可被備份與還原。
 - 上線後發現 GeoIP 異常時，可快速關閉 `POST record`，保留 `GET` 顯示既有 seed 資料。
 
 上線前必須另外執行 `docs/taiwan-map-visit-stats-release-checklist.md`。地區熱度必須配合既有 `/api/stats/ping` 的 `tw_ktv_vid` 與 12 小時去重規則，不得建立獨立的 IP 自動計數流程。若 `POST /api/visit-region-stats/record` 尚未接入 GeoIP 自動判斷，不得啟用自動到訪追加；只保留使用者在 modal 內透過「我在這裡」手動修正同一筆到訪的地區。
@@ -487,13 +487,13 @@ hash 修正成功
 
 1. 若 API 有問題，先在前端關閉紀錄觸發，只保留入口或隱藏入口。
 2. 若 GeoIP 對應異常，停止 `POST record` 的 live 追加。
-3. 若統計檔損壞，使用最近備份還原；若沒有備份，使用 seed 腳本重建 seed，再將 live_count 歸零並註記。
+3. 若 Redis 統計資料異常，先備份目前 key 值；若沒有可用備份，使用 seed 腳本重建 seed，再將 live_count 歸零並註記。
 4. 不要刪除 SVG 或 demo 元件，除非使用者確認不再採用此功能。
 
 ## 建議執行順序
 
 1. 先依序執行 Phase 1A、Phase 1B、Phase 1C，將 demo 拆成可重用元件。
-2. 再依序執行 Phase 2A、Phase 2B，建立穩定統計檔案層。
+2. 再依序執行 Phase 2A、Phase 2B，建立穩定 Redis 統計資料層。
 3. 再依序執行 Phase 4A、Phase 4B、Phase 4C，先完成不含 GeoIP 的讀取、記錄與修正 API。
 4. 再執行 Phase 3A。取得 production 累積查詢總數來源後，才執行 Phase 3B、Phase 3C。
 5. 再依序執行 Phase 5A、Phase 5B、Phase 5C，加入 IP 粗略縣市推估。
@@ -505,7 +505,7 @@ hash 修正成功
 - Phase 1B：已完成。已抽出 `TaiwanHeatMap`。
 - Phase 1C：已完成。已抽出 `VisitStatsPanel`。
 - Phase 2A：已完成。已建立統計 JSON schema、22 縣市初始資料與本機讀寫 helper。
-- Phase 2B：已完成。已建立統計檔備份、壞檔重建與每日去重清理。
+- Phase 2B：已完成。已建立 Redis 優先的統計資料層與每日去重清理；本機 JSON 僅作開發 fallback。
 - Phase 4A：已完成。已建立 `GET /api/visit-region-stats` 公開讀取 API。
 - Phase 4B：已完成。已建立 `POST /api/visit-region-stats/record` 與匿名每日去重。
 - Phase 4C：已完成。已建立 `POST /api/visit-region-stats/correct-region`，修正時扣回原縣市並增加新縣市。
@@ -521,7 +521,7 @@ hash 修正成功
 - Phase 7A：已完成。已完成 `npm run build`、API smoke test 與瀏覽器互動驗證；已驗證既有「累積查詢」標籤可開啟 modal、可選縣市、可送出「我在這裡」，送出後 API 統計會同步更新。
 - Phase 7B：上線準備文件已完成。已新增正式上線檢查清單，明確列出 seed/top-up、必要環境變數、GeoIP 阻擋條件、回滾方式與 24 小時觀察項目；已修正地區熱度策略，要求配合既有累積查詢 `tw_ktv_vid` 與 12 小時去重規則，不另建 IP 計數；實際 24 小時觀察必須等正式部署後執行。
 - Seed dry-run：已用線上累積查詢 `134` 執行 `node scripts/seedVisitRegionStats.js --dry-run --baseline-total=134`，確認不寫入檔案且 22 縣市 `seed_count` 加總為 134。
-- Seed preflight：已嘗試正式寫入前檢查，確認目前本機缺少 `UPSTASH_REDIS_REST_URL`、`UPSTASH_REDIS_REST_TOKEN`、`VISIT_REGION_STATS_PATH` 與 `VISIT_STATS_HASH_SECRET`；腳本已正確拒絕 `--apply --baseline-total=134`，因此尚未寫入正式 seed。已新增 `docs/taiwan-map-seed-runbook.md` 與 `.env.example` 正式環境變數提示。
+- Seed preflight：已嘗試正式寫入前檢查，確認正式 seed 必須使用 `UPSTASH_REDIS_REST_URL`、`UPSTASH_REDIS_REST_TOKEN` 與 `VISIT_STATS_HASH_SECRET`；腳本已正確拒絕 `--apply --baseline-total=134`，因此尚未寫入正式 seed。地區熱度正式資料改存 Upstash Redis key `ktv:visitRegionStats`，不需要 Render Disk。
 - Stats total API：已新增 `GET /api/stats/total` 作為累積查詢唯讀 API。已驗證連續讀取不會遞增累積查詢，只有 `/api/stats/ping` 仍依既有 12 小時去重規則計數。
 - Commit readiness：已新增 `docs/taiwan-map-commit-readiness-plan.md`，列出 commit 前必修項目、已定案事項、驗證項目、可延後項目與停止條件。
 

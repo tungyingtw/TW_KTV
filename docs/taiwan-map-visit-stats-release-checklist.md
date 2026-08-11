@@ -12,7 +12,7 @@
 6. 確認正式環境已設定 `UPSTASH_REDIS_REST_URL` 與 `UPSTASH_REDIS_REST_TOKEN`。
 7. 若要啟用自動 IP 推估，先設定 `GEOIP_CITY_DB_PATH` 指向可讀取的 MaxMind GeoLite2 City 或 GeoIP2 City MMDB。
 8. 若未設定 `GEOIP_CITY_DB_PATH`，不得宣稱網站會自動判斷縣市；前端只能保留手動「我在這裡」修正流程。
-9. 確認 `VISIT_REGION_STATS_PATH` 指向正式持久化位置；不得指到暫存資料夾。
+9. 確認地區熱度使用 Upstash Redis key `ktv:visitRegionStats`；Render 免費方案不得要求 Persistent Disk。
 
 ## Seed 與 Top-Up
 
@@ -26,21 +26,22 @@ node scripts/seedVisitRegionStats.js --dry-run
 ```
 
 3. 檢查 dry-run 輸出的 `seedBaselineTotal` 是否等於目前線上最新累積查詢總數。
-4. 若正式統計檔尚未 seed，執行正式 seed：
+4. 若正式 Redis 統計資料尚未 seed，執行正式 seed：
 
 ```bash
 node scripts/seedVisitRegionStats.js --apply
 ```
 
-5. 若正式統計檔已 seed，且線上累積查詢總數比 `seedBaselineTotal` 更高，執行 top-up：
+5. 若正式 Redis 統計資料已 seed，且線上累積查詢總數比 `seedBaselineTotal` 更高，執行 top-up：
 
 ```bash
 node scripts/seedVisitRegionStats.js --apply --top-up
 ```
 
 6. 不要在正式環境使用 `--baseline-total`。
-7. 不要使用 `--force`，除非已先備份正式統計檔並確認要重建 seed。
-8. 完成 seed 或 top-up 後，讀取 `GET /api/visit-region-stats`，確認 `total_seed_count` 與線上累積查詢基準一致。
+7. 不要使用 `--force`，除非已先備份正式 Redis key `ktv:visitRegionStats` 並確認要重建 seed。
+8. 完成 seed 或 top-up 後，確認腳本輸出的 `storage` 是 `redis`。
+9. 讀取 `GET /api/visit-region-stats`，確認 `total_seed_count` 與線上累積查詢基準一致。
 
 ## 上線前功能驗證
 
@@ -63,7 +64,7 @@ npm run build
 1. 若 API 異常，先在前端隱藏或停用「我在這裡」，保留只讀地圖。
 2. 若統計資料異常，停止 `POST /api/visit-region-stats/record` 與 `POST /api/visit-region-stats/correct-region`。
 3. 若 GeoIP 對應錯誤，關閉自動記錄，只保留使用者手動修正。
-4. 若統計檔損壞，使用 `visit_region_stats.json.backups` 中最近備份還原。
+4. 若 Redis 統計資料異常，先備份目前 `ktv:visitRegionStats` 值，再依 seed runbook 重建。
 5. 若沒有可用備份，重新執行 seed，將 `live_count` 歸零並記錄處理時間。
 
 ## 上線後 24 小時觀察

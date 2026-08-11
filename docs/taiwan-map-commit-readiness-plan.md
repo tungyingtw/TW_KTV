@@ -40,13 +40,13 @@
 3. 若不是 dev 環境且路徑是 `/taiwan-map-demo`，必須回到正式 `App`，不得渲染 demo。
 4. 保留 `TaiwanMapDemo` 元件作為本機預覽，除非使用者明確要求刪除。
 
-### 3. 避免唯讀 API 建立空統計檔
+### 3. 避免唯讀 API 建立空統計資料
 
 1. 檢查 `GET /api/visit-region-stats`。
-2. 不要讓公開讀取 API 在正式 seed 前自動建立空的 `visit_region_stats.json`。
-3. 若統計檔不存在，公開 API 必須回傳預設空統計 response，但不得寫檔。
-4. 只有 `record`、`correct-region` 或 seed 腳本可以建立/寫入統計檔。
-5. 保留壞檔備份與修復流程，但不得因單純讀取就覆蓋正式資料。
+2. 不要讓公開讀取 API 在正式 seed 前自動建立空的正式 Redis 統計資料。
+3. 若 Redis key `ktv:visitRegionStats` 不存在，公開 API 必須回傳預設空統計 response，但不得寫入。
+4. 只有 `record`、`correct-region` 或 seed 腳本可以建立/寫入統計資料。
+5. Render 免費方案不得依賴 Persistent Disk；正式地區熱度必須使用 Upstash Redis。
 
 ### 4. 修正版本控管例外
 

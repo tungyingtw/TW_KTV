@@ -11,6 +11,7 @@ const visitRegionStatsPath = process.env.VISIT_REGION_STATS_PATH
   ? path.resolve(process.env.VISIT_REGION_STATS_PATH)
   : path.join(rootDir, 'server', 'visit_region_stats.json');
 const redisTotalKey = 'ktv:totalVisits';
+const redisVisitRegionStatsKey = process.env.VISIT_REGION_STATS_REDIS_KEY || 'ktv:visitRegionStats';
 const seedWeightVersion = 'tw-population-metro-v1';
 const statsVersion = 1;
 
@@ -98,6 +99,17 @@ async function readUpstashTotalVisits() {
   };
 }
 
+async function upstashRedisCmd(command, ...args) {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!redisUrl || !redisToken) return null;
+  const url = [redisUrl.replace(/\/+$/, ''), command, ...args.map(arg => encodeURIComponent(String(arg)))].join('/');
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${redisToken}` } });
+  if (!res.ok) throw new Error(`Upstash Redis ${command} 失敗：HTTP ${res.status}`);
+  const data = await res.json();
+  return data.result;
+}
+
 function readLocalStatsTotalVisits() {
   const data = readJsonFile(statsPath);
   return {
@@ -154,7 +166,19 @@ function createDefaultVisitRegionStats(nowIso) {
   };
 }
 
-function readVisitRegionStats(nowIso) {
+async function readVisitRegionStats(nowIso) {
+  const redisValue = await upstashRedisCmd('get', redisVisitRegionStatsKey);
+  if (redisValue) {
+    const parsed = JSON.parse(redisValue);
+    return {
+      ...createDefaultVisitRegionStats(nowIso),
+      ...(parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}),
+      regions: {
+        ...createDefaultVisitRegionStats(nowIso).regions,
+        ...((parsed?.regions && typeof parsed.regions === 'object' && !Array.isArray(parsed.regions)) ? parsed.regions : {}),
+      },
+    };
+  }
   if (!fs.existsSync(visitRegionStatsPath)) return createDefaultVisitRegionStats(nowIso);
   const parsed = readJsonFile(visitRegionStatsPath);
   return {
@@ -232,6 +256,15 @@ function writeJsonAtomic(filePath, data) {
   fs.renameSync(tempPath, filePath);
 }
 
+async function writeVisitRegionStats(data) {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    await upstashRedisCmd('set', redisVisitRegionStatsKey, JSON.stringify(data));
+    return { storage: 'redis', target: redisVisitRegionStatsKey };
+  }
+  writeJsonAtomic(visitRegionStatsPath, data);
+  return { storage: 'local_json', target: visitRegionStatsPath };
+}
+
 async function main() {
   loadLocalEnv();
   const args = parseArgs(process.argv);
@@ -243,8 +276,10 @@ async function main() {
 
   let applied = false;
   let topUpDelta = 0;
+  let writeTarget = null;
+  let storage = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN ? 'redis' : 'local_json';
   if (args.apply) {
-    const existingStats = readVisitRegionStats(capturedAt);
+    const existingStats = await readVisitRegionStats(capturedAt);
     const existingCounts = countExistingRegionValues(existingStats);
     if (!args.force && existingCounts.live > 0) {
       throw new Error(`統計檔已有 live_count=${existingCounts.live}，已拒絕 seed。若確認要重跑，請明確加入 --force。`);
@@ -256,7 +291,9 @@ async function main() {
       ? buildTopUpStats(existingStats, allocations, baseline, capturedAt)
       : buildSeededStats(existingStats, allocations, baseline, capturedAt);
     topUpDelta = args.topUp ? baseline.total - existingCounts.seed : 0;
-    writeJsonAtomic(visitRegionStatsPath, nextStats);
+    const writeResult = await writeVisitRegionStats(nextStats);
+    storage = writeResult.storage;
+    writeTarget = writeResult.target;
     applied = true;
   }
 
@@ -265,8 +302,9 @@ async function main() {
     applied,
     topUp: args.topUp,
     topUpDelta,
-    writesFile: args.apply,
-    targetPath: args.apply ? visitRegionStatsPath : null,
+    storage,
+    writesFile: args.apply && storage === 'local_json',
+    targetPath: args.apply ? writeTarget : (storage === 'redis' ? redisVisitRegionStatsKey : visitRegionStatsPath),
     source: baseline.source,
     seedBaselineTotal: baseline.total,
     seedBaselineCapturedAt: capturedAt,
