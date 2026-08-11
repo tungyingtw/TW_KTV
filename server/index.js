@@ -464,6 +464,7 @@ const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 const BRAND_SETTINGS_PATH = path.join(__dirname, 'brand_settings.json');
 const BRAND_SETTINGS_REDIS_KEY = 'ktv:brandSettings';
 const VISIT_REGION_STATS_PATH = resolveDataPath('VISIT_REGION_STATS_PATH', 'visit_region_stats.json');
+const VISIT_REGION_STATS_REDIS_KEY = process.env.VISIT_REGION_STATS_REDIS_KEY || 'ktv:visitRegionStats';
 
 const VISIT_REGION_CODES = [
   ['TWTPE', '台北市'],
@@ -1223,6 +1224,34 @@ function saveVisitRegionStatsLocal(data) {
   return normalized;
 }
 
+async function readVisitRegionStatsStore({ create = false } = {}) {
+  if (USE_REDIS) {
+    const raw = await redisCmd('get', VISIT_REGION_STATS_REDIS_KEY);
+    if (!raw) return createDefaultVisitRegionStats();
+    try {
+      const parsed = JSON.parse(raw);
+      const normalized = normalizeVisitRegionStats(parsed);
+      if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+        await redisCmd('set', VISIT_REGION_STATS_REDIS_KEY, JSON.stringify(normalized));
+      }
+      return normalized;
+    } catch (err) {
+      console.warn('[VisitRegionStats] Redis JSON read failed:', err.message);
+      return createDefaultVisitRegionStats();
+    }
+  }
+  return create ? loadVisitRegionStatsLocal() : readVisitRegionStatsLocal();
+}
+
+async function saveVisitRegionStatsStore(data) {
+  const normalized = normalizeVisitRegionStats({ ...data, updatedAt: new Date().toISOString() });
+  if (USE_REDIS) {
+    await redisCmd('set', VISIT_REGION_STATS_REDIS_KEY, JSON.stringify(normalized));
+    return normalized;
+  }
+  return saveVisitRegionStatsLocal(normalized);
+}
+
 function isVisitRegionLiveWriteReady(stats) {
   if (process.env.NODE_ENV !== 'production') return true;
   return Boolean(stats?.seededAt || normalizeVisitRegionCount(stats?.totalSeedCount) > 0 || normalizeVisitRegionCount(stats?.seedBaselineTotal) > 0);
@@ -1235,12 +1264,12 @@ function ensureVisitRegionLiveWriteReady(stats) {
   return null;
 }
 
-function recordVisitRegionStatsLocal(cityCode, req) {
+async function recordVisitRegionStatsLocal(cityCode, req) {
   if (!isValidVisitRegionCode(cityCode)) {
     return { ok: false, status: 400, error: '無效的縣市代碼' };
   }
 
-  if (process.env.NODE_ENV === 'production' && !fs.existsSync(VISIT_REGION_STATS_PATH)) {
+  if (process.env.NODE_ENV === 'production' && !USE_REDIS && !fs.existsSync(VISIT_REGION_STATS_PATH)) {
     return { ok: false, status: 409, error: '到訪紀錄尚未啟用' };
   }
 
@@ -1251,7 +1280,7 @@ function recordVisitRegionStatsLocal(cityCode, req) {
     return { ok: false, status: 503, error: '到訪紀錄暫時無法啟用' };
   }
 
-  const stats = loadVisitRegionStatsLocal();
+  const stats = await readVisitRegionStatsStore({ create: true });
   const readinessError = ensureVisitRegionLiveWriteReady(stats);
   if (readinessError) return readinessError;
 
@@ -1282,16 +1311,16 @@ function recordVisitRegionStatsLocal(cityCode, req) {
     ok: true,
     counted: true,
     city_code: cityCode,
-    stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+    stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
   };
 }
 
-function correctVisitRegionStatsLocal(cityCode, req) {
+async function correctVisitRegionStatsLocal(cityCode, req) {
   if (!isValidVisitRegionCode(cityCode)) {
     return { ok: false, status: 400, error: '無效的縣市代碼' };
   }
 
-  if (process.env.NODE_ENV === 'production' && !fs.existsSync(VISIT_REGION_STATS_PATH)) {
+  if (process.env.NODE_ENV === 'production' && !USE_REDIS && !fs.existsSync(VISIT_REGION_STATS_PATH)) {
     return { ok: false, status: 409, error: '到訪紀錄尚未啟用' };
   }
 
@@ -1302,7 +1331,7 @@ function correctVisitRegionStatsLocal(cityCode, req) {
     return { ok: false, status: 503, error: '到訪紀錄暫時無法啟用' };
   }
 
-  const stats = loadVisitRegionStatsLocal();
+  const stats = await readVisitRegionStatsStore({ create: true });
   const readinessError = ensureVisitRegionLiveWriteReady(stats);
   if (readinessError) return readinessError;
 
@@ -1327,7 +1356,7 @@ function correctVisitRegionStatsLocal(cityCode, req) {
       created: true,
       from_city_code: null,
       city_code: cityCode,
-      stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+      stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
     };
   }
 
@@ -1346,7 +1375,7 @@ function correctVisitRegionStatsLocal(cityCode, req) {
       created: false,
       from_city_code: cityCode,
       city_code: cityCode,
-      stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+      stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
     };
   }
 
@@ -1369,7 +1398,7 @@ function correctVisitRegionStatsLocal(cityCode, req) {
     created: false,
     from_city_code: fromCityCode,
     city_code: cityCode,
-    stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+    stats: buildVisitRegionStatsResponse(await saveVisitRegionStatsStore(stats)),
   };
 }
 
@@ -2866,19 +2895,19 @@ app.get('/api/stats/ping', async (req, res) => {
   });
 });
 
-app.get('/api/visit-region-stats', (req, res) => {
+app.get('/api/visit-region-stats', async (req, res) => {
   try {
-    res.json(buildVisitRegionStatsResponse(readVisitRegionStatsLocal()));
+    res.json(buildVisitRegionStatsResponse(await readVisitRegionStatsStore()));
   } catch (err) {
     console.error('[VisitRegionStats] Public read failed:', err);
     res.status(503).json({ error: '到訪紀錄暫時無法讀取' });
   }
 });
 
-app.post('/api/visit-region-stats/record', (req, res) => {
+app.post('/api/visit-region-stats/record', async (req, res) => {
   try {
     const cityCode = String(req.body?.city_code || '').trim();
-    const result = recordVisitRegionStatsLocal(cityCode, req);
+    const result = await recordVisitRegionStatsLocal(cityCode, req);
     if (!result.ok) return res.status(result.status || 500).json({ error: result.error || '到訪紀錄暫時無法更新' });
     res.json({
       counted: result.counted,
@@ -2891,10 +2920,10 @@ app.post('/api/visit-region-stats/record', (req, res) => {
   }
 });
 
-app.post('/api/visit-region-stats/correct-region', (req, res) => {
+app.post('/api/visit-region-stats/correct-region', async (req, res) => {
   try {
     const cityCode = String(req.body?.city_code || '').trim();
-    const result = correctVisitRegionStatsLocal(cityCode, req);
+    const result = await correctVisitRegionStatsLocal(cityCode, req);
     if (!result.ok) return res.status(result.status || 500).json({ error: result.error || '到訪紀錄暫時無法更新' });
     res.json({
       counted: result.counted,
