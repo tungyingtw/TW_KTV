@@ -131,7 +131,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <h1 className="navbar-title">
-              TYFunLab 台灣KTV歌曲查詢
+              TYFunLab KTV歌曲查詢
             </h1>
 
             {/* Live Visitor Counter Badge */}
