@@ -799,6 +799,15 @@ textarea:focus {
   font-size: 1.05rem;
 }
 
+.taiwan-demo-map-action em {
+  max-width: 220px;
+  color: var(--accent-highlight);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .taiwan-demo-side {
   display: grid;
   grid-template-rows: auto auto 1fr;
