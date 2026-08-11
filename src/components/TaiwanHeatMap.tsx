@@ -117,6 +117,7 @@ export function TaiwanHeatMap({
     offsetX: DEFAULT_MAP_OFFSET_X,
     offsetY: DEFAULT_MAP_OFFSET_Y,
   });
+  const userRegionAnchor = userRegionId ? REGION_ANCHOR_POINTS[userRegionId] : undefined;
 
   const applyMapTransform = (next: { scale: number; offsetX: number; offsetY: number }, syncState = true) => {
     mapTransformRef.current = next;
@@ -293,6 +294,13 @@ export function TaiwanHeatMap({
                 );
               })}
             </g>
+            {userRegionAnchor && (
+              <g className="taiwan-demo-user-marker" transform={`translate(${userRegionAnchor.x} ${userRegionAnchor.y})`} aria-hidden="true">
+                <circle r="17" />
+                <circle r="6" />
+                <text y="-24">你在這裡</text>
+              </g>
+            )}
           </g>
         </svg>
         {pointer && (
