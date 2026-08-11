@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
 import type { FilterOptions } from '../types/ktv';
 import { formatCompactZhNumber } from '../utils/stringUtils';
+import { getKtvVisitorId } from '../services/apiService';
+import { VisitRegionHeatModal } from './VisitRegionHeatModal';
 
 interface NavbarProps {
   filters: FilterOptions;
@@ -43,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
   const [isStatsError, setIsStatsError] = useState<boolean>(false);
   const [isStatsPersistent, setIsStatsPersistent] = useState<boolean>(true);
+  const [isVisitRegionOpen, setIsVisitRegionOpen] = useState(false);
   const totalVisitsValue = totalVisits ?? 1;
   const totalVisitsFullText = totalVisitsValue.toLocaleString();
   const totalVisitsCompactText = formatCompactZhNumber(totalVisitsValue);
@@ -53,12 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     const fetchAuthenticVisitorCount = async () => {
       try {
         // 取得或產生固定裝置訪客 UUID (避免重新整理狂加數字)
-        let visitorId = localStorage.getItem('tw_ktv_vid');
-        if (!visitorId) {
-          visitorId = `v_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-          localStorage.setItem('tw_ktv_vid', visitorId);
-        }
-
+        const visitorId = getKtvVisitorId();
         const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
         const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
         const res = await fetch(`${API_BASE}/api/stats/ping?vid=${visitorId}&t=${Date.now()}`);
@@ -164,7 +162,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Accumulated Visitor Counter Badge */}
-            <div 
+            <button
+              type="button"
+              onClick={() => setIsVisitRegionOpen(true)}
+              className="visit-region-trigger"
               title={
                 isStatsError
                   ? '全站累積查詢人數暫時無法連線同步'
@@ -185,6 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 color: isStatsError ? '#f87171' : '#c084fc',
                 boxShadow: isStatsError ? '0 0 12px rgba(248, 113, 113, 0.25)' : '0 0 12px rgba(168, 85, 247, 0.25)',
                 backdropFilter: 'blur(4px)',
+                cursor: 'pointer',
               }}
             >
               <span>
@@ -194,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ? '累積查詢暫未同步'
                     : `${isStatsPersistent ? '累積查詢' : '本機統計'} ${totalVisitsCompactText} 人`}
               </span>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -319,6 +321,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </div>
+      <VisitRegionHeatModal isOpen={isVisitRegionOpen} onClose={() => setIsVisitRegionOpen(false)} />
     </header>
   );
 };

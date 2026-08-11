@@ -463,6 +463,87 @@ const ADMIN_LOG_MAX_BYTES = Math.max(256 * 1024, parseInt(process.env.ADMIN_LOG_
 const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 const BRAND_SETTINGS_PATH = path.join(__dirname, 'brand_settings.json');
 const BRAND_SETTINGS_REDIS_KEY = 'ktv:brandSettings';
+const VISIT_REGION_STATS_PATH = resolveDataPath('VISIT_REGION_STATS_PATH', 'visit_region_stats.json');
+
+const VISIT_REGION_CODES = [
+  ['TWTPE', '台北市'],
+  ['TWNWT', '新北市'],
+  ['TWTAO', '桃園市'],
+  ['TWHSQ', '新竹縣'],
+  ['TWHSZ', '新竹市'],
+  ['TWMIA', '苗栗縣'],
+  ['TWTXG', '台中市'],
+  ['TWCHA', '彰化縣'],
+  ['TWNAN', '南投縣'],
+  ['TWYUN', '雲林縣'],
+  ['TWCYQ', '嘉義縣'],
+  ['TWCYI', '嘉義市'],
+  ['TWTNN', '台南市'],
+  ['TWKHH', '高雄市'],
+  ['TWPIF', '屏東縣'],
+  ['TWILA', '宜蘭縣'],
+  ['TWHUA', '花蓮縣'],
+  ['TWTTT', '台東縣'],
+  ['TWKEE', '基隆市'],
+  ['TWPEN', '澎湖縣'],
+  ['TWKIN', '金門縣'],
+  ['TWLIE', '連江縣'],
+];
+const VISIT_REGION_CODE_SET = new Set(VISIT_REGION_CODES.map(([code]) => code));
+const VISIT_REGION_ISO_CODE_ALIASES = {
+  TPE: 'TWTPE',
+  NWT: 'TWNWT',
+  TAO: 'TWTAO',
+  HSQ: 'TWHSQ',
+  HSZ: 'TWHSZ',
+  MIA: 'TWMIA',
+  TXG: 'TWTXG',
+  CHA: 'TWCHA',
+  NAN: 'TWNAN',
+  YUN: 'TWYUN',
+  CYQ: 'TWCYQ',
+  CYI: 'TWCYI',
+  TNN: 'TWTNN',
+  KHH: 'TWKHH',
+  PIF: 'TWPIF',
+  ILA: 'TWILA',
+  HUA: 'TWHUA',
+  TTT: 'TWTTT',
+  KEE: 'TWKEE',
+  PEN: 'TWPEN',
+  KIN: 'TWKIN',
+  LIE: 'TWLIE',
+};
+const VISIT_REGION_NAME_ALIASES = [
+  ['TWTPE', ['台北市', '臺北市', 'taipei city', 'taipei']],
+  ['TWNWT', ['新北市', 'new taipei city', 'new taipei']],
+  ['TWTAO', ['桃園市', 'taoyuan city', 'taoyuan']],
+  ['TWHSQ', ['新竹縣', 'hsinchu county']],
+  ['TWHSZ', ['新竹市', 'hsinchu city']],
+  ['TWMIA', ['苗栗縣', 'miaoli county', 'miaoli']],
+  ['TWTXG', ['台中市', '臺中市', 'taichung city', 'taichung']],
+  ['TWCHA', ['彰化縣', 'changhua county', 'changhua']],
+  ['TWNAN', ['南投縣', 'nantou county', 'nantou']],
+  ['TWYUN', ['雲林縣', 'yunlin county', 'yunlin']],
+  ['TWCYQ', ['嘉義縣', 'chiayi county']],
+  ['TWCYI', ['嘉義市', 'chiayi city']],
+  ['TWTNN', ['台南市', '臺南市', 'tainan city', 'tainan']],
+  ['TWKHH', ['高雄市', 'kaohsiung city', 'kaohsiung']],
+  ['TWPIF', ['屏東縣', 'pingtung county', 'pingtung']],
+  ['TWILA', ['宜蘭縣', 'yilan county', 'yilan', 'ilan county', 'ilan']],
+  ['TWHUA', ['花蓮縣', 'hualien county', 'hualien']],
+  ['TWTTT', ['台東縣', '臺東縣', 'taitung county', 'taitung']],
+  ['TWKEE', ['基隆市', 'keelung city', 'keelung']],
+  ['TWPEN', ['澎湖縣', 'penghu county', 'penghu', 'pescadores']],
+  ['TWKIN', ['金門縣', 'kinmen county', 'kinmen', 'quemoy']],
+  ['TWLIE', ['連江縣', 'lienchiang county', 'lienchiang', 'matsu islands', 'matsu']],
+];
+const VISIT_REGION_NAME_ALIAS_MAP = new Map(VISIT_REGION_NAME_ALIASES.flatMap(([code, aliases]) => aliases.map(alias => [normalizeVisitRegionAliasText(alias), code])));
+const VISIT_REGION_STATS_VERSION = 1;
+const VISIT_REGION_DEDUP_RETENTION_DAYS = 7;
+const VISIT_REGION_BACKUP_RETENTION_COUNT = 10;
+const VISIT_REGION_DAILY_CORRECTION_LIMIT = 3;
+const VISIT_REGION_HASH_SECRET = process.env.VISIT_STATS_HASH_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dev-visit-region-stats-secret');
 
 const DEFAULT_BRAND_SETTINGS = {
   brands: {
@@ -804,6 +885,521 @@ function safeAtomicWriteJson(filePath, data) {
     }
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
   }
+}
+
+function createDefaultVisitRegionStats(nowIso = new Date().toISOString()) {
+  const regions = {};
+  for (const [code, name] of VISIT_REGION_CODES) {
+    regions[code] = {
+      name,
+      seed_count: 0,
+      live_count: 0,
+    };
+  }
+
+  return {
+    version: VISIT_REGION_STATS_VERSION,
+    seededAt: null,
+    liveStartedAt: null,
+    seedBaselineTotal: 0,
+    seedBaselineCapturedAt: null,
+    seedWeightVersion: '',
+    totalSeedCount: 0,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+    regions,
+    dailyDedup: {},
+  };
+}
+
+function normalizeVisitRegionCount(value) {
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue) || numberValue < 0) return 0;
+  return Math.floor(numberValue);
+}
+
+function normalizeVisitRegionAliasText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/臺/g, '台')
+    .replace(/\s+/g, ' ')
+    .replace(/[._-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isValidVisitRegionCode(code) {
+  return typeof code === 'string' && VISIT_REGION_CODE_SET.has(code);
+}
+
+function normalizeTaiwanVisitRegionCode(value) {
+  if (!value) return null;
+  if (typeof value === 'string') {
+    const directCode = value.trim().toUpperCase().replace(/^TW-/, '');
+    if (VISIT_REGION_CODE_SET.has(directCode)) return directCode;
+    if (VISIT_REGION_ISO_CODE_ALIASES[directCode]) return VISIT_REGION_ISO_CODE_ALIASES[directCode];
+    if (VISIT_REGION_CODE_SET.has(value.trim())) return value.trim();
+    return VISIT_REGION_NAME_ALIAS_MAP.get(normalizeVisitRegionAliasText(value)) || null;
+  }
+
+  if (typeof value !== 'object' || Array.isArray(value)) return null;
+  const countryCode = String(value.country?.isoCode || value.country?.iso_code || value.country_code || value.countryCode || '').toUpperCase();
+  if (countryCode && countryCode !== 'TW') return null;
+
+  const candidates = [];
+  const pushCandidate = candidate => {
+    if (candidate !== undefined && candidate !== null && String(candidate).trim()) candidates.push(String(candidate));
+  };
+  const pushNames = names => {
+    if (!names || typeof names !== 'object') return;
+    for (const key of ['zh-TW', 'zh-CN', 'en']) pushCandidate(names[key]);
+  };
+
+  for (const subdivision of Array.isArray(value.subdivisions) ? value.subdivisions : []) {
+    pushCandidate(subdivision.isoCode || subdivision.iso_code || subdivision.code);
+    pushCandidate(subdivision.name);
+    pushNames(subdivision.names);
+  }
+  pushCandidate(value.subdivision?.isoCode || value.subdivision?.iso_code || value.subdivision?.code);
+  pushCandidate(value.subdivision?.name);
+  pushNames(value.subdivision?.names);
+  pushCandidate(value.region);
+  pushCandidate(value.regionName);
+  pushCandidate(value.region_name);
+  pushCandidate(value.city?.name);
+  pushNames(value.city?.names);
+  pushCandidate(value.city);
+
+  for (const candidate of candidates) {
+    const code = normalizeTaiwanVisitRegionCode(candidate);
+    if (code) return code;
+  }
+  return null;
+}
+
+function getGeoIpCountryCode(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+  return String(value.country?.isoCode || value.country?.iso_code || value.country_code || value.countryCode || value.registeredCountry?.isoCode || '').toUpperCase();
+}
+
+function isVisitRegionGeoIpAnonymous(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const traits = value.traits && typeof value.traits === 'object' ? value.traits : {};
+  return Boolean(
+    traits.isAnonymous ||
+    traits.isAnonymousProxy ||
+    traits.isAnonymousVpn ||
+    traits.isHostingProvider ||
+    traits.isPublicProxy ||
+    traits.isResidentialProxy ||
+    traits.isTorExitNode ||
+    value.is_proxy ||
+    value.proxy ||
+    value.vpn ||
+    value.tor ||
+    value.hosting
+  );
+}
+
+function resolveVisitRegionGeoIpResult(geoIpResult) {
+  if (!geoIpResult || typeof geoIpResult !== 'object' || Array.isArray(geoIpResult)) {
+    return { cityCode: null, shouldRecord: false, reason: 'geoip_missing' };
+  }
+  if (isVisitRegionGeoIpAnonymous(geoIpResult)) {
+    return { cityCode: null, shouldRecord: false, reason: 'anonymous_network' };
+  }
+
+  const countryCode = getGeoIpCountryCode(geoIpResult);
+  if (countryCode && countryCode !== 'TW') {
+    return { cityCode: null, shouldRecord: false, reason: 'non_taiwan_ip' };
+  }
+
+  const cityCode = normalizeTaiwanVisitRegionCode(geoIpResult);
+  if (!cityCode) {
+    return { cityCode: null, shouldRecord: false, reason: countryCode === 'TW' ? 'unknown_taiwan_region' : 'unknown_country' };
+  }
+  return { cityCode, shouldRecord: true, reason: 'matched' };
+}
+
+function getRequestClientIp(req) {
+  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || req.socket?.remoteAddress || 'unknown';
+}
+
+function getVisitRegionDateKey(now = new Date()) {
+  return now.toISOString().slice(0, 10);
+}
+
+function getVisitStatsVisitorIdentity(req) {
+  const rawVisitorId = typeof req.body?.visitor_id === 'string'
+    ? req.body.visitor_id
+    : typeof req.query?.vid === 'string'
+      ? req.query.vid
+      : '';
+  const visitorId = rawVisitorId.trim();
+  if (/^[A-Za-z0-9_.:-]{8,160}$/.test(visitorId)) return `vid:${visitorId}`;
+  return `ip:${getRequestClientIp(req)}`;
+}
+
+function getVisitRegionWindowHash(req, now = new Date()) {
+  if (!VISIT_REGION_HASH_SECRET) return null;
+  const dateKey = getVisitRegionDateKey(now);
+  const halfDaySlot = Math.floor(now.getUTCHours() / 12);
+  return crypto
+    .createHmac('sha256', VISIT_REGION_HASH_SECRET)
+    .update(`${dateKey}:${halfDaySlot}:${getVisitStatsVisitorIdentity(req)}`)
+    .digest('base64url');
+}
+
+function getVisitRegionBackupDir() {
+  return `${VISIT_REGION_STATS_PATH}.backups`;
+}
+
+function cleanupVisitRegionStatsBackups() {
+  const backupDir = getVisitRegionBackupDir();
+  if (!fs.existsSync(backupDir)) return;
+  try {
+    const backups = fs.readdirSync(backupDir)
+      .filter(file => file.startsWith('visit_region_stats_') && file.endsWith('.json'))
+      .map(file => ({ file, fullPath: path.join(backupDir, file), mtimeMs: fs.statSync(path.join(backupDir, file)).mtimeMs }))
+      .sort((a, b) => b.mtimeMs - a.mtimeMs);
+    for (const backup of backups.slice(VISIT_REGION_BACKUP_RETENTION_COUNT)) {
+      try { fs.unlinkSync(backup.fullPath); } catch {}
+    }
+  } catch (err) {
+    console.warn('[VisitRegionStats] Backup cleanup failed:', err.message);
+  }
+}
+
+function backupVisitRegionStatsFile(reason = 'before-write') {
+  if (!fs.existsSync(VISIT_REGION_STATS_PATH)) return null;
+  const backupDir = getVisitRegionBackupDir();
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupPath = path.join(backupDir, `visit_region_stats_${reason}_${timestamp}.json`);
+  try {
+    fs.mkdirSync(backupDir, { recursive: true });
+    fs.copyFileSync(VISIT_REGION_STATS_PATH, backupPath);
+    cleanupVisitRegionStatsBackups();
+    return backupPath;
+  } catch (err) {
+    console.warn('[VisitRegionStats] Backup failed:', err.message);
+    return null;
+  }
+}
+
+function getRecentVisitRegionDateSet(days = VISIT_REGION_DEDUP_RETENTION_DAYS, now = new Date()) {
+  const dates = new Set();
+  const baseUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  for (let i = 0; i < days; i += 1) {
+    dates.add(new Date(baseUtc - i * 86400000).toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+function normalizeVisitRegionDedupEntry(entry) {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+  const cityCode = typeof entry.city_code === 'string' ? entry.city_code : '';
+  if (!VISIT_REGION_CODE_SET.has(cityCode)) return null;
+  const source = typeof entry.source === 'string' && entry.source.trim() ? entry.source.trim().slice(0, 40) : 'auto_joined';
+  const updatedAt = typeof entry.updated_at === 'string' ? entry.updated_at : new Date().toISOString();
+  const correctionCount = Math.min(VISIT_REGION_DAILY_CORRECTION_LIMIT, normalizeVisitRegionCount(entry.correction_count));
+  return {
+    city_code: cityCode,
+    source,
+    corrected: entry.corrected === true,
+    correction_count: correctionCount,
+    updated_at: updatedAt,
+  };
+}
+
+function normalizeVisitRegionDailyDedup(dailyDedup, now = new Date()) {
+  if (!dailyDedup || typeof dailyDedup !== 'object' || Array.isArray(dailyDedup)) return {};
+  const recentDates = getRecentVisitRegionDateSet(VISIT_REGION_DEDUP_RETENTION_DAYS, now);
+  const normalized = {};
+
+  for (const [date, entries] of Object.entries(dailyDedup)) {
+    if (!recentDates.has(date) || !entries || typeof entries !== 'object' || Array.isArray(entries)) continue;
+    const normalizedEntries = {};
+    for (const [hash, entry] of Object.entries(entries)) {
+      if (!/^[A-Za-z0-9_-]{16,128}$/.test(hash)) continue;
+      const normalizedEntry = normalizeVisitRegionDedupEntry(entry);
+      if (normalizedEntry) normalizedEntries[hash] = normalizedEntry;
+    }
+    if (Object.keys(normalizedEntries).length) normalized[date] = normalizedEntries;
+  }
+
+  return normalized;
+}
+
+function normalizeVisitRegionStats(rawStats) {
+  const nowIso = new Date().toISOString();
+  const source = rawStats && typeof rawStats === 'object' && !Array.isArray(rawStats)
+    ? rawStats
+    : {};
+  const normalized = {
+    ...createDefaultVisitRegionStats(nowIso),
+    ...source,
+    version: VISIT_REGION_STATS_VERSION,
+    regions: {},
+    dailyDedup: normalizeVisitRegionDailyDedup(source.dailyDedup),
+  };
+
+  let totalSeedCount = 0;
+  const sourceRegions = source.regions && typeof source.regions === 'object' && !Array.isArray(source.regions)
+    ? source.regions
+    : {};
+
+  for (const [code, name] of VISIT_REGION_CODES) {
+    const sourceRegion = sourceRegions[code] && typeof sourceRegions[code] === 'object' && !Array.isArray(sourceRegions[code])
+      ? sourceRegions[code]
+      : {};
+    const seedCount = normalizeVisitRegionCount(sourceRegion.seed_count);
+    const liveCount = normalizeVisitRegionCount(sourceRegion.live_count);
+    normalized.regions[code] = {
+      name,
+      seed_count: seedCount,
+      live_count: liveCount,
+    };
+    totalSeedCount += seedCount;
+  }
+
+  normalized.seedBaselineTotal = normalizeVisitRegionCount(source.seedBaselineTotal);
+  normalized.totalSeedCount = totalSeedCount;
+  normalized.seedWeightVersion = typeof source.seedWeightVersion === 'string' ? source.seedWeightVersion : '';
+  normalized.seededAt = typeof source.seededAt === 'string' ? source.seededAt : null;
+  normalized.liveStartedAt = typeof source.liveStartedAt === 'string' ? source.liveStartedAt : null;
+  normalized.seedBaselineCapturedAt = typeof source.seedBaselineCapturedAt === 'string' ? source.seedBaselineCapturedAt : null;
+  normalized.createdAt = typeof source.createdAt === 'string' ? source.createdAt : nowIso;
+  normalized.updatedAt = typeof source.updatedAt === 'string' ? source.updatedAt : nowIso;
+
+  return normalized;
+}
+
+function loadVisitRegionStatsLocal() {
+  if (!fs.existsSync(VISIT_REGION_STATS_PATH)) {
+    const initialStats = createDefaultVisitRegionStats();
+    safeAtomicWriteJson(VISIT_REGION_STATS_PATH, initialStats);
+    return initialStats;
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(VISIT_REGION_STATS_PATH, 'utf8'));
+    const normalized = normalizeVisitRegionStats(parsed);
+    const current = JSON.stringify(parsed);
+    const next = JSON.stringify(normalized);
+    if (current !== next) {
+      backupVisitRegionStatsFile('before-normalize');
+      safeAtomicWriteJson(VISIT_REGION_STATS_PATH, normalized);
+    }
+    return normalized;
+  } catch (err) {
+    const backupPath = backupVisitRegionStatsFile('corrupt');
+    const initialStats = createDefaultVisitRegionStats();
+    safeAtomicWriteJson(VISIT_REGION_STATS_PATH, initialStats);
+    console.warn('[VisitRegionStats] Local JSON read failed; rebuilt default stats:', err.message, backupPath || 'no-backup');
+    return initialStats;
+  }
+}
+
+function readVisitRegionStatsLocal() {
+  if (!fs.existsSync(VISIT_REGION_STATS_PATH)) {
+    return createDefaultVisitRegionStats();
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(VISIT_REGION_STATS_PATH, 'utf8'));
+    return normalizeVisitRegionStats(parsed);
+  } catch (err) {
+    console.warn('[VisitRegionStats] Local JSON read failed:', err.message);
+    return createDefaultVisitRegionStats();
+  }
+}
+
+function saveVisitRegionStatsLocal(data) {
+  const normalized = normalizeVisitRegionStats({ ...data, updatedAt: new Date().toISOString() });
+  backupVisitRegionStatsFile('before-write');
+  safeAtomicWriteJson(VISIT_REGION_STATS_PATH, normalized);
+  return normalized;
+}
+
+function isVisitRegionLiveWriteReady(stats) {
+  if (process.env.NODE_ENV !== 'production') return true;
+  return Boolean(stats?.seededAt || normalizeVisitRegionCount(stats?.totalSeedCount) > 0 || normalizeVisitRegionCount(stats?.seedBaselineTotal) > 0);
+}
+
+function ensureVisitRegionLiveWriteReady(stats) {
+  if (!isVisitRegionLiveWriteReady(stats)) {
+    return { ok: false, status: 409, error: '到訪紀錄尚未啟用' };
+  }
+  return null;
+}
+
+function recordVisitRegionStatsLocal(cityCode, req) {
+  if (!isValidVisitRegionCode(cityCode)) {
+    return { ok: false, status: 400, error: '無效的縣市代碼' };
+  }
+
+  if (process.env.NODE_ENV === 'production' && !fs.existsSync(VISIT_REGION_STATS_PATH)) {
+    return { ok: false, status: 409, error: '到訪紀錄尚未啟用' };
+  }
+
+  const now = new Date();
+  const dateKey = getVisitRegionDateKey(now);
+  const dailyHash = getVisitRegionWindowHash(req, now);
+  if (!dailyHash) {
+    return { ok: false, status: 503, error: '到訪紀錄暫時無法啟用' };
+  }
+
+  const stats = loadVisitRegionStatsLocal();
+  const readinessError = ensureVisitRegionLiveWriteReady(stats);
+  if (readinessError) return readinessError;
+
+  stats.dailyDedup[dateKey] = stats.dailyDedup[dateKey] || {};
+
+  const existing = stats.dailyDedup[dateKey][dailyHash];
+  if (existing) {
+    return {
+      ok: true,
+      counted: false,
+      city_code: existing.city_code,
+      stats: buildVisitRegionStatsResponse(stats),
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+  stats.regions[cityCode].live_count = normalizeVisitRegionCount(stats.regions[cityCode].live_count) + 1;
+  stats.liveStartedAt = stats.liveStartedAt || nowIso;
+  stats.dailyDedup[dateKey][dailyHash] = {
+    city_code: cityCode,
+    source: 'manual_joined',
+    corrected: false,
+    correction_count: 0,
+    updated_at: nowIso,
+  };
+
+  return {
+    ok: true,
+    counted: true,
+    city_code: cityCode,
+    stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+  };
+}
+
+function correctVisitRegionStatsLocal(cityCode, req) {
+  if (!isValidVisitRegionCode(cityCode)) {
+    return { ok: false, status: 400, error: '無效的縣市代碼' };
+  }
+
+  if (process.env.NODE_ENV === 'production' && !fs.existsSync(VISIT_REGION_STATS_PATH)) {
+    return { ok: false, status: 409, error: '到訪紀錄尚未啟用' };
+  }
+
+  const now = new Date();
+  const dateKey = getVisitRegionDateKey(now);
+  const dailyHash = getVisitRegionWindowHash(req, now);
+  if (!dailyHash) {
+    return { ok: false, status: 503, error: '到訪紀錄暫時無法啟用' };
+  }
+
+  const stats = loadVisitRegionStatsLocal();
+  const readinessError = ensureVisitRegionLiveWriteReady(stats);
+  if (readinessError) return readinessError;
+
+  stats.dailyDedup[dateKey] = stats.dailyDedup[dateKey] || {};
+  const existing = stats.dailyDedup[dateKey][dailyHash];
+  const nowIso = new Date().toISOString();
+
+  if (!existing) {
+    stats.regions[cityCode].live_count = normalizeVisitRegionCount(stats.regions[cityCode].live_count) + 1;
+    stats.liveStartedAt = stats.liveStartedAt || nowIso;
+    stats.dailyDedup[dateKey][dailyHash] = {
+      city_code: cityCode,
+      source: 'manual_corrected',
+      corrected: true,
+      correction_count: 1,
+      updated_at: nowIso,
+    };
+    return {
+      ok: true,
+      counted: true,
+      corrected: false,
+      created: true,
+      from_city_code: null,
+      city_code: cityCode,
+      stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+    };
+  }
+
+  const correctionCount = normalizeVisitRegionCount(existing.correction_count);
+  if (correctionCount >= VISIT_REGION_DAILY_CORRECTION_LIMIT) {
+    return { ok: false, status: 429, error: '今日修正次數已達上限' };
+  }
+
+  if (existing.city_code === cityCode) {
+    existing.updated_at = nowIso;
+    stats.dailyDedup[dateKey][dailyHash] = existing;
+    return {
+      ok: true,
+      counted: false,
+      corrected: false,
+      created: false,
+      from_city_code: cityCode,
+      city_code: cityCode,
+      stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+    };
+  }
+
+  const fromCityCode = existing.city_code;
+  stats.regions[fromCityCode].live_count = Math.max(0, normalizeVisitRegionCount(stats.regions[fromCityCode].live_count) - 1);
+  stats.regions[cityCode].live_count = normalizeVisitRegionCount(stats.regions[cityCode].live_count) + 1;
+  stats.dailyDedup[dateKey][dailyHash] = {
+    ...existing,
+    city_code: cityCode,
+    source: 'manual_corrected',
+    corrected: true,
+    correction_count: correctionCount + 1,
+    updated_at: nowIso,
+  };
+
+  return {
+    ok: true,
+    counted: false,
+    corrected: true,
+    created: false,
+    from_city_code: fromCityCode,
+    city_code: cityCode,
+    stats: buildVisitRegionStatsResponse(saveVisitRegionStatsLocal(stats)),
+  };
+}
+
+function buildVisitRegionStatsResponse(stats) {
+  const normalized = normalizeVisitRegionStats(stats);
+  const regions = VISIT_REGION_CODES.map(([code, name]) => {
+    const region = normalized.regions[code] || {};
+    const seedCount = normalizeVisitRegionCount(region.seed_count);
+    const liveCount = normalizeVisitRegionCount(region.live_count);
+    return {
+      city_code: code,
+      city_name: name,
+      seed_count: seedCount,
+      live_count: liveCount,
+      total_count: seedCount + liveCount,
+    };
+  });
+
+  return {
+    version: normalized.version,
+    total_count: regions.reduce((sum, region) => sum + region.total_count, 0),
+    total_seed_count: normalized.totalSeedCount,
+    total_live_count: regions.reduce((sum, region) => sum + region.live_count, 0),
+    seeded_at: normalized.seededAt,
+    live_started_at: normalized.liveStartedAt,
+    seed_baseline_total: normalized.seedBaselineTotal,
+    seed_baseline_captured_at: normalized.seedBaselineCapturedAt,
+    updated_at: normalized.updatedAt,
+    regions,
+  };
 }
 
 function decodeBinaryCatalog(binPath) {
@@ -2126,6 +2722,16 @@ function saveStats(data) {
 
 let currentStats = loadStats();
 
+async function readCurrentTotalVisits() {
+  if (!USE_REDIS) return { totalVisits: currentStats.totalVisits, persistent: false };
+
+  const val = await redisCmd('get', STATS_REDIS_TOTAL_KEY);
+  const parsedTotal = val !== null && val !== undefined ? parseInt(String(val), 10) : currentStats.totalVisits;
+  const totalVisits = Number.isFinite(parsedTotal) ? parsedTotal : currentStats.totalVisits;
+  if (!isNaN(totalVisits)) currentStats.totalVisits = totalVisits;
+  return { totalVisits, persistent: true };
+}
+
 async function initializeJsonStoreInRedis(redisKey, localData, label) {
   if (!USE_REDIS) return;
 
@@ -2169,6 +2775,24 @@ if (USE_REDIS) {
     }
   }).catch(e => console.error('[Stats] Redis 啟動同步失敗:', e.message));
 }
+
+app.get('/api/stats/total', async (req, res) => {
+  try {
+    const result = await readCurrentTotalVisits();
+    res.json({
+      totalVisits: isNaN(result.totalVisits) ? BASE_INITIAL_VISITS : result.totalVisits,
+      persistent: result.persistent,
+      timestamp: Date.now(),
+    });
+  } catch (err) {
+    console.warn('[Stats] Redis 唯讀累積查詢失敗:', err.message);
+    res.status(503).json({
+      error: '累積查詢人數暫時無法讀取',
+      totalVisits: currentStats.totalVisits,
+      persistent: false,
+    });
+  }
+});
 
 app.get('/api/stats/ping', async (req, res) => {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
@@ -2240,6 +2864,50 @@ app.get('/api/stats/ping', async (req, res) => {
     persistent: USE_REDIS,
     timestamp: now
   });
+});
+
+app.get('/api/visit-region-stats', (req, res) => {
+  try {
+    res.json(buildVisitRegionStatsResponse(readVisitRegionStatsLocal()));
+  } catch (err) {
+    console.error('[VisitRegionStats] Public read failed:', err);
+    res.status(503).json({ error: '到訪紀錄暫時無法讀取' });
+  }
+});
+
+app.post('/api/visit-region-stats/record', (req, res) => {
+  try {
+    const cityCode = String(req.body?.city_code || '').trim();
+    const result = recordVisitRegionStatsLocal(cityCode, req);
+    if (!result.ok) return res.status(result.status || 500).json({ error: result.error || '到訪紀錄暫時無法更新' });
+    res.json({
+      counted: result.counted,
+      city_code: result.city_code,
+      stats: result.stats,
+    });
+  } catch (err) {
+    console.error('[VisitRegionStats] Public record failed:', err);
+    res.status(503).json({ error: '到訪紀錄暫時無法更新' });
+  }
+});
+
+app.post('/api/visit-region-stats/correct-region', (req, res) => {
+  try {
+    const cityCode = String(req.body?.city_code || '').trim();
+    const result = correctVisitRegionStatsLocal(cityCode, req);
+    if (!result.ok) return res.status(result.status || 500).json({ error: result.error || '到訪紀錄暫時無法更新' });
+    res.json({
+      counted: result.counted,
+      corrected: result.corrected,
+      created: result.created,
+      from_city_code: result.from_city_code,
+      city_code: result.city_code,
+      stats: result.stats,
+    });
+  } catch (err) {
+    console.error('[VisitRegionStats] Public correction failed:', err);
+    res.status(503).json({ error: '到訪紀錄暫時無法更新' });
+  }
 });
 
 app.get('/api/health', async (req, res) => {
