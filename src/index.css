@@ -81,6 +81,109 @@
   margin: 0;
 }
 
+.visit-region-trigger {
+  font-family: inherit;
+  appearance: none;
+}
+
+.visit-region-trigger:hover,
+.visit-region-trigger:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+  filter: brightness(1.12);
+}
+
+.visit-region-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 6, 23, 0.74);
+  backdrop-filter: blur(12px);
+  animation: modalOverlayFadeIn 0.14s ease-out both;
+}
+
+.visit-region-modal {
+  width: min(1180px, 100%);
+  max-height: min(90vh, 900px);
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--modal-surface);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+  animation: modalContentPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.visit-region-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--modal-surface) 88%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.visit-region-modal-header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-highlight);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.visit-region-modal-header h2 {
+  margin-top: 4px;
+  font-size: 1.25rem;
+}
+
+.visit-region-modal-header button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  background: var(--bg-card);
+  cursor: pointer;
+}
+
+.visit-region-modal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 16px;
+  padding: 16px;
+}
+
+.visit-region-modal-grid .taiwan-demo-map-panel {
+  min-height: 620px;
+}
+
+.visit-region-modal-grid .taiwan-demo-map-wrap {
+  min-height: 540px;
+}
+
+.visit-region-modal-state {
+  display: grid;
+  place-items: center;
+  min-height: 360px;
+  padding: 24px;
+  color: var(--text-secondary);
+  font-weight: 800;
+}
+
+.visit-region-modal-state.is-error {
+  color: #f87171;
+}
+
 [data-theme="light"] .navbar-title {
   background: linear-gradient(90deg, #0f172a 0%, #db2777 60%, #9333ea 100%) !important;
   -webkit-background-clip: text !important;
@@ -257,6 +360,694 @@ textarea:focus {
   border-color: var(--border-glow);
   outline: none;
   box-shadow: 0 0 0 3px rgba(128, 82, 255, 0.18);
+}
+
+.taiwan-demo-shell {
+  width: min(1180px, calc(100% - 32px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 34px 0 46px;
+}
+
+.taiwan-demo-hero {
+  padding: 18px 0 24px;
+}
+
+.taiwan-demo-kicker,
+.taiwan-demo-live,
+.taiwan-demo-ranking-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-highlight);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.taiwan-demo-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 14px;
+}
+
+.taiwan-demo-title-row h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 4.2rem);
+  line-height: 1;
+  letter-spacing: 0;
+  background: linear-gradient(90deg, #fff, var(--accent-pink) 42%, var(--accent-support));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.taiwan-demo-title-row p {
+  max-width: 660px;
+  margin-top: 14px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.taiwan-demo-back {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  background: var(--gradient-glass);
+}
+
+.taiwan-demo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.taiwan-demo-panel,
+.taiwan-demo-stat,
+.taiwan-demo-user-region,
+.taiwan-demo-selected,
+.taiwan-demo-ranking,
+.taiwan-demo-note {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  border-radius: var(--radius-sm);
+}
+
+.taiwan-demo-map-panel {
+  padding: 18px;
+  min-height: 680px;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(5, 8, 22, 0.78)),
+    radial-gradient(circle at 50% 42%, rgba(56, 189, 248, 0.14), transparent 34%),
+    var(--bg-card);
+}
+
+.taiwan-demo-map-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.045) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(circle at 50% 48%, #000 0%, transparent 70%);
+}
+
+.taiwan-demo-map-panel::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: min(70%, 620px);
+  height: min(44%, 340px);
+  pointer-events: none;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.13);
+  box-shadow: inset 0 0 38px rgba(56, 189, 248, 0.08), 0 0 42px rgba(128, 82, 255, 0.1);
+  transform: translate(-50%, -50%);
+}
+
+.taiwan-demo-panel-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.taiwan-demo-panel-head span {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.taiwan-demo-panel-head h2 {
+  margin-top: 4px;
+  font-size: 1.28rem;
+}
+
+.taiwan-demo-live {
+  color: var(--accent-cyan);
+  padding: 8px 10px;
+  border: 1px solid rgba(45, 212, 191, 0.26);
+  border-radius: var(--radius-sm);
+  background: rgba(45, 212, 191, 0.09);
+}
+
+.taiwan-demo-map-tools {
+  position: absolute;
+  z-index: 3;
+  right: 18px;
+  top: 78px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-sm);
+  background: rgba(5, 8, 22, 0.62);
+  backdrop-filter: blur(12px);
+}
+
+.taiwan-demo-map-tools button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.045);
+  cursor: pointer;
+}
+
+.taiwan-demo-map-tools button:hover {
+  color: #fff;
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.14);
+}
+
+.taiwan-demo-legend {
+  position: absolute;
+  z-index: 3;
+  right: 18px;
+  top: 130px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-sm);
+  background: rgba(5, 8, 22, 0.62);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  backdrop-filter: blur(12px);
+}
+
+.taiwan-demo-legend i {
+  display: block;
+  width: 18px;
+  height: 8px;
+  border-radius: 99px;
+}
+
+.taiwan-demo-map-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 600px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.taiwan-demo-map-wrap:active {
+  cursor: grabbing;
+}
+
+.taiwan-demo-map {
+  width: min(100%, 680px);
+  height: auto;
+  filter: url(#taiwan-demo-soft-glow) drop-shadow(0 22px 28px rgba(0, 0, 0, 0.34));
+  position: relative;
+  z-index: 1;
+  transform-origin: 50% 50%;
+  transition: transform 0.22s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.taiwan-demo-map-wrap.is-dragging .taiwan-demo-map {
+  transition: none;
+}
+
+.taiwan-demo-map path {
+  stroke: rgba(255, 255, 255, 0.88);
+  stroke-width: 1.05;
+  cursor: pointer;
+  outline: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.18s ease, filter 0.18s ease, stroke-width 0.18s ease, transform 0.2s ease, fill 0.18s ease;
+}
+
+.taiwan-demo-map path:focus,
+.taiwan-demo-map path:focus-visible {
+  outline: none;
+}
+
+.taiwan-demo-map path:hover,
+.taiwan-demo-map path.is-selected {
+  opacity: 1;
+  stroke-width: 2.6;
+  filter: drop-shadow(0 0 12px rgba(244, 114, 182, 0.6));
+}
+
+.taiwan-demo-map.has-selection path.is-dimmed {
+  fill: #2b3343;
+  opacity: 0.34;
+  stroke: rgba(148, 163, 184, 0.2);
+  filter: grayscale(0.8) saturate(0.45);
+}
+
+.taiwan-demo-map.has-selection path.is-dimmed:hover {
+  opacity: 0.72;
+  stroke: rgba(203, 213, 225, 0.64);
+}
+
+.taiwan-demo-map path.is-selected {
+  transform: translateY(-18px) scale(1.018);
+  stroke: rgba(255, 255, 255, 0.96);
+  filter:
+    drop-shadow(0 16px 0 rgba(8, 13, 28, 0.62))
+    drop-shadow(0 25px 20px rgba(0, 0, 0, 0.38))
+    drop-shadow(0 0 18px rgba(244, 114, 182, 0.78));
+}
+
+.taiwan-demo-region-pulses {
+  pointer-events: none;
+}
+
+.taiwan-demo-region-pulses text {
+  font-size: 34px;
+  font-weight: 900;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(5, 8, 22, 0.92);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+  animation: taiwanRegionPulse 0.98s ease-out forwards;
+}
+
+.taiwan-demo-region-pulses text.is-plus {
+  fill: #34d399;
+  filter: drop-shadow(0 0 12px rgba(52, 211, 153, 0.75));
+}
+
+.taiwan-demo-region-pulses text.is-minus {
+  fill: #f87171;
+  filter: drop-shadow(0 0 12px rgba(248, 113, 113, 0.68));
+}
+
+@keyframes taiwanRegionPulse {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.86);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-44px) scale(1);
+  }
+}
+
+.taiwan-demo-tooltip {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  display: grid;
+  gap: 3px;
+  min-width: 138px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: rgba(5, 8, 22, 0.92);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+}
+
+.taiwan-demo-tooltip strong {
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.taiwan-demo-tooltip span {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.taiwan-demo-map-action {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: min(88%, 430px);
+  padding: 12px 14px;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: var(--radius-sm);
+  background: rgba(5, 8, 22, 0.78);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(16px);
+  transform: translateX(-50%);
+}
+
+.taiwan-demo-map-action span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.taiwan-demo-map-action strong {
+  display: block;
+  margin-top: 2px;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.taiwan-demo-side {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 14px;
+}
+
+.taiwan-demo-stat,
+.taiwan-demo-user-region,
+.taiwan-demo-selected,
+.taiwan-demo-ranking {
+  padding: 18px;
+}
+
+.taiwan-demo-stat {
+  display: grid;
+  gap: 7px;
+}
+
+.taiwan-demo-stat svg {
+  color: var(--accent-support);
+}
+
+.taiwan-demo-stat span,
+.taiwan-demo-user-region span,
+.taiwan-demo-selected span {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.taiwan-demo-stat strong {
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.taiwan-demo-user-region {
+  display: grid;
+  gap: 8px;
+  border-color: rgba(56, 189, 248, 0.24);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(244, 114, 182, 0.06)), var(--bg-card);
+}
+
+.taiwan-demo-user-region strong {
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.taiwan-demo-user-region p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.taiwan-demo-action-message {
+  margin-top: 10px;
+  color: var(--accent-cyan);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.taiwan-demo-user-region button,
+.taiwan-demo-join-button,
+.taiwan-demo-region-edit select {
+  min-height: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.taiwan-demo-user-region button {
+  width: fit-content;
+  padding: 0 13px;
+  cursor: pointer;
+}
+
+.taiwan-demo-user-region button:hover,
+.taiwan-demo-join-button:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.14);
+}
+
+.taiwan-demo-join-button {
+  width: fit-content;
+  margin-top: 12px;
+  padding: 0 14px;
+  color: #fff;
+  font-weight: 900;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(244, 114, 182, 0.2));
+  cursor: pointer;
+}
+
+.taiwan-demo-join-button:disabled {
+  color: var(--text-muted);
+  cursor: default;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.taiwan-demo-join-button:disabled:hover {
+  border-color: var(--border-color);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.taiwan-demo-region-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.taiwan-demo-region-edit select {
+  min-width: 150px;
+  padding: 0 10px;
+}
+
+.taiwan-demo-selected {
+  overflow: hidden;
+}
+
+.taiwan-demo-selected-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.22), rgba(56, 189, 248, 0.18));
+  color: var(--accent-pink);
+}
+
+.taiwan-demo-selected h2 {
+  margin-top: 6px;
+  font-size: 1.8rem;
+}
+
+.taiwan-demo-selected p {
+  margin-top: 8px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.taiwan-demo-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.taiwan-demo-ranking-title {
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.taiwan-demo-ranking button {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+}
+
+.taiwan-demo-ranking button:hover,
+.taiwan-demo-ranking button.is-active {
+  border-color: rgba(244, 114, 182, 0.45);
+  background: rgba(244, 114, 182, 0.12);
+}
+
+.taiwan-demo-ranking button span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--accent-highlight);
+  background: rgba(255, 184, 41, 0.13);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.taiwan-demo-ranking button strong {
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.taiwan-demo-ranking button em {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.taiwan-demo-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  color: var(--text-secondary);
+}
+
+.taiwan-demo-note svg {
+  flex: 0 0 auto;
+  color: var(--accent-pink);
+}
+
+.taiwan-demo-note p {
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .visit-region-modal-overlay {
+    align-items: end;
+    padding: 10px;
+  }
+
+  .visit-region-modal {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 14px 14px 8px 8px;
+  }
+
+  .visit-region-modal-header {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .visit-region-modal-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .visit-region-modal-grid .taiwan-demo-map-panel {
+    min-height: auto;
+  }
+
+  .visit-region-modal-grid .taiwan-demo-map-wrap {
+    min-height: 440px;
+  }
+
+  .taiwan-demo-shell {
+    width: min(100% - 20px, 720px);
+    padding-top: 20px;
+  }
+
+  .taiwan-demo-title-row,
+  .taiwan-demo-panel-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .taiwan-demo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .taiwan-demo-map-panel {
+    min-height: auto;
+    padding: 14px;
+  }
+
+  .taiwan-demo-map-tools {
+    position: relative;
+    inset: auto;
+    justify-content: center;
+    margin-top: 12px;
+    width: fit-content;
+  }
+
+  .taiwan-demo-legend {
+    position: relative;
+    inset: auto;
+    width: fit-content;
+    margin-top: 8px;
+  }
+
+  .taiwan-demo-map-wrap {
+    min-height: 450px;
+  }
+
+  .taiwan-demo-map-action {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    bottom: 12px;
+  }
+
+  .taiwan-demo-map-action .taiwan-demo-join-button {
+    width: 100%;
+  }
+
+  .taiwan-demo-map path.is-selected {
+    transform: translateY(-10px) scale(1.012);
+  }
+
+  .taiwan-demo-side {
+    grid-template-rows: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .taiwan-demo-tooltip {
+    display: none;
+  }
 }
 
 /* Custom Scrollbar */

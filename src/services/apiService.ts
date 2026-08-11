@@ -9,6 +9,56 @@ const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTV
 const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
 
+export type VisitRegionCode = string;
+
+export interface VisitRegionStat {
+  city_code: VisitRegionCode;
+  city_name: string;
+  seed_count: number;
+  live_count: number;
+  total_count: number;
+}
+
+export interface VisitRegionStatsResponse {
+  version: number;
+  total_count: number;
+  total_seed_count: number;
+  total_live_count: number;
+  seeded_at: string | null;
+  live_started_at: string | null;
+  seed_baseline_total: number;
+  seed_baseline_captured_at: string | null;
+  updated_at: string;
+  regions: VisitRegionStat[];
+}
+
+export interface VisitRegionRecordResponse {
+  counted: boolean;
+  city_code: VisitRegionCode;
+  stats: VisitRegionStatsResponse;
+}
+
+export interface VisitRegionCorrectionResponse extends VisitRegionRecordResponse {
+  corrected: boolean;
+  created: boolean;
+  from_city_code: VisitRegionCode | null;
+}
+
+async function parseVisitRegionApiResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : fallbackMessage);
+  return data as T;
+}
+
+export function getKtvVisitorId(): string {
+  let visitorId = localStorage.getItem('tw_ktv_vid');
+  if (!visitorId) {
+    visitorId = `v_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    localStorage.setItem('tw_ktv_vid', visitorId);
+  }
+  return visitorId;
+}
+
 export async function checkApiHealth(timeoutMs = 10000): Promise<{ ok: boolean; persistent?: boolean; storage?: string; error?: string }> {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
@@ -25,6 +75,29 @@ export async function checkApiHealth(timeoutMs = 10000): Promise<{ ok: boolean; 
   } finally {
     window.clearTimeout(timeout);
   }
+}
+
+export async function fetchVisitRegionStats(): Promise<VisitRegionStatsResponse> {
+  const response = await fetch(`${API_BASE}/api/visit-region-stats?t=${Date.now()}`, { cache: 'no-store' });
+  return parseVisitRegionApiResponse<VisitRegionStatsResponse>(response, '到訪紀錄暫時無法讀取');
+}
+
+export async function recordVisitRegion(cityCode: VisitRegionCode): Promise<VisitRegionRecordResponse> {
+  const response = await fetch(`${API_BASE}/api/visit-region-stats/record`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ city_code: cityCode, visitor_id: getKtvVisitorId() }),
+  });
+  return parseVisitRegionApiResponse<VisitRegionRecordResponse>(response, '到訪紀錄暫時無法更新');
+}
+
+export async function correctVisitRegion(cityCode: VisitRegionCode): Promise<VisitRegionCorrectionResponse> {
+  const response = await fetch(`${API_BASE}/api/visit-region-stats/correct-region`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ city_code: cityCode, visitor_id: getKtvVisitorId() }),
+  });
+  return parseVisitRegionApiResponse<VisitRegionCorrectionResponse>(response, '到訪紀錄暫時無法更新');
 }
 
 function openDB(): Promise<IDBDatabase> {

@@ -24,13 +24,18 @@ LOGO/
 .agents
 
 # Internal planning documents (Keep Local Only)
-docs/
+docs/*
+!docs/taiwan-map-visit-stats-plan.md
+!docs/taiwan-map-visit-stats-release-checklist.md
+!docs/taiwan-map-seed-runbook.md
+!docs/taiwan-map-commit-readiness-plan.md
 
 # Internal Maintenance & Scratch Scripts (Strict Isolation)
 scratch/
-scripts/
+scripts/*
 !scripts/buildCatalogBin.js
 !scripts/checkBrandMasking.js
+!scripts/seedVisitRegionStats.js
 
 # Internal Data & Raw JSON Catalogs (Strict Isolation)
 exported_csv_batches/
