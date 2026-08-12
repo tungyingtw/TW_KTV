@@ -223,7 +223,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                 {isCatalogLoading ? (
-                  <span style={{ color: 'var(--accent-highlight)' }}>{isServerWaking ? '伺服器喚醒中' : isServerUnavailable ? '伺服器暫時未連線' : '歌庫準備中'}</span>
+                  <span style={{ color: 'var(--accent-highlight)' }}>{isServerWaking ? '資料服務喚醒中' : isServerUnavailable ? '資料服務暫時未連線' : '歌庫準備中'}</span>
                 ) : (
                   <>結果：<strong style={{ color: 'var(--accent-pink)' }}>{resultCount.toLocaleString()}</strong> 首</>
                 )}
