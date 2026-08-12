@@ -274,7 +274,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         padding: '3px 6px',
                         borderRadius: '8px',
                         background: 'var(--bg-glass, rgba(255, 255, 255, 0.06))',
-                        color: availability.color,
+                        color: 'var(--status-available-color)',
                         fontWeight: 800,
                         fontSize: '0.73rem',
                         border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
@@ -518,13 +518,13 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           >
                             <div style={{ 
                               fontWeight: 800, 
-                              color: b.color, 
+                              color: 'var(--status-available-color)',
                               fontSize: '0.88rem',
                               display: 'flex',
                               alignItems: 'center',
                               gap: '6px',
                             }}>
-                              <CheckCircle2 size={16} color={b.color} />
+                              <CheckCircle2 size={16} color="var(--status-available-color)" />
                               <span className="status-label status-availability">有收錄</span>
                             </div>
                             
@@ -573,7 +573,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         >
                           <span className="status-label status-availability" style={{
                             fontWeight: 700, 
-                            color: b.color, 
+                            color: 'var(--status-available-color)',
                             fontSize: '0.78rem',
                             lineHeight: 1.2,
                           }}>
