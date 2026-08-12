@@ -63,8 +63,8 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   };
 
   return (
-    <div style={{ padding: '8px 10px 4px', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0 }}>
-      <div className="glass-panel" style={{ padding: '10px 12px', borderRadius: '14px', width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
+    <div className="mobile-search-shell">
+      <div className="glass-panel mobile-search-panel">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
           <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
             {isSearching ? (
@@ -83,17 +83,8 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
               placeholder="搜尋歌名或歌手"
-              style={{
-                width: '100%',
-                padding: '10px 32px 10px 36px',
-                background: 'var(--bg-input, rgba(15, 23, 42, 0.7))',
-                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
-                borderRadius: '10px',
-                color: 'var(--text-primary, #ffffff)',
-                fontSize: '0.85rem',
-                outline: 'none',
-                borderColor: isInputFocused ? 'var(--accent-pink, #ec4899)' : 'var(--border-color, rgba(255, 255, 255, 0.12))',
-              }}
+              className="mobile-search-input"
+              style={{ borderColor: isInputFocused ? 'var(--accent-pink, #ec4899)' : 'var(--border-color, rgba(255, 255, 255, 0.12))' }}
             />
             {filters.searchQuery && (
               <button
@@ -109,29 +100,14 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           <button
             onClick={handleSearchComplete}
             aria-label="完成搜尋並查看結果"
-            style={{
-              padding: '8px 10px',
-              borderRadius: '10px',
-              border: '1px solid rgba(236, 72, 153, 0.42)',
-              background: filters.searchQuery
-                ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.95), rgba(168, 85, 247, 0.92))'
-                : 'rgba(255, 255, 255, 0.06)',
-              color: filters.searchQuery ? '#ffffff' : 'var(--text-secondary, #cbd5e1)',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              whiteSpace: 'nowrap',
-              cursor: 'pointer',
-              flexShrink: 0,
-              minWidth: '48px',
-            }}
+            className={`mobile-search-submit ${filters.searchQuery ? 'is-active' : ''}`}
           >
             完成
           </button>
 
           <button
             onClick={onOpenMobileFilters}
-            className="btn-secondary"
-            style={{ padding: '8px 10px', borderRadius: '10px', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+            className={`search-filter-button is-mobile ${hasActiveFilters ? 'is-active' : ''}`}
           >
             <SlidersHorizontal size={15} color={hasActiveFilters ? '#ec4899' : 'currentColor'} />
             <span>篩選</span>
@@ -146,10 +122,10 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             marginTop: '8px',
             width: '100%',
             minWidth: 0,
-            border: `1px solid ${hasActiveFilters ? 'rgba(236, 72, 153, 0.42)' : 'var(--border-color)'}`,
-            background: hasActiveFilters ? 'rgba(236, 72, 153, 0.1)' : 'var(--bg-card-hover)',
+            border: `1px solid ${hasActiveFilters ? 'rgba(219, 39, 119, 0.32)' : 'var(--border-color)'}`,
+            background: 'transparent',
             color: hasActiveFilters ? 'var(--accent-pink, #ec4899)' : 'var(--text-secondary)',
-            borderRadius: '10px',
+            borderRadius: 'var(--radius-sm)',
             padding: '7px 9px',
             display: 'flex',
             alignItems: 'center',
@@ -185,20 +161,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           {onOpenSuggestSong && (
             <button
               onClick={onOpenSuggestSong}
-              style={{
-                background: 'rgba(251, 191, 36, 0.1)',
-                border: '1px solid rgba(251, 191, 36, 0.3)',
-                borderRadius: '6px',
-                padding: '3px 8px',
-                color: '#fbbf24',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                whiteSpace: 'nowrap',
-              }}
+              className="inline-suggest-link"
             >
               <PlusCircle size={12} />
               <span>提供建議</span>

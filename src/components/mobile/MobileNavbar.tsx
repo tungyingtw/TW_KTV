@@ -92,7 +92,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
   }, []);
 
   return (
-    <header style={{
+    <header className="mobile-navbar" style={{
       position: 'sticky', top: 0, zIndex: 50,
       background: 'var(--bg-glass)',
       backdropFilter: 'blur(16px)',
@@ -102,13 +102,9 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: '1 1 auto' }}>
-            <div style={{
-              width: '32px', height: '32px', borderRadius: '8px',
-              background: 'linear-gradient(135deg, #f472b6, #c084fc)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <Mic2 size={18} color="#ffffff" />
+          <div className="mobile-navbar-brand">
+            <div className="navbar-logo-mark is-mobile">
+              <Mic2 size={17} />
             </div>
             <h1
               className="navbar-title"
@@ -118,19 +114,16 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
             </h1>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 7px',
-              borderRadius: '12px', background: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.3)',
-              fontSize: '0.7rem', fontWeight: 700, color: '#4ade80', whiteSpace: 'nowrap',
-            }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-              <span>{onlineCount.toLocaleString()} 人線上</span>
+          <div className="mobile-navbar-stats">
+            <div className="navbar-stat-text is-mobile" title="全台歌友實時線上查詢中">
+              <span className="navbar-live-dot" />
+              <strong>{onlineCount.toLocaleString()}</strong>
+              <span>線上</span>
             </div>
             <button
               type="button"
               onClick={openVisitRegionPage}
-              className="visit-region-trigger"
+              className={`visit-region-trigger navbar-stat-link is-mobile ${isStatsError ? 'is-error' : ''}`}
               title={
                 isStatsError
                   ? '全站累積查詢人數暫時無法連線同步'
@@ -138,39 +131,18 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                     ? `全台歌友累積查詢數 ${totalVisitsFullText} 人 (本機模式)`
                     : `全台歌友累積查詢與使用人數 ${totalVisitsFullText} 人 (12小時去重與 Redis 全站同步)`
               }
-              style={{
-                display: 'inline-flex', alignItems: 'center', padding: '2px 7px',
-                borderRadius: '12px',
-                background: isStatsError ? 'rgba(248, 113, 113, 0.15)' : 'rgba(168, 85, 247, 0.15)',
-                border: `1px solid ${isStatsError ? 'rgba(248, 113, 113, 0.3)' : 'rgba(168, 85, 247, 0.3)'}`,
-                fontSize: '0.7rem', fontWeight: 700,
-                color: isStatsError ? '#f87171' : '#c084fc',
-                whiteSpace: 'nowrap',
-                cursor: 'pointer',
-              }}
             >
-              <span>
-                {isStatsLoading
-                  ? '同步中...'
-                  : isStatsError
-                    ? '未同步'
-                    : `${isStatsPersistent ? '累積' : '本機'} ${totalVisitsCompactText} 人`}
-              </span>
+              <span>{isStatsLoading ? '同步中' : isStatsError ? '未同步' : isStatsPersistent ? '累積' : '本機'}</span>
+              {!isStatsLoading && !isStatsError && <strong>{totalVisitsCompactText}</strong>}
             </button>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div className="mobile-navbar-actions">
             <button
               onClick={toggleTheme}
-              className="btn-secondary"
-              style={{
-                padding: '4px 8px', fontSize: '0.75rem', borderRadius: '8px',
-                borderColor: theme === 'dark' ? 'rgba(251, 191, 36, 0.4)' : 'rgba(147, 51, 234, 0.4)',
-                color: theme === 'dark' ? '#fbbf24' : '#9333ea',
-                background: theme === 'dark' ? 'rgba(251, 191, 36, 0.1)' : 'rgba(147, 51, 234, 0.1)',
-              }}
+              className="nav-action-link is-mobile"
             >
               {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
               <span>{theme === 'dark' ? '日光' : '夜間'}</span>
@@ -179,11 +151,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
             {onOpenSuggestSong && (
               <button
                 onClick={onOpenSuggestSong}
-                className="btn-secondary"
-                style={{
-                  padding: '4px 8px', fontSize: '0.75rem', borderRadius: '8px',
-                  borderColor: 'rgba(251, 191, 36, 0.4)', color: '#fbbf24', background: 'rgba(251, 191, 36, 0.1)',
-                }}
+                className="nav-action-link nav-action-primary is-mobile"
               >
                 <PlusCircle size={14} />
                 <span>建議</span>
@@ -192,12 +160,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
 
             <a
               href="./games/"
-              className="btn-secondary"
-              style={{
-                padding: '4px 8px', fontSize: '0.75rem', borderRadius: '8px',
-                borderColor: 'rgba(34, 211, 238, 0.35)', color: '#38bdf8', background: 'rgba(34, 211, 238, 0.08)',
-                textDecoration: 'none',
-              }}
+              className="nav-action-link is-mobile"
               title="前往 KTV 小遊戲列表"
             >
               <Gamepad2 size={14} />
@@ -206,12 +169,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
 
             <button
               onClick={onOpenFavorites}
-              className="btn-secondary"
-              style={{
-                padding: '4px 8px', fontSize: '0.75rem', borderRadius: '8px',
-                borderColor: favoriteCount > 0 ? 'rgba(236, 72, 153, 0.4)' : undefined,
-                color: favoriteCount > 0 ? '#f472b6' : undefined,
-              }}
+              className={`nav-action-link is-mobile ${favoriteCount > 0 ? 'is-active' : ''}`}
             >
               <Heart size={14} fill={favoriteCount > 0 ? '#ec4899' : 'none'} color={favoriteCount > 0 ? '#ec4899' : 'currentColor'} />
               <span>歌本({favoriteCount})</span>
@@ -219,20 +177,13 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
           </div>
 
           {/* Mode Switcher */}
-          <div style={{
-            display: 'flex', background: 'var(--bg-card)',
-            padding: '2px', borderRadius: '8px', border: '1px solid var(--border-color)',
-          }}>
+          <div className="nav-view-switcher is-mobile">
             <button
               onClick={() => {
                 try { localStorage.setItem('ktv_view_mode', 'matrix'); } catch {}
                 setFilters(prev => ({ ...prev, viewMode: 'matrix' }));
               }}
-              style={{
-                background: filters.viewMode === 'matrix' ? 'var(--accent-pink)' : 'transparent',
-                color: filters.viewMode === 'matrix' ? '#fff' : 'var(--text-secondary)',
-                border: 'none', padding: '5px 8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              }}
+              className={filters.viewMode === 'matrix' ? 'is-active' : ''}
               title="列表模式 (各 KTV 廠牌一覽)"
             >
               <Table2 size={15} />
@@ -242,11 +193,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 try { localStorage.setItem('ktv_view_mode', 'cards'); } catch {}
                 setFilters(prev => ({ ...prev, viewMode: 'cards' }));
               }}
-              style={{
-                background: filters.viewMode === 'cards' ? 'var(--accent-pink)' : 'transparent',
-                color: filters.viewMode === 'cards' ? '#fff' : 'var(--text-secondary)',
-                border: 'none', padding: '5px 8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              }}
+              className={filters.viewMode === 'cards' ? 'is-active' : ''}
               title="小卡模式 (經典單首卡片)"
             >
               <LayoutGrid size={15} />

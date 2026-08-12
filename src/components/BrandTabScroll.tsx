@@ -312,7 +312,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
       </div>
 
       {selectedBrands.length > 0 && (
-        <div style={{
+        <div className="brand-selection-summary" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -331,7 +331,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             {selectedBrands.map(bId => {
               const b = brandList.find(x => x.id === bId);
               return (
-                <span key={bId} style={{
+                <span key={bId} className="brand-selection-token" style={{
                   background: b?.badgeBg || 'rgba(255,255,255,0.1)',
                   color: b?.color || '#fff',
                   padding: '2px 8px', borderRadius: '6px', fontWeight: 700, fontSize: '0.78rem',

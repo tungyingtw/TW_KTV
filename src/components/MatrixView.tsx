@@ -162,7 +162,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
     return (
       <div className="matrix-view-container" style={{ padding: '0 10px' }}>
         <div className="glass-panel" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-          <table style={{
+          <table className="data-table matrix-data-table" style={{
             width: '100%',
             tableLayout: 'fixed',
             borderCollapse: 'collapse',
@@ -266,7 +266,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ textAlign: 'center', padding: '10px 4px' }}>
-                      <span style={{
+                      <span className="status-label" style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -286,7 +286,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ textAlign: 'center', padding: '10px 4px' }}>
-                      <span style={{
+                      <span className="status-label" style={{
                         color: mvStatus.color,
                         fontWeight: 800,
                         fontSize: '0.74rem',
@@ -297,7 +297,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ textAlign: 'center', padding: '10px 4px' }}>
-                      <span style={{
+                      <span className="status-label" style={{
                         color: guidedStatus.color,
                         fontWeight: 800,
                         fontSize: '0.74rem',
@@ -323,7 +323,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   return (
     <div className="matrix-view-container" style={{ padding: '0 20px', overflowX: 'auto', scrollbarGutter: 'stable' }}>
       <div className="glass-panel" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-        <table style={{
+        <table className="data-table matrix-data-table" style={{
           width: '100%',
           minWidth: tableMinWidth,
           tableLayout: 'fixed', // 100% 固定表格版型，徹底解決語種切換與過濾時的欄位跳動偏移 Bug
@@ -421,7 +421,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         </span>
                       )}
                       {song.isNiche && (
-                        <span style={{
+                        <span className="status-label" style={{
                           fontSize: '0.68rem',
                           padding: '1px 6px',
                           borderRadius: '4px',
@@ -500,7 +500,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             background: 'var(--bg-glass, rgba(30, 41, 59, 0.4))',
                           }}
                         >
-                          <div 
+                          <div className="status-card"
                             style={{
                               display: 'inline-flex',
                               flexDirection: 'column',
@@ -523,7 +523,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                               gap: '6px',
                             }}>
                               <CheckCircle2 size={15} color={b.color} />
-                              <span>有收錄</span>
+                              <span className="status-label">有收錄</span>
                             </div>
                             
                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -568,7 +568,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          <span style={{ 
+                          <span className="status-label" style={{ 
                             fontWeight: 700, 
                             color: b.color, 
                             fontSize: '0.78rem',
