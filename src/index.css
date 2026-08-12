@@ -4837,6 +4837,75 @@ header,
   background: linear-gradient(90deg, var(--accent-support), var(--accent-highlight)) !important;
 }
 
+/* Phase 1: semantic status color split for result scanning */
+:root,
+[data-theme="dark"] {
+  --status-available-color: var(--accent-support);
+  --status-available-bg: rgba(39, 214, 199, 0.1);
+  --status-available-border: rgba(39, 214, 199, 0.3);
+  --status-mv-color: var(--accent-pink);
+  --status-mv-bg: rgba(255, 79, 163, 0.11);
+  --status-mv-border: rgba(255, 79, 163, 0.34);
+  --status-guided-color: var(--accent-highlight);
+  --status-guided-bg: rgba(255, 195, 90, 0.12);
+  --status-guided-border: rgba(255, 195, 90, 0.34);
+}
+
+[data-theme="light"] {
+  --status-available-color: var(--accent-support);
+  --status-available-bg: rgba(0, 157, 163, 0.075);
+  --status-available-border: rgba(0, 157, 163, 0.24);
+  --status-mv-color: var(--accent-primary);
+  --status-mv-bg: rgba(225, 29, 127, 0.075);
+  --status-mv-border: rgba(225, 29, 127, 0.24);
+  --status-guided-color: var(--accent-highlight);
+  --status-guided-bg: rgba(212, 122, 23, 0.085);
+  --status-guided-border: rgba(212, 122, 23, 0.26);
+}
+
+.status-availability,
+.matrix-data-table .status-label.status-availability,
+.card-view-container .status-label.status-availability {
+  color: var(--status-available-color) !important;
+}
+
+.badge-official-mv,
+.status-mv,
+.matrix-data-table .badge-official-mv,
+.matrix-data-table .status-label.status-mv,
+.card-view-container .badge-official-mv {
+  color: var(--status-mv-color) !important;
+  background: var(--status-mv-bg) !important;
+  border-color: var(--status-mv-border) !important;
+}
+
+.badge-guided-vocal,
+.status-guided,
+.matrix-data-table .badge-guided-vocal,
+.matrix-data-table .status-label.status-guided,
+.card-view-container .badge-guided-vocal {
+  color: var(--status-guided-color) !important;
+  background: var(--status-guided-bg) !important;
+  border-color: var(--status-guided-border) !important;
+}
+
+.matrix-data-table .status-label.status-mv,
+.matrix-data-table .status-label.status-guided {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 22px;
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+}
+
+.matrix-data-table .status-label.status-availability {
+  background: var(--status-available-bg) !important;
+  border-color: var(--status-available-border) !important;
+}
+
 /* KTV visual vitality phase 2.1: brighter light accents and prominent field notice */
 [data-theme="light"] {
   --accent-primary: #e11d7f;
@@ -4922,6 +4991,29 @@ header,
   top: 12px !important;
   right: 12px !important;
   background: color-mix(in srgb, var(--bg-card-hover) 55%, transparent) !important;
+}
+
+.matrix-data-table .status-label.status-empty {
+  min-width: 24px;
+  color: color-mix(in srgb, var(--text-muted) 62%, transparent) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+[data-theme="light"] .matrix-data-table .status-label.status-mv,
+[data-theme="light"] .card-view-container .badge-official-mv,
+[data-theme="light"] .matrix-data-table .badge-official-mv {
+  color: var(--status-mv-color) !important;
+  background: var(--status-mv-bg) !important;
+  border-color: var(--status-mv-border) !important;
+}
+
+[data-theme="light"] .matrix-data-table .status-label.status-guided,
+[data-theme="light"] .card-view-container .badge-guided-vocal,
+[data-theme="light"] .matrix-data-table .badge-guided-vocal {
+  color: var(--status-guided-color) !important;
+  background: var(--status-guided-bg) !important;
+  border-color: var(--status-guided-border) !important;
 }
 
 @media (max-width: 640px) {
