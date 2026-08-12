@@ -62,6 +62,7 @@ server/catalog_overrides.json
 .vs/
 .idea
 .DS_Store
+.tmp-*/
 *.suo
 *.ntvs*
 *.njsproj

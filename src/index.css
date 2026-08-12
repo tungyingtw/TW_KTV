@@ -4095,7 +4095,7 @@ body,
   color: color-mix(in srgb, var(--text-muted) 88%, transparent) !important;
 }
 
-.matrix-data-table .status-label {
+  .matrix-data-table .status-label {
   font-size: 0.74rem !important;
 }
 
@@ -4144,7 +4144,68 @@ body,
     font-size: 0.7rem !important;
   }
 
-  .matrix-data-table .status-label {
+.matrix-data-table .status-label {
     font-size: 0.68rem !important;
   }
+}
+
+/* Polish round 7 phase 1: video-reference accent rhythm */
+:root,
+[data-theme="dark"] {
+  --accent-pink: #f43f9d;
+  --accent-support: #2dd4d4;
+  --accent-cyan: #2dd4d4;
+  --accent-highlight: #f7b84b;
+  --border-glow: rgba(45, 212, 212, 0.22);
+}
+
+[data-theme="light"] {
+  --accent-pink: #c81e73;
+  --accent-support: #0f8f9a;
+  --accent-cyan: #0f8f9a;
+  --accent-highlight: #b7791f;
+  --border-glow: rgba(15, 143, 154, 0.2);
+}
+
+.nav-action-primary,
+.mobile-search-submit.is-active,
+.search-filter-button.is-active,
+.brand-chip.is-selected {
+  border-color: color-mix(in srgb, var(--accent-pink) 32%, var(--border-color)) !important;
+}
+
+.home-hero-metrics strong,
+.inline-suggest-link,
+.matrix-data-table .status-label {
+  text-shadow: none !important;
+}
+
+.matrix-data-table .badge-guided-vocal {
+  color: var(--accent-support) !important;
+}
+
+.matrix-data-table .badge-mainland {
+  color: var(--accent-highlight) !important;
+}
+
+.search-input:focus,
+.mobile-search-input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-support) 20%, transparent) !important;
+}
+
+[data-theme="dark"] .brand-chip.is-selected,
+[data-theme="dark"] .nav-action-primary,
+[data-theme="dark"] .mobile-search-submit.is-active,
+[data-theme="dark"] .search-filter-button.is-active {
+  background: color-mix(in srgb, var(--accent-pink) 9%, transparent) !important;
+}
+
+[data-theme="light"] .brand-chip.is-selected,
+[data-theme="light"] .nav-action-primary,
+[data-theme="light"] .mobile-search-submit.is-active,
+[data-theme="light"] .search-filter-button.is-active {
+  background: color-mix(in srgb, var(--accent-pink) 6%, #ffffff) !important;
 }
