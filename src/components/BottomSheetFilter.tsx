@@ -107,6 +107,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           </h3>
           <button
             onClick={onClose}
+            className="action-icon bottom-sheet-close-button"
             style={{
               background: 'var(--bg-card-hover)',
               border: 'none',
@@ -138,7 +139,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
             ].map(item => (
               <button
                 key={item.id}
-                className="bottom-sheet-option"
+                className={`bottom-sheet-option ${filters.sortBy === item.id ? 'is-selected' : ''}`}
                 onClick={() => setFilters(prev => ({ ...prev, sortBy: item.id as any }))}
                 style={{
                   padding: '10px 12px',
@@ -169,7 +170,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               return (
                 <button
                   key={item.id}
-                  className="bottom-sheet-option"
+                  className={`bottom-sheet-option ${isSelected ? 'is-selected' : ''}`}
                   onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id as any }))}
                   style={{
                     padding: '8px 4px',
@@ -195,7 +196,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
             影片與音訊品質
           </label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{
+            <label className={`bottom-sheet-toggle ${filters.onlyOfficialMv ? 'is-selected' : ''}`} style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -215,7 +216,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               />
             </label>
 
-            <label style={{
+            <label className={`bottom-sheet-toggle ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -250,7 +251,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               return (
                 <button
                   key={lang}
-                  className="bottom-sheet-option"
+                  className={`bottom-sheet-option ${isSelected ? 'is-selected' : ''}`}
                   onClick={() => toggleLanguage(lang)}
                   style={{
                     padding: '10px',
