@@ -88,9 +88,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
           background: 'var(--bg-card, #1e293b)',
           color: 'var(--text-primary, #ffffff)',
           border: '1px solid var(--border-color, rgba(248, 113, 113, 0.3))',
-          borderRadius: '16px',
-          padding: '26px',
-          boxShadow: 'var(--shadow-lg, 0 24px 60px rgba(0,0,0,0.6))',
+          borderRadius: 'var(--radius-md, 14px)',
+          padding: '22px',
+          boxShadow: 'none',
           position: 'relative',
         }}
       >
@@ -100,7 +100,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
           className="action-icon modal-close-button"
           style={{
             position: 'absolute', top: '16px', right: '16px',
-            background: 'var(--bg-glass, rgba(255,255,255,0.08))', border: 'none', borderRadius: '50%',
+            background: 'var(--bg-glass, rgba(255,255,255,0.08))', border: '1px solid var(--border-color, rgba(255,255,255,0.1))', borderRadius: 'var(--radius-sm, 8px)',
             width: '30px', height: '30px', color: 'var(--text-muted, #94a3b8)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
@@ -259,9 +259,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               className="btn-primary action-primary app-modal-submit"
               style={{
                 width: '100%',
-                background: isSubmitting ? 'rgba(248, 113, 113, 0.4)' : 'linear-gradient(135deg, #f87171, #ef4444)',
-                border: 'none',
-                borderRadius: '10px',
+                background: isSubmitting ? 'rgba(219, 39, 119, 0.22)' : 'var(--accent-primary, #8052ff)',
+                border: '1px solid var(--accent-primary, #8052ff)',
+                borderRadius: 'var(--radius-sm, 8px)',
                 padding: '11px',
                 color: '#fff',
                 fontWeight: 700,
@@ -271,7 +271,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 15px rgba(248, 113, 113, 0.3)',
+                boxShadow: 'none',
               }}
             >
               <Send size={16} />

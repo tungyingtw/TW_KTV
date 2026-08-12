@@ -4391,3 +4391,70 @@ textarea:focus {
     min-height: 40px;
   }
 }
+
+/* Polish round 8 phase 2: interactive surface density */
+.app-modal-field-grid {
+  min-width: 0;
+}
+
+.bottom-sheet-grid {
+  min-width: 0;
+}
+
+.bottom-sheet-grid .bottom-sheet-option {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: center !important;
+}
+
+.bottom-sheet-grid-sort .bottom-sheet-option {
+  text-align: left !important;
+}
+
+.bottom-sheet-toggle {
+  border: 1px solid var(--border-color) !important;
+}
+
+.favorites-drawer-content h3,
+.bottom-sheet-content h3,
+.app-modal-content h3 {
+  font-size: 1.08rem !important;
+}
+
+.app-modal-submit {
+  min-height: 44px !important;
+}
+
+[data-theme="light"] .bottom-sheet-toggle {
+  background: #ffffff !important;
+}
+
+@media (max-width: 640px) {
+  .app-modal-field-grid,
+  .app-modal-field-grid-primary,
+  .app-modal-field-grid-third {
+    grid-template-columns: 1fr !important;
+  }
+
+  .bottom-sheet-grid-sort {
+    grid-template-columns: 1fr !important;
+  }
+
+  .bottom-sheet-grid-length {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .bottom-sheet-grid-language {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .favorites-drawer-content {
+    padding: 18px !important;
+  }
+
+  .app-modal-content h3,
+  .bottom-sheet-content h3,
+  .favorites-drawer-content h3 {
+    font-size: 1rem !important;
+  }
+}

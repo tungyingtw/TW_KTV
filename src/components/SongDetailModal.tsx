@@ -102,7 +102,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             maxHeight: '88vh',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.5)',
+            boxShadow: 'none',
             border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
             overflow: 'hidden',
           }}
@@ -128,7 +128,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 right: '20px',
                 background: 'var(--bg-glass, rgba(255, 255, 255, 0.08))',
                 border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-                borderRadius: '50%',
+                borderRadius: 'var(--radius-sm, 8px)',
                 width: '34px',
                 height: '34px',
                 color: 'var(--text-secondary, #cbd5e1)',
@@ -348,7 +348,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               className="song-detail-brand-grid"
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
                 gap: '12px',
               }}
             >
