@@ -175,11 +175,11 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                 borderBottom: '2px solid var(--border-color, rgba(255, 255, 255, 0.1))',
                 color: 'var(--text-secondary, #cbd5e1)',
               }}>
-                <th style={{ padding: '10px 6px', width: '38px', textAlign: 'center' }}></th>
-                <th style={{ padding: '10px 8px' }}>歌曲</th>
-                <th style={{ padding: '10px 4px', width: '70px', textAlign: 'center' }}>收錄</th>
-                <th style={{ padding: '10px 4px', width: '42px', textAlign: 'center' }}>MV</th>
-                <th style={{ padding: '10px 4px', width: '46px', textAlign: 'center' }}>導唱</th>
+                <th style={{ padding: '9px 6px', width: '38px', textAlign: 'center' }}></th>
+                <th style={{ padding: '9px 8px' }}>歌曲</th>
+                <th style={{ padding: '9px 4px', width: '70px', textAlign: 'center' }}>收錄</th>
+                <th style={{ padding: '9px 4px', width: '42px', textAlign: 'center' }}>MV</th>
+                <th style={{ padding: '9px 4px', width: '46px', textAlign: 'center' }}>導唱</th>
               </tr>
             </thead>
             <tbody>
@@ -204,7 +204,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       cursor: 'pointer',
                     }}
                   >
-                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                    <td style={{ textAlign: 'center', padding: '9px 4px' }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
                         className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
@@ -224,8 +224,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       </button>
                     </td>
 
-                    <td style={{ padding: '10px 8px', overflow: 'hidden' }}>
-                      <div style={{
+                    <td style={{ padding: '9px 8px', overflow: 'hidden' }}>
+                      <div className="song-title-text" style={{
                         color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)',
                         fontWeight: 800,
                         fontSize: '0.92rem',
@@ -243,7 +243,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                       }}>
-                        <span style={{ color: 'var(--text-secondary, #cbd5e1)', fontWeight: 600 }}>{song.artist}</span>
+                        <span className="song-artist-text" style={{ color: 'var(--text-secondary, #cbd5e1)', fontWeight: 600 }}>{song.artist}</span>
                         {(() => {
                           const langStyle = getLanguageStyle(song.language);
                           return (
@@ -265,7 +265,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       </div>
                     </td>
 
-                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                    <td style={{ textAlign: 'center', padding: '9px 4px' }}>
                       <span className="status-label" style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -285,7 +285,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       </span>
                     </td>
 
-                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                    <td style={{ textAlign: 'center', padding: '9px 4px' }}>
                       <span className="status-label" style={{
                         color: mvStatus.color,
                         fontWeight: 800,
@@ -296,7 +296,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       </span>
                     </td>
 
-                    <td style={{ textAlign: 'center', padding: '10px 4px' }}>
+                    <td style={{ textAlign: 'center', padding: '9px 4px' }}>
                       <span className="status-label" style={{
                         color: guidedStatus.color,
                         fontWeight: 800,
@@ -337,17 +337,18 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               borderBottom: '2px solid var(--border-color, rgba(255, 255, 255, 0.1))',
               color: 'var(--text-secondary, #cbd5e1)',
             }}>
-              <th style={{ padding: '12px 10px', width: '54px', textAlign: 'center', whiteSpace: 'nowrap' }}>最愛</th>
-              <th style={{ padding: '12px 14px', width: isSingleBrand ? '35%' : (isFewBrands ? '32%' : '300px') }}>歌名 / 歌手 / 創作者</th>
-              <th style={{ padding: '12px 10px', width: '68px', textAlign: 'center' }}>語種</th>
+              <th style={{ padding: '9px 10px', width: '54px', textAlign: 'center', whiteSpace: 'nowrap' }}>最愛</th>
+              <th style={{ padding: '9px 14px', width: isSingleBrand ? '35%' : (isFewBrands ? '32%' : '300px') }}>歌名 / 歌手 / 創作者</th>
+              <th style={{ padding: '9px 10px', width: '68px', textAlign: 'center' }}>語種</th>
 
               {activeBrands.map(b => {
                 const isMultiHighlighted = selectedBrands.includes(b.id);
                 return (
-                  <th 
+                  <th
+                    className="brand-column-cell"
                     key={b.id} 
                     style={{ 
-                      padding: '12px 8px',
+                      padding: '9px 8px',
                       textAlign: 'center', 
                       whiteSpace: 'nowrap',
                       color: b.color,
@@ -356,12 +357,12 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       width: isSingleBrand ? '360px' : (isFewBrands ? '180px' : '90px'),
                     }}
                   >
-                    {isSingleBrand ? `【${b.shortName}】收錄狀態與詳細` : (isMultiHighlighted ? `✓ ${b.shortName}` : b.shortName)}
+                    <span className="brand-column-label">{isSingleBrand ? `【${b.shortName}】收錄狀態與詳細` : (isMultiHighlighted ? `✓ ${b.shortName}` : b.shortName)}</span>
                   </th>
                 );
               })}
 
-              <th style={{ padding: '12px 10px', textAlign: 'center', width: '70px' }}>預覽</th>
+              <th style={{ padding: '9px 10px', textAlign: 'center', width: '70px' }}>預覽</th>
             </tr>
           </thead>
           <tbody>
@@ -386,7 +387,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   }}
                 >
                   {/* Favorite Toggle */}
-                  <td style={{ textAlign: 'center', padding: '10px 8px' }}>
+                  <td style={{ textAlign: 'center', padding: '9px 8px' }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
                       className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
@@ -412,8 +413,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   </td>
 
                   {/* Song Title & Artist & Authors */}
-                  <td style={{ padding: '10px 14px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <div style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.96rem', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                  <td style={{ padding: '9px 14px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div className="song-title-text" style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.96rem', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                       <span style={{ color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{song.title}</span>
                       {song.isMainlandViral && (
                         <span className="badge badge-mainland" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
@@ -434,8 +435,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-secondary, #cbd5e1)' }}>{song.artist}</span>
+                    <div className="song-meta-text" style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span className="song-artist-text" style={{ fontWeight: 600, color: 'var(--text-secondary, #cbd5e1)' }}>{song.artist}</span>
                       {(lyricist || composer) && (
                         <span style={{ fontSize: '0.78rem', marginLeft: '6px', opacity: 0.8 }}>
                           (詞: {lyricist || '—'} / 曲: {composer || '—'})
@@ -445,7 +446,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   </td>
 
                   {/* Language Tag */}
-                  <td style={{ textAlign: 'center', padding: '10px 6px' }}>
+                  <td style={{ textAlign: 'center', padding: '9px 6px' }}>
                     {(() => {
                       const langStyle = getLanguageStyle(song.language);
                       return (
@@ -470,7 +471,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
                     if (!isBrandAvailable(status)) {
                       return (
-                        <td 
+                        <td
+                          className="brand-column-cell"
                           key={b.id} 
                           style={{ 
                             textAlign: 'center', 
@@ -491,7 +493,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
                     if (isSingleBrand) {
                       return (
-                        <td 
+                        <td
+                          className="brand-column-cell"
                           key={b.id}
                           style={{
                             textAlign: 'center',
@@ -549,7 +552,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     }
 
                     return (
-                      <td 
+                      <td
+                        className="brand-column-cell"
                         key={b.id}
                         style={{
                           textAlign: 'center',
@@ -600,7 +604,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   })}
 
                   {/* Preview Link */}
-                  <td style={{ textAlign: 'center', padding: '10px 6px' }}>
+                  <td style={{ textAlign: 'center', padding: '9px 6px' }}>
                     {getYoutubeReferenceUrl(song) ? (
                       <a
                         href={getYoutubeReferenceUrl(song)}

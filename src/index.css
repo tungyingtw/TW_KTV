@@ -2406,14 +2406,14 @@ tr:hover {
 .data-table th {
   color: var(--text-muted) !important;
   font-size: 0.76rem !important;
-  font-weight: 850 !important;
+  font-weight: 800 !important;
   letter-spacing: 0 !important;
-  background: color-mix(in srgb, var(--bg-card-hover) 46%, var(--bg-card)) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 38%, var(--bg-card)) !important;
   border-bottom: 1px solid var(--border-color) !important;
 }
 
 .data-table td {
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 58%, transparent) !important;
 }
 
 .data-table tr {
@@ -2421,7 +2421,20 @@ tr:hover {
 }
 
 .data-table tr:hover {
-  background: color-mix(in srgb, var(--bg-card-hover) 40%, transparent) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 34%, transparent) !important;
+}
+
+.matrix-data-table tr[style*="rgba(236, 72, 153, 0.12)"] {
+  background: rgba(219, 39, 119, 0.075) !important;
+}
+
+.matrix-data-table th[style*="rgba(168, 85, 247, 0.12)"],
+.matrix-data-table th[style*="rgba(30, 41, 59, 0.6)"] {
+  background: color-mix(in srgb, var(--bg-card-hover) 44%, var(--bg-card)) !important;
+}
+
+.matrix-data-table .brand-column-cell {
+  border-left-color: color-mix(in srgb, var(--border-color) 78%, transparent) !important;
 }
 
 .matrix-data-table .badge,
@@ -2445,7 +2458,7 @@ tr:hover {
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  font-weight: 800 !important;
+  font-weight: 780 !important;
   line-height: 1.2;
 }
 
@@ -2993,4 +3006,44 @@ tr:hover {
 [data-theme="light"] .brand-selection-summary,
 [data-theme="light"] .brand-selection-summary.is-mobile {
   background: #ffffff !important;
+}
+
+/* Polish round 2: typography and table readability */
+.navbar-title,
+.home-hero-title,
+.visit-region-page-title h1 {
+  font-weight: 820 !important;
+}
+
+.home-hero-metrics strong,
+.collab-notice h2,
+.search-filter-button,
+.mobile-search-submit,
+.nav-action-link,
+.nav-view-switcher button {
+  font-weight: 760 !important;
+}
+
+.data-table .song-title-text {
+  font-weight: 800 !important;
+}
+
+.data-table .song-artist-text {
+  font-weight: 680 !important;
+}
+
+.data-table .song-meta-text {
+  font-weight: 540 !important;
+}
+
+.data-table .brand-column-label {
+  font-weight: 700 !important;
+}
+
+.data-table .status-label {
+  font-weight: 780 !important;
+}
+
+.data-table .muted-label {
+  font-weight: 580 !important;
 }
