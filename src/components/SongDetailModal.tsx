@@ -109,6 +109,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
         >
           {/* Scrollable Modal Content */}
           <div
+            className="song-detail-modal-body"
             style={{
               width: '100%',
               maxHeight: '88vh',
@@ -141,7 +142,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               <X size={18} />
             </button>
 
-            <div style={{ paddingRight: '44px' }}>
+            <div className="song-detail-modal-heading" style={{ paddingRight: '44px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 {(() => {
                   const langStyle = getLanguageStyle(displayLanguage);
@@ -170,6 +171,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               </div>
 
               <h2
+                className="song-detail-title"
                 style={{
                   fontSize: '1.65rem',
                   fontWeight: 800,
@@ -215,6 +217,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             {/* Song identification hint */}
             {getMeaningfulLyricsSnippet(song) ? (
               <div
+                className="song-detail-note song-detail-note-lyrics"
                 style={{
                   background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))',
                   padding: '14px 18px',
@@ -234,6 +237,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               </div>
             ) : (
               <div
+                className="song-detail-note song-detail-note-muted"
                 style={{
                   background: 'var(--bg-glass, rgba(255, 255, 255, 0.02))',
                   padding: '10px 14px',
@@ -254,6 +258,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
             {/* 歡唱建議與技巧提示 */}
             <div
+              className="song-detail-info-box"
               style={{
                 background: 'var(--bg-glass, rgba(255, 255, 255, 0.03))',
                 border: '1px solid var(--border-color, rgba(255, 255, 255, 0.06))',
@@ -298,6 +303,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             {/* YouTube Link Banner */}
             {getYoutubeReferenceUrl(song) && (
               <a
+                className="song-detail-youtube-link"
                 href={getYoutubeReferenceUrl(song)}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -324,6 +330,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
             {/* 10 KTV Brands Availability Table */}
             <h4
+              className="song-detail-section-title"
               style={{
                 fontSize: '0.98rem',
                 fontWeight: 700,
@@ -338,6 +345,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </h4>
 
             <div
+              className="song-detail-brand-grid"
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
@@ -351,6 +359,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 if (!isBrandAvailable(status)) {
                   return (
                     <div
+                      className="song-detail-brand-card is-unavailable"
                       key={b.id}
                       style={{
                         padding: '10px 14px',
@@ -371,6 +380,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
 
                 return (
                   <div
+                    className="song-detail-brand-card is-available"
                     key={b.id}
                     style={{
                       padding: '10px 14px',
@@ -425,7 +435,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             </div>
 
             {/* 回報錯誤按鈕 */}
-            <div style={{ marginTop: '24px', borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingTop: '16px' }}>
+            <div className="song-detail-report-row" style={{ marginTop: '24px', borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingTop: '16px' }}>
               <button
                 onClick={() => setShowReport(true)}
                 className="action-text-link report-action-link"
