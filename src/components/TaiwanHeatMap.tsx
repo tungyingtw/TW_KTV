@@ -47,11 +47,11 @@ type TaiwanHeatMapProps = {
 };
 
 const FULL_TAIWAN_VIEW_BOX = '0 0 1000 1000';
-const DEFAULT_MAP_SCALE = 1.16;
-const DEFAULT_MAP_OFFSET_X = -72;
-const DEFAULT_MAP_OFFSET_Y = 0;
-const MAP_OFFSET_X_LIMIT = 360;
-const MAP_OFFSET_Y_LIMIT = 190;
+const DEFAULT_MAP_SCALE = 1.04;
+const DEFAULT_MAP_OFFSET_X = -32;
+const DEFAULT_MAP_OFFSET_Y = 10;
+const MAP_OFFSET_X_LIMIT = 260;
+const MAP_OFFSET_Y_LIMIT = 160;
 
 const REGION_ANCHOR_POINTS: Record<string, { x: number; y: number }> = {
   TWKIN: { x: 153.8, y: 422.9 },

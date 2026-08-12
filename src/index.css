@@ -469,7 +469,7 @@ textarea:focus {
   padding: 18px;
   min-height: 680px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background:
     linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(5, 8, 22, 0.78)),
     radial-gradient(circle at 50% 42%, rgba(56, 189, 248, 0.14), transparent 34%),
@@ -486,6 +486,7 @@ textarea:focus {
     linear-gradient(90deg, rgba(56, 189, 248, 0.045) 1px, transparent 1px);
   background-size: 36px 36px;
   mask-image: radial-gradient(circle at 50% 48%, #000 0%, transparent 70%);
+  overflow: hidden;
 }
 
 .taiwan-demo-map-panel::after {
@@ -493,8 +494,8 @@ textarea:focus {
   position: absolute;
   left: 50%;
   top: 54%;
-  width: min(70%, 620px);
-  height: min(44%, 340px);
+  width: min(72vw, 620px);
+  aspect-ratio: 1;
   pointer-events: none;
   border-radius: 50%;
   border: 1px solid rgba(56, 189, 248, 0.13);
@@ -594,7 +595,8 @@ textarea:focus {
   display: grid;
   place-items: center;
   min-height: 600px;
-  overflow: hidden;
+  padding: 22px 18px 88px;
+  overflow: visible;
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -605,7 +607,7 @@ textarea:focus {
 }
 
 .taiwan-demo-map {
-  width: min(100%, 680px);
+  width: min(100%, 640px);
   height: auto;
   filter: url(#taiwan-demo-soft-glow) drop-shadow(0 22px 28px rgba(0, 0, 0, 0.34));
   position: relative;
@@ -1091,7 +1093,7 @@ textarea:focus {
   }
 
   .visit-region-modal-grid .taiwan-demo-map-wrap {
-    min-height: 440px;
+    min-height: 500px;
   }
 
   .taiwan-demo-shell {
@@ -1114,6 +1116,10 @@ textarea:focus {
     padding: 14px;
   }
 
+  .taiwan-demo-map-panel::after {
+    width: min(84vw, 440px);
+  }
+
   .taiwan-demo-map-tools {
     position: relative;
     inset: auto;
@@ -1130,7 +1136,8 @@ textarea:focus {
   }
 
   .taiwan-demo-map-wrap {
-    min-height: 450px;
+    min-height: 500px;
+    padding: 18px 8px 118px;
   }
 
   .taiwan-demo-map-action {
