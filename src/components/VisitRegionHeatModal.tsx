@@ -11,6 +11,7 @@ type VisitRegionHeatModalProps = {
 
 type VisitRegionHeatContentProps = {
   onClose?: () => void;
+  compactHeader?: boolean;
 };
 
 const FALLBACK_REGION_LABELS: Record<string, string> = {
@@ -49,7 +50,7 @@ function parseTaiwanMapSvg(svgText: string): RegionPath[] {
     .filter((path) => path.id && path.d);
 }
 
-export function VisitRegionHeatContent({ onClose }: VisitRegionHeatContentProps) {
+export function VisitRegionHeatContent({ onClose, compactHeader = false }: VisitRegionHeatContentProps) {
   const [regions, setRegions] = useState<RegionPath[]>([]);
   const [stats, setStats] = useState<VisitRegionStatsResponse | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -162,17 +163,19 @@ export function VisitRegionHeatContent({ onClose }: VisitRegionHeatContentProps)
 
   return (
     <>
-      <header className="visit-region-modal-header">
-        <div>
-          <span><Activity size={15} /> 全台 KTV 歌友</span>
-          <h2 id="visit-region-modal-title">歌友熱度分布</h2>
-        </div>
-        {onClose && (
-          <button type="button" onClick={onClose} aria-label="關閉歌友熱度分布">
-            <X size={20} />
-          </button>
-        )}
-      </header>
+      {!compactHeader && (
+        <header className="visit-region-modal-header">
+          <div>
+            <span><Activity size={15} /> 全台 KTV 歌友</span>
+            <h2 id="visit-region-modal-title">歌友熱度分布</h2>
+          </div>
+          {onClose && (
+            <button type="button" onClick={onClose} aria-label="關閉歌友熱度分布">
+              <X size={20} />
+            </button>
+          )}
+        </header>
+      )}
 
       {isLoading && <div className="visit-region-modal-state">熱度讀取中...</div>}
       {!isLoading && error && <div className="visit-region-modal-state is-error">{error}</div>}
