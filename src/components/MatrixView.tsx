@@ -92,17 +92,17 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   if (songs.length === 0) {
     return (
       <div style={{ padding: '0 20px' }}>
-        <div className="glass-panel" style={{
+        <div className="glass-panel empty-state-panel" style={{
           padding: '44px 24px',
           textAlign: 'center',
           color: 'var(--text-secondary)',
           border: isSingleBrand ? `1px solid ${currentBrandInfo?.color}44` : '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-          borderRadius: '16px',
+          borderRadius: 'var(--radius-md)',
           background: 'var(--bg-glass, rgba(30, 41, 59, 0.5))',
           maxWidth: '800px',
           margin: '0 auto',
         }}>
-          <Disc size={52} color={currentBrandInfo?.color || "var(--text-muted)"} style={{ marginBottom: '12px', filter: currentBrandInfo ? `drop-shadow(0 0 10px ${currentBrandInfo.color}66)` : 'none' }} />
+          <Disc size={36} color="var(--text-muted)" style={{ marginBottom: '12px' }} />
           
           <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary, #fff)', fontWeight: 800 }}>
             {isSingleBrand ? `📍 【${currentBrandInfo?.name}】目前尚無資料` : '未找到符合條件的歌曲'}
@@ -129,14 +129,13 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   lyricist: '', composer: '', language: '國語', zhuyin: '', pinyin: '', releaseYear: 2024, lyricsSnippet: '', brands: {} as any
                 });
               }}
-              className="btn-primary"
+              className="btn-primary action-primary"
               style={{
                 padding: '10px 22px',
                 fontSize: '0.9rem',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: `linear-gradient(135deg, ${currentBrandInfo?.color || '#ec4899'}, #8b5cf6)`,
               }}
             >
               <Flag size={16} />
@@ -207,7 +206,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     <td style={{ textAlign: 'center', padding: '9px 4px' }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
-                        className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
+                        className={`heart-icon-btn action-icon ${isFav ? 'heart-active' : ''}`}
                         style={{
                           background: 'none',
                           border: 'none',
@@ -220,7 +219,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         }}
                         title={isFav ? '移出歌本' : '加入歌本'}
                       >
-                        <Heart size={17} fill={isFav ? 'var(--accent-pink, #ec4899)' : 'none'} />
+                        <Heart size={18} fill={isFav ? 'var(--accent-pink, #ec4899)' : 'none'} />
                       </button>
                     </td>
 
@@ -390,7 +389,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   <td style={{ textAlign: 'center', padding: '9px 8px' }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
-                      className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
+                      className={`heart-icon-btn action-icon ${isFav ? 'heart-active' : ''}`}
                       style={{
                         background: 'none',
                         border: 'none',
@@ -525,7 +524,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                               alignItems: 'center',
                               gap: '6px',
                             }}>
-                              <CheckCircle2 size={15} color={b.color} />
+                              <CheckCircle2 size={16} color={b.color} />
                               <span className="status-label">有收錄</span>
                             </div>
                             

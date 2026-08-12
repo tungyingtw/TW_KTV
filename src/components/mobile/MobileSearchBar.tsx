@@ -68,9 +68,9 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
           <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
             {isSearching ? (
-              <Loader2 size={16} color="var(--accent-pink)" style={{ position: 'absolute', left: '12px', animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={16} color="currentColor" style={{ position: 'absolute', left: '12px', animation: 'spin 1s linear infinite' }} />
             ) : (
-              <Search size={16} color="var(--text-secondary)" style={{ position: 'absolute', left: '12px' }} />
+              <Search size={16} color="currentColor" style={{ position: 'absolute', left: '12px' }} />
             )}
             <input
               ref={inputRef}
@@ -90,7 +90,8 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               <button
                 onClick={handleClearQuery}
                 aria-label="清除搜尋文字"
-                style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                className="action-icon search-clear-button is-mobile"
+                style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
               >
                 <X size={16} />
               </button>
@@ -109,7 +110,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             onClick={onOpenMobileFilters}
             className={`search-filter-button is-mobile ${hasActiveFilters ? 'is-active' : ''}`}
           >
-            <SlidersHorizontal size={15} color={hasActiveFilters ? '#ec4899' : 'currentColor'} />
+            <SlidersHorizontal size={16} />
             <span>篩選</span>
           </button>
         </div>
@@ -139,7 +140,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', fontSize: '0.78rem', fontWeight: 700 }}>
             {getFilterSummary()}
           </span>
-          <SlidersHorizontal size={14} />
+          <SlidersHorizontal size={16} />
         </button>
 
         <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
@@ -163,7 +164,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               onClick={onOpenSuggestSong}
               className="inline-suggest-link"
             >
-              <PlusCircle size={12} />
+              <PlusCircle size={16} />
               <span>提供建議</span>
             </button>
           )}
