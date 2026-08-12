@@ -4064,3 +4064,87 @@ body,
     max-width: 2.5em;
   }
 }
+
+/* Polish round 6 phase 2: matrix result readability */
+.matrix-data-table {
+  line-height: 1.35;
+}
+
+.matrix-data-table th {
+  font-size: 0.72rem !important;
+  text-transform: none;
+}
+
+.matrix-data-table td:first-child,
+.matrix-data-table th:first-child {
+  width: 48px !important;
+}
+
+.matrix-data-table .song-title-text {
+  align-items: baseline !important;
+  gap: 6px !important;
+}
+
+.matrix-data-table .song-title-text > span:first-child {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.matrix-data-table .song-meta-text {
+  margin-top: 3px !important;
+  color: color-mix(in srgb, var(--text-muted) 88%, transparent) !important;
+}
+
+.matrix-data-table .status-label {
+  font-size: 0.74rem !important;
+}
+
+.matrix-data-table .badge,
+.matrix-data-table [class*="badge"] {
+  font-size: 0.58rem !important;
+  line-height: 1.2;
+}
+
+.matrix-data-table td.brand-column-cell {
+  vertical-align: middle !important;
+}
+
+.matrix-data-table td.brand-column-cell:not(:has(.status-label)) {
+  font-size: 0.76rem !important;
+  opacity: 0.68;
+}
+
+.matrix-data-table .btn-secondary {
+  min-width: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+@media (max-width: 640px) {
+  .matrix-view-container {
+    padding-inline: 6px !important;
+  }
+
+  .matrix-data-table {
+    font-size: 0.76rem !important;
+  }
+
+  .matrix-data-table th {
+    font-size: 0.68rem !important;
+  }
+
+  .matrix-data-table .song-title-text {
+    font-size: 0.86rem !important;
+  }
+
+  .matrix-data-table .song-meta-text {
+    font-size: 0.7rem !important;
+  }
+
+  .matrix-data-table .status-label {
+    font-size: 0.68rem !important;
+  }
+}
