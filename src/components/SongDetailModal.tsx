@@ -289,7 +289,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary, #cbd5e1)', lineHeight: 1.6 }}>
-                歡唱提示：可在包廂點歌時利用伴唱機升降調按鍵調整 Key（男唱女歌建議降 3-4 調、女唱男歌建議升 3-4 調），隨心切換原聲導唱體驗最佳音感。
+                歡唱提示：可在包廂點歌時利用伴唱機升降調按鍵調整 Key（男唱女歌建議降 3-4 調、女唱男歌建議升 3-4 調），搭配導唱或伴奏找到最適合自己的音域。
               </p>
             </div>
 
