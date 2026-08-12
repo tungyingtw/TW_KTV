@@ -323,9 +323,9 @@ export const CardView: React.FC<CardViewProps> = ({
                       gap: '4px',
                       fontSize: '0.8rem',
                       fontWeight: 700,
-                      color: b.color,
+                      color: 'var(--status-available-color)',
                     }}>
-                      <CheckCircle2 size={16} color={b.color} />
+                      <CheckCircle2 size={16} color="var(--status-available-color)" />
                       <span className="status-label status-availability">有收錄</span>
                     </div>
                   </div>
