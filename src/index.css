@@ -3439,6 +3439,97 @@ a.action-text-link {
   color: var(--text-secondary) !important;
 }
 
+/* Polish round 5 phase 3: brand rail and matrix scanning */
+.brand-chip {
+  min-height: 32px !important;
+  padding-inline: 10px !important;
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.8rem !important;
+  font-weight: 720 !important;
+  box-shadow: none !important;
+}
+
+.brand-chip.is-selected {
+  background: rgba(219, 39, 119, 0.085) !important;
+  border-color: rgba(219, 39, 119, 0.36) !important;
+  color: var(--accent-pink) !important;
+}
+
+.brand-chip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matrix-view-container {
+  scrollbar-gutter: stable;
+}
+
+.matrix-view-container .glass-panel {
+  border-color: color-mix(in srgb, var(--border-color) 82%, transparent) !important;
+}
+
+.matrix-data-table {
+  font-size: 0.84rem !important;
+}
+
+.matrix-data-table th {
+  height: 38px;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+.matrix-data-table td {
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+.matrix-data-table .song-title-text {
+  font-size: 0.92rem !important;
+  line-height: 1.25;
+}
+
+.matrix-data-table .song-meta-text {
+  font-size: 0.76rem !important;
+  line-height: 1.3;
+}
+
+.matrix-data-table .brand-column-label {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.matrix-data-table .brand-column-cell {
+  background: color-mix(in srgb, var(--bg-card-hover) 18%, transparent) !important;
+}
+
+.matrix-data-table .brand-column-cell .status-card {
+  min-width: 168px !important;
+  padding: 7px 12px !important;
+}
+
+.matrix-data-table td.brand-column-cell:not(:has(.status-label)):not(:has(.status-card)) {
+  color: color-mix(in srgb, var(--text-muted) 66%, transparent) !important;
+}
+
+[data-theme="light"] .brand-chip {
+  background: #fff !important;
+}
+
+[data-theme="light"] .brand-chip.is-selected {
+  background: rgba(190, 24, 93, 0.06) !important;
+  border-color: rgba(190, 24, 93, 0.26) !important;
+}
+
+[data-theme="light"] .matrix-data-table .brand-column-cell {
+  background: rgba(15, 23, 42, 0.018) !important;
+}
+
 @media (max-width: 640px) {
   .toast-notification-container {
     bottom: 18px !important;
@@ -3449,6 +3540,14 @@ a.action-text-link {
 
 /* Polish round 5 phase 1: mobile first-screen QA */
 @media (max-width: 640px) {
+  .brand-chip {
+    min-height: 30px !important;
+    min-width: auto !important;
+    max-width: 136px;
+    padding-inline: 9px !important;
+    font-size: 0.74rem !important;
+  }
+
   .collab-notice {
     margin-top: 6px !important;
     margin-bottom: 8px !important;
