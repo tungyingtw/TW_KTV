@@ -6129,4 +6129,11 @@ header,
     padding-top: 12px !important;
     padding-bottom: 12px !important;
   }
+
+  .toast-notification-container {
+    --toast-top: 74px;
+    --toast-bottom: auto;
+    max-width: calc(100vw - 28px) !important;
+    white-space: normal !important;
+  }
 }
