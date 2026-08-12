@@ -464,7 +464,7 @@ export function App() {
     setFavorites(prev => {
       const exists = prev.includes(songId);
       if (exists) {
-        showToast('已自歌本移除');
+        showToast('已從歌本移除');
         return prev.filter(id => id !== songId);
       } else {
         showToast('已加入歌本');
