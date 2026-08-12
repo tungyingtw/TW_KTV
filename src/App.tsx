@@ -710,7 +710,7 @@ export function App() {
       {/* Main Content Area */}
       <main ref={resultsRegionRef} style={{ flex: 1, paddingBottom: '60px', scrollMarginTop: isMobile ? '12px' : '24px' }}>
         {isLoadingCatalog || (!isCatalogReady && !catalogLoadError) ? (
-          <div style={{
+          <div className="loading-state-panel" style={{
             textAlign: 'center',
             padding: '60px 24px',
             color: 'var(--text-secondary)',
@@ -726,8 +726,8 @@ export function App() {
             transition: 'opacity 0.38s ease-out, transform 0.38s ease-out',
             pointerEvents: isFadingOut ? 'none' : 'auto'
           }}>
-            <div style={{ display: 'inline-block', marginBottom: '20px' }}>
-              <Music size={52} style={{ color: 'var(--accent-primary)', filter: 'drop-shadow(0 0 12px rgba(128, 82, 255, 0.45))' }} />
+            <div className="loading-state-icon" style={{ display: 'inline-block', marginBottom: '20px' }}>
+              <Music size={36} style={{ color: 'var(--text-muted)' }} />
             </div>
 
             <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '8px' }}>
@@ -746,7 +746,7 @@ export function App() {
             </p>
 
             {/* 進度條容器 */}
-            <div style={{
+            <div className="loading-progress-track" style={{
               width: '100%',
               height: '14px',
               background: 'rgba(128, 82, 255, 0.12)',
@@ -757,7 +757,7 @@ export function App() {
               boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4)'
             }}>
               {/* 平滑填滿進度條 (0% ~ 100%) */}
-              <div style={{
+              <div className="loading-progress-fill" style={{
                 width: `${displayProgress}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-pink), var(--accent-support))',
@@ -794,7 +794,7 @@ export function App() {
             </div>
           </div>
         ) : catalogLoadError ? (
-          <div style={{
+          <div className="error-state-panel" style={{
             textAlign: 'center',
             padding: '48px 24px',
             color: 'var(--text-secondary)',
@@ -814,7 +814,7 @@ export function App() {
             margin: isMobile ? '14px 10px' : '24px auto',
             maxWidth: '620px',
           }}>
-            <Music size={42} style={{ color: 'var(--accent-highlight)', marginBottom: '14px' }} />
+            <Music size={36} style={{ color: 'var(--text-muted)', marginBottom: '14px' }} />
             <h3 style={{ color: 'var(--text-primary)', fontSize: isMobile ? '1rem' : '1.15rem', marginBottom: '8px' }}>
               目前沒有符合條件的歌曲
             </h3>

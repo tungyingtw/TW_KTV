@@ -48,7 +48,7 @@ export const CardView: React.FC<CardViewProps> = ({
   if (songs.length === 0) {
     return (
       <div style={{ padding: '0 20px' }}>
-        <div className="glass-panel" style={{
+        <div className="glass-panel empty-state-panel" style={{
           padding: '44px 24px',
           textAlign: 'center',
           color: 'var(--text-secondary)',
@@ -58,9 +58,9 @@ export const CardView: React.FC<CardViewProps> = ({
           maxWidth: '800px',
           margin: '0 auto',
         }}>
-          <Disc size={52} color={currentBrandInfo?.color || "var(--text-muted)"} style={{ marginBottom: '12px', filter: currentBrandInfo ? `drop-shadow(0 0 10px ${currentBrandInfo.color}66)` : 'none' }} />
+          <Disc size={36} color="var(--text-muted)" style={{ marginBottom: '12px' }} />
           
-          <h3 style={{ fontSize: '1.25rem', color: '#fff', fontWeight: 800 }}>
+          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 800 }}>
             {isSingleBrand ? `📍 【${currentBrandInfo?.name}】目前尚無資料` : '未找到符合條件的歌曲'}
           </h3>
 
@@ -85,7 +85,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   lyricist: '', composer: '', language: '國語', zhuyin: '', pinyin: '', releaseYear: 2024, lyricsSnippet: '', brands: {} as any
                 });
               }}
-              className="btn-primary"
+              className="btn-primary action-primary"
               style={{
                 padding: '10px 22px',
                 fontSize: '0.9rem',
@@ -205,7 +205,7 @@ export const CardView: React.FC<CardViewProps> = ({
                     e.stopPropagation();
                     onToggleFavorite(song.id);
                   }}
-                  className={`heart-icon-btn ${isFav ? 'heart-active' : ''}`}
+                  className={`heart-icon-btn action-icon ${isFav ? 'heart-active' : ''}`}
                   style={{
                     background: isFav ? 'rgba(236, 72, 153, 0.15)' : 'rgba(255, 255, 255, 0.06)',
                     border: `1px solid ${isFav ? 'rgba(236, 72, 153, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
@@ -365,6 +365,7 @@ export const CardView: React.FC<CardViewProps> = ({
                 <button
                   onClick={e => { e.stopPropagation(); setReportingSong(song); }}
                   title="回報資料錯誤"
+                  className="action-text-link"
                   style={{
                     background: 'none',
                     border: 'none',
@@ -388,6 +389,7 @@ export const CardView: React.FC<CardViewProps> = ({
 
               <button
                 onClick={() => onSelectSongDetail(song)}
+                className="action-text-link"
                 style={{
                   background: 'none',
                   border: 'none',
