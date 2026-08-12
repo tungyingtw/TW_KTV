@@ -341,7 +341,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 gap: '6px',
               }}
             >
-              多家 KTV 門市 / 廠牌收錄狀態：
+              各 KTV 收錄與版本狀態
             </h4>
 
             <div
