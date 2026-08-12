@@ -385,7 +385,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
           <button
             onClick={e => { e.stopPropagation(); handleGuideVote('guided'); }}
             disabled={isGuideVoting}
-            title="現場可切換或播放導唱人聲"
+            title="現場可切換或播放導唱"
             style={{
               ...buttonBaseStyle,
               background: userGuideVote === 'guided' ? 'rgba(34,211,238,0.2)' : 'rgba(255,255,255,0.04)',
@@ -403,7 +403,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
           <button
             onClick={e => { e.stopPropagation(); handleGuideVote('none'); }}
             disabled={isGuideVoting}
-            title="現場無法使用導唱人聲"
+            title="現場無法使用導唱"
             style={{
               ...buttonBaseStyle,
               background: userGuideVote === 'none' ? 'rgba(251,146,60,0.22)' : 'rgba(255,255,255,0.04)',
