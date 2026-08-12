@@ -3991,3 +3991,76 @@ body,
     white-space: normal;
   }
 }
+
+/* Polish round 6 phase 1: mobile navigation durability */
+@media (max-width: 640px) {
+  .mobile-navbar {
+    padding: 8px 10px !important;
+    gap: 7px !important;
+  }
+
+  .mobile-navbar-brand {
+    flex: 1 1 auto;
+    max-width: 62vw !important;
+  }
+
+  .mobile-navbar-brand .navbar-logo-mark {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .mobile-navbar-actions {
+    gap: 4px !important;
+    padding-bottom: 0 !important;
+  }
+
+  .nav-action-link.is-mobile,
+  .nav-view-switcher.is-mobile button {
+    min-height: 32px !important;
+    padding-inline: 8px !important;
+    gap: 5px !important;
+    font-size: 0.74rem !important;
+    flex: 0 0 auto;
+  }
+
+  .nav-action-link.is-mobile span {
+    display: inline-block;
+    max-width: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nav-action-primary.is-mobile span {
+    max-width: 5.2em;
+  }
+
+  .nav-view-switcher.is-mobile {
+    flex: 0 0 auto;
+  }
+
+  .mobile-search-panel {
+    padding: 9px 10px !important;
+  }
+
+  .mobile-search-input {
+    min-height: 38px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .mobile-search-submit,
+  .search-filter-button.is-mobile {
+    min-height: 36px !important;
+    padding-inline: 9px !important;
+    font-size: 0.76rem !important;
+    flex: 0 0 auto;
+  }
+
+  .search-filter-button.is-mobile {
+    gap: 5px !important;
+  }
+
+  .search-filter-button.is-mobile span {
+    max-width: 2.5em;
+  }
+}
