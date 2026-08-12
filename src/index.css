@@ -6541,3 +6541,64 @@ header,
 [data-theme="light"] .quality-toggle-row {
   background: #ffffff !important;
 }
+
+/* Data presentation phase 5: secondary surfaces and attached flows */
+.visit-region-page-card,
+.visit-region-modal,
+.site-info-panel,
+.app-modal-content,
+.drawer-content,
+.song-detail-modal-content {
+  border: 1px solid color-mix(in srgb, var(--border-color) 86%, var(--status-available-color) 10%) !important;
+}
+
+.visit-region-page-title > span,
+.site-info-guide [style*="KTV"],
+.app-modal-content label,
+.bottom-sheet-content label {
+  letter-spacing: 0 !important;
+}
+
+.site-info-panel {
+  border-left: 3px solid color-mix(in srgb, var(--status-mv-color) 44%, var(--border-color)) !important;
+}
+
+.site-info-guide article.site-info-panel {
+  border-left-color: var(--status-available-color) !important;
+}
+
+.app-modal-content label,
+.bottom-sheet-content label {
+  color: var(--text-secondary) !important;
+  font-weight: 800 !important;
+}
+
+.app-modal-content input:focus,
+.app-modal-content select:focus,
+.app-modal-content textarea:focus,
+.bottom-sheet-content input:focus,
+.bottom-sheet-content select:focus,
+.bottom-sheet-content textarea:focus {
+  outline: none !important;
+  border-color: color-mix(in srgb, var(--status-mv-color) 46%, var(--border-color)) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-mv-color) 11%, transparent) !important;
+}
+
+.favorites-drawer-content [style*="border"] {
+  border-color: color-mix(in srgb, var(--border-color) 86%, var(--status-available-color) 8%) !important;
+}
+
+.report-action-link {
+  border-color: var(--status-edited-mv-border) !important;
+  background: var(--status-edited-mv-bg) !important;
+  color: var(--status-edited-mv-color) !important;
+}
+
+[data-theme="light"] .visit-region-page-card,
+[data-theme="light"] .visit-region-modal,
+[data-theme="light"] .site-info-panel,
+[data-theme="light"] .app-modal-content,
+[data-theme="light"] .drawer-content,
+[data-theme="light"] .song-detail-modal-content {
+  background: #ffffff !important;
+}
