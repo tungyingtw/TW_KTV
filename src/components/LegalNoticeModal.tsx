@@ -27,6 +27,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
   return (
     <div
+      className="app-modal-overlay legal-modal-overlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="legal-notice-title"
@@ -86,6 +87,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             </p>
           </div>
           <button
+            className="action-icon modal-close-button legal-modal-close-button"
             aria-label="關閉"
             onClick={onClose}
             style={{
@@ -120,7 +122,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           }}
         >
           <button
-            className="legal-modal-tab"
+            className={`legal-modal-tab ${activeTab === 'privacy' ? 'is-selected' : ''}`}
             onClick={() => setActiveTab('privacy')}
             style={{
               padding: '12px 16px',
@@ -141,7 +143,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           </button>
 
           <button
-            className="legal-modal-tab"
+            className={`legal-modal-tab ${activeTab === 'terms' ? 'is-selected' : ''}`}
             onClick={() => setActiveTab('terms')}
             style={{
               padding: '12px 16px',
@@ -162,7 +164,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           </button>
 
           <button
-            className="legal-modal-tab"
+            className={`legal-modal-tab ${activeTab === 'about' ? 'is-selected' : ''}`}
             onClick={() => setActiveTab('about')}
             style={{
               padding: '12px 16px',
@@ -183,7 +185,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
           </button>
 
           <button
-            className="legal-modal-tab"
+            className={`legal-modal-tab ${activeTab === 'contact' ? 'is-selected' : ''}`}
             onClick={() => setActiveTab('contact')}
             style={{
               padding: '12px 16px',
