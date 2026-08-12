@@ -221,7 +221,7 @@ async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promis
   try {
     const baseUrl = import.meta.env.BASE_URL || './';
     const normalizedBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-    const catalogBytes = await fetchChunkedCatalog(normalizedBase, onProgress) || await fetchSingleCatalog(`${normalizedBase}songs_catalog.bin?v=${Date.now()}`, onProgress);
+    const catalogBytes = await fetchChunkedCatalog(normalizedBase, onProgress) || await fetchSingleCatalog(`${normalizedBase}songs_catalog.bin`, onProgress);
 
     if (catalogBytes && catalogBytes.length > 0) {
       onProgress?.(95);
@@ -261,17 +261,18 @@ async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promis
 
 async function fetchChunkedCatalog(baseUrl: string, onProgress?: (percent: number) => void): Promise<Uint8Array | null> {
   try {
-    const manifestResponse = await fetch(`${baseUrl}songs_catalog.manifest.json?v=${Date.now()}`);
+    const manifestResponse = await fetch(`${baseUrl}songs_catalog.manifest.json`, { cache: 'no-cache' });
     if (!manifestResponse.ok) return null;
     const manifest = await manifestResponse.json();
     const chunks = Array.isArray(manifest.chunks) ? manifest.chunks : [];
     const totalBytes = Number(manifest.totalBytes) || chunks.reduce((sum: number, chunk: { bytes?: number }) => sum + (Number(chunk.bytes) || 0), 0);
     if (!chunks.length || totalBytes <= 0) return null;
+    const version = encodeURIComponent(String(manifest.version || manifest.sha256 || 'catalog'));
 
     let loadedBytes = 0;
     const output = new Uint8Array(totalBytes);
     for (const chunk of chunks as Array<{ file: string; bytes: number }>) {
-      const response = await fetch(`${baseUrl}${chunk.file}?v=${Date.now()}`);
+      const response = await fetch(`${baseUrl}${chunk.file}?v=${version}`);
       if (!response.ok) throw new Error(`chunk ${chunk.file} HTTP ${response.status}`);
       const bytes = new Uint8Array(await response.arrayBuffer());
       output.set(bytes, loadedBytes);

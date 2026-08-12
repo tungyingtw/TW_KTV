@@ -1,0 +1,15 @@
+{
+  "version": "da91c4f87d67d3b5",
+  "format": "twktv-xor-bin",
+  "mode": "single",
+  "totalBytes": 16197209,
+  "chunkSize": 16197209,
+  "sha256": "da91c4f87d67d3b51f9ba6395c4bab93bb86ec5472f75c0af41fd9418fbfda5c",
+  "chunks": [
+    {
+      "file": "songs_catalog.bin",
+      "bytes": 16197209,
+      "sha256": "da91c4f87d67d3b51f9ba6395c4bab93bb86ec5472f75c0af41fd9418fbfda5c"
+    }
+  ]
+}
