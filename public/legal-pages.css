@@ -484,13 +484,13 @@ main a:focus-visible {
 }
 
 [data-theme="light"] {
-  --ty-bg: #fffaf3;
-  --ty-surface: #fffdf8;
-  --ty-surface-soft: #fff7ee;
-  --ty-line: rgba(88, 60, 35, 0.15);
-  --ty-text: #261b16;
-  --ty-text-2: #4d3a31;
-  --ty-muted: #806c60;
+  --ty-bg: #fff8ef;
+  --ty-surface: #ffffff;
+  --ty-surface-soft: #fff3e4;
+  --ty-line: rgba(91, 59, 37, 0.2);
+  --ty-text: #241711;
+  --ty-text-2: #3f2b22;
+  --ty-muted: #725c50;
   --ty-pink: #c81e73;
   --ty-cyan: #0f8f9a;
   --ty-gold: #b7791f;
@@ -509,4 +509,55 @@ main a:focus-visible {
 [data-theme="light"] .feature-card,
 [data-theme="light"] .email-card {
   background: var(--ty-surface) !important;
+}
+
+[data-theme="light"] .site-name,
+[data-theme="light"] h1,
+[data-theme="light"] h3,
+[data-theme="light"] main b,
+[data-theme="light"] main strong {
+  color: var(--ty-text) !important;
+}
+
+[data-theme="light"] p,
+[data-theme="light"] li,
+[data-theme="light"] .feature-card,
+[data-theme="light"] .email-card {
+  color: var(--ty-text-2) !important;
+}
+
+[data-theme="light"] .breadcrumb,
+[data-theme="light"] .meta,
+[data-theme="light"] footer {
+  color: var(--ty-muted) !important;
+}
+
+[data-theme="light"] h2 {
+  color: var(--ty-pink) !important;
+}
+
+[data-theme="light"] header a,
+[data-theme="light"] footer a,
+[data-theme="light"] main a {
+  color: var(--ty-cyan) !important;
+}
+
+[data-theme="light"] .note {
+  color: var(--ty-text-2) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 86%, var(--ty-cyan) 4%) !important;
+  border-color: color-mix(in srgb, var(--ty-cyan) 28%, var(--ty-line)) !important;
+  border-left-color: var(--ty-cyan) !important;
+}
+
+[data-theme="light"] .warning {
+  color: var(--ty-text-2) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 88%, var(--ty-gold) 6%) !important;
+  border-color: color-mix(in srgb, var(--ty-gold) 34%, var(--ty-line)) !important;
+  border-left-color: var(--ty-gold) !important;
+}
+
+[data-theme="light"] .feature-card,
+[data-theme="light"] .email-card {
+  border-color: var(--ty-line) !important;
+  box-shadow: 0 1px 0 rgba(91, 59, 37, 0.04) !important;
 }
