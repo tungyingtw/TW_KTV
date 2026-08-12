@@ -5995,3 +5995,138 @@ header,
     max-width: 100% !important;
   }
 }
+
+/* Final detail polish: semantic color lock and scan rhythm */
+:root,
+[data-theme="dark"] {
+  --final-table-alt: color-mix(in srgb, var(--accent-support) 3.5%, transparent);
+  --final-table-hover: color-mix(in srgb, var(--accent-support) 8%, var(--bg-card));
+  --final-field-notice-bg: linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 12%, transparent), transparent 46%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-highlight) 13%, var(--bg-card)), color-mix(in srgb, var(--accent-support) 5%, var(--bg-card)));
+}
+
+[data-theme="light"] {
+  --final-table-alt: color-mix(in srgb, #fffaf2 88%, var(--accent-support) 2.5%);
+  --final-table-hover: color-mix(in srgb, #fff2df 84%, var(--accent-support) 5%);
+  --final-field-notice-bg: linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 10%, transparent), transparent 48%),
+    linear-gradient(135deg, color-mix(in srgb, #fff6e7 86%, var(--accent-highlight) 8%), color-mix(in srgb, #ffffff 92%, var(--accent-support) 4%));
+}
+
+.matrix-data-table tbody tr:nth-child(even) td {
+  background: var(--final-table-alt) !important;
+}
+
+.matrix-data-table tbody tr:hover td {
+  background: var(--final-table-hover) !important;
+}
+
+.status-availability,
+.matrix-data-table .status-label.status-availability,
+.card-view-container .status-label.status-availability,
+.song-detail-brand-card.is-available .status-label {
+  color: var(--status-available-color) !important;
+  background: var(--status-available-bg) !important;
+  border-color: var(--status-available-border) !important;
+}
+
+.badge-official-mv,
+.status-mv,
+.matrix-data-table .badge-official-mv,
+.matrix-data-table .status-label.status-mv,
+.card-view-container .badge-official-mv,
+.song-detail-modal-content .badge-official-mv {
+  color: var(--status-mv-color) !important;
+  background: var(--status-mv-bg) !important;
+  border-color: var(--status-mv-border) !important;
+}
+
+.badge-guided-vocal,
+.status-guided,
+.matrix-data-table .badge-guided-vocal,
+.matrix-data-table .status-label.status-guided,
+.card-view-container .badge-guided-vocal,
+.song-detail-modal-content .badge-guided-vocal {
+  color: var(--status-guided-color) !important;
+  background: var(--status-guided-bg) !important;
+  border-color: var(--status-guided-border) !important;
+}
+
+.matrix-data-table .status-label.status-empty {
+  color: color-mix(in srgb, var(--text-muted) 58%, transparent) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.home-hero-metrics span {
+  gap: 5px;
+  line-height: 1;
+}
+
+.home-hero-metrics strong,
+.home-hero-metrics em {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.collab-notice,
+[data-theme="light"] .collab-notice {
+  background: var(--final-field-notice-bg) !important;
+}
+
+[data-theme="light"] body {
+  background:
+    linear-gradient(180deg, #fff8ef 0, #f7f5f1 340px, var(--bg-dark) 720px) !important;
+}
+
+[data-theme="light"] .home-hero::before {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-highlight) 50%, var(--accent-support) 100%) !important;
+}
+
+[data-theme="light"] .search-panel,
+[data-theme="light"] .mobile-search-panel {
+  background: color-mix(in srgb, #ffffff 90%, #fff1dc 10%) !important;
+}
+
+@media (min-width: 900px) {
+  .matrix-data-table th:nth-child(n + 4),
+  .matrix-data-table td.brand-column-cell {
+    min-width: 92px;
+  }
+
+  .matrix-data-table .status-label,
+  .matrix-data-table .badge {
+    min-width: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .mobile-search-panel > div:first-child {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 6px !important;
+  }
+
+  .mobile-search-submit,
+  .search-filter-button.is-mobile {
+    height: 38px !important;
+    min-width: 48px !important;
+    flex: 0 0 auto;
+  }
+
+  .search-filter-button.is-mobile {
+    min-width: 62px !important;
+  }
+
+  .mobile-search-input {
+    min-width: 0 !important;
+  }
+
+  .collab-notice,
+  [data-theme="light"] .collab-notice {
+    min-height: 0;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+}
