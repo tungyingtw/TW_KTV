@@ -3447,6 +3447,49 @@ a.action-text-link {
   }
 }
 
+/* Polish round 5 phase 1: mobile first-screen QA */
+@media (max-width: 640px) {
+  .collab-notice {
+    margin-top: 6px !important;
+    margin-bottom: 8px !important;
+    padding: 9px 38px 9px 12px !important;
+    gap: 6px !important;
+  }
+
+  .collab-notice-copy {
+    min-width: 0;
+  }
+
+  .collab-notice h2 {
+    margin-bottom: 4px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .collab-notice p {
+    display: -webkit-box;
+    margin: 0 !important;
+    max-height: 4.35em;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    font-size: 0.74rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .collab-notice-close {
+    position: absolute !important;
+    top: 9px !important;
+    right: 9px !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .mobile-search-submit {
+    min-width: 46px !important;
+  }
+}
+
 /* Polish round 3 phase 5: mobile density and readability */
 @media (max-width: 640px) {
   .mobile-navbar {

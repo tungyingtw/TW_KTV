@@ -100,10 +100,10 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
 
           <button
             onClick={handleSearchComplete}
-            aria-label="完成搜尋並查看結果"
+            aria-label="搜尋並查看結果"
             className={`mobile-search-submit ${filters.searchQuery ? 'is-active' : ''}`}
           >
-            完成
+            搜尋
           </button>
 
           <button
