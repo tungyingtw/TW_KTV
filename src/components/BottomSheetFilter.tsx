@@ -197,7 +197,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
             影片與音訊品質
           </label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label className={`bottom-sheet-toggle ${filters.onlyOfficialMv ? 'is-selected' : ''}`} style={{
+            <label className={`bottom-sheet-toggle quality-toggle-row is-mv ${filters.onlyOfficialMv ? 'is-selected' : ''}`} style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -217,7 +217,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               />
             </label>
 
-            <label className={`bottom-sheet-toggle ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} style={{
+            <label className={`bottom-sheet-toggle quality-toggle-row is-guided ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',

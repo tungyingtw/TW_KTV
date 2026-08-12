@@ -181,7 +181,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
           <div className="search-bar-bottom-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <label style={{
+              <label className={`quality-filter-chip is-mv ${filters.onlyOfficialMv ? 'is-selected' : ''}`} style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
@@ -200,7 +200,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 <Video size={16} /> 原版 MV
               </label>
 
-              <label style={{
+              <label className={`quality-filter-chip is-guided ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
