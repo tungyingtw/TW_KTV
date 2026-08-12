@@ -5626,3 +5626,372 @@ header,
   border-bottom-right-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
 }
+
+/* Phase 3: modals, drawers, and detail surfaces */
+:root,
+[data-theme="dark"] {
+  --dialog-surface: color-mix(in srgb, var(--modal-surface) 94%, var(--accent-support) 3%);
+  --dialog-surface-soft: color-mix(in srgb, var(--bg-card-hover) 68%, transparent);
+  --dialog-border: color-mix(in srgb, var(--border-color) 82%, var(--accent-support) 18%);
+  --dialog-divider: color-mix(in srgb, var(--border-color) 74%, transparent);
+  --dialog-overlay: rgba(3, 7, 18, 0.66);
+  --dialog-note-bg: color-mix(in srgb, var(--bg-card-hover) 72%, var(--accent-support) 4%);
+  --dialog-danger: #fb7185;
+  --dialog-danger-bg: rgba(251, 113, 133, 0.12);
+}
+
+[data-theme="light"] {
+  --dialog-surface: #fffdf8;
+  --dialog-surface-soft: #fff7ee;
+  --dialog-border: color-mix(in srgb, rgba(88, 60, 35, 0.14) 82%, var(--accent-support) 18%);
+  --dialog-divider: rgba(88, 60, 35, 0.12);
+  --dialog-overlay: rgba(38, 27, 22, 0.32);
+  --dialog-note-bg: color-mix(in srgb, #fff7ee 88%, var(--accent-support) 4%);
+  --dialog-danger: #be123c;
+  --dialog-danger-bg: rgba(190, 18, 60, 0.08);
+}
+
+.app-modal-overlay,
+.drawer-overlay,
+.song-detail-modal-overlay,
+.legal-modal-overlay {
+  background: var(--dialog-overlay) !important;
+  backdrop-filter: blur(10px) saturate(1.08) !important;
+}
+
+.app-modal-content,
+.song-detail-modal-content,
+.legal-modal,
+.favorites-drawer-content {
+  background: var(--dialog-surface) !important;
+  border-color: var(--dialog-border) !important;
+  box-shadow: none !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .app-modal-content,
+[data-theme="light"] .song-detail-modal-content,
+[data-theme="light"] .legal-modal,
+[data-theme="light"] .favorites-drawer-content {
+  background: var(--dialog-surface) !important;
+  border-color: var(--dialog-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.app-modal-content,
+.song-detail-modal-content,
+.legal-modal {
+  border-radius: var(--radius-md) !important;
+}
+
+.suggest-song-modal-content,
+.report-modal-content {
+  max-width: min(560px, calc(100vw - 32px)) !important;
+}
+
+.report-modal-content {
+  border-color: color-mix(in srgb, var(--dialog-danger) 32%, var(--dialog-border)) !important;
+}
+
+.song-detail-modal-body,
+.legal-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent-support) 40%, transparent) transparent;
+}
+
+.song-detail-modal-body::-webkit-scrollbar,
+.legal-modal-body::-webkit-scrollbar,
+.favorites-drawer-content > div:last-child::-webkit-scrollbar {
+  width: 8px;
+}
+
+.song-detail-modal-body::-webkit-scrollbar-thumb,
+.legal-modal-body::-webkit-scrollbar-thumb,
+.favorites-drawer-content > div:last-child::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent-support) 34%, transparent);
+  border-radius: var(--radius-full);
+}
+
+.modal-close-button,
+.legal-modal-close-button {
+  border: 1px solid var(--dialog-border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: color-mix(in srgb, var(--dialog-surface-soft) 56%, transparent) !important;
+  color: var(--text-secondary) !important;
+}
+
+.modal-close-button:hover,
+.modal-close-button:focus-visible,
+.legal-modal-close-button:hover,
+.legal-modal-close-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent-pink) 42%, var(--dialog-border)) !important;
+  background: color-mix(in srgb, var(--accent-pink) 10%, transparent) !important;
+  color: var(--accent-pink) !important;
+}
+
+.song-detail-title,
+.legal-modal h3,
+.suggest-song-modal-content h3,
+.report-modal-content h3,
+.favorites-drawer-content h3 {
+  letter-spacing: 0 !important;
+}
+
+.song-detail-title {
+  align-items: flex-start !important;
+  line-height: 1.18 !important;
+}
+
+.song-detail-title .action-icon {
+  min-width: 34px !important;
+  min-height: 34px !important;
+  justify-content: center !important;
+}
+
+.song-detail-note,
+.song-detail-info-box,
+.song-detail-brand-card,
+.legal-modal-content > div,
+.legal-modal-body div[style*="borderLeft"],
+.legal-modal-body div[style*="border-left"],
+.favorites-drawer-content [style*="rgba(30, 41, 59, 0.6)"] {
+  background: var(--dialog-note-bg) !important;
+  border-color: var(--dialog-border) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.song-detail-note-lyrics,
+.song-detail-info-box {
+  border-left-color: var(--accent-pink) !important;
+}
+
+.song-detail-brand-card.is-available {
+  background: color-mix(in srgb, var(--dialog-note-bg) 82%, var(--accent-support) 5%) !important;
+  border-color: color-mix(in srgb, var(--accent-support) 34%, var(--dialog-border)) !important;
+}
+
+.song-detail-brand-card.is-unavailable {
+  opacity: 1 !important;
+  background: color-mix(in srgb, var(--dialog-note-bg) 78%, transparent) !important;
+}
+
+.song-detail-youtube-link,
+.report-action-link {
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.report-action-link {
+  background: color-mix(in srgb, var(--accent-highlight) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent-highlight) 34%, var(--dialog-border)) !important;
+}
+
+.modal-segment-button,
+.modal-option-button {
+  min-height: 40px !important;
+  border-radius: var(--radius-sm) !important;
+  background: transparent !important;
+  border-color: var(--dialog-border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.modal-segment-button:hover,
+.modal-option-button:hover,
+.modal-segment-button:focus-visible,
+.modal-option-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent-support) 38%, var(--dialog-border)) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-segment-button.is-selected,
+.modal-option-button.is-selected {
+  background: color-mix(in srgb, var(--accent-pink) 10%, var(--dialog-surface)) !important;
+  border-color: color-mix(in srgb, var(--accent-pink) 42%, var(--dialog-border)) !important;
+  color: var(--accent-pink) !important;
+}
+
+.report-modal-content .modal-option-button.is-selected {
+  background: var(--dialog-danger-bg) !important;
+  border-color: color-mix(in srgb, var(--dialog-danger) 52%, var(--dialog-border)) !important;
+  color: var(--dialog-danger) !important;
+}
+
+.app-modal-content input,
+.app-modal-content select,
+.app-modal-content textarea,
+.report-modal-content input,
+.report-modal-content select,
+.report-modal-content textarea {
+  background: color-mix(in srgb, var(--dialog-surface-soft) 54%, var(--dialog-surface)) !important;
+  border-color: var(--dialog-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+[data-theme="light"] .app-modal-content input,
+[data-theme="light"] .app-modal-content select,
+[data-theme="light"] .app-modal-content textarea,
+[data-theme="light"] .report-modal-content input,
+[data-theme="light"] .report-modal-content select,
+[data-theme="light"] .report-modal-content textarea {
+  background: #ffffff !important;
+}
+
+.app-modal-content input:focus,
+.app-modal-content select:focus,
+.app-modal-content textarea:focus,
+.report-modal-content input:focus,
+.report-modal-content select:focus,
+.report-modal-content textarea:focus {
+  border-color: color-mix(in srgb, var(--accent-support) 52%, var(--dialog-border)) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-support) 17%, transparent) !important;
+  outline: none !important;
+}
+
+.app-modal-submit {
+  min-height: 44px !important;
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.legal-modal-header {
+  border-bottom-color: var(--dialog-divider) !important;
+}
+
+.legal-modal-tabs {
+  background: color-mix(in srgb, var(--dialog-surface-soft) 48%, transparent) !important;
+  border-bottom-color: var(--dialog-divider) !important;
+}
+
+.legal-modal-tab {
+  min-height: 48px !important;
+  color: var(--text-secondary) !important;
+}
+
+.legal-modal-tab:hover,
+.legal-modal-tab:focus-visible {
+  color: var(--text-primary) !important;
+}
+
+.legal-modal-tab.is-selected,
+.legal-modal-tab[style*="38bdf8"] {
+  color: var(--accent-support) !important;
+  border-bottom-color: var(--accent-support) !important;
+}
+
+.legal-modal-body {
+  color: var(--text-secondary) !important;
+}
+
+.legal-modal-body h4,
+.legal-modal-body h5 {
+  letter-spacing: 0 !important;
+}
+
+.legal-modal-body h5 {
+  color: var(--accent-support) !important;
+}
+
+.legal-modal-body a {
+  color: var(--accent-support) !important;
+}
+
+.legal-modal > div:last-child {
+  background: color-mix(in srgb, var(--dialog-surface-soft) 58%, transparent) !important;
+  border-top-color: var(--dialog-divider) !important;
+}
+
+.legal-modal > div:last-child button {
+  min-height: 38px !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--accent-primary) !important;
+  box-shadow: none !important;
+}
+
+.favorites-drawer-content {
+  border-left-color: color-mix(in srgb, var(--accent-pink) 30%, var(--dialog-border)) !important;
+  border-radius: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+[data-theme="light"] .favorites-drawer-content {
+  border-radius: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.favorites-drawer-content > div:first-child {
+  border-bottom-color: var(--dialog-divider) !important;
+}
+
+.favorites-drawer-content h4 {
+  letter-spacing: 0 !important;
+  line-height: 1.25 !important;
+}
+
+.favorites-drawer-content .action-icon:hover,
+.favorites-drawer-content .action-icon:focus-visible {
+  color: var(--accent-pink) !important;
+}
+
+@media (max-width: 640px) {
+  .app-modal-overlay,
+  .song-detail-modal-overlay,
+  .legal-modal-overlay {
+    align-items: flex-end !important;
+    padding: 8px !important;
+  }
+
+  .app-modal-content,
+  .song-detail-modal-content,
+  .legal-modal {
+    max-width: 100% !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+
+  .suggest-song-modal-content,
+  .report-modal-content {
+    padding: 18px 16px !important;
+  }
+
+  .song-detail-brand-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .legal-modal {
+    height: calc(100dvh - 16px) !important;
+    min-height: 0 !important;
+  }
+
+  .legal-modal-header {
+    padding: 16px !important;
+  }
+
+  .legal-modal-tabs {
+    padding-inline: 8px !important;
+  }
+
+  .legal-modal-tab {
+    padding-inline: 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .legal-modal-body {
+    padding: 18px 16px !important;
+    font-size: 0.86rem !important;
+  }
+
+  .favorites-drawer-content {
+    max-width: 100% !important;
+  }
+}
