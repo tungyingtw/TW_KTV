@@ -5016,6 +5016,250 @@ header,
   border-color: var(--status-guided-border) !important;
 }
 
+/* Phase 1.2: result rail and scan surfaces from TYFunLab-DESIGN */
+:root,
+[data-theme="dark"] {
+  --result-rail-bg: color-mix(in srgb, var(--bg-card) 84%, var(--accent-support) 5%);
+  --result-rail-border: color-mix(in srgb, var(--border-color) 82%, var(--accent-support) 18%);
+  --result-chip-bg: color-mix(in srgb, var(--bg-card-hover) 58%, transparent);
+  --result-chip-hover: color-mix(in srgb, var(--bg-card-hover) 78%, var(--accent-support) 7%);
+  --result-chip-selected-bg: color-mix(in srgb, var(--accent-pink) 13%, var(--bg-card));
+  --result-chip-selected-border: color-mix(in srgb, var(--accent-pink) 52%, var(--border-color));
+  --result-table-head: color-mix(in srgb, var(--bg-card-hover) 70%, var(--bg-card));
+  --result-table-row-alt: color-mix(in srgb, var(--accent-support) 4%, transparent);
+  --result-table-row-hover: color-mix(in srgb, var(--accent-support) 8%, var(--bg-card));
+  --result-card-brand-bg: color-mix(in srgb, var(--bg-card-hover) 58%, transparent);
+}
+
+[data-theme="light"] {
+  --result-rail-bg: color-mix(in srgb, #fffdf8 88%, var(--accent-highlight) 5%);
+  --result-rail-border: color-mix(in srgb, rgba(88, 60, 35, 0.16) 78%, var(--accent-support) 22%);
+  --result-chip-bg: #ffffff;
+  --result-chip-hover: color-mix(in srgb, #fff7ee 86%, var(--accent-support) 4%);
+  --result-chip-selected-bg: color-mix(in srgb, #ffffff 80%, var(--accent-primary) 8%);
+  --result-chip-selected-border: color-mix(in srgb, var(--accent-primary) 48%, rgba(88, 60, 35, 0.14));
+  --result-table-head: color-mix(in srgb, #fff4e4 84%, var(--accent-support) 3%);
+  --result-table-row-alt: color-mix(in srgb, #fffdf8 92%, var(--accent-support) 2%);
+  --result-table-row-hover: color-mix(in srgb, #fff4e4 84%, var(--accent-support) 5%);
+  --result-card-brand-bg: color-mix(in srgb, #ffffff 86%, var(--accent-support) 4%);
+}
+
+.brand-chip {
+  min-height: 32px !important;
+  height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--result-rail-border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--result-chip-bg) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.brand-chip:hover {
+  background: var(--result-chip-hover) !important;
+  border-color: color-mix(in srgb, var(--accent-support) 34%, var(--border-color)) !important;
+  color: var(--text-primary) !important;
+}
+
+.brand-chip.is-selected {
+  background: var(--result-chip-selected-bg) !important;
+  border-color: var(--result-chip-selected-border) !important;
+  color: var(--accent-primary) !important;
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent-primary) 66%, transparent) !important;
+}
+
+[data-theme="dark"] .brand-chip.is-selected {
+  color: var(--accent-pink) !important;
+}
+
+.brand-chip span {
+  line-height: 1 !important;
+}
+
+.brand-selection-summary,
+.brand-selection-summary.is-mobile {
+  background: var(--result-rail-bg) !important;
+  border-color: var(--result-rail-border) !important;
+  border-left: 3px solid var(--accent-primary) !important;
+  color: var(--text-secondary) !important;
+}
+
+.matrix-view-container {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.matrix-view-container .glass-panel,
+.card-view-container .glass-panel {
+  background: color-mix(in srgb, var(--bg-card) 94%, var(--accent-support) 3%) !important;
+  border-color: var(--result-rail-border) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .matrix-view-container .glass-panel,
+[data-theme="light"] .card-view-container .glass-panel {
+  background: #fffdf8 !important;
+}
+
+.data-table,
+.matrix-data-table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  overflow: clip;
+}
+
+.data-table th,
+.matrix-data-table th {
+  height: 38px !important;
+  padding: 8px 8px !important;
+  background: var(--result-table-head) !important;
+  color: color-mix(in srgb, var(--text-secondary) 88%, var(--accent-support)) !important;
+  border-bottom: 1px solid var(--result-rail-border) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+.data-table td,
+.matrix-data-table td {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 68%, transparent) !important;
+  background: transparent !important;
+}
+
+.matrix-data-table tbody tr:nth-child(4n + 3) td {
+  background: var(--result-table-row-alt) !important;
+}
+
+.data-table tr:hover td,
+.matrix-data-table tr:hover td {
+  background: var(--result-table-row-hover) !important;
+}
+
+.matrix-data-table .brand-column-cell {
+  background: color-mix(in srgb, var(--bg-card-hover) 15%, transparent) !important;
+  border-left-color: color-mix(in srgb, var(--border-color) 82%, var(--accent-support) 8%) !important;
+}
+
+[data-theme="light"] .matrix-data-table .brand-column-cell {
+  background: color-mix(in srgb, #fffdf8 91%, var(--accent-support) 4%) !important;
+}
+
+.matrix-data-table .brand-column-label {
+  font-size: 0.74rem !important;
+  line-height: 1.15 !important;
+}
+
+.badge,
+[class*="badge"],
+.status-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  border-radius: 6px !important;
+}
+
+.matrix-data-table .status-label,
+.card-view-container .status-label,
+.matrix-data-table .badge,
+.card-view-container .badge {
+  min-height: 22px !important;
+  padding: 2px 6px !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+}
+
+.matrix-data-table .status-label.status-availability,
+.card-view-container .status-label.status-availability {
+  color: var(--status-available-color) !important;
+  background: var(--status-available-bg) !important;
+  border: 1px solid var(--status-available-border) !important;
+}
+
+.matrix-data-table .status-label.status-mv,
+.matrix-data-table .badge-official-mv,
+.card-view-container .badge-official-mv {
+  color: var(--status-mv-color) !important;
+  background: var(--status-mv-bg) !important;
+  border: 1px solid var(--status-mv-border) !important;
+}
+
+.matrix-data-table .status-label.status-guided,
+.matrix-data-table .badge-guided-vocal,
+.card-view-container .badge-guided-vocal {
+  color: var(--status-guided-color) !important;
+  background: var(--status-guided-bg) !important;
+  border: 1px solid var(--status-guided-border) !important;
+}
+
+.matrix-data-table .status-label.status-empty {
+  min-height: 22px !important;
+  color: color-mix(in srgb, var(--text-muted) 58%, transparent) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.card-view-container {
+  gap: 14px !important;
+}
+
+.card-view-container .glass-panel {
+  border-radius: var(--radius-md) !important;
+}
+
+.card-view-container h3,
+.card-view-container p,
+.card-view-container span {
+  letter-spacing: 0 !important;
+}
+
+.card-view-container h3 {
+  color: var(--text-primary) !important;
+  line-height: 1.22 !important;
+}
+
+.card-view-container .glass-panel > div:nth-child(2) {
+  border-top-color: var(--result-rail-border) !important;
+}
+
+.card-view-container .glass-panel > div:nth-child(2) > div {
+  background: var(--result-card-brand-bg) !important;
+  border-color: var(--result-rail-border) !important;
+}
+
+@media (max-width: 640px) {
+  .brand-chip {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-inline: 10px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .matrix-data-table th,
+  .matrix-data-table td {
+    padding-inline: 5px !important;
+  }
+
+  .matrix-data-table .status-label,
+  .card-view-container .status-label,
+  .matrix-data-table .badge,
+  .card-view-container .badge {
+    min-height: 20px !important;
+    padding-inline: 5px !important;
+    font-size: 0.64rem !important;
+  }
+}
+
 @media (max-width: 640px) {
   .home-hero {
     padding-top: 10px !important;
