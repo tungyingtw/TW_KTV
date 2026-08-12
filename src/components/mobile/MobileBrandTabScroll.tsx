@@ -106,7 +106,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   };
 
   const isMultiSelecting = selectedBrands.length > 0;
-  const brandMatchLabel = brandFilterMode === 'all_of_them' ? '同時收錄' : '任一收錄';
+  const brandMatchLabel = brandFilterMode === 'all_of_them' ? '全部皆有' : '任一有收錄';
   const brandToggleLabel = brandFilterMode === 'all_of_them' ? '改成任一品牌有收錄即可' : '改成所有已選品牌都要收錄';
 
   useEffect(() => {

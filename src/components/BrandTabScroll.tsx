@@ -135,7 +135,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
   };
 
   const isMultiSelecting = selectedBrands.length > 0;
-  const brandMatchLabel = brandFilterMode === 'all_of_them' ? '必須同時收錄於已選品牌' : '符合任一已選品牌';
+  const brandMatchLabel = brandFilterMode === 'all_of_them' ? '已選品牌皆有收錄' : '任一已選品牌有收錄';
   const brandToggleLabel = brandFilterMode === 'all_of_them' ? '改成任一品牌有收錄即可' : '改成所有已選品牌都要收錄';
 
   const handleBrandClick = (brandId: BrandId) => {
@@ -361,7 +361,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
                 }}
                 title={brandToggleLabel}
               >
-                {brandFilterMode === 'all_of_them' ? '同時收錄' : '任一收錄'}
+                {brandFilterMode === 'all_of_them' ? '全部皆有' : '任一有收錄'}
               </button>
             )}
 
