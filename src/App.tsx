@@ -556,7 +556,7 @@ export function App() {
         <div className="home-hero-metrics" aria-label="目前資料概況">
           <span><strong>{allSongs.length.toLocaleString()}</strong><em>歌曲</em></span>
           <span><strong>{brandList.length.toLocaleString()}</strong><em>KTV 品牌</em></span>
-          <span><strong>收錄</strong><em>MV / 導唱對照</em></span>
+          <span><strong>MV / 導唱</strong><em>對照</em></span>
         </div>
       </section>
 
