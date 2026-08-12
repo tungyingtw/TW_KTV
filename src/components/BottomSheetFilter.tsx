@@ -68,6 +68,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
 
   return (
     <div
+      className="bottom-sheet-overlay"
       onClick={onClose}
       style={{
         position: 'fixed',
