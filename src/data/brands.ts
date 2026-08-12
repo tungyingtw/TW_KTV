@@ -162,8 +162,8 @@ function notifyListeners() {
 export async function fetchBrands(): Promise<BrandInfo[]> {
   try {
     const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const isGH = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
-    const apiBase = isLocal ? `${window.location.protocol}//${window.location.hostname}:3001` : (isGH ? 'https://tw-ktv.onrender.com' : '');
+    const configuredApiBase = import.meta.env.VITE_API_URL;
+    const apiBase = configuredApiBase || (isLocal ? `${window.location.protocol}//${window.location.hostname}:3001` : 'https://tw-ktv.onrender.com');
 
     const res = await fetch(`${apiBase}/api/brands`);
     if (res.ok) {
