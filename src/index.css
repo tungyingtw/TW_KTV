@@ -4561,16 +4561,16 @@ textarea:focus {
 /* KTV visual vitality phase 1-2: theme tokens and home surface */
 :root,
 [data-theme="dark"] {
-  --bg-dark: #100a14;
-  --bg-card: rgba(24, 18, 29, 0.9);
-  --bg-card-hover: rgba(39, 29, 46, 0.94);
-  --bg-glass: rgba(18, 12, 22, 0.9);
-  --modal-surface: #18121d;
-  --border-color: rgba(255, 214, 232, 0.13);
-  --border-glow: rgba(238, 52, 137, 0.24);
+  --bg-dark: #0c1018;
+  --bg-card: rgba(17, 22, 33, 0.92);
+  --bg-card-hover: rgba(28, 35, 49, 0.95);
+  --bg-glass: rgba(12, 16, 24, 0.91);
+  --modal-surface: #111722;
+  --border-color: rgba(210, 232, 238, 0.13);
+  --border-glow: rgba(39, 214, 199, 0.2);
   --text-primary: #fff8fb;
-  --text-secondary: #ead8e3;
-  --text-muted: #b8a7b2;
+  --text-secondary: #dce8ee;
+  --text-muted: #9caeba;
   --accent-primary: #ee3489;
   --accent-pink: #ff4fa3;
   --accent-support: #27d6c7;
@@ -4606,8 +4606,9 @@ textarea:focus {
 
 body {
   background:
-    linear-gradient(180deg, rgba(255, 79, 163, 0.075) 0%, transparent 260px),
-    linear-gradient(110deg, rgba(39, 214, 199, 0.045) 0%, transparent 34%),
+    linear-gradient(180deg, rgba(39, 214, 199, 0.06) 0%, transparent 260px),
+    linear-gradient(110deg, rgba(255, 195, 90, 0.035) 0%, transparent 28%),
+    linear-gradient(140deg, rgba(255, 79, 163, 0.032) 0%, transparent 42%),
     var(--bg-dark) !important;
   color: var(--text-primary) !important;
 }
@@ -4626,7 +4627,7 @@ header,
 }
 
 .navbar-title {
-  background: linear-gradient(90deg, var(--text-primary) 0%, var(--accent-pink) 62%, var(--accent-highlight) 100%) !important;
+  background: linear-gradient(90deg, var(--text-primary) 0%, var(--accent-support) 62%, var(--accent-highlight) 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
@@ -4672,8 +4673,8 @@ header,
 }
 
 .home-hero-metrics span {
-  border-color: color-mix(in srgb, var(--accent-pink) 22%, var(--border-color)) !important;
-  background: color-mix(in srgb, var(--bg-card) 88%, var(--accent-pink) 6%) !important;
+  border-color: color-mix(in srgb, var(--accent-support) 22%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--bg-card) 92%, var(--accent-support) 4%) !important;
   color: var(--text-secondary) !important;
 }
 
@@ -4703,7 +4704,7 @@ header,
 .error-state-panel,
 .matrix-view-container .glass-panel,
 .card-view-container .glass-panel {
-  background: color-mix(in srgb, var(--bg-card) 94%, var(--accent-pink) 3%) !important;
+  background: color-mix(in srgb, var(--bg-card) 96%, var(--accent-support) 2%) !important;
   border-color: var(--border-color) !important;
 }
 
