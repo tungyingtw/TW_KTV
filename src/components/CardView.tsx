@@ -383,7 +383,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   onMouseLeave={e => (e.currentTarget.style.color = '#64748b')}
                 >
                   <Flag size={12} />
-                  回報
+                  回報錯誤
                 </button>
               </div>
 

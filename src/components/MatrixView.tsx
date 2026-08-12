@@ -176,7 +176,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               }}>
                 <th style={{ padding: '9px 6px', width: '38px', textAlign: 'center' }}></th>
                 <th style={{ padding: '9px 8px' }}>歌曲</th>
-                <th style={{ padding: '9px 4px', width: '70px', textAlign: 'center' }}>收錄</th>
+                <th style={{ padding: '9px 4px', width: '70px', textAlign: 'center' }}>可唱</th>
                 <th style={{ padding: '9px 4px', width: '42px', textAlign: 'center' }}>MV</th>
                 <th style={{ padding: '9px 4px', width: '46px', textAlign: 'center' }}>導唱</th>
               </tr>
