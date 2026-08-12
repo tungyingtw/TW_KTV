@@ -362,3 +362,74 @@ footer {
     background: var(--ty-surface) !important;
   }
 }
+
+/* Data presentation phase 5: static article information rhythm */
+main {
+  position: relative;
+}
+
+h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+h2::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--ty-pink);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ty-pink) 12%, transparent);
+}
+
+.note,
+.warning {
+  padding: 14px 16px !important;
+}
+
+.feature-card,
+.email-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before,
+.email-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--ty-cyan);
+}
+
+.feature-card:nth-child(3n + 2)::before {
+  background: var(--ty-gold);
+}
+
+.feature-card:nth-child(3n)::before {
+  background: var(--ty-pink);
+}
+
+main a {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+}
+
+main a:hover,
+main a:focus-visible {
+  border-bottom-color: currentColor;
+}
+
+@media (max-width: 720px) {
+  h2 {
+    line-height: 1.35 !important;
+  }
+
+  .note,
+  .warning,
+  .feature-card,
+  .email-card {
+    padding: 13px 14px !important;
+  }
+}
