@@ -265,7 +265,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ textAlign: 'center', padding: '9px 4px' }}>
-                      <span className="status-label" style={{
+                      <span className="status-label status-availability" style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -285,7 +285,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ textAlign: 'center', padding: '9px 4px' }}>
-                      <span className="status-label" style={{
+                      <span className={`status-label ${mvStatus.label === '-' ? 'status-empty' : 'status-mv'}`} style={{
                         color: mvStatus.color,
                         fontWeight: 800,
                         fontSize: '0.74rem',
@@ -296,7 +296,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ textAlign: 'center', padding: '9px 4px' }}>
-                      <span className="status-label" style={{
+                      <span className={`status-label ${guidedStatus.label === '-' ? 'status-empty' : 'status-guided'}`} style={{
                         color: guidedStatus.color,
                         fontWeight: 800,
                         fontSize: '0.74rem',
@@ -525,12 +525,12 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                               gap: '6px',
                             }}>
                               <CheckCircle2 size={16} color={b.color} />
-                              <span className="status-label">有收錄</span>
+                              <span className="status-label status-availability">有收錄</span>
                             </div>
                             
                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
                               {isOfficialMv && (
-                                <span className="badge" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
+                                <span className="badge badge-official-mv" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
                                   MV
                                 </span>
                               )}
@@ -571,7 +571,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          <span className="status-label" style={{ 
+                          <span className="status-label status-availability" style={{
                             fontWeight: 700, 
                             color: b.color, 
                             fontSize: '0.78rem',
@@ -582,7 +582,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           
                           <div style={{ display: 'flex', gap: '2px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {isOfficialMv && (
-                              <span className="badge" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
+                              <span className="badge badge-official-mv" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
                                 MV
                               </span>
                             )}
