@@ -228,7 +228,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
       </div>
 
       {selectedBrands.length > 0 && (
-        <div style={{
+        <div className="brand-selection-summary is-mobile" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -248,6 +248,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
               return (
                 <span
                   key={bId}
+                  className="brand-selection-token"
                   onClick={() => handleBrandClick(bId)}
                   style={{
                     background: `${b?.color || '#ec4899'}22`,

@@ -118,59 +118,28 @@ export const Navbar: React.FC<NavbarProps> = ({
         flexWrap: 'wrap',
         gap: '12px',
       }}>
-        {/* Brand Logo & Pure Clean Title with Live Visitor Badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #f472b6, #c084fc)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 16px rgba(244, 114, 182, 0.35)',
-          }}>
-            <Mic2 size={24} color="#ffffff" />
+        <div className="navbar-brand-area">
+          <div className="navbar-logo-mark">
+            <Mic2 size={22} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="navbar-brand-copy">
             <h1 className="navbar-title">
               TYFunLab KTV歌曲查詢
             </h1>
 
-            {/* Live Visitor Counter Badge */}
             <div 
+              className="navbar-stat-text"
               title="全台歌友實時線上查詢中"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '3px 10px',
-                borderRadius: '20px',
-                background: 'rgba(34, 197, 94, 0.12)',
-                border: '1px solid rgba(34, 197, 94, 0.35)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                color: '#4ade80',
-                boxShadow: '0 0 12px rgba(34, 197, 94, 0.25)',
-                backdropFilter: 'blur(4px)',
-              }}
             >
-              <span style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: '#22c55e',
-                boxShadow: '0 0 8px #22c55e',
-                display: 'inline-block',
-              }} />
-              <span>{onlineCount.toLocaleString()} 人線上</span>
+              <span className="navbar-live-dot" />
+              <strong>{onlineCount.toLocaleString()}</strong>
+              <span>人線上</span>
             </div>
 
-            {/* Accumulated Visitor Counter Badge */}
             <button
               type="button"
               onClick={openVisitRegionPage}
-              className="visit-region-trigger"
+              className={`visit-region-trigger navbar-stat-link ${isStatsError ? 'is-error' : ''}`}
               title={
                 isStatsError
                   ? '全站累積查詢人數暫時無法連線同步'
@@ -178,29 +147,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ? `全台歌友累積查詢數 ${totalVisitsFullText} 人 (本機模式)`
                     : `全台歌友累積查詢與使用人數 ${totalVisitsFullText} 人 (12小時去重與 Redis 全站同步)`
               }
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '3px 10px',
-                borderRadius: '20px',
-                background: isStatsError ? 'rgba(248, 113, 113, 0.12)' : 'rgba(168, 85, 247, 0.12)',
-                border: `1px solid ${isStatsError ? 'rgba(248, 113, 113, 0.35)' : 'rgba(168, 85, 247, 0.35)'}`,
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                color: isStatsError ? '#f87171' : '#c084fc',
-                boxShadow: isStatsError ? '0 0 12px rgba(248, 113, 113, 0.25)' : '0 0 12px rgba(168, 85, 247, 0.25)',
-                backdropFilter: 'blur(4px)',
-                cursor: 'pointer',
-              }}
             >
-              <span>
-                {isStatsLoading
-                  ? '累積查詢同步中...'
-                  : isStatsError
-                    ? '累積查詢暫未同步'
-                    : `${isStatsPersistent ? '累積查詢' : '本機統計'} ${totalVisitsCompactText} 人`}
-              </span>
+              <span>{isStatsLoading ? '累積同步中' : isStatsError ? '累積未同步' : isStatsPersistent ? '累積查詢' : '本機統計'}</span>
+              {!isStatsLoading && !isStatsError && <strong>{totalVisitsCompactText}</strong>}
             </button>
           </div>
         </div>
@@ -210,12 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Light / Dark Mode Toggle Button */}
           <button
             onClick={toggleTheme}
-            className="btn-secondary"
-            style={{
-              borderColor: theme === 'dark' ? 'rgba(251, 191, 36, 0.4)' : 'rgba(147, 51, 234, 0.4)',
-              color: theme === 'dark' ? '#fbbf24' : '#9333ea',
-              background: theme === 'dark' ? 'rgba(251, 191, 36, 0.1)' : 'rgba(147, 51, 234, 0.1)',
-            }}
+            className="nav-action-link"
             title={theme === 'dark' ? '切換至莫蘭迪日光/亮色模式' : '切換至微光夜間模式'}
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
@@ -226,12 +170,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenSuggestSong && (
             <button
               onClick={onOpenSuggestSong}
-              className="btn-secondary"
-              style={{
-                borderColor: 'rgba(251, 191, 36, 0.4)',
-                color: '#fbbf24',
-                background: 'rgba(251, 191, 36, 0.1)',
-              }}
+              className="nav-action-link nav-action-primary"
               title="提供新歌曲、KTV 廠牌或伴唱系統資料建議"
             >
               <PlusCircle size={16} />
@@ -241,13 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <a
             href="./games/"
-            className="btn-secondary"
-            style={{
-              borderColor: 'rgba(34, 211, 238, 0.35)',
-              color: '#38bdf8',
-              background: 'rgba(34, 211, 238, 0.08)',
-              textDecoration: 'none',
-            }}
+            className="nav-action-link"
             title="前往 KTV 小遊戲列表"
           >
             <Gamepad2 size={16} />
@@ -257,43 +190,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Favorite Songs Button */}
           <button
             onClick={onOpenFavorites}
-            className="btn-secondary"
-            style={{
-              borderColor: favoriteCount > 0 ? 'rgba(236, 72, 153, 0.4)' : undefined,
-              color: favoriteCount > 0 ? '#f472b6' : undefined,
-            }}
+            className={`nav-action-link ${favoriteCount > 0 ? 'is-active' : ''}`}
           >
             <Heart size={16} fill={favoriteCount > 0 ? '#ec4899' : 'none'} color={favoriteCount > 0 ? '#ec4899' : 'currentColor'} />
             <span>我的歌本</span>
           </button>
 
           {/* View Mode Switcher */}
-          <div style={{
-            display: 'flex',
-            background: 'rgba(255, 255, 255, 0.06)',
-            padding: '3px',
-            borderRadius: '10px',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-          }}>
+          <div className="nav-view-switcher">
             <button
               onClick={() => {
                 try { localStorage.setItem('ktv_view_mode', 'matrix'); } catch {}
                 setFilters(prev => ({ ...prev, viewMode: 'matrix' }));
               }}
-              style={{
-                background: filters.viewMode === 'matrix' ? 'var(--accent-pink)' : 'transparent',
-                color: filters.viewMode === 'matrix' ? '#fff' : 'var(--text-secondary)',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease',
-              }}
+              className={filters.viewMode === 'matrix' ? 'is-active' : ''}
               title="列表模式 (各 KTV 廠牌一覽)"
             >
               <Table2 size={16} />
@@ -304,20 +214,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 try { localStorage.setItem('ktv_view_mode', 'cards'); } catch {}
                 setFilters(prev => ({ ...prev, viewMode: 'cards' }));
               }}
-              style={{
-                background: filters.viewMode === 'cards' ? 'var(--accent-pink)' : 'transparent',
-                color: filters.viewMode === 'cards' ? '#fff' : 'var(--text-secondary)',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease',
-              }}
+              className={filters.viewMode === 'cards' ? 'is-active' : ''}
               title="小卡模式 (經典單首卡片)"
             >
               <LayoutGrid size={16} />

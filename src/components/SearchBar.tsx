@@ -68,18 +68,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       margin: '18px auto 8px',
       padding: '0 20px',
     }}>
-      <div className="glass-panel" style={{ padding: '16px 20px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-        }}>
-          <div style={{
-            position: 'relative',
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-          }}>
+      <div className="glass-panel search-panel">
+        <div className="search-main-row">
+          <div className="search-input-wrap">
             {isSearching ? (
               <Loader2
                 size={20}
@@ -99,19 +90,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               value={filters.searchQuery}
               onChange={handleQueryChange}
               placeholder="搜尋歌名或歌手，例如周杰倫、蔡依林、五月天"
-              style={{
-                width: '100%',
-                padding: '14px 44px 14px 48px',
-                background: 'var(--bg-input, rgba(15, 23, 42, 0.7))',
-                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
-                borderRadius: 'var(--radius-md)',
-                color: 'var(--text-primary, #ffffff)',
-                fontSize: '1rem',
-                outline: 'none',
-                transition: 'all 0.2s ease',
-              }}
+              className="search-input"
               onFocus={e => e.target.style.borderColor = 'var(--accent-pink)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255, 255, 255, 0.12)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
             />
             {filters.searchQuery && (
               <button
@@ -135,31 +116,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
           <button
             onClick={onOpenMobileFilters}
-            className="btn-secondary"
-            style={{
-              padding: '14px 18px',
-              borderRadius: 'var(--radius-md)',
-              borderColor: hasActiveFilters ? 'var(--accent-pink)' : undefined,
-            }}
+            className={`search-filter-button ${hasActiveFilters ? 'is-active' : ''}`}
           >
             <SlidersHorizontal size={18} color={hasActiveFilters ? '#ec4899' : 'currentColor'} />
             <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>進階篩選</span>
           </button>
         </div>
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginTop: '14px',
-          flexWrap: 'wrap',
-          gap: '12px',
-          paddingTop: '12px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-        }}>
+        <div className="search-filter-strip">
           <div className="search-bar-filter-group" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', width: '100%', maxWidth: '100%', minWidth: 0 }}>
             <div className="quick-filter-scroll-row" style={{ width: '100%', maxWidth: '100%', minWidth: 0, overflowX: 'auto' }}>
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '2px', flexShrink: 0 }}>
+              <span className="filter-row-label">
                 語種：
               </span>
               {LANGUAGES.map(lang => {
@@ -171,20 +138,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 return (
                   <button
                     key={lang}
-                    className="filter-chip"
+                    className={`filter-chip ${isSelected ? 'is-selected' : ''}`}
                     onClick={() => toggleLanguage(lang)}
                     style={{
-                      background: isSelected ? lStyle.bg : 'rgba(255, 255, 255, 0.04)',
                       color: isSelected ? lStyle.color : 'var(--text-secondary)',
-                      border: `1px solid ${isSelected ? lStyle.border : 'rgba(255, 255, 255, 0.08)'}`,
-                      padding: '4px 10px',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '0.78rem',
                       fontWeight: isSelected ? 700 : 500,
                       cursor: 'pointer',
-                      transition: 'all 0.15s ease',
                       flexShrink: 0,
-                      boxShadow: isSelected ? `0 0 10px ${lStyle.border}` : 'none',
                     }}
                   >
                     {lang}
@@ -194,8 +154,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             </div>
 
             <div className="quick-filter-scroll-row" style={{ width: '100%', maxWidth: '100%', minWidth: 0, overflowX: 'auto' }}>
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '2px', display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
-                <Hash size={13} color="var(--accent-purple)" /> 字數：
+              <span className="filter-row-label">
+                <Hash size={13} /> 字數：
               </span>
               {TITLE_LENGTHS.map(item => {
                 const isSelected = filters.selectedTitleLength === item.id;
@@ -203,18 +163,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 return (
                   <button
                     key={item.id}
-                    className="filter-chip"
+                    className={`filter-chip ${isSelected ? 'is-selected' : ''}`}
                     onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id }))}
                     style={{
-                      background: isSelected ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                      color: isSelected ? 'var(--accent-purple, #c084fc)' : 'var(--text-secondary)',
-                      border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-                      padding: '4px 10px',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
+                      color: isSelected ? 'var(--accent-pink)' : 'var(--text-secondary)',
+                      fontWeight: isSelected ? 700 : 600,
                       cursor: 'pointer',
-                      transition: 'all 0.15s ease',
                     }}
                   >
                     {item.label}
@@ -277,21 +231,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               {onOpenSuggestSong && (
                 <button
                   onClick={onOpenSuggestSong}
-                  style={{
-                    background: 'rgba(251, 191, 36, 0.08)',
-                    border: '1px solid rgba(251, 191, 36, 0.25)',
-                    borderRadius: '6px',
-                    padding: '3px 8px',
-                    color: '#fbbf24',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="inline-suggest-link"
                   title="找不到想唱的歌曲，或想提供 KTV 廠牌資料時可送出建議"
                 >
                   <PlusCircle size={13} />

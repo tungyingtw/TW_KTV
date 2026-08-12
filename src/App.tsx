@@ -545,7 +545,6 @@ export function App() {
 
       <section className="home-hero" aria-labelledby="home-hero-title">
         <div className="home-hero-kicker">
-          <Sparkles size={14} />
           <span>歌友共同校對的 KTV 現場資料</span>
         </div>
         <h1 id="home-hero-title" className="home-hero-title">
@@ -555,9 +554,9 @@ export function App() {
           查詢多家 KTV 平台的收錄狀態，並一起補完原版 MV 或伴唱帶類型、導唱與現場版本差異。
         </p>
         <div className="home-hero-metrics" aria-label="目前資料概況">
-          <span>{allSongs.length.toLocaleString()} 首歌曲</span>
-          <span>{brandList.length.toLocaleString()} 個品牌</span>
-          <span>收錄 / MV / 導唱對照</span>
+          <span><strong>{allSongs.length.toLocaleString()}</strong><em>歌曲</em></span>
+          <span><strong>{brandList.length.toLocaleString()}</strong><em>KTV 品牌</em></span>
+          <span><strong>收錄</strong><em>MV / 導唱對照</em></span>
         </div>
       </section>
 
