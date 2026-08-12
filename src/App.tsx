@@ -552,7 +552,7 @@ export function App() {
           一起確認 KTV 現場到底有沒有這首歌
         </h1>
         <p className="home-hero-copy">
-          查詢各 KTV 品牌的收錄狀態，並一起補完原版 MV、伴唱帶、導唱與現場版本差異。
+          查詢多家 KTV 平台的收錄狀態，並一起補完原版 MV 或伴唱帶類型、導唱與現場版本差異。
         </p>
         <div className="home-hero-metrics" aria-label="目前資料概況">
           <span>{allSongs.length.toLocaleString()} 首歌曲</span>
@@ -594,7 +594,7 @@ export function App() {
           <div className="collab-notice-copy">
             <h2>讓這份歌庫越來越準</h2>
             <p>
-              KTV 的收錄、導唱和 MV 類型常常只有現場點過才知道。若你發現歌曲缺漏、資料不對，或能確認某首歌的現場狀態，歡迎使用「新增歌曲」或歌曲內的「回報」功能，一起讓查歌結果更可靠。
+              KTV 的收錄、導唱和 MV 類型常常只有現場點過才知道，本站整理的是可供歡唱前參考的回報線索。若你發現歌曲缺漏、資料不對，或能確認某首歌的現場狀態，歡迎使用「新增歌曲」或歌曲內的「回報」功能，一起讓查歌結果更可靠。
             </p>
           </div>
           <button

@@ -332,7 +332,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 gap: '6px',
               }}
             >
-              <Sparkles size={16} color="var(--accent-pink, #ec4899)" /> 全台各大 KTV 門市 / 廠牌收錄狀態：
+              <Sparkles size={16} color="var(--accent-pink, #ec4899)" /> 多家 KTV 門市 / 廠牌收錄狀態：
             </h4>
 
             <div

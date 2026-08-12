@@ -295,7 +295,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>4. 門市數據精準度與現場機器免責 (On-Site Accuracy Disclaimer)</h5>
               <p>
-                本網站之門市收錄狀態為大眾共識校對與公開目錄整理，僅供社群歡唱前之輔助查詢。因各大 KTV 門市伴唱機器之維護狀況及即時更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
+                本網站之門市收錄狀態為大眾共識校對與公開目錄整理，僅供社群歡唱前之輔助查詢。因各類 KTV 門市伴唱機器之維護狀況及即時更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> Store song availability data is crowdsourced for informational purposes. Actual song availability is subject to physical karaoke machine systems on site.
@@ -309,7 +309,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
                 關於「TYFunLab 台灣KTV歌曲查詢」 (About This Site)
               </h4>
               <p>
-                「TYFunLab 台灣KTV歌曲查詢」成立旨在解決廣大歌友在全台各大 KTV 連鎖門市歡唱時，常遇到「不確定現場門市有無收錄」及「不清楚能否使用導唱」等痛點。
+                「TYFunLab 台灣KTV歌曲查詢」成立旨在解決廣大歌友在多家 KTV 連鎖門市或伴唱系統歡唱時，常遇到「不確定現場門市有無收錄」及「不清楚能否使用導唱」等痛點。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
                 <b>English Summary:</b> Taiwan KTV Song Catalog is a crowdsourced reference directory helping users cross-check song availability, original vocals, and official MVs across top karaoke venue systems.
@@ -317,8 +317,8 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色 (Key Features)</h5>
               <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
-                <li><strong>跨廠牌門市對照</strong>：整合全台各大連鎖門市與伴唱機系統之動態歌曲對照目錄。</li>
-                <li><strong>原版 MV 與導唱標示</strong>：協助整理歌曲是否提供原版 MV 或現場導唱功能參考。</li>
+                <li><strong>跨廠牌門市對照</strong>：整理多家連鎖門市與伴唱系統之歌曲收錄對照目錄。</li>
+                <li><strong>MV 類型與導唱標示</strong>：協助整理歌曲是否可能提供原版 MV、伴唱帶類型或現場導唱功能參考。</li>
                 <li><strong>眾包共識與現場勘誤</strong>：提供現場歌友實時參與歌曲收錄與對照勘誤回報。</li>
               </ul>
             </div>
