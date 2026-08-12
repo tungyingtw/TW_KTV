@@ -25,7 +25,7 @@ const ENABLE_MV_VOTE = import.meta.env.VITE_ENABLE_MV_VOTE !== 'false';
 
 const CONFIDENCE_CONFIG: Record<VoteConfidence, { icon: React.ReactNode; label: string; color: string; bg: string }> = {
   neutral: { icon: <HelpCircle size={11} />, label: '', color: 'transparent', bg: 'transparent' },
-  verified: { icon: <ShieldCheck size={11} />, label: '歌友確認可唱', color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
+  verified: { icon: <ShieldCheck size={11} />, label: '歌友確認收錄', color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
   disputed: { icon: <AlertCircle size={11} />, label: '歌友回報不一致', color: '#f87171', bg: 'rgba(248,113,113,0.15)' },
   uncertain: { icon: <HelpCircle size={11} />, label: '資料仍待確認', color: '#fbbf24', bg: 'rgba(251,191,36,0.15)' },
 };
