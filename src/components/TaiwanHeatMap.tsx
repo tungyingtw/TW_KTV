@@ -82,13 +82,37 @@ function formatCount(value: number) {
   return value.toLocaleString('zh-TW');
 }
 
+function hexToRgb(hex: string) {
+  const normalized = hex.replace('#', '');
+  const value = parseInt(normalized, 16);
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255,
+  };
+}
+
+function interpolateColor(from: string, to: string, amount: number) {
+  const start = hexToRgb(from);
+  const end = hexToRgb(to);
+  const mix = (a: number, b: number) => Math.round(a + (b - a) * amount);
+  return `rgb(${mix(start.r, end.r)}, ${mix(start.g, end.g)}, ${mix(start.b, end.b)})`;
+}
+
 function getHeatColor(value: number, max: number) {
-  const ratio = max > 0 ? value / max : 0;
-  if (ratio > 0.78) return '#fb7185';
-  if (ratio > 0.58) return '#f59e0b';
-  if (ratio > 0.38) return '#a78bfa';
-  if (ratio > 0.2) return '#38bdf8';
-  return '#64748b';
+  const ratio = Math.max(0, Math.min(1, max > 0 ? value / max : 0));
+  const stops = [
+    { at: 0, color: '#64748b' },
+    { at: 0.24, color: '#38bdf8' },
+    { at: 0.48, color: '#a78bfa' },
+    { at: 0.72, color: '#f59e0b' },
+    { at: 1, color: '#fb7185' },
+  ];
+  const nextIndex = stops.findIndex((stop) => ratio <= stop.at);
+  if (nextIndex <= 0) return stops[0].color;
+  const from = stops[nextIndex - 1];
+  const to = stops[nextIndex];
+  return interpolateColor(from.color, to.color, (ratio - from.at) / (to.at - from.at));
 }
 
 export function TaiwanHeatMap({
@@ -213,11 +237,7 @@ export function TaiwanHeatMap({
       </div>
       <div className="taiwan-demo-legend" aria-label="顏色分布說明">
         <span>少</span>
-        <i style={{ background: '#64748b' }} />
-        <i style={{ background: '#38bdf8' }} />
-        <i style={{ background: '#a78bfa' }} />
-        <i style={{ background: '#f59e0b' }} />
-        <i style={{ background: '#fb7185' }} />
+        <i className="is-gradient" />
         <span>多</span>
       </div>
 
