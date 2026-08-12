@@ -160,6 +160,36 @@
       box-shadow: 0 0 10px rgba(102, 252, 241, 0.6);
     }
 
+    .home-link {
+      position: fixed;
+      top: max(10px, env(safe-area-inset-top));
+      left: max(10px, env(safe-area-inset-left));
+      z-index: 30;
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid rgba(102, 252, 241, 0.28);
+      border-radius: 8px;
+      background: rgba(3, 4, 7, 0.72);
+      color: #a7f3d0;
+      font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      pointer-events: auto;
+      touch-action: manipulation;
+    }
+
+    .home-link:hover,
+    .home-link:focus-visible {
+      color: #050608;
+      background: #66fcf1;
+      outline: none;
+    }
+
     .overlay {
       position: absolute;
       top: 0; left: 0;
@@ -213,6 +243,8 @@
   </style>
 </head>
 <body>
+
+  <a class="home-link" href="../">回查歌</a>
 
   <div id="game-wrapper">
     <div id="hud">
