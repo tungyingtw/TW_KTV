@@ -233,7 +233,7 @@ export const BrandTabScroll: React.FC<BrandTabScrollProps> = ({
             全部廠牌 ({brandList.length}){totalSongCount ? ` · ${formatCompactZhNumber(totalSongCount)}首` : ''}
           </button>
 
-          {/* 各大 KTV 廠牌 - 動態依【收錄歌曲數量】由多至少優先排序！ */}
+          {/* KTV 廠牌 - 動態依【收錄歌曲數量】由多至少優先排序！ */}
           {displayedBrands.map(brand => {
             const isSelected = selectedBrands.includes(brand.id) || (!isMultiSelecting && selectedBrand === brand.id);
             const count = brandSongCounts ? brandSongCounts[brand.id] : undefined;
