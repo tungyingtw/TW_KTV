@@ -3285,6 +3285,102 @@ a.action-text-link {
   border-color: rgba(190, 24, 93, 0.22) !important;
 }
 
+/* Polish round 3 phase 3: modal, drawer, and sheet consistency */
+.app-modal-overlay,
+.drawer-overlay,
+.song-detail-modal-overlay {
+  background: var(--bg-overlay, rgba(15, 23, 42, 0.72)) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.app-modal-content,
+.drawer-content,
+.bottom-sheet-content,
+.song-detail-modal-content {
+  background: var(--modal-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+}
+
+.app-modal-content {
+  padding: 20px !important;
+}
+
+.bottom-sheet-content {
+  padding: 20px !important;
+  border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+}
+
+.favorites-drawer-content {
+  padding: 20px !important;
+  border-radius: 0 !important;
+  border-left-color: var(--border-color) !important;
+}
+
+.favorites-drawer-content > div:first-child,
+.app-modal-content > div:first-child {
+  border-bottom-color: var(--border-color) !important;
+}
+
+.modal-segment-button {
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.modal-segment-button.is-selected {
+  background: rgba(219, 39, 119, 0.075) !important;
+  color: var(--accent-pink) !important;
+  border: 1px solid rgba(219, 39, 119, 0.26) !important;
+}
+
+.modal-option-button {
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.modal-option-button.is-selected {
+  background: rgba(219, 39, 119, 0.075) !important;
+  border-color: rgba(219, 39, 119, 0.28) !important;
+  color: var(--accent-pink) !important;
+}
+
+.app-modal-submit {
+  background: var(--accent-primary) !important;
+  border: 1px solid var(--accent-primary) !important;
+  box-shadow: none !important;
+}
+
+.app-modal-content input,
+.app-modal-content select,
+.app-modal-content textarea,
+.bottom-sheet-content input,
+.bottom-sheet-content select,
+.bottom-sheet-content textarea {
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.favorites-drawer-content [style*="rgba(30, 41, 59, 0.6)"] {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 640px) {
+  .app-modal-overlay {
+    padding: 10px !important;
+    align-items: flex-end !important;
+  }
+
+  .app-modal-content,
+  .bottom-sheet-content {
+    max-height: calc(100dvh - 20px) !important;
+    padding: 16px !important;
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+  }
+}
+
 /* Polish round 2: modal, mobile, and light-mode finishing */
 .song-detail-modal-content {
   border-radius: var(--radius-md) !important;

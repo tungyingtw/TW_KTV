@@ -109,6 +109,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
 
   return (
     <div
+      className="app-modal-overlay suggest-song-modal-overlay"
       onClick={onClose}
       style={{
         position: 'fixed',
@@ -123,6 +124,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
       }}
     >
       <div
+        className="app-modal-content suggest-song-modal-content"
         onClick={event => event.stopPropagation()}
         style={{
           width: '100%',
@@ -141,6 +143,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         <button
           onClick={onClose}
           aria-label="關閉建議表單"
+          className="action-icon modal-close-button"
           style={{
             position: 'absolute',
             top: '16px',
@@ -184,7 +187,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 justifyContent: 'center',
                 flexShrink: 0,
               }}>
-                <PlusCircle size={22} color="#fbbf24" />
+                <PlusCircle size={20} color="currentColor" />
               </div>
               <div>
                 <div style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '1.15rem' }}>
@@ -208,6 +211,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
             }}>
               <button
                 onClick={() => setActiveTab('song')}
+                className={`modal-segment-button ${activeTab === 'song' ? 'is-selected' : ''}`}
                 style={{
                   background: activeTab === 'song' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'transparent',
                   color: activeTab === 'song' ? '#fff' : 'var(--text-secondary, #cbd5e1)',
@@ -229,6 +233,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
 
               <button
                 onClick={() => setActiveTab('brand')}
+                className={`modal-segment-button ${activeTab === 'brand' ? 'is-selected' : ''}`}
                 style={{
                   background: activeTab === 'brand' ? 'linear-gradient(135deg, #0284c7, #0369a1)' : 'transparent',
                   color: activeTab === 'brand' ? '#fff' : 'var(--text-secondary, #cbd5e1)',
@@ -479,6 +484,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
+              className="btn-primary action-primary app-modal-submit"
               style={{
                 width: '100%',
                 background: isSubmitting

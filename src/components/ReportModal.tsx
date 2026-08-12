@@ -70,6 +70,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
 
   return (
     <div
+      className="app-modal-overlay report-modal-overlay"
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 13000,
@@ -80,6 +81,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
       }}
     >
       <div
+        className="app-modal-content report-modal-content"
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: '480px',
@@ -95,6 +97,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
         <button
           onClick={onClose}
           aria-label="關閉回報表單"
+          className="action-icon modal-close-button"
           style={{
             position: 'absolute', top: '16px', right: '16px',
             background: 'var(--bg-glass, rgba(255,255,255,0.08))', border: 'none', borderRadius: '50%',
@@ -116,7 +119,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
         ) : (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-              <AlertTriangle size={22} color="#f87171" />
+              <AlertTriangle size={20} color="currentColor" />
               <div>
                 <div style={{ fontWeight: 700, color: 'var(--text-primary, #fff)', fontSize: '1.05rem' }}>
                   回報歌曲資料異常
@@ -137,6 +140,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                     key={opt.value}
                     type="button"
                     onClick={() => setIssueType(opt.value)}
+                    className={`modal-option-button ${issueType === opt.value ? 'is-selected' : ''}`}
                     style={{
                       background: issueType === opt.value
                         ? 'rgba(248, 113, 113, 0.18)' : 'var(--bg-glass, rgba(255,255,255,0.04))',
@@ -252,6 +256,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
+              className="btn-primary action-primary app-modal-submit"
               style={{
                 width: '100%',
                 background: isSubmitting ? 'rgba(248, 113, 113, 0.4)' : 'linear-gradient(135deg, #f87171, #ef4444)',
