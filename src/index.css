@@ -4209,3 +4209,38 @@ textarea:focus {
 [data-theme="light"] .search-filter-button.is-active {
   background: color-mix(in srgb, var(--accent-pink) 6%, #ffffff) !important;
 }
+
+/* Polish round 7 phase 2: mobile first-screen spacing */
+@media (max-width: 640px) {
+  .mobile-navbar-actions {
+    gap: 3px !important;
+  }
+
+  .nav-action-link.is-mobile:not(.nav-action-primary) {
+    padding-inline: 6px !important;
+    color: color-mix(in srgb, var(--text-muted) 88%, var(--text-secondary)) !important;
+    border-color: transparent !important;
+    background: transparent !important;
+  }
+
+  .nav-action-link.is-mobile:not(.nav-action-primary) span {
+    max-width: 3.5em;
+  }
+
+  .nav-action-primary.is-mobile {
+    padding-inline: 9px !important;
+  }
+
+  .nav-view-switcher.is-mobile {
+    margin-left: 2px;
+  }
+
+  .brand-chip {
+    margin-right: 2px;
+  }
+
+  .brand-chip + .btn-secondary,
+  .brand-chip ~ .btn-secondary {
+    margin-left: 2px !important;
+  }
+}
