@@ -12,7 +12,8 @@ export const ToastNotification: React.FC<ToastProps> = ({ message }) => {
     <div
       className="toast-notification-container app-status-toast animate-fade-in"
       style={{
-        bottom: '32px',
+        bottom: 'var(--toast-bottom, 32px)',
+        top: 'var(--toast-top, auto)',
         zIndex: 20000,
         borderColor: 'var(--border-color)',
       }}
