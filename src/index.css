@@ -6139,3 +6139,142 @@ header,
     white-space: normal !important;
   }
 }
+
+/* Data presentation phase 2: semantic status badges and scan rhythm */
+:root,
+[data-theme="dark"] {
+  --status-available-color: #27d6c7;
+  --status-available-bg: rgba(39, 214, 199, 0.11);
+  --status-available-border: rgba(39, 214, 199, 0.34);
+  --status-mv-color: #38bdf8;
+  --status-mv-bg: rgba(56, 189, 248, 0.13);
+  --status-mv-border: rgba(56, 189, 248, 0.36);
+  --status-guided-color: #a78bfa;
+  --status-guided-bg: rgba(167, 139, 250, 0.13);
+  --status-guided-border: rgba(167, 139, 250, 0.36);
+  --status-edited-mv-color: #fbbf24;
+  --status-edited-mv-bg: rgba(251, 191, 36, 0.12);
+  --status-edited-mv-border: rgba(251, 191, 36, 0.34);
+}
+
+[data-theme="light"] {
+  --status-available-color: #008b83;
+  --status-available-bg: rgba(0, 139, 131, 0.085);
+  --status-available-border: rgba(0, 139, 131, 0.27);
+  --status-mv-color: #0879b8;
+  --status-mv-bg: rgba(8, 121, 184, 0.085);
+  --status-mv-border: rgba(8, 121, 184, 0.27);
+  --status-guided-color: #7c3aed;
+  --status-guided-bg: rgba(124, 58, 237, 0.085);
+  --status-guided-border: rgba(124, 58, 237, 0.25);
+  --status-edited-mv-color: #b76a00;
+  --status-edited-mv-bg: rgba(183, 106, 0, 0.085);
+  --status-edited-mv-border: rgba(183, 106, 0, 0.25);
+}
+
+.matrix-data-table .status-label,
+.card-view-container .status-label,
+.song-detail-modal-content .status-label,
+.matrix-data-table .badge,
+.card-view-container .badge,
+.song-detail-modal-content .badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: fit-content !important;
+  min-height: 20px !important;
+  padding: 2px 7px !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  font-weight: 800 !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+.status-availability,
+.matrix-data-table .status-label.status-availability,
+.card-view-container .status-label.status-availability,
+.song-detail-modal-content .status-label.status-availability,
+.song-detail-brand-card.is-available > div:first-child > div:last-child {
+  color: var(--status-available-color) !important;
+  background: var(--status-available-bg) !important;
+  border-color: var(--status-available-border) !important;
+}
+
+.status-mv,
+.badge-official-mv,
+.matrix-data-table .status-label.status-mv,
+.matrix-data-table .badge-official-mv,
+.card-view-container .badge-official-mv,
+.song-detail-modal-content .badge-official-mv {
+  color: var(--status-mv-color) !important;
+  background: var(--status-mv-bg) !important;
+  border-color: var(--status-mv-border) !important;
+}
+
+.status-guided,
+.badge-guided-vocal,
+.matrix-data-table .status-label.status-guided,
+.matrix-data-table .badge-guided-vocal,
+.card-view-container .badge-guided-vocal,
+.song-detail-modal-content .badge-guided-vocal {
+  color: var(--status-guided-color) !important;
+  background: var(--status-guided-bg) !important;
+  border-color: var(--status-guided-border) !important;
+}
+
+.matrix-data-table .status-label.status-empty {
+  min-width: 20px !important;
+  color: color-mix(in srgb, var(--text-muted) 54%, transparent) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.matrix-data-table .status-label.status-mv,
+.matrix-data-table .status-label.status-guided {
+  min-width: 34px !important;
+  min-height: 22px !important;
+  font-size: 0.72rem !important;
+}
+
+.matrix-data-table .status-label.status-availability {
+  min-width: 58px !important;
+  min-height: 24px !important;
+}
+
+.matrix-data-table .brand-column-cell .badge {
+  min-width: 30px !important;
+  min-height: 18px !important;
+  padding: 2px 5px !important;
+  font-size: 0.62rem !important;
+}
+
+.card-view-container .badge,
+.song-detail-modal-content .badge {
+  min-height: 19px !important;
+  padding: 2px 6px !important;
+  font-size: 0.66rem !important;
+}
+
+.song-detail-brand-card.is-available > div:first-child > div:last-child {
+  border: 1px solid var(--status-available-border) !important;
+  border-radius: 7px !important;
+  padding: 3px 7px !important;
+}
+
+@media (max-width: 640px) {
+  .matrix-data-table .status-label.status-availability {
+    min-width: 52px !important;
+    padding-inline: 5px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .matrix-data-table .status-label.status-mv,
+  .matrix-data-table .status-label.status-guided {
+    min-width: 30px !important;
+    padding-inline: 4px !important;
+    font-size: 0.7rem !important;
+  }
+}
