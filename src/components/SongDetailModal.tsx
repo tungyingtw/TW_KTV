@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Song, SongVotes, BrandId } from '../types/ktv';
 import { useBrands } from '../hooks/useBrands';
-import { X, Heart, Video, Sparkles, CheckCircle2, Flag } from 'lucide-react';
+import { X, Heart, Video, CheckCircle2, Flag } from 'lucide-react';
 import { BrandVoteBar } from './BrandVoteBar';
 import { ReportModal } from './ReportModal';
 import { fetchSongVotes } from '../services/communityService';
@@ -120,6 +120,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
           >
             <button
               onClick={onClose}
+              className="action-icon modal-close-button"
               style={{
                 position: 'absolute',
                 top: '20px',
@@ -182,6 +183,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 <span>{song.title}</span>
                 <button
                   onClick={() => onToggleFavorite(song.id)}
+                  className="action-icon"
                   style={{
                     background: 'none',
                     border: 'none',
@@ -332,7 +334,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 gap: '6px',
               }}
             >
-              <Sparkles size={16} color="var(--accent-pink, #ec4899)" /> 多家 KTV 門市 / 廠牌收錄狀態：
+              多家 KTV 門市 / 廠牌收錄狀態：
             </h4>
 
             <div
@@ -426,6 +428,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
             <div style={{ marginTop: '24px', borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingTop: '16px' }}>
               <button
                 onClick={() => setShowReport(true)}
+                className="action-text-link report-action-link"
                 style={{
                   display: 'flex',
                   alignItems: 'center',

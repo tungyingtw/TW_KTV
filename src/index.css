@@ -3047,3 +3047,118 @@ tr:hover {
 .data-table .muted-label {
   font-weight: 580 !important;
 }
+
+/* Polish round 2: loading, empty states, and actions */
+.loading-state-panel,
+.empty-state-panel,
+.error-state-panel {
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  background: var(--bg-card) !important;
+}
+
+.loading-state-icon svg,
+.empty-state-panel > svg {
+  width: 36px !important;
+  height: 36px !important;
+  filter: none !important;
+}
+
+.loading-progress-track {
+  height: 10px !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 52%, var(--bg-card)) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.loading-progress-fill {
+  background: var(--text-muted) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.loading-equalizer {
+  height: 22px;
+  margin-top: 14px;
+  opacity: 0.58;
+}
+
+.loading-equalizer span {
+  width: 4px;
+  background: var(--text-muted) !important;
+  box-shadow: none !important;
+}
+
+.action-primary,
+.btn-primary.action-primary {
+  background: var(--accent-primary) !important;
+  border: 1px solid var(--accent-primary) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.action-secondary,
+.btn-secondary.action-secondary {
+  background: transparent !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.action-icon {
+  background: transparent !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-muted) !important;
+  box-shadow: none !important;
+}
+
+.action-icon:hover,
+.action-icon:focus-visible {
+  color: var(--accent-pink) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 48%, transparent) !important;
+  outline: none;
+}
+
+.action-icon.heart-active,
+.heart-icon-btn.heart-active {
+  color: var(--accent-pink) !important;
+}
+
+.action-text-link,
+button.action-text-link,
+a.action-text-link {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  padding: 2px 0 !important;
+  color: var(--text-muted) !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+.action-text-link:hover,
+.action-text-link:focus-visible {
+  color: var(--accent-pink) !important;
+  border-bottom-color: rgba(219, 39, 119, 0.42) !important;
+  background: transparent !important;
+  outline: none;
+}
+
+.report-action-link {
+  width: max-content;
+  max-width: 100%;
+}
+
+.modal-close-button {
+  border-radius: var(--radius-sm) !important;
+}
+
+.song-detail-modal-content .badge,
+.card-view-container .badge {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid currentColor !important;
+  border-radius: 0 !important;
+  padding: 0 1px !important;
+}
