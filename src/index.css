@@ -3447,6 +3447,110 @@ a.action-text-link {
   }
 }
 
+/* Polish round 3 phase 5: mobile density and readability */
+@media (max-width: 640px) {
+  .mobile-navbar {
+    padding-inline: 10px !important;
+  }
+
+  .mobile-navbar-brand,
+  .mobile-navbar-stats,
+  .mobile-navbar-actions,
+  .nav-view-switcher.is-mobile {
+    min-width: 0;
+  }
+
+  .mobile-navbar-actions {
+    max-width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .nav-action-link.is-mobile,
+  .nav-view-switcher.is-mobile button,
+  .mobile-search-submit,
+  .search-filter-button.is-mobile {
+    min-height: 38px !important;
+  }
+
+  .nav-action-link.is-mobile {
+    padding-inline: 9px !important;
+  }
+
+  .nav-action-link.is-mobile span,
+  .navbar-title,
+  .mobile-search-submit,
+  .search-filter-button.is-mobile span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-search-panel > div:first-child {
+    gap: 6px !important;
+  }
+
+  .filter-summary-button {
+    min-height: 36px;
+  }
+
+  .card-view-container,
+  .matrix-view-container {
+    padding-inline: 8px !important;
+  }
+
+  .song-card,
+  .card-view-container .glass-panel {
+    padding: 12px !important;
+  }
+
+  .song-title-text,
+  .song-artist-text,
+  .song-meta-text,
+  .card-view-container h3,
+  .card-view-container h4 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .data-table {
+    font-size: 0.78rem !important;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .matrix-data-table .brand-column-cell {
+    min-width: 72px;
+  }
+
+  .brand-chip {
+    min-height: 34px !important;
+    max-width: 168px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-action-link.is-mobile {
+    padding-inline: 8px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .mobile-search-submit,
+  .search-filter-button.is-mobile {
+    padding-inline: 8px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .mobile-search-input {
+    font-size: 0.8rem !important;
+  }
+}
+
 /* Polish round 2: modal, mobile, and light-mode finishing */
 .song-detail-modal-content {
   border-radius: var(--radius-md) !important;
