@@ -55,7 +55,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           height: '100%',
           borderRadius: 0,
           borderLeft: '1px solid rgba(236, 72, 153, 0.3)',
-          padding: '24px',
+          padding: '22px',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -80,7 +80,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               border: 'none',
-              borderRadius: '50%',
+              borderRadius: 'var(--radius-sm, 8px)',
               width: '32px',
               height: '32px',
               color: 'var(--text-secondary)',
@@ -119,7 +119,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
                 style={{
                   background: 'rgba(30, 41, 59, 0.6)',
                   border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: 'var(--radius-md)',
+                  borderRadius: 'var(--radius-sm)',
                   padding: '14px',
                 }}
               >
@@ -164,7 +164,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
                           border: `1px solid ${b.color}44`,
                           color: b.color,
                           padding: '3px 8px',
-                          borderRadius: '12px',
+                          borderRadius: '8px',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '3px',

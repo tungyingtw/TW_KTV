@@ -134,9 +134,9 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
           background: 'var(--bg-card, #1e293b)',
           color: 'var(--text-primary, #ffffff)',
           border: '1px solid var(--border-color, rgba(255, 255, 255, 0.15))',
-          borderRadius: '18px',
-          padding: '26px',
-          boxShadow: 'var(--shadow-lg, 0 24px 60px rgba(0,0,0,0.65))',
+          borderRadius: 'var(--radius-md, 14px)',
+          padding: '22px',
+          boxShadow: 'none',
           position: 'relative',
         }}
       >
@@ -150,7 +150,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
             right: '16px',
             background: 'var(--bg-glass, rgba(255,255,255,0.08))',
             border: 'none',
-            borderRadius: '50%',
+            borderRadius: 'var(--radius-sm, 8px)',
             width: '32px',
             height: '32px',
             color: 'var(--text-muted, #94a3b8)',
@@ -179,9 +179,9 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
               <div style={{
                 width: '42px',
                 height: '42px',
-                borderRadius: '12px',
-                background: 'rgba(251, 191, 36, 0.15)',
-                border: '1px solid rgba(251, 191, 36, 0.3)',
+                borderRadius: 'var(--radius-sm, 8px)',
+                background: 'rgba(219, 39, 119, 0.075)',
+                border: '1px solid rgba(219, 39, 119, 0.24)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -213,9 +213,9 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 onClick={() => setActiveTab('song')}
                 className={`modal-segment-button ${activeTab === 'song' ? 'is-selected' : ''}`}
                 style={{
-                  background: activeTab === 'song' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'transparent',
-                  color: activeTab === 'song' ? '#fff' : 'var(--text-secondary, #cbd5e1)',
-                  border: 'none',
+                  background: activeTab === 'song' ? 'rgba(219, 39, 119, 0.075)' : 'transparent',
+                  color: activeTab === 'song' ? 'var(--accent-pink, #f472b6)' : 'var(--text-secondary, #cbd5e1)',
+                  border: activeTab === 'song' ? '1px solid rgba(219, 39, 119, 0.26)' : '1px solid transparent',
                   borderRadius: '7px',
                   padding: '9px 12px',
                   fontWeight: activeTab === 'song' ? 700 : 500,
@@ -235,9 +235,9 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 onClick={() => setActiveTab('brand')}
                 className={`modal-segment-button ${activeTab === 'brand' ? 'is-selected' : ''}`}
                 style={{
-                  background: activeTab === 'brand' ? 'linear-gradient(135deg, #0284c7, #0369a1)' : 'transparent',
-                  color: activeTab === 'brand' ? '#fff' : 'var(--text-secondary, #cbd5e1)',
-                  border: 'none',
+                  background: activeTab === 'brand' ? 'rgba(219, 39, 119, 0.075)' : 'transparent',
+                  color: activeTab === 'brand' ? 'var(--accent-pink, #f472b6)' : 'var(--text-secondary, #cbd5e1)',
+                  border: activeTab === 'brand' ? '1px solid rgba(219, 39, 119, 0.26)' : '1px solid transparent',
                   borderRadius: '7px',
                   padding: '9px 12px',
                   fontWeight: activeTab === 'brand' ? 700 : 500,
@@ -256,7 +256,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
 
             {activeTab === 'song' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
+                <div className="app-modal-field-grid app-modal-field-grid-primary" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-primary, #fff)', marginBottom: '5px', fontWeight: 700 }}>
                       歌名 <span style={{ color: '#f87171' }}>*</span>
@@ -319,7 +319,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                <div className="app-modal-field-grid app-modal-field-grid-third" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                   <div>
                     <label style={smallLabelStyle()}>歌曲語種</label>
                     <select
@@ -487,11 +487,9 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
               className="btn-primary action-primary app-modal-submit"
               style={{
                 width: '100%',
-                background: isSubmitting
-                  ? 'rgba(251,191,36,0.3)'
-                  : (activeTab === 'song' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #0284c7, #0369a1)'),
-                border: 'none',
-                borderRadius: '10px',
+                background: isSubmitting ? 'rgba(219, 39, 119, 0.22)' : 'var(--accent-primary, #8052ff)',
+                border: '1px solid var(--accent-primary, #8052ff)',
+                borderRadius: 'var(--radius-sm, 8px)',
                 padding: '12px',
                 color: '#fff',
                 fontWeight: 800,
@@ -502,7 +500,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 justifyContent: 'center',
                 gap: '8px',
                 marginTop: '18px',
-                boxShadow: activeTab === 'song' ? '0 4px 15px rgba(245, 158, 11, 0.3)' : '0 4px 15px rgba(2, 132, 199, 0.3)',
+                boxShadow: 'none',
                 transition: 'all 0.2s',
               }}
             >

@@ -90,7 +90,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           borderTopRightRadius: 'var(--radius-lg)',
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
-          padding: '24px',
+          padding: '22px',
           maxHeight: '85vh',
           overflowY: 'auto',
           border: '1px solid var(--border-color)',
@@ -102,7 +102,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           justifyContent: 'space-between',
           marginBottom: '20px',
         }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <h3 style={{ fontSize: '1.08rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             進階條件過濾與排序
           </h3>
           <button
@@ -111,7 +111,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
             style={{
               background: 'var(--bg-card-hover)',
               border: 'none',
-              borderRadius: '50%',
+              borderRadius: 'var(--radius-sm)',
               width: '32px',
               height: '32px',
               color: 'var(--text-secondary)',
@@ -130,7 +130,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
             <SortAsc size={16} color="var(--accent-pink)" /> 排序方式
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+          <div className="bottom-sheet-grid bottom-sheet-grid-sort" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
             {[
               { id: 'length', label: '字數排序（預設）' },
               { id: 'popular', label: '熱門程度' },
@@ -164,7 +164,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
             <Hash size={16} color="var(--accent-purple)" /> 歌名字數篩選
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+          <div className="bottom-sheet-grid bottom-sheet-grid-length" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
             {TITLE_LENGTHS.map(item => {
               const isSelected = filters.selectedTitleLength === item.id;
               return (
@@ -174,10 +174,10 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                   onClick={() => setFilters(prev => ({ ...prev, selectedTitleLength: item.id as any }))}
                   style={{
                     padding: '8px 4px',
-                    borderRadius: 'var(--radius-md)',
-                    background: isSelected ? 'rgba(168, 85, 247, 0.3)' : 'var(--bg-card-hover)',
-                    color: isSelected ? 'var(--accent-purple, #c084fc)' : 'var(--text-secondary)',
-                    border: `1px solid ${isSelected ? 'rgba(168, 85, 247, 0.6)' : 'var(--border-color)'}`,
+                    borderRadius: 'var(--radius-sm)',
+                    background: isSelected ? 'rgba(219, 39, 119, 0.075)' : 'var(--bg-card-hover)',
+                    color: isSelected ? 'var(--accent-pink, #f472b6)' : 'var(--text-secondary)',
+                    border: `1px solid ${isSelected ? 'rgba(219, 39, 119, 0.26)' : 'var(--border-color)'}`,
                     fontWeight: 600,
                     fontSize: '0.8rem',
                     cursor: 'pointer',
@@ -201,7 +201,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '12px',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: 'var(--radius-sm)',
               background: 'var(--bg-card-hover)',
               cursor: 'pointer',
             }}>
@@ -221,7 +221,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '12px',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: 'var(--radius-sm)',
               background: 'var(--bg-card-hover)',
               cursor: 'pointer',
             }}>
@@ -243,7 +243,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
             多選語種
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+          <div className="bottom-sheet-grid bottom-sheet-grid-language" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {LANGUAGES.map(lang => {
               const isSelected = filters.selectedLanguages.includes(lang);
               const lStyle = getLanguageStyle(lang);
@@ -255,7 +255,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                   onClick={() => toggleLanguage(lang)}
                   style={{
                     padding: '10px',
-                    borderRadius: 'var(--radius-md)',
+                    borderRadius: 'var(--radius-sm)',
                     background: isSelected ? lStyle.bg : 'var(--bg-card-hover)',
                     color: isSelected ? lStyle.color : 'var(--text-secondary)',
                     border: `1px solid ${isSelected ? lStyle.border : 'var(--border-color)'}`,
@@ -266,7 +266,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '4px',
-                    boxShadow: isSelected ? `0 0 10px ${lStyle.border}` : 'none',
+                    boxShadow: 'none',
                   }}
                 >
                   {isSelected && <Check size={14} color={lStyle.color} />}
