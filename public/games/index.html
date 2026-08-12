@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="../theme-sync.js"></script>
   <title>KTV 小遊戲 | TYFunLab 台灣KTV歌曲查詢</title>
   <meta name="description" content="TYFunLab 台灣KTV歌曲查詢小遊戲入口，提供輕量純網頁遊戲。">
   <link rel="icon" href="../favicon.ico" sizes="any">
@@ -385,6 +386,44 @@
       header {
         background: color-mix(in srgb, var(--bg) 92%, transparent);
       }
+    }
+    [data-theme="dark"] {
+      --bg: #070a12;
+      --panel: rgba(15, 23, 42, .78);
+      --panel-2: rgba(15, 23, 42, .58);
+      --line: rgba(148, 163, 184, .16);
+      --text: #f8fafc;
+      --muted: #aab7ce;
+      --pink: #f472b6;
+      --cyan: #7dd3fc;
+      --gold: #fbbf24;
+    }
+    [data-theme="light"] {
+      --bg: #fffaf3;
+      --panel: #fffdf8;
+      --panel-2: #fff7ee;
+      --line: rgba(88, 60, 35, .15);
+      --text: #261b16;
+      --muted: #806c60;
+      --pink: #c81e73;
+      --cyan: #0f8f9a;
+      --gold: #b7791f;
+    }
+    [data-theme="dark"] body {
+      background: var(--bg);
+    }
+    [data-theme="light"] body {
+      background:
+        linear-gradient(180deg, rgba(183, 121, 31, .08) 0%, transparent 240px),
+        linear-gradient(115deg, rgba(15, 143, 154, .055) 0%, transparent 38%),
+        linear-gradient(145deg, rgba(200, 30, 115, .032) 0%, transparent 45%),
+        var(--bg);
+    }
+    [data-theme="dark"] header {
+      background: rgba(7, 10, 18, .94);
+    }
+    [data-theme="light"] header {
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
     }
   </style>
 </head>

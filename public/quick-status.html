@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="theme-sync.js"></script>
   <meta name="robots" content="noindex, nofollow, noarchive" />
   <title>KTV 待處理快查</title>
   <style>
@@ -110,6 +111,50 @@
         background: color-mix(in srgb, var(--yellow) 12%, transparent);
         border-color: color-mix(in srgb, var(--yellow) 36%, var(--line));
       }
+    }
+    [data-theme="dark"] {
+      --bg: #0c1018;
+      --panel: rgba(17, 22, 33, .96);
+      --line: rgba(210, 232, 238, .14);
+      --text: #fff8fb;
+      --muted: #9caeba;
+      --pink: #f43f9d;
+      --cyan: #2dd4d4;
+      --gold: #f7b84b;
+      --green: #37d99a;
+      --yellow: #f7b84b;
+      --red: #fb7185;
+    }
+    [data-theme="light"] {
+      --bg: #fffaf3;
+      --panel: #fffdf8;
+      --line: rgba(88, 60, 35, .15);
+      --text: #261b16;
+      --muted: #806c60;
+      --pink: #c81e73;
+      --cyan: #0f8f9a;
+      --gold: #b7791f;
+      --green: #078661;
+      --yellow: #b7791f;
+      --red: #c2415a;
+    }
+    [data-theme="dark"] body {
+      background:
+        linear-gradient(180deg, rgba(45, 212, 212, .06) 0%, transparent 240px),
+        linear-gradient(135deg, rgba(244, 63, 157, .04) 0%, transparent 42%),
+        var(--bg);
+    }
+    [data-theme="light"] body {
+      background:
+        linear-gradient(180deg, rgba(183, 121, 31, .08) 0%, transparent 240px),
+        linear-gradient(115deg, rgba(15, 143, 154, .055) 0%, transparent 38%),
+        linear-gradient(145deg, rgba(200, 30, 115, .032) 0%, transparent 45%),
+        var(--bg);
+    }
+    [data-theme="light"] .panel,
+    [data-theme="light"] .status,
+    [data-theme="light"] button.secondary {
+      background: var(--panel);
     }
   </style>
 </head>
