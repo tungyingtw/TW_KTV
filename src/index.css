@@ -4773,6 +4773,70 @@ header,
   background: linear-gradient(90deg, var(--accent-pink), var(--accent-highlight), var(--accent-support)) !important;
 }
 
+[data-theme="light"] .home-hero::before {
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-support) 0%, var(--accent-highlight) 72%, var(--accent-pink) 100%);
+  opacity: 0.86;
+}
+
+[data-theme="light"] .home-hero-kicker {
+  color: var(--accent-support) !important;
+}
+
+[data-theme="light"] .home-hero-metrics span:first-child strong,
+[data-theme="light"] .home-hero-metrics span:nth-child(3) strong {
+  color: var(--accent-primary) !important;
+}
+
+[data-theme="light"] .data-table,
+[data-theme="light"] table,
+[data-theme="light"] .matrix-data-table {
+  background: #fffdf8 !important;
+}
+
+[data-theme="light"] .data-table th,
+[data-theme="light"] .matrix-data-table th {
+  background: #fff6ea !important;
+  color: color-mix(in srgb, var(--text-secondary) 82%, var(--accent-highlight)) !important;
+  border-color: rgba(88, 60, 35, 0.13) !important;
+}
+
+[data-theme="light"] .data-table td,
+[data-theme="light"] .matrix-data-table td {
+  background: color-mix(in srgb, #fffdf8 94%, var(--accent-support) 2%) !important;
+  border-color: rgba(88, 60, 35, 0.1) !important;
+}
+
+[data-theme="light"] .data-table tr:hover td,
+[data-theme="light"] .matrix-data-table tr:hover td {
+  background: #fff7ee !important;
+}
+
+[data-theme="light"] .matrix-data-table .brand-column-cell {
+  background: color-mix(in srgb, #fffdf8 92%, var(--accent-support) 4%) !important;
+}
+
+[data-theme="light"] .brand-chip {
+  background: #fffdf8 !important;
+  border-color: rgba(88, 60, 35, 0.16) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .brand-chip:hover {
+  background: #fff7ee !important;
+  border-color: color-mix(in srgb, var(--accent-support) 24%, var(--border-color)) !important;
+}
+
+[data-theme="light"] .brand-chip.is-selected {
+  color: var(--accent-primary) !important;
+  border-color: color-mix(in srgb, var(--accent-primary) 38%, var(--border-color)) !important;
+  background: color-mix(in srgb, #fffdf8 88%, var(--accent-highlight) 7%) !important;
+}
+
+[data-theme="light"] .loading-progress-fill {
+  background: linear-gradient(90deg, var(--accent-support), var(--accent-highlight)) !important;
+}
+
 @media (max-width: 640px) {
   .home-hero {
     padding-top: 10px !important;
