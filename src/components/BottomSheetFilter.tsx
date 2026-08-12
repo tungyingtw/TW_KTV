@@ -81,7 +81,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
     >
       <div 
         onClick={e => e.stopPropagation()}
-        className="glass-panel animate-slide-up"
+        className="glass-panel animate-slide-up bottom-sheet-content"
         style={{
           width: '100%',
           maxWidth: '600px',

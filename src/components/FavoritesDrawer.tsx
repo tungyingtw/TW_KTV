@@ -34,6 +34,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
 
   return (
     <div
+      className="drawer-overlay favorites-drawer-overlay"
       onClick={onClose}
       style={{
         position: 'fixed',
@@ -47,7 +48,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
     >
       <div 
         onClick={e => e.stopPropagation()}
-        className="glass-panel animate-fade-in"
+        className="glass-panel animate-fade-in drawer-content favorites-drawer-content"
         style={{
           width: '100%',
           maxWidth: '480px',
@@ -68,13 +69,14 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Heart size={22} fill="#ec4899" color="#ec4899" />
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
+            <Heart size={20} fill="var(--accent-pink)" color="currentColor" />
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
               我的歌本 ({favoriteSongs.length})
             </h3>
           </div>
           <button
             onClick={onClose}
+            className="action-icon modal-close-button"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               border: 'none',
@@ -103,7 +105,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
             color: 'var(--text-muted)',
             textAlign: 'center',
           }}>
-            <Mic2 size={48} opacity={0.4} style={{ marginBottom: '12px' }} />
+            <Mic2 size={36} opacity={0.4} style={{ marginBottom: '12px' }} />
             <p style={{ fontWeight: 600, fontSize: '1rem' }}>歌本目前沒有歌曲</p>
             <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
               點擊歌曲旁的愛心圖標即可新增至歌本對照表
@@ -123,11 +125,12 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff' }}>{song.title}</h4>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{song.title}</h4>
                     <p style={{ fontSize: '0.8rem', color: 'var(--accent-pink)', fontWeight: 600 }}>{song.artist}</p>
                   </div>
                   <button
                     onClick={() => onToggleFavorite(song.id)}
+                    className="action-icon"
                     style={{
                       background: 'none',
                       border: 'none',
