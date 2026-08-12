@@ -484,7 +484,7 @@ export function App() {
   const handleMobileSearchComplete = () => {
     if (!isMobile) return;
     if (!isCatalogReady) {
-      showToast(apiHealthStatus === 'waking' ? '伺服器正在喚醒，歌庫準備好後會自動顯示' : '歌庫正在準備中，請稍候');
+      showToast(apiHealthStatus === 'waking' ? '資料服務喚醒中，稍候自動顯示' : '歌庫準備中，請稍候');
       return;
     }
     const settleDelay = isSearching ? 360 : 120;
@@ -731,17 +731,17 @@ export function App() {
             </div>
 
             <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '8px' }}>
-              {apiHealthStatus === 'waking' ? '伺服器正在喚醒資料服務' : '正在整理大家共同補完的歌庫資料'}
+              {apiHealthStatus === 'waking' ? '資料服務喚醒中' : '歌庫資料準備中'}
             </h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
               {catalogLoadError || (displayProgress >= 100
                 ? '歌庫資料已準備完成'
                 : apiHealthStatus === 'waking'
-                  ? '正在確認 Render API 是否已醒來。這不是搜尋 0 筆，請先停留本頁稍候。'
+                  ? '正在連線資料服務，完成後會自動顯示結果。'
                   : apiHealthStatus === 'online'
-                    ? '伺服器已連線，正在套用最新回報修正與歌庫標示。'
+                    ? '正在套用最新回報與歌庫標示。'
                     : apiHealthStatus === 'unavailable'
-                      ? '暫時無法確認伺服器狀態，仍會先載入可用的靜態歌庫資料。'
+                      ? '暫時無法連線資料服務，先載入可用的歌庫資料。'
                   : '正在比對歌曲收錄、導唱與 MV 標示')}
             </p>
 
@@ -819,7 +819,7 @@ export function App() {
               目前沒有符合條件的歌曲
             </h3>
             <p style={{ margin: '0 auto 18px', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.75, maxWidth: '460px' }}>
-              可以調整搜尋字、切換品牌或放寬篩選條件。如果你確定現場有這首歌，也可以提供建議讓大家一起補完資料。
+              請調整搜尋字、切換品牌或放寬篩選條件。若現場確定有這首歌，請提供建議補充線索。
             </p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <button
