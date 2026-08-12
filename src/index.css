@@ -4585,4 +4585,8 @@ textarea:focus {
     grid-template-columns: 1fr !important;
     padding: 12px !important;
   }
+
+  .visit-region-page .visit-region-modal-state {
+    min-height: 220px !important;
+  }
 }

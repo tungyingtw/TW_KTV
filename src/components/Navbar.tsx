@@ -179,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           <a
-            href="./games/"
+            href="./games/index.html"
             className="nav-action-link"
             title="前往 KTV 小遊戲列表"
           >

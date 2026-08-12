@@ -159,7 +159,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
             )}
 
             <a
-              href="./games/"
+              href="./games/index.html"
               className="nav-action-link is-mobile"
               title="前往 KTV 小遊戲列表"
             >
