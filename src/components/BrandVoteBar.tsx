@@ -322,7 +322,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
   };
 
   return (
-    <div style={{
+    <div className="brand-vote-bar" style={{
       display: 'flex',
       flexDirection: 'column',
       gap: '5px',
@@ -331,13 +331,14 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
       borderTop: '1px dashed rgba(255,255,255,0.08)',
     }}>
       {/* 列一：收錄對照 (正名) */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
+      <div className="brand-vote-row brand-vote-row-availability" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
         <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0 }}>
           收錄對照
         </span>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
           <button
+            className={`brand-vote-action is-positive ${userVote === 'confirm' ? 'is-selected' : ''}`}
             onClick={e => { e.stopPropagation(); handleVote('confirm'); }}
             disabled={isVoting}
             title="現場可點到這首歌"
@@ -356,6 +357,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
           </button>
 
           <button
+            className={`brand-vote-action is-negative ${userVote === 'deny' ? 'is-selected' : ''}`}
             onClick={e => { e.stopPropagation(); handleVote('deny'); }}
             disabled={isVoting}
             title="現場點不到這首歌"
@@ -376,13 +378,14 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
       </div>
 
       {/* 列二：導唱功能 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
+      <div className="brand-vote-row brand-vote-row-guided" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
         <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0 }}>
           導唱功能
         </span>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
           <button
+            className={`brand-vote-action is-guided ${userGuideVote === 'guided' ? 'is-selected' : ''}`}
             onClick={e => { e.stopPropagation(); handleGuideVote('guided'); }}
             disabled={isGuideVoting}
             title="現場可切換或播放導唱"
@@ -401,6 +404,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
           </button>
 
           <button
+            className={`brand-vote-action is-muted ${userGuideVote === 'none' ? 'is-selected' : ''}`}
             onClick={e => { e.stopPropagation(); handleGuideVote('none'); }}
             disabled={isGuideVoting}
             title="現場無法使用導唱"
@@ -422,13 +426,14 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
 
       {/* 列三：MV 類型 (Feature Flag 控制) */}
       {ENABLE_MV_VOTE && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
+        <div className="brand-vote-row brand-vote-row-mv" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
           <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0 }}>
             MV 類型
           </span>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
             <button
+              className={`brand-vote-action is-mv ${userMvVote === 'official' ? 'is-selected' : ''}`}
               onClick={e => { e.stopPropagation(); handleMvVote('official'); }}
               disabled={isMvVoting}
               title="唱片公司或官方頻道常見的正式 MV 畫面"
@@ -447,6 +452,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
             </button>
 
             <button
+              className={`brand-vote-action is-edited ${userMvVote === 'edited' ? 'is-selected' : ''}`}
               onClick={e => { e.stopPropagation(); handleMvVote('edited'); }}
               disabled={isMvVoting}
               title="可能為風景、模特兒、現場或重新剪輯畫面"
@@ -469,6 +475,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
 
       {/* 下拉細項數據按鈕 */}
       <button
+        className="brand-vote-breakdown-toggle"
         onClick={e => { e.stopPropagation(); setShowBreakdown(prev => !prev); }}
         style={{
           background: 'none',
@@ -493,7 +500,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
 
       {/* 展開後的社群統計 */}
       {showBreakdown && (
-        <div style={{
+        <div className="brand-vote-breakdown" style={{
           background: 'rgba(15, 23, 42, 0.65)',
           borderRadius: '8px',
           padding: '8px 10px',
