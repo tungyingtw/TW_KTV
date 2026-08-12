@@ -10,14 +10,14 @@ export const ToastNotification: React.FC<ToastProps> = ({ message }) => {
 
   return (
     <div
-      className="toast-notification-container animate-fade-in"
+      className="toast-notification-container app-status-toast animate-fade-in"
       style={{
         bottom: '32px',
         zIndex: 20000,
-        borderColor: 'rgba(236, 72, 153, 0.4)',
+        borderColor: 'var(--border-color)',
       }}
     >
-      <CheckCircle2 size={20} color="#ec4899" />
+      <CheckCircle2 size={20} color="currentColor" />
       <span>{message}</span>
     </div>
   );
