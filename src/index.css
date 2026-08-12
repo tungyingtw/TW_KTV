@@ -6133,6 +6133,8 @@ header,
   .toast-notification-container {
     --toast-top: 74px;
     --toast-bottom: auto;
+    top: 74px !important;
+    bottom: auto !important;
     max-width: calc(100vw - 28px) !important;
     white-space: normal !important;
   }
