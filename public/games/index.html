@@ -240,6 +240,87 @@
       .play { width: 100%; }
       .planned-item { flex-direction: column; gap: 4px; }
     }
+    :root {
+      --bg: #0c1018;
+      --panel: rgba(17, 22, 33, .94);
+      --panel-2: rgba(28, 35, 49, .86);
+      --line: rgba(210, 232, 238, .14);
+      --text: #fff8fb;
+      --muted: #9caeba;
+      --pink: #f43f9d;
+      --cyan: #2dd4d4;
+      --gold: #f7b84b;
+    }
+    body {
+      background:
+        linear-gradient(180deg, rgba(45, 212, 212, .06) 0%, transparent 260px),
+        linear-gradient(115deg, rgba(247, 184, 75, .035) 0%, transparent 30%),
+        linear-gradient(145deg, rgba(244, 63, 157, .035) 0%, transparent 44%),
+        var(--bg);
+    }
+    header {
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+    }
+    .brand span:last-child {
+      background: linear-gradient(90deg, var(--text) 0%, var(--cyan) 62%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    main::before {
+      content: "";
+      display: block;
+      width: min(360px, 64vw);
+      height: 3px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--pink), var(--gold), var(--cyan));
+    }
+    .logo,
+    .back,
+    .game-card,
+    .planned-item,
+    .tag,
+    .play {
+      border-radius: 8px;
+      box-shadow: none;
+    }
+    .logo {
+      border-color: color-mix(in srgb, var(--pink) 32%, var(--line));
+      background: color-mix(in srgb, var(--pink) 9%, transparent);
+    }
+    .back,
+    .play {
+      border-color: color-mix(in srgb, var(--cyan) 32%, var(--line));
+      background: color-mix(in srgb, var(--cyan) 8%, transparent);
+      color: var(--cyan);
+    }
+    .game-card {
+      background: color-mix(in srgb, var(--panel) 92%, var(--cyan) 2%);
+      border-color: var(--line);
+    }
+    .game-card:hover,
+    .game-card:focus-visible {
+      transform: none;
+      border-color: color-mix(in srgb, var(--pink) 42%, var(--line));
+      background: color-mix(in srgb, var(--panel-2) 88%, var(--pink) 4%);
+    }
+    .eyebrow {
+      color: var(--gold);
+      letter-spacing: 0;
+    }
+    .tag {
+      border-color: var(--line);
+      background: color-mix(in srgb, var(--panel-2) 72%, transparent);
+    }
+    .status {
+      color: var(--cyan);
+      border-color: color-mix(in srgb, var(--cyan) 30%, var(--line));
+      background: color-mix(in srgb, var(--cyan) 8%, transparent);
+    }
+    .planned-item {
+      border-color: var(--line);
+      background: color-mix(in srgb, var(--panel) 84%, transparent);
+    }
   </style>
 </head>
 <body>

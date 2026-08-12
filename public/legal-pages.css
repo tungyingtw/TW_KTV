@@ -231,3 +231,134 @@ footer a {
     align-items: flex-start !important;
   }
 }
+
+/* TYFunLab static page vitality pass */
+:root {
+  color-scheme: dark light;
+  --ty-bg: #0c1018;
+  --ty-surface: rgba(17, 22, 33, 0.94);
+  --ty-surface-soft: rgba(28, 35, 49, 0.86);
+  --ty-line: rgba(210, 232, 238, 0.14);
+  --ty-text: #fff8fb;
+  --ty-text-2: #dce8ee;
+  --ty-muted: #9caeba;
+  --ty-pink: #f43f9d;
+  --ty-cyan: #2dd4d4;
+  --ty-gold: #f7b84b;
+  --ty-radius: 8px;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(45, 212, 212, 0.06) 0%, transparent 260px),
+    linear-gradient(115deg, rgba(247, 184, 75, 0.035) 0%, transparent 30%),
+    linear-gradient(145deg, rgba(244, 63, 157, 0.035) 0%, transparent 44%),
+    var(--ty-bg) !important;
+  color: var(--ty-text-2) !important;
+}
+
+header {
+  background: color-mix(in srgb, var(--ty-bg) 92%, transparent) !important;
+  border-bottom-color: var(--ty-line) !important;
+}
+
+.site-name {
+  background: linear-gradient(90deg, var(--ty-text) 0%, var(--ty-cyan) 62%, var(--ty-gold) 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+header a,
+footer a,
+main a {
+  color: var(--ty-cyan) !important;
+}
+
+header a {
+  border-color: color-mix(in srgb, var(--ty-cyan) 34%, transparent) !important;
+  background: color-mix(in srgb, var(--ty-cyan) 8%, transparent) !important;
+  border-radius: var(--ty-radius) !important;
+}
+
+main::before {
+  content: "";
+  display: block;
+  width: min(360px, 64vw);
+  height: 3px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ty-pink), var(--ty-gold), var(--ty-cyan));
+}
+
+h1,
+h3,
+main b,
+main strong {
+  color: var(--ty-text) !important;
+}
+
+h2 {
+  color: var(--ty-pink) !important;
+}
+
+.breadcrumb,
+.meta {
+  color: var(--ty-muted) !important;
+}
+
+.note {
+  color: var(--ty-text-2) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 78%, var(--ty-cyan) 5%) !important;
+  border-color: color-mix(in srgb, var(--ty-cyan) 26%, var(--ty-line)) !important;
+  border-left-color: var(--ty-cyan) !important;
+}
+
+.warning {
+  color: var(--ty-text-2) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 78%, var(--ty-gold) 6%) !important;
+  border-color: color-mix(in srgb, var(--ty-gold) 30%, var(--ty-line)) !important;
+  border-left-color: var(--ty-gold) !important;
+}
+
+.feature-card,
+.email-card {
+  background: color-mix(in srgb, var(--ty-surface) 88%, var(--ty-cyan) 2%) !important;
+  border-color: var(--ty-line) !important;
+  border-radius: var(--ty-radius) !important;
+}
+
+footer {
+  background: color-mix(in srgb, var(--ty-bg) 96%, transparent) !important;
+  border-top-color: var(--ty-line) !important;
+  color: var(--ty-muted) !important;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --ty-bg: #fffaf3;
+    --ty-surface: #fffdf8;
+    --ty-surface-soft: #fff7ee;
+    --ty-line: rgba(88, 60, 35, 0.15);
+    --ty-text: #261b16;
+    --ty-text-2: #4d3a31;
+    --ty-muted: #806c60;
+    --ty-pink: #c81e73;
+    --ty-cyan: #0f8f9a;
+    --ty-gold: #b7791f;
+  }
+
+  body {
+    background:
+      linear-gradient(180deg, rgba(183, 121, 31, 0.08) 0%, transparent 240px),
+      linear-gradient(115deg, rgba(15, 143, 154, 0.055) 0%, transparent 38%),
+      linear-gradient(145deg, rgba(200, 30, 115, 0.032) 0%, transparent 45%),
+      var(--ty-bg) !important;
+  }
+
+  header,
+  footer,
+  .feature-card,
+  .email-card {
+    background: var(--ty-surface) !important;
+  }
+}
