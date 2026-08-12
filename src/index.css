@@ -2239,8 +2239,9 @@ header div[style*="linear-gradient(135deg, #f472b6"],
   border-width: 0 0 0 1px;
   color: var(--text-muted);
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
+  line-height: 1;
 }
 
 .home-hero-metrics strong {
@@ -2248,6 +2249,7 @@ header div[style*="linear-gradient(135deg, #f472b6"],
   font-size: 0.95rem;
   font-style: normal;
   font-weight: 850;
+  line-height: 1;
 }
 
 .home-hero-metrics em {
@@ -2255,6 +2257,7 @@ header div[style*="linear-gradient(135deg, #f472b6"],
   font-size: 0.74rem;
   font-style: normal;
   font-weight: 700;
+  line-height: 1;
 }
 
 .collab-notice,
