@@ -433,3 +433,80 @@ main a:focus-visible {
     padding: 13px 14px !important;
   }
 }
+
+/* Site theme sync: localStorage theme wins over OS color preference */
+[data-theme="dark"] {
+  --ty-bg: #0c1018;
+  --ty-surface: rgba(17, 22, 33, 0.94);
+  --ty-surface-soft: rgba(28, 35, 49, 0.86);
+  --ty-line: rgba(210, 232, 238, 0.14);
+  --ty-text: #fff8fb;
+  --ty-text-2: #dce8ee;
+  --ty-muted: #9caeba;
+  --ty-pink: #f43f9d;
+  --ty-cyan: #2dd4d4;
+  --ty-gold: #f7b84b;
+}
+
+[data-theme="dark"] body {
+  background:
+    linear-gradient(180deg, rgba(45, 212, 212, 0.06) 0%, transparent 260px),
+    linear-gradient(115deg, rgba(247, 184, 75, 0.035) 0%, transparent 30%),
+    linear-gradient(145deg, rgba(244, 63, 157, 0.035) 0%, transparent 44%),
+    var(--ty-bg) !important;
+}
+
+[data-theme="dark"] header,
+[data-theme="dark"] footer {
+  background: color-mix(in srgb, var(--ty-bg) 92%, transparent) !important;
+  border-color: var(--ty-line) !important;
+}
+
+[data-theme="dark"] .site-name,
+[data-theme="dark"] h1,
+[data-theme="dark"] h3,
+[data-theme="dark"] main b,
+[data-theme="dark"] main strong {
+  color: var(--ty-text) !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] li,
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .email-card {
+  color: var(--ty-text-2) !important;
+}
+
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .email-card {
+  background: color-mix(in srgb, var(--ty-surface) 88%, var(--ty-cyan) 2%) !important;
+  border-color: var(--ty-line) !important;
+}
+
+[data-theme="light"] {
+  --ty-bg: #fffaf3;
+  --ty-surface: #fffdf8;
+  --ty-surface-soft: #fff7ee;
+  --ty-line: rgba(88, 60, 35, 0.15);
+  --ty-text: #261b16;
+  --ty-text-2: #4d3a31;
+  --ty-muted: #806c60;
+  --ty-pink: #c81e73;
+  --ty-cyan: #0f8f9a;
+  --ty-gold: #b7791f;
+}
+
+[data-theme="light"] body {
+  background:
+    linear-gradient(180deg, rgba(183, 121, 31, 0.08) 0%, transparent 240px),
+    linear-gradient(115deg, rgba(15, 143, 154, 0.055) 0%, transparent 38%),
+    linear-gradient(145deg, rgba(200, 30, 115, 0.032) 0%, transparent 45%),
+    var(--ty-bg) !important;
+}
+
+[data-theme="light"] header,
+[data-theme="light"] footer,
+[data-theme="light"] .feature-card,
+[data-theme="light"] .email-card {
+  background: var(--ty-surface) !important;
+}
