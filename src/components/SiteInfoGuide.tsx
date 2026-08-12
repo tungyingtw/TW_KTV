@@ -60,6 +60,7 @@ export const SiteInfoGuide: React.FC = () => {
 
   return (
     <section
+      className="site-info-guide"
       aria-label="全台 KTV 歌曲對照與歡唱知識指南"
       style={{
         width: '100%',
@@ -100,11 +101,12 @@ export const SiteInfoGuide: React.FC = () => {
                 width: '36px',
                 height: '36px',
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, #38bdf8, #0284c7)',
+                background: 'rgba(219, 39, 119, 0.075)',
+                border: '1px solid rgba(219, 39, 119, 0.24)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
+                color: 'var(--accent-pink, #f472b6)',
                 flexShrink: 0,
               }}
             >
@@ -177,6 +179,7 @@ export const SiteInfoGuide: React.FC = () => {
               }}
             >
               <button
+                className={`site-info-tab ${activeTab === 'overview' ? 'is-selected' : ''}`}
                 onClick={() => setActiveTab('overview')}
                 style={{
                   padding: '6px 14px',
@@ -195,6 +198,7 @@ export const SiteInfoGuide: React.FC = () => {
               </button>
 
               <button
+                className={`site-info-tab ${activeTab === 'how_to_use' ? 'is-selected' : ''}`}
                 onClick={() => setActiveTab('how_to_use')}
                 style={{
                   padding: '6px 14px',
@@ -213,6 +217,7 @@ export const SiteInfoGuide: React.FC = () => {
               </button>
 
               <button
+                className={`site-info-tab ${activeTab === 'articles' ? 'is-selected' : ''}`}
                 onClick={() => setActiveTab('articles')}
                 style={{
                   padding: '6px 14px',
@@ -231,6 +236,7 @@ export const SiteInfoGuide: React.FC = () => {
               </button>
 
               <button
+                className={`site-info-tab ${activeTab === 'faq' ? 'is-selected' : ''}`}
                 onClick={() => setActiveTab('faq')}
                 style={{
                   padding: '6px 14px',
@@ -312,7 +318,7 @@ export const SiteInfoGuide: React.FC = () => {
             {/* Tab 1: Overview */}
             {activeTab === 'overview' && (
               <div style={{ fontSize: '0.92rem', lineHeight: 1.8 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px', alignItems: 'start' }}>
+                  <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px', alignItems: 'start' }}>
                 {/* Column 1: System Differences & Brands */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
@@ -330,7 +336,7 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
 
-                <aside style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', borderRadius: '10px', background: 'var(--bg-card, rgba(15, 23, 42, 0.72))' }}>
+                <aside className="site-info-panel" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', borderRadius: '10px', background: 'var(--bg-card, rgba(15, 23, 42, 0.72))' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700 }}>
                     <HelpCircle size={18} />
                     <span>資料使用提醒</span>
@@ -359,8 +365,8 @@ export const SiteInfoGuide: React.FC = () => {
             {/* Tab 2: How to Use (系統操作指引與教學) */}
             {activeTab === 'how_to_use' && (
               <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+              <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Search size={18} />
                     <span>1. 快速搜尋與門市對照</span>
@@ -370,7 +376,7 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
 
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <CheckCircle2 size={18} />
                     <span>2. 辨識導唱與 MV 標示</span>
@@ -380,7 +386,7 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
 
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Heart size={18} />
                     <span>3. 我的最愛口袋歌單</span>
@@ -390,7 +396,7 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
 
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(168, 85, 247, 0.2)' }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(168, 85, 247, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a855f7', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Vote size={18} />
                     <span>4. 社群投票與資料回報</span>
@@ -426,6 +432,7 @@ export const SiteInfoGuide: React.FC = () => {
                     return (
                       <button
                         key={art.id}
+                        className={`site-info-article-tab ${isSelected ? 'is-selected' : ''}`}
                         onClick={() => setActiveArticleIndex(idx)}
                         style={{
                           padding: '8px 14px',
@@ -447,6 +454,7 @@ export const SiteInfoGuide: React.FC = () => {
                 {/* Active Article Detail */}
                 {articles[activeArticleIndex] && (
                   <article
+                    className="site-info-panel"
                     style={{
                       background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))',
                       borderRadius: '12px',
@@ -497,7 +505,7 @@ export const SiteInfoGuide: React.FC = () => {
             {/* Tab 4: FAQ */}
             {activeTab === 'faq' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem', lineHeight: 1.65 }}>
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q1：為什麼同一首歌在不同 KTV 門市的收錄狀況不一樣？
                   </h4>
@@ -506,7 +514,7 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
 
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q2：如何區分 KTV 門市的「導唱」與「原版 MV」標示？
                   </h4>
@@ -515,7 +523,7 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
 
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q3：門市沒有收錄我想唱的歌曲該怎麼辦？
                   </h4>
@@ -524,7 +532,7 @@ export const SiteInfoGuide: React.FC = () => {
                   </p>
                 </div>
 
-                <div style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
                     Q4：連鎖營業門市與家用/專業伴唱機系統有何差異？
                   </h4>
