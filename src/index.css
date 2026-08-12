@@ -3456,6 +3456,11 @@ a.action-text-link {
     gap: 6px !important;
   }
 
+  .mobile-search-shell {
+    padding-top: 6px !important;
+    padding-bottom: 2px !important;
+  }
+
   .collab-notice-copy {
     min-width: 0;
   }
@@ -3469,10 +3474,10 @@ a.action-text-link {
   .collab-notice p {
     display: -webkit-box;
     margin: 0 !important;
-    max-height: 4.35em;
+    max-height: 2.9em;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     font-size: 0.74rem !important;
     line-height: 1.45 !important;
   }

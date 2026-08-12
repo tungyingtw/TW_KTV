@@ -591,9 +591,9 @@ export function App() {
       {showCollabNotice && (
         <section className="collab-notice" aria-label="協作提示">
           <div className="collab-notice-copy">
-            <h2>讓這份歌庫越來越準</h2>
+            <h2>一起校對現場資訊</h2>
             <p>
-              KTV 的收錄、導唱和 MV 類型常常只有現場點過才知道，本站整理的是可供歡唱前參考的回報線索。若你發現歌曲缺漏、資料不對，或能確認某首歌的現場狀態，歡迎使用「提供建議」或歌曲內的「回報」功能，一起讓查歌結果更可靠。
+              KTV 收錄、導唱與 MV 類型常需要現場確認；若發現缺漏或資料不對，可使用「提供建議」或歌曲內的「回報」功能補充線索。
             </p>
           </div>
           <button
