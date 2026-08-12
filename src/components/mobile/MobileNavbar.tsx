@@ -154,7 +154,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 className="nav-action-link nav-action-primary is-mobile"
               >
                 <PlusCircle size={16} />
-                <span>建議</span>
+                <span>提供建議</span>
               </button>
             )}
 
