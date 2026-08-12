@@ -6602,3 +6602,139 @@ header,
 [data-theme="light"] .song-detail-modal-content {
   background: #ffffff !important;
 }
+
+/* Linked page theme coverage: visit-region heat map readable light mode */
+[data-theme="light"] .visit-region-page {
+  background:
+    linear-gradient(180deg, rgba(183, 121, 31, 0.08) 0%, transparent 260px),
+    linear-gradient(115deg, rgba(15, 143, 154, 0.055) 0%, transparent 42%),
+    #fff8ef !important;
+}
+
+[data-theme="light"] .visit-region-page-title h1 {
+  background: linear-gradient(90deg, #241711 0%, var(--accent-pink) 48%, var(--accent-cyan) 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+[data-theme="light"] .visit-region-back-button,
+[data-theme="light"] .taiwan-demo-back {
+  color: #241711 !important;
+  border-color: rgba(91, 59, 37, 0.18) !important;
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .taiwan-demo-panel,
+[data-theme="light"] .taiwan-demo-stat,
+[data-theme="light"] .taiwan-demo-user-region,
+[data-theme="light"] .taiwan-demo-selected,
+[data-theme="light"] .taiwan-demo-ranking,
+[data-theme="light"] .taiwan-demo-note {
+  color: #241711 !important;
+  background: #ffffff !important;
+  border-color: rgba(91, 59, 37, 0.18) !important;
+  box-shadow: 0 1px 0 rgba(91, 59, 37, 0.04) !important;
+}
+
+[data-theme="light"] .taiwan-demo-map-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 243, 228, 0.84)),
+    radial-gradient(circle at 50% 42%, rgba(15, 143, 154, 0.13), transparent 35%),
+    #ffffff !important;
+}
+
+[data-theme="light"] .taiwan-demo-map-panel::before {
+  background-image:
+    linear-gradient(rgba(15, 143, 154, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(183, 121, 31, 0.06) 1px, transparent 1px) !important;
+}
+
+[data-theme="light"] .taiwan-demo-map-panel::after {
+  border-color: rgba(15, 143, 154, 0.16) !important;
+  box-shadow: inset 0 0 34px rgba(15, 143, 154, 0.08), 0 0 34px rgba(200, 30, 115, 0.08) !important;
+}
+
+[data-theme="light"] .taiwan-demo-title-row p,
+[data-theme="light"] .taiwan-demo-panel-head span,
+[data-theme="light"] .taiwan-demo-stat span,
+[data-theme="light"] .taiwan-demo-user-region span,
+[data-theme="light"] .taiwan-demo-selected span,
+[data-theme="light"] .taiwan-demo-user-region p,
+[data-theme="light"] .taiwan-demo-selected p,
+[data-theme="light"] .taiwan-demo-ranking button em,
+[data-theme="light"] .taiwan-demo-ranking-extra em,
+[data-theme="light"] .taiwan-demo-note,
+[data-theme="light"] .taiwan-demo-note p {
+  color: #725c50 !important;
+}
+
+[data-theme="light"] .taiwan-demo-stat strong,
+[data-theme="light"] .taiwan-demo-panel-head h2,
+[data-theme="light"] .taiwan-demo-selected h2,
+[data-theme="light"] .taiwan-demo-ranking-title,
+[data-theme="light"] .taiwan-demo-ranking button,
+[data-theme="light"] .taiwan-demo-ranking button strong,
+[data-theme="light"] .taiwan-demo-ranking-extra,
+[data-theme="light"] .taiwan-demo-ranking-extra strong,
+[data-theme="light"] .taiwan-demo-map-action strong {
+  color: #241711 !important;
+}
+
+[data-theme="light"] .taiwan-demo-map-tools,
+[data-theme="light"] .taiwan-demo-legend,
+[data-theme="light"] .taiwan-demo-map-action,
+[data-theme="light"] .taiwan-demo-tooltip {
+  color: #241711 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(91, 59, 37, 0.18) !important;
+  box-shadow: 0 12px 30px rgba(91, 59, 37, 0.08) !important;
+}
+
+[data-theme="light"] .taiwan-demo-map-tools button,
+[data-theme="light"] .taiwan-demo-ranking button,
+[data-theme="light"] .taiwan-demo-user-region button,
+[data-theme="light"] .taiwan-demo-join-button:disabled,
+[data-theme="light"] .taiwan-demo-region-edit select {
+  color: #3f2b22 !important;
+  background: #fff8ef !important;
+  border-color: rgba(91, 59, 37, 0.18) !important;
+}
+
+[data-theme="light"] .taiwan-demo-live,
+[data-theme="light"] .taiwan-demo-ranking-extra {
+  color: #0f8f9a !important;
+  background: rgba(15, 143, 154, 0.08) !important;
+  border-color: rgba(15, 143, 154, 0.24) !important;
+}
+
+[data-theme="light"] .taiwan-demo-user-region {
+  background: linear-gradient(135deg, rgba(15, 143, 154, 0.08), rgba(200, 30, 115, 0.045)), #ffffff !important;
+}
+
+[data-theme="light"] .taiwan-demo-join-button {
+  color: #ffffff !important;
+  border-color: rgba(200, 30, 115, 0.36) !important;
+  background: linear-gradient(135deg, #c81e73, #0f8f9a) !important;
+}
+
+[data-theme="light"] .taiwan-demo-ranking button:hover,
+[data-theme="light"] .taiwan-demo-ranking button.is-active {
+  background: rgba(200, 30, 115, 0.08) !important;
+  border-color: rgba(200, 30, 115, 0.32) !important;
+}
+
+[data-theme="light"] .taiwan-demo-tooltip strong,
+[data-theme="light"] .taiwan-demo-tooltip span,
+[data-theme="light"] .taiwan-demo-map-action span {
+  color: #725c50 !important;
+}
+
+[data-theme="light"] .taiwan-demo-map path {
+  stroke: rgba(91, 59, 37, 0.42) !important;
+}
+
+[data-theme="light"] .taiwan-demo-map.has-selection path.is-dimmed {
+  fill: #e8ded2 !important;
+  opacity: 0.48 !important;
+  stroke: rgba(91, 59, 37, 0.18) !important;
+}
