@@ -104,7 +104,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
           <div className="mobile-navbar-brand">
             <div className="navbar-logo-mark is-mobile">
-              <Mic2 size={17} />
+              <Mic2 size={18} />
             </div>
             <h1
               className="navbar-title"
@@ -144,7 +144,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               onClick={toggleTheme}
               className="nav-action-link is-mobile"
             >
-              {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
               <span>{theme === 'dark' ? '日光' : '夜間'}</span>
             </button>
 
@@ -153,7 +153,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
                 onClick={onOpenSuggestSong}
                 className="nav-action-link nav-action-primary is-mobile"
               >
-                <PlusCircle size={14} />
+                <PlusCircle size={16} />
                 <span>建議</span>
               </button>
             )}
@@ -163,7 +163,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               className="nav-action-link is-mobile"
               title="前往 KTV 小遊戲列表"
             >
-              <Gamepad2 size={14} />
+              <Gamepad2 size={16} />
               <span>遊戲</span>
             </a>
 
@@ -171,7 +171,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               onClick={onOpenFavorites}
               className={`nav-action-link is-mobile ${favoriteCount > 0 ? 'is-active' : ''}`}
             >
-              <Heart size={14} fill={favoriteCount > 0 ? '#ec4899' : 'none'} color={favoriteCount > 0 ? '#ec4899' : 'currentColor'} />
+              <Heart size={16} fill={favoriteCount > 0 ? 'var(--accent-pink)' : 'none'} color="currentColor" />
               <span>歌本({favoriteCount})</span>
             </button>
           </div>
@@ -186,7 +186,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               className={filters.viewMode === 'matrix' ? 'is-active' : ''}
               title="列表模式 (各 KTV 廠牌一覽)"
             >
-              <Table2 size={15} />
+              <Table2 size={16} />
             </button>
             <button
               onClick={() => {
@@ -196,7 +196,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
               className={filters.viewMode === 'cards' ? 'is-active' : ''}
               title="小卡模式 (經典單首卡片)"
             >
-              <LayoutGrid size={15} />
+              <LayoutGrid size={16} />
             </button>
           </div>
         </div>
@@ -204,5 +204,3 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
     </header>
   );
 };
-
-

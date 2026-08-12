@@ -74,13 +74,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             {isSearching ? (
               <Loader2
                 size={20}
-                color="var(--accent-pink)"
+                color="currentColor"
                 style={{ position: 'absolute', left: '16px', pointerEvents: 'none', animation: 'spin 1s linear infinite' }}
               />
             ) : (
               <Search
                 size={20}
-                color="var(--text-secondary)"
+                color="currentColor"
                 style={{ position: 'absolute', left: '16px', pointerEvents: 'none' }}
               />
             )}
@@ -98,6 +98,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               <button
                 onClick={handleClearQuery}
                 aria-label="清除搜尋文字"
+                className="action-icon search-clear-button"
                 style={{
                   position: 'absolute',
                   right: '14px',
@@ -118,7 +119,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             onClick={onOpenMobileFilters}
             className={`search-filter-button ${hasActiveFilters ? 'is-active' : ''}`}
           >
-            <SlidersHorizontal size={18} color={hasActiveFilters ? '#ec4899' : 'currentColor'} />
+            <SlidersHorizontal size={18} />
             <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>進階篩選</span>
           </button>
         </div>
@@ -155,7 +156,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
             <div className="quick-filter-scroll-row" style={{ width: '100%', maxWidth: '100%', minWidth: 0, overflowX: 'auto' }}>
               <span className="filter-row-label">
-                <Hash size={13} /> 字數：
+                <Hash size={16} /> 字數：
               </span>
               {TITLE_LENGTHS.map(item => {
                 const isSelected = filters.selectedTitleLength === item.id;
@@ -196,7 +197,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   onChange={e => setFilters(prev => ({ ...prev, onlyOfficialMv: e.target.checked }))}
                   style={{ accentColor: '#10b981', cursor: 'pointer' }}
                 />
-                <Video size={14} /> 原版 MV
+                <Video size={16} /> 原版 MV
               </label>
 
               <label style={{
@@ -215,7 +216,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   onChange={e => setFilters(prev => ({ ...prev, onlyGuidedVocal: e.target.checked }))}
                   style={{ accentColor: '#22d3ee', cursor: 'pointer' }}
                 />
-                <Mic2 size={14} /> 有導唱
+                <Mic2 size={16} /> 有導唱
               </label>
             </div>
 
@@ -234,7 +235,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   className="inline-suggest-link"
                   title="找不到想唱的歌曲，或想提供 KTV 廠牌資料時可送出建議"
                 >
-                  <PlusCircle size={13} />
+                  <PlusCircle size={16} />
                   <span>提供建議</span>
                 </button>
               )}

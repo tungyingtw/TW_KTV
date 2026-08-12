@@ -456,7 +456,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(251, 191, 36, 0.15)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251, 191, 36, 0.08)')}
               >
-                <Flag size={14} />
+                <Flag size={16} />
                 回報資料錯誤
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', fontWeight: 400 }}>
                   （幫助我們讓資料更準確）

@@ -192,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onOpenFavorites}
             className={`nav-action-link ${favoriteCount > 0 ? 'is-active' : ''}`}
           >
-            <Heart size={16} fill={favoriteCount > 0 ? '#ec4899' : 'none'} color={favoriteCount > 0 ? '#ec4899' : 'currentColor'} />
+            <Heart size={16} fill={favoriteCount > 0 ? 'var(--accent-pink)' : 'none'} color="currentColor" />
             <span>我的歌本</span>
           </button>
 
@@ -226,5 +226,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-
-

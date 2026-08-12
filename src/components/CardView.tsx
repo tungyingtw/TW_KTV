@@ -220,7 +220,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   }}
                   title={isFav ? '移出歌單' : '加入歌單'}
                 >
-                  <Heart size={18} fill={isFav ? '#ec4899' : 'none'} className={isFav ? 'heart-pop-anim' : ''} />
+                  <Heart size={18} fill={isFav ? 'var(--accent-pink)' : 'none'} className={isFav ? 'heart-pop-anim' : ''} />
                 </button>
               </div>
 
@@ -325,7 +325,7 @@ export const CardView: React.FC<CardViewProps> = ({
                       fontWeight: 700,
                       color: b.color,
                     }}>
-                      <CheckCircle2 size={14} color={b.color} />
+                      <CheckCircle2 size={16} color={b.color} />
                       <span>有收錄</span>
                     </div>
                   </div>
@@ -357,7 +357,7 @@ export const CardView: React.FC<CardViewProps> = ({
                       fontWeight: 600,
                     }}
                   >
-                    <Video size={14} /> 版本參考
+                    <Video size={16} /> 版本參考
                   </a>
                 ) : null}
 
@@ -402,7 +402,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   fontSize: '0.8rem',
                 }}
               >
-                全台 KTV 門市收錄對照 <ChevronRight size={14} />
+                全台 KTV 門市收錄對照 <ChevronRight size={16} />
               </button>
             </div>
           </div>

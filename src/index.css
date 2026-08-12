@@ -3163,6 +3163,46 @@ a.action-text-link {
   padding: 0 1px !important;
 }
 
+/* Polish round 3 phase 1: icon and control consistency */
+.search-input-wrap,
+.mobile-search-panel [style*="position: relative"] {
+  color: var(--text-secondary);
+}
+
+.search-input-wrap:focus-within,
+.mobile-search-panel [style*="position: relative"]:focus-within {
+  color: var(--accent-pink);
+}
+
+.search-clear-button,
+.search-clear-button.is-mobile {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.nav-action-link svg,
+.nav-view-switcher svg,
+.search-filter-button svg,
+.inline-suggest-link svg,
+.filter-summary-button svg,
+.heart-icon-btn svg,
+.action-icon svg {
+  color: currentColor;
+  filter: none !important;
+  stroke-width: 2;
+}
+
+.nav-action-link.is-active,
+.nav-action-primary,
+.search-filter-button.is-active,
+.filter-summary-button[style*="accent-pink"],
+.inline-suggest-link:hover,
+.inline-suggest-link:focus-visible {
+  color: var(--accent-pink) !important;
+}
+
 /* Polish round 2: modal, mobile, and light-mode finishing */
 .song-detail-modal-content {
   border-radius: var(--radius-md) !important;
