@@ -3551,6 +3551,90 @@ a.action-text-link {
   }
 }
 
+/* Polish round 3 phase 6: light mode finish */
+[data-theme="light"] body {
+  background: var(--bg-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] header,
+[data-theme="light"] .mobile-navbar,
+[data-theme="light"] .glass-panel,
+[data-theme="light"] .app-modal-content,
+[data-theme="light"] .drawer-content,
+[data-theme="light"] .bottom-sheet-content,
+[data-theme="light"] .song-detail-modal-content,
+[data-theme="light"] .search-panel,
+[data-theme="light"] .mobile-search-panel,
+[data-theme="light"] .song-card,
+[data-theme="light"] .status-card {
+  background: #ffffff !important;
+  border-color: var(--border-color) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .data-table,
+[data-theme="light"] table {
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .data-table th {
+  background: #f8fafc !important;
+  color: var(--text-muted) !important;
+}
+
+[data-theme="light"] .data-table td {
+  border-bottom-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+[data-theme="light"] .data-table tr:hover,
+[data-theme="light"] .song-card:hover,
+[data-theme="light"] .bottom-sheet-option:hover,
+[data-theme="light"] .filter-chip:hover,
+[data-theme="light"] .brand-chip:hover {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .search-input,
+[data-theme="light"] .mobile-search-input,
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: #ffffff !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="light"] .badge,
+[data-theme="light"] [class*="badge"],
+[data-theme="light"] .brand-selection-token {
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .action-icon,
+[data-theme="light"] .action-text-link,
+[data-theme="light"] .nav-action-link,
+[data-theme="light"] .nav-view-switcher,
+[data-theme="light"] .search-filter-button,
+[data-theme="light"] .mobile-search-submit {
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="light"] .action-icon:hover,
+[data-theme="light"] .action-icon:focus-visible,
+[data-theme="light"] .action-text-link:hover,
+[data-theme="light"] .action-text-link:focus-visible,
+[data-theme="light"] .nav-action-link.is-active,
+[data-theme="light"] .nav-action-primary,
+[data-theme="light"] .search-filter-button.is-active,
+[data-theme="light"] .mobile-search-submit.is-active {
+  color: var(--accent-pink) !important;
+  border-color: rgba(190, 24, 93, 0.24) !important;
+  background: rgba(190, 24, 93, 0.052) !important;
+}
+
 /* Polish round 2: modal, mobile, and light-mode finishing */
 .song-detail-modal-content {
   border-radius: var(--radius-md) !important;
