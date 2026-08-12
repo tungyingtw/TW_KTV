@@ -3530,6 +3530,52 @@ a.action-text-link {
   background: rgba(15, 23, 42, 0.018) !important;
 }
 
+/* Polish round 5 phase 4: neutral light and dark surface depth */
+:root,
+[data-theme="dark"] {
+  --bg-dark: #080a10;
+  --bg-card: rgba(17, 21, 30, 0.86);
+  --bg-card-hover: rgba(31, 36, 48, 0.92);
+  --bg-glass: rgba(12, 15, 22, 0.9);
+  --modal-surface: #11151e;
+  --border-color: rgba(226, 232, 240, 0.1);
+}
+
+[data-theme="light"] {
+  --bg-dark: #f5f6f8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #eef1f5;
+  --bg-glass: rgba(255, 255, 255, 0.96);
+  --modal-surface: #ffffff;
+  --border-color: rgba(17, 24, 39, 0.1);
+}
+
+body,
+[data-theme="light"] body {
+  background-color: var(--bg-dark) !important;
+  background-image: none !important;
+}
+
+.search-panel,
+.mobile-search-panel,
+.collab-notice,
+.matrix-view-container .glass-panel,
+.card-view-container .glass-panel {
+  border-color: color-mix(in srgb, var(--border-color) 88%, transparent) !important;
+}
+
+[data-theme="light"] header,
+[data-theme="light"] .mobile-navbar {
+  background: rgba(255, 255, 255, 0.94) !important;
+}
+
+[data-theme="light"] .home-hero-metrics span,
+[data-theme="light"] .search-panel,
+[data-theme="light"] .mobile-search-panel,
+[data-theme="light"] .collab-notice {
+  background: #ffffff !important;
+}
+
 @media (max-width: 640px) {
   .toast-notification-container {
     bottom: 18px !important;
