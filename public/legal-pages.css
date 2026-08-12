@@ -8,6 +8,10 @@ body {
   flex-direction: column;
   min-height: 100vh;
   overflow-x: hidden;
+  background: #070a12 !important;
+  color: #d7deeb !important;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif !important;
+  line-height: 1.82 !important;
 }
 
 header,
@@ -16,52 +20,196 @@ footer {
 }
 
 header {
-  min-height: 65px;
+  min-height: 64px;
+  padding: 14px 24px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+  background: rgba(7, 10, 18, 0.94) !important;
+  backdrop-filter: blur(12px);
+}
+
+header a,
+footer a,
+main a {
+  color: #7dd3fc !important;
+  text-decoration: none !important;
+}
+
+header a {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 8px;
+  background: rgba(125, 211, 252, 0.06);
+  font-weight: 800;
+}
+
+header a:hover,
+header a:focus-visible,
+footer a:hover,
+footer a:focus-visible,
+main a:hover,
+main a:focus-visible {
+  color: #f472b6 !important;
+  text-decoration: none !important;
+  outline: none;
+}
+
+.site-name {
+  color: #f8fafc !important;
+  font-size: 1.05rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
 }
 
 main {
   width: min(100%, 828px);
   flex: 1 0 auto;
-  margin: 40px auto !important;
+  margin: 38px auto !important;
   padding: 0 24px 72px !important;
 }
 
 .breadcrumb {
   min-height: 24px;
+  margin-bottom: 22px !important;
+  color: #7b879b !important;
+  font-size: 0.82rem !important;
 }
 
 h1 {
   min-height: 42px;
+  color: #f8fafc !important;
+  font-size: clamp(1.55rem, 2.4vw, 1.9rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+}
+
+h2 {
+  color: #f472b6 !important;
+  font-size: 1.04rem !important;
+  font-weight: 900 !important;
+  margin: 30px 0 8px !important;
+  letter-spacing: 0 !important;
+}
+
+h3 {
+  color: #f8fafc !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+p,
+li,
+.feature-card,
+.email-card {
+  color: #cbd5e1 !important;
 }
 
 .meta {
   min-height: 22px;
+  color: #94a3b8 !important;
+  margin-bottom: 30px !important;
 }
 
 .note,
+.warning,
 .feature-card,
 .email-card {
   width: 100%;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.note {
+  color: #dbeafe !important;
+  background: rgba(125, 211, 252, 0.07) !important;
+  border: 1px solid rgba(125, 211, 252, 0.15) !important;
+  border-left: 3px solid #38bdf8 !important;
+}
+
+.warning {
+  color: #fde68a !important;
+  background: rgba(251, 191, 36, 0.08) !important;
+  border: 1px solid rgba(251, 191, 36, 0.18) !important;
+  border-left: 3px solid #fbbf24 !important;
 }
 
 .feature-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.feature-card,
+.email-card {
+  background: rgba(15, 23, 42, 0.72) !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  padding: 14px !important;
+}
+
+.feature-card b,
+.email-card b,
+main b,
+main strong {
+  color: #f8fafc !important;
 }
 
 footer {
   min-height: 104px;
+  padding: 20px 24px 28px !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+  background: #070a12 !important;
+  color: #7b879b !important;
 }
 
 footer a {
   display: inline-flex;
   min-height: 24px;
   align-items: center;
+  margin: 0 7px !important;
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background: #f4f6fa !important;
+    color: #1e293b !important;
+  }
+
+  header,
+  footer {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+  }
+
+  .site-name,
+  h1,
+  h3,
+  main b,
+  main strong {
+    color: #0f172a !important;
+  }
+
+  p,
+  li,
+  .feature-card,
+  .email-card {
+    color: #334155 !important;
+  }
+
+  .feature-card,
+  .email-card {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+  }
 }
 
 @media (max-width: 720px) {
   header {
-    min-height: 82px;
+    min-height: 80px;
     align-items: flex-start !important;
+    padding: 12px 18px !important;
   }
 
   main {
@@ -72,7 +220,7 @@ footer a {
   h1 {
     min-height: auto;
     font-size: 1.45rem !important;
-    line-height: 1.35;
+    line-height: 1.35 !important;
   }
 
   .feature-grid {

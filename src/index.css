@@ -4247,3 +4247,147 @@ textarea:focus {
     margin-left: 2px !important;
   }
 }
+
+/* Polish round 8 phase 1: full-surface baseline */
+.visit-region-page {
+  background: var(--bg-dark) !important;
+}
+
+.visit-region-page-hero {
+  padding-top: 10px;
+  gap: 12px !important;
+}
+
+.visit-region-back-button {
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: var(--radius-sm) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-weight: 800 !important;
+}
+
+.visit-region-page-title > span {
+  color: var(--accent-support) !important;
+}
+
+.visit-region-page-title h1 {
+  font-size: clamp(1.75rem, 3vw, 2.65rem) !important;
+  line-height: 1.16 !important;
+  letter-spacing: 0 !important;
+}
+
+.visit-region-page-title p {
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+}
+
+.visit-region-page-card,
+.visit-region-modal {
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.app-modal-content,
+.bottom-sheet-content,
+.drawer-content,
+.song-detail-modal-content {
+  color: var(--text-primary) !important;
+}
+
+.app-modal-content h2,
+.app-modal-content h3,
+.drawer-content h3,
+.bottom-sheet-content h3,
+.song-detail-modal-content h2,
+.song-detail-modal-content h3 {
+  letter-spacing: 0 !important;
+  line-height: 1.28 !important;
+}
+
+.app-modal-content p,
+.drawer-content p,
+.bottom-sheet-content p,
+.song-detail-modal-content p {
+  line-height: 1.65 !important;
+}
+
+.app-modal-content [style*="linear-gradient"],
+.bottom-sheet-content [style*="linear-gradient"] {
+  background: rgba(219, 39, 119, 0.075) !important;
+  border-color: rgba(219, 39, 119, 0.24) !important;
+}
+
+.modal-close-button,
+.bottom-sheet-close-button {
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-sm) !important;
+  background: transparent !important;
+}
+
+.app-modal-content input,
+.app-modal-content select,
+.app-modal-content textarea,
+.bottom-sheet-content input,
+.bottom-sheet-content select,
+.bottom-sheet-content textarea {
+  min-height: 42px !important;
+  background: rgba(15, 23, 42, 0.42) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.app-modal-content textarea,
+.bottom-sheet-content textarea {
+  min-height: 96px !important;
+}
+
+.bottom-sheet-option,
+.bottom-sheet-toggle,
+.modal-option-button,
+.modal-segment-button {
+  min-height: 38px;
+  letter-spacing: 0 !important;
+}
+
+.favorites-drawer-content [style*="rgba(30, 41, 59, 0.6)"] {
+  border-radius: var(--radius-sm) !important;
+}
+
+[data-theme="light"] .visit-region-page {
+  background: #f4f6fa !important;
+}
+
+[data-theme="light"] .app-modal-content input,
+[data-theme="light"] .app-modal-content select,
+[data-theme="light"] .app-modal-content textarea,
+[data-theme="light"] .bottom-sheet-content input,
+[data-theme="light"] .bottom-sheet-content select,
+[data-theme="light"] .bottom-sheet-content textarea {
+  background: #ffffff !important;
+}
+
+@media (max-width: 640px) {
+  .visit-region-page {
+    padding: 12px !important;
+  }
+
+  .visit-region-page-hero {
+    margin-bottom: 10px !important;
+  }
+
+  .visit-region-page-title h1 {
+    font-size: 1.55rem !important;
+  }
+
+  .visit-region-back-button {
+    min-height: 38px !important;
+  }
+
+  .bottom-sheet-option,
+  .bottom-sheet-toggle,
+  .modal-option-button,
+  .modal-segment-button {
+    min-height: 40px;
+  }
+}
