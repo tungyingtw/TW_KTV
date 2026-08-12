@@ -241,6 +241,86 @@
     .hidden {
       display: none !important;
     }
+
+    [data-theme="dark"] body,
+    [data-theme="dark"] html {
+      background-color: #030407;
+      color: #fff;
+    }
+
+    [data-theme="dark"] #game-wrapper {
+      background: radial-gradient(ellipse at bottom, #111927 0%, #060910 60%, #020305 100%);
+    }
+
+    [data-theme="light"] body,
+    [data-theme="light"] html {
+      background:
+        linear-gradient(180deg, rgba(183, 121, 31, 0.1) 0%, transparent 240px),
+        linear-gradient(135deg, rgba(15, 143, 154, 0.08) 0%, transparent 42%),
+        #fffaf3;
+      color: #261b16;
+    }
+
+    [data-theme="light"] #game-wrapper {
+      background:
+        radial-gradient(ellipse at bottom, rgba(15, 143, 154, 0.16) 0%, rgba(255, 253, 248, 0.98) 58%, #fffaf3 100%);
+      border-color: rgba(88, 60, 35, 0.15);
+      box-shadow: none;
+    }
+
+    [data-theme="light"] #hud,
+    [data-theme="light"] #bottom-bar {
+      background: rgba(255, 253, 248, 0.88);
+      border-color: rgba(88, 60, 35, 0.15);
+    }
+
+    [data-theme="light"] .hud-label,
+    [data-theme="light"] .overlay p {
+      color: #806c60;
+    }
+
+    [data-theme="light"] .hud-val,
+    [data-theme="light"] .score-panel,
+    [data-theme="light"] .btn {
+      color: #0f8f9a;
+      text-shadow: none;
+    }
+
+    [data-theme="light"] .btn,
+    [data-theme="light"] .score-panel {
+      background: rgba(15, 143, 154, 0.08);
+      border-color: rgba(15, 143, 154, 0.28);
+    }
+
+    [data-theme="light"] .btn:hover,
+    [data-theme="light"] .btn:focus-visible {
+      background: #c81e73;
+      border-color: #c81e73;
+      color: #fffaf3;
+      box-shadow: none;
+    }
+
+    [data-theme="light"] .home-link {
+      background: rgba(255, 253, 248, 0.84);
+      border-color: rgba(15, 143, 154, 0.28);
+      color: #0f8f9a;
+    }
+
+    [data-theme="light"] .home-link:hover,
+    [data-theme="light"] .home-link:focus-visible {
+      background: #0f8f9a;
+      color: #fffaf3;
+    }
+
+    [data-theme="light"] .overlay {
+      background: rgba(255, 253, 248, 0.92);
+    }
+
+    [data-theme="light"] .overlay h1 {
+      background: linear-gradient(135deg, #261b16 0%, #c81e73 48%, #0f8f9a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
   </style>
 </head>
 <body>
