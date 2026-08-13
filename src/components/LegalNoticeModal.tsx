@@ -273,7 +273,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '8px 0 4px 0' }}>1. 第三方非官方獨立平台聲明 (Independent Platform Statement)</h5>
               <p>
-                本網站為<strong>民間社群獨立開發維護之客觀歌曲索引與對照平台</strong>，非任何 KTV 伴唱業者（包括但不限於錢○、好○迪、享○馨、星○點、Sing○、V-M○X、超○巨星、音○、金○、弘○等）之官方網站或營利附屬機構。本網站與上述任何連鎖業者及伴唱機品牌無商業隸屬或官方授權關係。
+                本網站為<strong>民間社群獨立開發維護之客觀歌曲索引與查詢平台</strong>，非任何 KTV 伴唱業者（包括但不限於錢○、好○迪、享○馨、星○點、Sing○、V-M○X、超○巨星、音○、金○、弘○等）之官方網站、營利附屬機構或授權代表。本網站與上述任何連鎖業者及伴唱機品牌無商業隸屬或官方授權關係。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> This platform is an independent, non-official community song catalog reference index. It is not affiliated with, endorsed by, or commercially connected to any commercial karaoke brand or hardware manufacturer.
@@ -281,7 +281,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>2. 商標權與品牌宣告 (Trademarks & Copyrights)</h5>
               <p>
-                本網站提及之所有公司名稱、KTV 門市品牌、伴唱機廠牌名稱及商標標誌，其財產權與商標權均<strong>完全歸屬於原註冊公司及權利人所有</strong>。本網站僅出於資訊客觀對照、便於民眾個人歌唱檢索之合理使用目的進行載錄，且一律實施圓圈遮蔽 (`○`) 保護。
+                本網站提及之所有公司名稱、KTV 門市品牌、伴唱機廠牌名稱及商標標誌，其財產權與商標權均<strong>完全歸屬於原註冊公司及權利人所有</strong>。本網站僅出於資訊查詢、便於民眾個人歌唱檢索之參考目的進行載錄，且一律實施圓圈遮蔽 (`○`) 保護。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> All product names, logos, and registered trademarks displayed belong strictly to their respective corporate owners. Brand names are masked for trademark protection under fair use.
@@ -297,7 +297,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>4. 門市數據精準度與現場機器免責 (On-Site Accuracy Disclaimer)</h5>
               <p>
-                本網站之門市收錄狀態為大眾共識校對與公開目錄整理，僅供社群歡唱前之輔助查詢。因各類 KTV 門市伴唱機器之維護狀況及即時更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
+                本網站之門市收錄狀態為使用者回報、公開目錄與人工整理之參考資料，僅供社群歡唱前之輔助查詢。因各類 KTV 門市伴唱機器之維護狀況及更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> Store song availability data is crowdsourced for informational purposes. Actual song availability is subject to physical karaoke machine systems on site.
@@ -319,9 +319,9 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色 (Key Features)</h5>
               <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
-                <li><strong>跨廠牌門市對照</strong>：整理多家連鎖門市與伴唱系統之歌曲收錄對照目錄。</li>
+                <li><strong>跨廠牌門市查詢</strong>：整理多家連鎖門市與伴唱系統之歌曲收錄狀態。</li>
                 <li><strong>MV 類型與導唱標示</strong>：協助整理歌曲是否可能提供原版 MV、伴唱帶類型或現場導唱功能參考。</li>
-                <li><strong>眾包共識與現場勘誤</strong>：提供現場歌友實時參與歌曲收錄與對照勘誤回報。</li>
+                <li><strong>使用者回報與人工確認</strong>：提供現場歌友參與歌曲收錄、導唱與 MV 類型回報。</li>
               </ul>
             </div>
           )}
@@ -332,7 +332,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
                 聯絡我們 (Contact Us)
               </h4>
               <p>
-                感謝您使用「TYFunLab 台灣KTV歌曲查詢」！若您有任何意見建議、資料勘誤、合作提案或著作權聯繫，歡迎透過下方公用信箱與我們聯繫：
+                感謝您使用「TYFunLab 台灣KTV歌曲查詢」！若您有任何意見建議、資料修正、合作提案或著作權聯繫，歡迎透過下方公用信箱與我們聯繫：
               </p>
 
               <div
@@ -382,7 +382,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               <h5 style={{ color: '#38bdf8', margin: '8px 0 4px 0' }}>主要服務與聯繫範疇 (Service Scope)</h5>
               <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
                 <li><strong>品牌合作與廣告贊助 (Sponsorship & Ads)</strong>：歡迎相關歡唱品牌與活動贊助洽詢。</li>
-                <li><strong>歌曲收錄與數據勘誤 (Data Correction)</strong>：現場點唱數據異動聯繫。</li>
+                <li><strong>歌曲收錄與資料修正 (Data Correction)</strong>：現場點唱資料異動聯繫。</li>
                 <li><strong>權益與技術交流 (Copyright & Tech Inquiry)</strong>：著作權通知與技術反饋。</li>
               </ul>
             </div>
