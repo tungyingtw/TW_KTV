@@ -433,7 +433,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
               className={`brand-vote-action is-mv ${userMvVote === 'official' ? 'is-selected' : ''}`}
               onClick={e => { e.stopPropagation(); handleMvVote('official'); }}
               disabled={isMvVoting}
-              title="唱片公司或官方頻道常見的正式 MV 畫面"
+              title="唱片公司、藝人頻道或公開平台常見的 MV 畫面"
               style={{
                 ...buttonBaseStyle,
                 background: userMvVote === 'official' ? 'rgba(56,189,248,0.22)' : 'rgba(255,255,255,0.04)',
