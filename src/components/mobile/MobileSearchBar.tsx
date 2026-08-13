@@ -28,6 +28,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   onSearchComplete,
 }) => {
   const hasActiveFilters = filters.onlyOfficialMv || filters.onlyGuidedVocal || filters.selectedLanguages.length > 0 || filters.selectedTitleLength !== 'all';
+  const isInteractionLocked = isCatalogLoading;
   const inputRef = useRef<HTMLInputElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
@@ -44,6 +45,14 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
     inputRef.current?.blur();
     setIsInputFocused(false);
     onSearchComplete?.();
+  };
+
+  const handleOpenFilters = () => {
+    if (isInteractionLocked) {
+      onSearchComplete?.();
+      return;
+    }
+    onOpenMobileFilters();
   };
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -102,13 +111,25 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             onClick={handleSearchComplete}
             aria-label="搜尋並查看結果"
             className={`mobile-search-submit ${filters.searchQuery ? 'is-active' : ''}`}
+            disabled={isInteractionLocked}
+            aria-disabled={isInteractionLocked}
+            style={{
+              cursor: isInteractionLocked ? 'not-allowed' : 'pointer',
+              opacity: isInteractionLocked ? 0.58 : 1,
+            }}
           >
             搜尋
           </button>
 
           <button
-            onClick={onOpenMobileFilters}
+            onClick={handleOpenFilters}
             className={`search-filter-button is-mobile ${hasActiveFilters ? 'is-active' : ''}`}
+            disabled={isInteractionLocked}
+            aria-disabled={isInteractionLocked}
+            style={{
+              cursor: isInteractionLocked ? 'not-allowed' : 'pointer',
+              opacity: isInteractionLocked ? 0.58 : 1,
+            }}
           >
             <SlidersHorizontal size={16} />
             <span>篩選</span>
@@ -116,9 +137,11 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
         </div>
 
         <button
-          onClick={onOpenMobileFilters}
+          onClick={handleOpenFilters}
           className="filter-summary-button"
           aria-label="開啟篩選條件"
+          disabled={isInteractionLocked}
+          aria-disabled={isInteractionLocked}
           style={{
             marginTop: '8px',
             width: '100%',
@@ -132,7 +155,8 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '8px',
-            cursor: 'pointer',
+            cursor: isInteractionLocked ? 'not-allowed' : 'pointer',
+            opacity: isInteractionLocked ? 0.62 : 1,
             boxSizing: 'border-box',
           }}
         >
@@ -159,7 +183,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             )}
           </div>
 
-          {onOpenSuggestSong && (
+          {onOpenSuggestSong && !isInteractionLocked && (
             <button
               onClick={onOpenSuggestSong}
               className="inline-suggest-link"

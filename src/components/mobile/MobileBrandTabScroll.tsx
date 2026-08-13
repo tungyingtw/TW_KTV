@@ -120,6 +120,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   }, [brandSongCounts, totalSongCount, displayedBrands]);
 
   const handleBrandClick = (brandId: BrandId) => {
+    if (isCatalogLoading) return;
     if (onToggleBrand) {
       onToggleBrand(brandId);
     } else {
@@ -128,6 +129,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   };
 
   const handleAllClick = () => {
+    if (isCatalogLoading) return;
     if (onClearBrands) onClearBrands();
     onSelectBrand('all');
   };
@@ -166,6 +168,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
           <button
             className={`brand-chip ${!isMultiSelecting && selectedBrand === 'all' ? 'is-selected' : ''}`}
             onClick={handleAllClick}
+            disabled={isCatalogLoading}
+            aria-disabled={isCatalogLoading}
             style={{
               height: '32px',
               minWidth: '120px',
@@ -179,7 +183,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
               color: !isMultiSelecting && selectedBrand === 'all' ? '#fff' : 'var(--text-primary)',
               border: `1px solid ${!isMultiSelecting && selectedBrand === 'all' ? 'transparent' : 'var(--border-color)'}`,
               padding: '0 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
-              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, boxSizing: 'border-box',
+              cursor: isCatalogLoading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', flexShrink: 0, boxSizing: 'border-box',
+              opacity: isCatalogLoading ? 0.62 : 1,
             }}
           >
             全部廠牌 ({brandList.length}){formatCount(totalSongCount)}
@@ -196,6 +201,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                 className={`brand-chip ${isSelected ? 'is-selected' : ''}`}
                 key={brand.id}
                 onClick={() => handleBrandClick(brand.id)}
+                disabled={isCatalogLoading}
+                aria-disabled={isCatalogLoading}
                 style={{
                   height: '32px',
                   minWidth: '92px',
@@ -209,7 +216,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                   color: isSelected ? '#ffffff' : brand.color,
                   border: `1px solid ${isSelected ? 'transparent' : `${brand.color}44`}`,
                   padding: '0 10px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
-                  cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, gap: '4px', boxSizing: 'border-box',
+                  cursor: isCatalogLoading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', flexShrink: 0, gap: '4px', boxSizing: 'border-box',
+                  opacity: isCatalogLoading ? 0.62 : 1,
                 }}
               >
                 <span>{isMultiSelected ? `✓ ${brand.shortName}` : brand.shortName}</span>
@@ -261,7 +269,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                     padding: '1px 7px',
                     fontSize: '0.72rem',
                     fontWeight: 700,
-                    cursor: 'pointer',
+                    cursor: isCatalogLoading ? 'not-allowed' : 'pointer',
+                    opacity: isCatalogLoading ? 0.62 : 1,
                   }}
                 >
                   ✕ {b?.shortName || bId}
@@ -274,6 +283,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
             {onToggleFilterMode && (
               <button
                 onClick={onToggleFilterMode}
+                disabled={isCatalogLoading}
+                aria-disabled={isCatalogLoading}
                 style={{
                   background: 'var(--bg-card-hover)',
                   border: '1px solid var(--border-color)',
@@ -282,7 +293,8 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
                   color: brandFilterMode === 'all_of_them' ? '#4ade80' : '#38bdf8',
                   fontSize: '0.72rem',
                   fontWeight: 700,
-                  cursor: 'pointer',
+                  cursor: isCatalogLoading ? 'not-allowed' : 'pointer',
+                  opacity: isCatalogLoading ? 0.62 : 1,
                   whiteSpace: 'nowrap',
                 }}
                 title={brandToggleLabel}
@@ -294,9 +306,12 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
             {onClearBrands && (
               <button
                 onClick={onClearBrands}
+                disabled={isCatalogLoading}
+                aria-disabled={isCatalogLoading}
                 style={{
                   background: 'none', border: 'none', color: '#94a3b8',
-                  cursor: 'pointer', fontSize: '0.72rem', textDecoration: 'underline', whiteSpace: 'nowrap',
+                  cursor: isCatalogLoading ? 'not-allowed' : 'pointer', fontSize: '0.72rem', textDecoration: 'underline', whiteSpace: 'nowrap',
+                  opacity: isCatalogLoading ? 0.62 : 1,
                 }}
               >
                 清除
