@@ -557,7 +557,7 @@ export function App() {
           查詢多家 KTV 平台的收錄狀態，並一起補完原版 MV 或伴唱帶類型、導唱與現場版本差異。
         </p>
         <div className="home-hero-metrics" aria-label="目前資料概況">
-          <span><strong>{allSongs.length.toLocaleString()}</strong><em>歌曲</em></span>
+          <span><strong>{isCatalogReady ? allSongs.length.toLocaleString() : '準備中'}</strong><em>歌曲</em></span>
           <span><strong>{brandList.length.toLocaleString()}</strong><em>KTV 品牌</em></span>
           <span><strong>MV / 導唱</strong><em>對照</em></span>
         </div>
@@ -657,8 +657,9 @@ export function App() {
               brandFilterMode: prev.brandFilterMode === 'all_of_them' ? 'any' : 'all_of_them',
             }));
           }}
-          brandSongCounts={brandSongCounts}
-          totalSongCount={allSongs.length}
+          brandSongCounts={isCatalogReady ? brandSongCounts : undefined}
+          totalSongCount={isCatalogReady ? allSongs.length : undefined}
+          isCatalogLoading={!isCatalogReady}
         />
       ) : (
         <BrandTabScroll
@@ -702,8 +703,8 @@ export function App() {
               brandFilterMode: prev.brandFilterMode === 'all_of_them' ? 'any' : 'all_of_them',
             }));
           }}
-          brandSongCounts={brandSongCounts}
-          totalSongCount={allSongs.length}
+          brandSongCounts={isCatalogReady ? brandSongCounts : undefined}
+          totalSongCount={isCatalogReady ? allSongs.length : undefined}
         />
       )}
 
@@ -722,6 +723,7 @@ export function App() {
             borderRadius: '20px',
             margin: '24px auto',
             maxWidth: '560px',
+            minHeight: isMobile ? '260px' : '280px',
             border: '1px solid var(--border-color)',
             boxShadow: '0 18px 50px rgba(0,0,0,0.24)',
             opacity: isFadingOut ? 0 : 1,
