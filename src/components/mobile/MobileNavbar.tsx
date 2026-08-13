@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
+import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle } from 'lucide-react';
 import type { FilterOptions } from '../../types/ktv';
 import { formatCompactZhNumber } from '../../utils/stringUtils';
 import { getKtvVisitorId } from '../../services/apiService';
@@ -141,11 +141,14 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '6px' }}>
           <div className="mobile-navbar-actions">
             <button
+              type="button"
               onClick={toggleTheme}
-              className="nav-action-link is-mobile"
+              className="theme-switch is-mobile"
+              aria-label={theme === 'dark' ? '切換至日光模式' : '切換至夜間模式'}
             >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-              <span>{theme === 'dark' ? '日光' : '夜間'}</span>
+              <span className="theme-switch-thumb" aria-hidden="true" />
+              <span className="theme-switch-label is-light">日</span>
+              <span className="theme-switch-label is-dark">夜</span>
             </button>
 
             {onOpenSuggestSong && (

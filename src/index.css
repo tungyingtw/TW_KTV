@@ -6738,3 +6738,537 @@ header,
   opacity: 0.48 !important;
   stroke: rgba(91, 59, 37, 0.18) !important;
 }
+
+/* Interaction vitality phase 1: restrained operation feedback */
+:root {
+  --interaction-focus: color-mix(in srgb, var(--accent-support) 50%, var(--accent-pink) 12%);
+  --interaction-focus-ring: color-mix(in srgb, var(--accent-support) 18%, transparent);
+  --interaction-hover-shadow: 0 8px 18px color-mix(in srgb, var(--accent-support) 10%, transparent);
+  --field-notice-rail: var(--accent-primary);
+}
+
+[data-theme="light"] {
+  --interaction-focus: color-mix(in srgb, var(--accent-support) 58%, var(--accent-primary) 10%);
+  --interaction-focus-ring: color-mix(in srgb, var(--accent-support) 16%, transparent);
+  --interaction-hover-shadow: 0 7px 16px rgba(88, 60, 35, 0.08);
+  --field-notice-rail: var(--accent-primary);
+}
+
+.search-input,
+.mobile-search-input {
+  transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease, color 0.16s ease !important;
+}
+
+.search-input:focus,
+.search-input:focus-visible,
+.mobile-search-input:focus,
+.mobile-search-input:focus-visible {
+  outline: none !important;
+  border-color: var(--interaction-focus) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 82%, var(--accent-support) 4%) !important;
+  box-shadow: 0 0 0 3px var(--interaction-focus-ring) !important;
+}
+
+[data-theme="light"] .search-input:focus,
+[data-theme="light"] .search-input:focus-visible,
+[data-theme="light"] .mobile-search-input:focus,
+[data-theme="light"] .mobile-search-input:focus-visible {
+  background: color-mix(in srgb, #ffffff 88%, var(--accent-support) 4%) !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.action-primary,
+.action-secondary,
+.app-modal-submit,
+.mobile-search-submit,
+.search-filter-button {
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.btn-primary:hover,
+.action-primary:hover,
+.app-modal-submit:hover,
+.mobile-search-submit:hover,
+.search-filter-button.is-active:hover {
+  border-color: color-mix(in srgb, var(--accent-primary) 76%, #ffffff 12%) !important;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent-primary) 16%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-secondary:hover,
+.action-secondary:hover,
+.search-filter-button:hover {
+  border-color: color-mix(in srgb, var(--accent-support) 34%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 80%, var(--accent-support) 6%) !important;
+  box-shadow: var(--interaction-hover-shadow) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.action-primary:active,
+.action-secondary:active,
+.app-modal-submit:active,
+.mobile-search-submit:active,
+.search-filter-button:active {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.action-primary:focus-visible,
+.action-secondary:focus-visible,
+.app-modal-submit:focus-visible,
+.mobile-search-submit:focus-visible,
+.search-filter-button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px var(--interaction-focus-ring) !important;
+}
+
+.filter-chip,
+.quality-filter-chip,
+.bottom-sheet-option,
+.bottom-sheet-toggle {
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.filter-chip:hover,
+.filter-chip:focus-visible,
+.quality-filter-chip:hover,
+.quality-filter-chip:focus-within,
+.bottom-sheet-option:hover,
+.bottom-sheet-option:focus-visible,
+.bottom-sheet-toggle:hover,
+.bottom-sheet-toggle:focus-within {
+  border-color: color-mix(in srgb, var(--accent-support) 32%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 80%, var(--accent-support) 5%) !important;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent-support) 8%, transparent) !important;
+}
+
+.filter-chip.is-selected,
+.bottom-sheet-option.is-selected,
+.bottom-sheet-toggle.is-selected {
+  color: var(--accent-primary) !important;
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-card)) !important;
+}
+
+[data-theme="light"] .filter-chip.is-selected,
+[data-theme="light"] .bottom-sheet-option.is-selected,
+[data-theme="light"] .bottom-sheet-toggle.is-selected {
+  background: color-mix(in srgb, #ffffff 84%, var(--accent-primary) 7%) !important;
+}
+
+.data-table tr,
+.matrix-data-table tr,
+.data-table td,
+.matrix-data-table td {
+  transition: background-color 0.13s ease !important;
+}
+
+.data-table tbody tr:hover td,
+.matrix-data-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--bg-card-hover) 76%, var(--accent-support) 7%) !important;
+}
+
+[data-theme="light"] .data-table tbody tr:hover td,
+[data-theme="light"] .matrix-data-table tbody tr:hover td {
+  background: color-mix(in srgb, #fff4e4 84%, var(--accent-support) 5%) !important;
+}
+
+.status-availability,
+.matrix-data-table .status-label.status-availability,
+.card-view-container .status-label.status-availability,
+.song-detail-modal-content .status-label.status-availability {
+  color: var(--status-available-color) !important;
+  background: var(--status-available-bg) !important;
+  border: 1px solid var(--status-available-border) !important;
+}
+
+.status-mv,
+.badge-official-mv,
+.matrix-data-table .status-label.status-mv,
+.matrix-data-table .badge-official-mv,
+.card-view-container .badge-official-mv,
+.song-detail-modal-content .badge-official-mv {
+  color: var(--status-mv-color) !important;
+  background: var(--status-mv-bg) !important;
+  border: 1px solid var(--status-mv-border) !important;
+}
+
+.status-guided,
+.badge-guided-vocal,
+.matrix-data-table .status-label.status-guided,
+.matrix-data-table .badge-guided-vocal,
+.card-view-container .badge-guided-vocal,
+.song-detail-modal-content .badge-guided-vocal {
+  color: var(--status-guided-color) !important;
+  background: var(--status-guided-bg) !important;
+  border: 1px solid var(--status-guided-border) !important;
+}
+
+.matrix-data-table .status-label.status-mv,
+.matrix-data-table .status-label.status-guided,
+.matrix-data-table .badge-official-mv,
+.matrix-data-table .badge-guided-vocal,
+.card-view-container .badge-official-mv,
+.card-view-container .badge-guided-vocal,
+.song-detail-modal-content .badge-official-mv,
+.song-detail-modal-content .badge-guided-vocal {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 18px !important;
+}
+
+.collab-notice,
+[data-theme="light"] .collab-notice {
+  border-left-width: 4px !important;
+  border-left-color: var(--field-notice-rail) !important;
+  border-color: color-mix(in srgb, var(--accent-highlight) 30%, var(--border-color)) !important;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--field-notice-rail) 11%, transparent), transparent 46%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-highlight) 12%, var(--bg-card)), color-mix(in srgb, var(--accent-support) 5%, var(--bg-card))) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent) !important;
+}
+
+[data-theme="light"] .collab-notice {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--field-notice-rail) 8%, transparent), transparent 48%),
+    linear-gradient(135deg, color-mix(in srgb, #fff6e7 86%, var(--accent-highlight) 8%), color-mix(in srgb, #ffffff 92%, var(--accent-support) 4%)) !important;
+}
+
+.collab-notice h2 {
+  color: var(--accent-highlight) !important;
+}
+
+[data-theme="light"] .collab-notice h2 {
+  color: var(--accent-primary) !important;
+}
+
+.collab-notice h2::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  margin-right: 8px !important;
+  border-radius: 999px !important;
+  background: var(--field-notice-rail) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--field-notice-rail) 14%, transparent) !important;
+  vertical-align: 1px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .action-primary:hover,
+  .action-secondary:hover,
+  .app-modal-submit:hover,
+  .mobile-search-submit:hover,
+  .search-filter-button:hover {
+    transform: none !important;
+  }
+}
+
+/* Interaction vitality phase 2: theme switch, cards, and dialogs */
+[data-theme="dark"] {
+  --theme-switch-bg: linear-gradient(90deg, #172130, #0d1726);
+  --theme-switch-thumb-x: 100%;
+  --theme-switch-idle: #8ea0b4;
+}
+
+[data-theme="light"] {
+  --theme-switch-bg: linear-gradient(90deg, #ffeccf, #fffdf8);
+  --theme-switch-thumb-x: 0%;
+  --theme-switch-idle: #87756a;
+}
+
+.theme-switch {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  align-items: center !important;
+  width: 98px !important;
+  min-height: 38px !important;
+  padding: 3px !important;
+  border: 1px solid color-mix(in srgb, var(--accent-support) 34%, var(--border-color)) !important;
+  border-radius: 999px !important;
+  background: var(--theme-switch-bg) !important;
+  color: var(--text-primary) !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease !important;
+}
+
+.theme-switch.is-mobile {
+  width: 86px !important;
+  min-height: 36px !important;
+}
+
+.theme-switch:hover,
+.theme-switch:focus-visible {
+  outline: none !important;
+  border-color: color-mix(in srgb, var(--accent-support) 52%, var(--accent-primary) 12%) !important;
+  box-shadow: 0 0 0 3px var(--interaction-focus-ring) !important;
+}
+
+.theme-switch-thumb {
+  position: absolute !important;
+  top: 3px !important;
+  left: 3px !important;
+  z-index: 1 !important;
+  width: calc((100% - 6px) / 2) !important;
+  height: calc(100% - 6px) !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.24) !important;
+  transform: translateX(var(--theme-switch-thumb-x)) !important;
+  transition: transform 0.19s ease, background-color 0.19s ease !important;
+}
+
+.theme-switch-label {
+  position: relative !important;
+  z-index: 2 !important;
+  display: grid !important;
+  min-height: 30px !important;
+  place-items: center !important;
+  font-size: 0.78rem !important;
+  line-height: 1 !important;
+  transition: color 0.19s ease !important;
+}
+
+.theme-switch-label.is-light {
+  grid-column: 1 !important;
+}
+
+.theme-switch-label.is-dark {
+  grid-column: 2 !important;
+}
+
+[data-theme="light"] .theme-switch-label.is-light,
+[data-theme="dark"] .theme-switch-label.is-dark {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .theme-switch-label.is-dark,
+[data-theme="dark"] .theme-switch-label.is-light {
+  color: var(--theme-switch-idle) !important;
+}
+
+.song-card,
+.card-view-container .glass-panel {
+  transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease !important;
+}
+
+.song-card:hover,
+.card-view-container .glass-panel:hover {
+  border-color: color-mix(in srgb, var(--accent-support) 26%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 84%, var(--accent-support) 4%) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-support) 8%, transparent) !important;
+}
+
+[data-theme="light"] .song-card:hover,
+[data-theme="light"] .card-view-container .glass-panel:hover {
+  background: color-mix(in srgb, #ffffff 88%, var(--accent-support) 3%) !important;
+  box-shadow: 0 8px 18px rgba(88, 60, 35, 0.07) !important;
+}
+
+.modal-close-button,
+.legal-modal-close-button,
+.modal-option-button,
+.modal-segment-button {
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.modal-close-button:hover,
+.modal-close-button:focus-visible,
+.legal-modal-close-button:hover,
+.legal-modal-close-button:focus-visible,
+.modal-option-button:hover,
+.modal-option-button:focus-visible,
+.modal-segment-button:hover,
+.modal-segment-button:focus-visible {
+  outline: none !important;
+  border-color: color-mix(in srgb, var(--accent-support) 36%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 82%, var(--accent-support) 5%) !important;
+  box-shadow: 0 0 0 3px var(--interaction-focus-ring) !important;
+}
+
+.modal-option-button:active,
+.modal-segment-button:active,
+.modal-close-button:active,
+.legal-modal-close-button:active {
+  transform: translateY(1px) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch-thumb,
+  .theme-switch-label,
+  .song-card,
+  .card-view-container .glass-panel,
+  .modal-close-button,
+  .legal-modal-close-button,
+  .modal-option-button,
+  .modal-segment-button {
+    transition-duration: 0.001ms !important;
+  }
+
+  .modal-option-button:active,
+  .modal-segment-button:active,
+  .modal-close-button:active,
+  .legal-modal-close-button:active {
+    transform: none !important;
+  }
+}
+
+/* Interaction vitality phase 3: mobile sheet, states, and visit heat hover */
+.bottom-sheet-content {
+  border: 1px solid color-mix(in srgb, var(--border-color) 78%, var(--accent-support) 16%) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--modal-surface) 92%, var(--accent-support) 3%), var(--modal-surface)) !important;
+  box-shadow: 0 -18px 46px rgba(0, 0, 0, 0.32) !important;
+}
+
+[data-theme="light"] .bottom-sheet-content {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #ffffff 90%, var(--accent-highlight) 5%), #ffffff) !important;
+  box-shadow: 0 -18px 42px rgba(88, 60, 35, 0.12) !important;
+}
+
+.bottom-sheet-content::before {
+  width: 54px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, var(--accent-support), var(--accent-primary)) !important;
+  opacity: 0.88 !important;
+}
+
+.bottom-sheet-content h3 {
+  color: var(--text-primary) !important;
+  letter-spacing: 0 !important;
+}
+
+.bottom-sheet-close-button {
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.bottom-sheet-close-button:hover,
+.bottom-sheet-close-button:focus-visible {
+  outline: none !important;
+  border-color: color-mix(in srgb, var(--accent-support) 36%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 82%, var(--accent-support) 5%) !important;
+  box-shadow: 0 0 0 3px var(--interaction-focus-ring) !important;
+}
+
+.loading-state-panel,
+.empty-state-panel,
+.error-state-panel,
+.visit-region-modal-state {
+  position: relative !important;
+  overflow: hidden !important;
+  border: 1px solid color-mix(in srgb, var(--border-color) 82%, var(--accent-support) 14%) !important;
+  border-radius: var(--radius-md) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 92%, var(--accent-support) 4%), var(--bg-card)) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .loading-state-panel,
+[data-theme="light"] .empty-state-panel,
+[data-theme="light"] .error-state-panel,
+[data-theme="light"] .visit-region-modal-state {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, #ffffff 90%, var(--accent-highlight) 5%), #ffffff) !important;
+  border-color: color-mix(in srgb, rgba(88, 60, 35, 0.15) 82%, var(--accent-support) 18%) !important;
+}
+
+.loading-state-panel::before,
+.visit-region-modal-state:not(.is-error)::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 auto 0 0 !important;
+  width: 34% !important;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-support) 10%, transparent), transparent) !important;
+  animation: stateLoadingSweep 1.7s ease-in-out infinite !important;
+}
+
+@keyframes stateLoadingSweep {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(310%);
+  }
+}
+
+.empty-state-panel > svg {
+  color: var(--accent-support) !important;
+}
+
+.error-state-panel,
+.visit-region-modal-state.is-error {
+  border-color: color-mix(in srgb, #ef4444 34%, var(--border-color)) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 90%, #ef4444 5%), var(--bg-card)) !important;
+}
+
+[data-theme="light"] .error-state-panel,
+[data-theme="light"] .visit-region-modal-state.is-error {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, #ffffff 90%, #ef4444 5%), #ffffff) !important;
+}
+
+.taiwan-demo-tooltip {
+  pointer-events: none !important;
+  border-color: color-mix(in srgb, var(--accent-support) 36%, var(--border-color)) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 90%, var(--accent-support) 5%), var(--bg-card)) !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24), 0 0 0 3px color-mix(in srgb, var(--accent-support) 10%, transparent) !important;
+}
+
+[data-theme="light"] .taiwan-demo-tooltip {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, #ffffff 90%, var(--accent-support) 5%), #ffffff) !important;
+  box-shadow: 0 14px 30px rgba(88, 60, 35, 0.12), 0 0 0 3px color-mix(in srgb, var(--accent-support) 10%, transparent) !important;
+}
+
+.taiwan-demo-map path:hover,
+.taiwan-demo-map path:focus-visible {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent-support) 38%, transparent)) !important;
+  stroke-width: 2.4 !important;
+}
+
+.taiwan-demo-ranking button {
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.taiwan-demo-ranking button:hover,
+.taiwan-demo-ranking button:focus-visible,
+.taiwan-demo-ranking button.is-active {
+  outline: none !important;
+  border-color: color-mix(in srgb, var(--accent-support) 38%, var(--border-color)) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 82%, var(--accent-support) 6%) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-support) 10%, transparent) !important;
+}
+
+[data-theme="light"] .taiwan-demo-ranking button:hover,
+[data-theme="light"] .taiwan-demo-ranking button:focus-visible,
+[data-theme="light"] .taiwan-demo-ranking button.is-active {
+  background: color-mix(in srgb, #ffffff 88%, var(--accent-support) 5%) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-state-panel::before,
+  .visit-region-modal-state:not(.is-error)::before {
+    animation: none !important;
+  }
+
+  .bottom-sheet-close-button,
+  .taiwan-demo-ranking button {
+    transition-duration: 0.001ms !important;
+  }
+}
