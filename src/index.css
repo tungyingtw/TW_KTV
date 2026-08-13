@@ -6430,6 +6430,416 @@ header,
   background: color-mix(in srgb, #ffffff 86%, var(--status-mv-color) 4%) !important;
 }
 
+/* Song detail platform card V2: persistent community vote overview */
+.song-detail-brand-card.is-community-ok,
+.song-detail-brand-card.is-community-lean-ok,
+.song-detail-brand-card.is-community-disputed,
+.song-detail-brand-card.is-community-empty,
+.song-detail-brand-card.is-community-negative {
+  overflow: visible !important;
+  transition: border-color 0.16s ease, background 0.16s ease !important;
+}
+
+.song-detail-brand-card.is-community-ok {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--status-available-color) 15%, transparent), transparent 56%),
+    color-mix(in srgb, var(--bg-card-hover) 72%, transparent) !important;
+  border-color: color-mix(in srgb, var(--status-available-color) 52%, var(--border-color)) !important;
+}
+
+.song-detail-brand-card.is-community-lean-ok {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--status-mv-color) 11%, transparent), transparent 58%),
+    color-mix(in srgb, var(--bg-card-hover) 66%, transparent) !important;
+  border-color: color-mix(in srgb, var(--status-mv-color) 36%, var(--border-color)) !important;
+}
+
+.song-detail-brand-card.is-community-disputed {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--status-edited-mv-color) 13%, transparent), transparent 58%),
+    color-mix(in srgb, var(--bg-card-hover) 64%, transparent) !important;
+  border-color: color-mix(in srgb, var(--status-edited-mv-color) 46%, var(--border-color)) !important;
+}
+
+.song-detail-brand-card.is-community-empty {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--text-muted) 9%, transparent), transparent 58%),
+    color-mix(in srgb, var(--bg-card-hover) 52%, transparent) !important;
+  border-color: color-mix(in srgb, var(--border-color) 84%, var(--text-muted) 16%) !important;
+}
+
+.song-detail-brand-card.is-community-negative {
+  background:
+    linear-gradient(135deg, rgba(248, 113, 113, 0.13), transparent 58%),
+    color-mix(in srgb, var(--bg-card-hover) 62%, transparent) !important;
+  border-color: color-mix(in srgb, #f87171 42%, var(--border-color)) !important;
+}
+
+.brand-vote-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-top: 10px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 78%, var(--status-available-color) 12%) !important;
+}
+
+.brand-vote-overview {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.brand-vote-overview-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.brand-vote-overview-head > div {
+  display: grid !important;
+  gap: 2px !important;
+}
+
+.brand-vote-overview-head strong,
+.brand-vote-metric-top span,
+.brand-vote-detail-lines strong {
+  color: var(--text-primary) !important;
+  font-size: 0.76rem !important;
+  font-weight: 850 !important;
+}
+
+.brand-vote-overview-head span:not(.brand-vote-state-mark),
+.brand-vote-hint,
+.brand-vote-detail-lines span {
+  color: var(--text-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+}
+
+.brand-vote-state-mark {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
+  border: 1px solid color-mix(in srgb, currentColor 44%, transparent) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--status-available-color) !important;
+  background: color-mix(in srgb, currentColor 11%, transparent) !important;
+}
+
+.brand-vote-card.is-leanOk .brand-vote-state-mark {
+  color: var(--status-mv-color) !important;
+}
+
+.brand-vote-card.is-disputed .brand-vote-state-mark {
+  color: var(--status-edited-mv-color) !important;
+}
+
+.brand-vote-card.is-empty .brand-vote-state-mark {
+  color: var(--text-muted) !important;
+}
+
+.brand-vote-card.is-negative .brand-vote-state-mark {
+  color: #f87171 !important;
+}
+
+.brand-vote-metric {
+  display: grid !important;
+  gap: 4px !important;
+}
+
+.brand-vote-metric-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.brand-vote-metric-top strong {
+  color: var(--text-primary) !important;
+  font-size: 0.74rem !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.brand-vote-scale {
+  display: grid !important;
+  grid-template-columns: 42px minmax(68px, 1fr) 42px !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.brand-vote-scale > span {
+  color: var(--text-muted) !important;
+  font-size: 0.66rem !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+}
+
+.brand-vote-scale > span:last-child {
+  text-align: right !important;
+}
+
+.brand-vote-split {
+  display: flex !important;
+  height: 9px !important;
+  overflow: hidden !important;
+  border-radius: var(--radius-full) !important;
+  background: color-mix(in srgb, var(--text-muted) 19%, transparent) !important;
+}
+
+.brand-vote-split i {
+  display: block !important;
+  height: 100% !important;
+}
+
+.brand-vote-split .is-positive {
+  background: linear-gradient(90deg, var(--status-available-color), var(--status-mv-color)) !important;
+}
+
+.brand-vote-metric.is-guided .brand-vote-split .is-positive {
+  background: linear-gradient(90deg, var(--status-guided-color), var(--status-mv-color)) !important;
+}
+
+.brand-vote-metric.is-mv .brand-vote-split .is-positive {
+  background: linear-gradient(90deg, var(--status-mv-color), var(--status-available-color)) !important;
+}
+
+.brand-vote-split .is-negative {
+  background: rgba(248, 113, 113, 0.72) !important;
+}
+
+.brand-vote-split .is-empty {
+  width: 100% !important;
+  background: color-mix(in srgb, var(--text-muted) 28%, transparent) !important;
+}
+
+.brand-vote-hint {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.brand-vote-hint b {
+  color: var(--text-primary) !important;
+  font-weight: 850 !important;
+}
+
+.brand-vote-card .brand-vote-breakdown-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-height: 34px !important;
+  margin: 0 !important;
+  padding: 6px 8px 6px 10px !important;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 38%, var(--border-color)) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--accent-purple) !important;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 15%, transparent), transparent 72%),
+    color-mix(in srgb, var(--bg-card-hover) 48%, transparent) !important;
+  font-size: 0.74rem !important;
+  font-weight: 850 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.brand-vote-card .brand-vote-breakdown-toggle:hover,
+.brand-vote-card .brand-vote-breakdown-toggle:focus-visible {
+  color: var(--text-primary) !important;
+  border-color: color-mix(in srgb, var(--accent-primary) 62%, var(--border-color)) !important;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 21%, transparent), transparent 72%),
+    color-mix(in srgb, var(--bg-card-hover) 58%, transparent) !important;
+  outline: none !important;
+}
+
+.brand-vote-card .brand-vote-breakdown-toggle > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.brand-vote-card .brand-vote-breakdown-toggle > svg {
+  flex: 0 0 auto !important;
+  width: 22px !important;
+  height: 22px !important;
+  padding: 4px !important;
+  border: 1px solid color-mix(in srgb, currentColor 34%, transparent) !important;
+  border-radius: 6px !important;
+  background: color-mix(in srgb, currentColor 12%, transparent) !important;
+  transition: transform 0.16s ease !important;
+}
+
+.brand-vote-card .brand-vote-breakdown-toggle[aria-expanded="true"] > svg {
+  transform: rotate(180deg) !important;
+}
+
+.brand-vote-card .brand-vote-breakdown {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 0 !important;
+  padding: 9px !important;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--border-color)) !important;
+  border-radius: var(--radius-sm) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 64%, transparent) !important;
+  box-shadow: none !important;
+}
+
+.brand-vote-detail-lines {
+  display: grid !important;
+  gap: 6px !important;
+}
+
+.brand-vote-detail-lines > div {
+  display: grid !important;
+  grid-template-columns: 42px 1fr !important;
+  gap: 8px !important;
+}
+
+.brand-vote-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  padding-top: 8px !important;
+  border-top: 1px dashed color-mix(in srgb, var(--border-color) 72%, transparent) !important;
+}
+
+.brand-vote-card .brand-vote-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-height: 29px !important;
+  padding: 4px 6px !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 7px !important;
+  color: var(--text-secondary) !important;
+  background: color-mix(in srgb, var(--bg-card-hover) 52%, transparent) !important;
+  font-size: 0.72rem !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.brand-vote-card .brand-vote-action em {
+  min-width: 16px !important;
+  padding: 0 4px !important;
+  border-radius: 4px !important;
+  background: color-mix(in srgb, currentColor 14%, transparent) !important;
+  color: currentColor !important;
+  font-size: 0.65rem !important;
+  font-style: normal !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.brand-vote-card .brand-vote-action.is-positive.is-selected,
+.brand-vote-card .brand-vote-action.is-positive:hover {
+  color: var(--status-available-color) !important;
+  background: var(--status-available-bg) !important;
+  border-color: var(--status-available-border) !important;
+}
+
+.brand-vote-card .brand-vote-action.is-guided.is-selected,
+.brand-vote-card .brand-vote-action.is-guided:hover {
+  color: var(--status-guided-color) !important;
+  background: var(--status-guided-bg) !important;
+  border-color: var(--status-guided-border) !important;
+}
+
+.brand-vote-card .brand-vote-action.is-mv.is-selected,
+.brand-vote-card .brand-vote-action.is-mv:hover {
+  color: var(--status-mv-color) !important;
+  background: var(--status-mv-bg) !important;
+  border-color: var(--status-mv-border) !important;
+}
+
+.brand-vote-card .brand-vote-action.is-negative.is-selected,
+.brand-vote-card .brand-vote-action.is-negative:hover {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.12) !important;
+  border-color: rgba(248, 113, 113, 0.34) !important;
+}
+
+.brand-vote-card .brand-vote-action.is-muted.is-selected,
+.brand-vote-card .brand-vote-action.is-muted:hover,
+.brand-vote-card .brand-vote-action.is-edited.is-selected,
+.brand-vote-card .brand-vote-action.is-edited:hover {
+  color: var(--status-edited-mv-color) !important;
+  background: var(--status-edited-mv-bg) !important;
+  border-color: var(--status-edited-mv-border) !important;
+}
+
+.brand-vote-card .brand-vote-action:disabled {
+  cursor: wait !important;
+  opacity: 0.72 !important;
+}
+
+.brand-vote-confidence {
+  color: var(--text-muted) !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .song-detail-brand-card.is-community-ok {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--status-available-color) 14%, transparent), transparent 58%),
+    #ffffff !important;
+  border-color: color-mix(in srgb, var(--status-available-color) 42%, var(--border-color)) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .song-detail-brand-card.is-community-lean-ok {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--status-mv-color) 11%, transparent), transparent 58%),
+    #ffffff !important;
+  border-color: color-mix(in srgb, var(--status-mv-color) 34%, var(--border-color)) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .song-detail-brand-card.is-community-disputed {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--status-edited-mv-color) 13%, transparent), transparent 58%),
+    #ffffff !important;
+  border-color: color-mix(in srgb, var(--status-edited-mv-color) 42%, var(--border-color)) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .song-detail-brand-card.is-community-empty {
+  background:
+    linear-gradient(135deg, rgba(100, 116, 139, 0.09), transparent 58%),
+    #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .song-detail-brand-card.is-community-negative {
+  background:
+    linear-gradient(135deg, rgba(194, 65, 90, 0.13), transparent 58%),
+    #ffffff !important;
+  border-color: rgba(194, 65, 90, 0.36) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-breakdown-toggle {
+  color: var(--accent-primary) !important;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 10%, transparent), transparent 72%),
+    #f8fafc !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-breakdown {
+  background: #f8fafc !important;
+  border-color: color-mix(in srgb, var(--accent-primary) 22%, var(--border-color)) !important;
+}
+
 @media (max-width: 640px) {
   .collab-notice,
   [data-theme="light"] .collab-notice {
@@ -6440,6 +6850,20 @@ header,
     align-items: flex-start !important;
     flex-direction: column !important;
     white-space: normal !important;
+  }
+
+  .brand-vote-scale {
+    grid-template-columns: 44px minmax(70px, 1fr) 44px !important;
+  }
+
+  .brand-vote-card .brand-vote-action {
+    min-height: 32px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-vote-actions {
+    grid-template-columns: 1fr !important;
   }
 }
 
