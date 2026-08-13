@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { Song, SongVotes, BrandId } from '../types/ktv';
+import type { Song, SongVotes, BrandId, VoteData } from '../types/ktv';
 import { useBrands } from '../hooks/useBrands';
 import { X, Heart, Video, CheckCircle2, Flag } from 'lucide-react';
-import { BrandVoteBar } from './BrandVoteBar';
+import { BrandVoteBarV2 } from './BrandVoteBarV2';
 import { ReportModal } from './ReportModal';
 import { fetchSongVotes } from '../services/communityService';
 import { getLanguageStyle } from '../utils/languageStyle';
@@ -17,6 +17,17 @@ interface SongDetailModalProps {
   onToggleFavorite: (songId: string) => void;
   brandSongCounts?: Record<BrandId, number>;
 }
+
+const getCommunityStateClass = (vote?: VoteData) => {
+  if (!vote) return 'is-community-empty';
+  const total = vote.confirm + vote.deny;
+  if (total === 0) return 'is-community-empty';
+  const pct = Math.round((vote.confirm / total) * 100);
+  if (vote.confidence === 'disputed' || (pct >= 40 && pct <= 60 && total >= 3)) return 'is-community-disputed';
+  if (pct >= 80 && total >= 3) return 'is-community-ok';
+  if (pct >= 50) return 'is-community-lean-ok';
+  return 'is-community-negative';
+};
 
 export const SongDetailModal: React.FC<SongDetailModalProps> = ({
   song,
@@ -359,28 +370,27 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 if (!isBrandAvailable(status)) {
                   return (
                     <div
-                      className="song-detail-brand-card is-unavailable"
+                      className={`song-detail-brand-card is-unavailable ${getCommunityStateClass(brandVote)}`}
                       key={b.id}
                       style={{
                         padding: '10px 14px',
                         borderRadius: 'var(--radius-sm, 10px)',
                         background: 'var(--bg-glass, rgba(255, 255, 255, 0.02))',
                         border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
-                        opacity: 0.75,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: 700, color: b.color, fontSize: '0.9rem' }}>{b.shortName}</span>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>未收錄</span>
                       </div>
-                      <BrandVoteBar songId={song.id} brandId={b.id} initialVote={brandVote} />
+                      <BrandVoteBarV2 songId={song.id} brandId={b.id} initialVote={brandVote} />
                     </div>
                   );
                 }
 
                 return (
                   <div
-                    className="song-detail-brand-card is-available"
+                    className={`song-detail-brand-card is-available ${getCommunityStateClass(brandVote)}`}
                     key={b.id}
                     style={{
                       padding: '10px 14px',
@@ -428,7 +438,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                       </div>
                     </div>
 
-                    <BrandVoteBar songId={song.id} brandId={b.id} initialVote={brandVote} />
+                    <BrandVoteBarV2 songId={song.id} brandId={b.id} initialVote={brandVote} />
                   </div>
                 );
               })}
