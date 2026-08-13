@@ -7908,6 +7908,49 @@ header,
   padding: 8px 10px;
 }
 
+.catalog-retry-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-top: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent-support) 46%, var(--border-color));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-card-hover) 72%, var(--accent-support) 10%);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: 9px 14px;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.catalog-retry-button:hover,
+.catalog-retry-button:focus-visible {
+  outline: none;
+  border-color: var(--accent-support);
+  background: color-mix(in srgb, var(--bg-card-hover) 64%, var(--accent-support) 16%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-support) 14%, transparent);
+}
+
+.catalog-retry-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.catalog-retry-button:disabled svg {
+  animation: retrySpin 0.9s linear infinite;
+}
+
+@keyframes retrySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 640px) {
   :root {
     --mobile-sticky-offset: 156px;
@@ -7960,7 +8003,12 @@ header,
   }
 
   .bottom-sheet-close-button,
-  .taiwan-demo-ranking button {
+  .taiwan-demo-ranking button,
+  .catalog-retry-button {
     transition-duration: 0.001ms !important;
+  }
+
+  .catalog-retry-button:disabled svg {
+    animation: none !important;
   }
 }

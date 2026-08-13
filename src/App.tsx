@@ -29,7 +29,7 @@ import { expandFrontendQuery } from './utils/artistAliases';
 import { isBrandAvailable } from './utils/brandAvailability';
 import { getMeaningfulLyricsSnippet } from './utils/songReference';
 import { getMeaningfulComposer, getMeaningfulLyricist } from './utils/songCredits';
-import { Sparkles, Music, ChevronDown, Mail, X } from 'lucide-react';
+import { Sparkles, Music, ChevronDown, Mail, X, RefreshCw } from 'lucide-react';
 
 function getSearchablePhonetic(value?: string): string {
   const normalized = (value || '').trim();
@@ -45,6 +45,9 @@ export function App() {
   const resultsRegionRef = useRef<HTMLElement>(null);
   const fuseIndexRef = useRef<{ songs: Song[]; fuse: Fuse<Song> } | null>(null);
   const wasCatalogDisplayReadyRef = useRef(false);
+  const catalogLoadRequestIdRef = useRef(0);
+  const catalogLoadStartedAtRef = useRef(0);
+  const catalogLoadTimersRef = useRef<number[]>([]);
   const latestSearchStateRef = useRef({
     query: '',
     resultCount: 0,
@@ -59,6 +62,8 @@ export function App() {
   const [displayProgress, setDisplayProgress] = useState<number>(0);
   const [catalogLoadStage, setCatalogLoadStage] = useState<CatalogLoadStage>('checking-cache');
   const [showLongLoadHint, setShowLongLoadHint] = useState<boolean>(false);
+  const [showCatalogRetryHint, setShowCatalogRetryHint] = useState<boolean>(false);
+  const [isCatalogRetrying, setIsCatalogRetrying] = useState<boolean>(false);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
   const [catalogLoadError, setCatalogLoadError] = useState<string | null>(null);
   const equalizerBars = useMemo(() => (
@@ -145,40 +150,79 @@ export function App() {
     filters.sortBy,
   ]);
 
-  // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
-  useEffect(() => {
+  const clearCatalogLoadTimers = useCallback(() => {
+    catalogLoadTimersRef.current.forEach(timer => window.clearTimeout(timer));
+    catalogLoadTimersRef.current = [];
+  }, []);
+
+  const loadCatalog = useCallback((forceRefresh = false) => {
+    const requestId = catalogLoadRequestIdRef.current + 1;
+    catalogLoadRequestIdRef.current = requestId;
+    catalogLoadStartedAtRef.current = Date.now();
+    clearCatalogLoadTimers();
     fetchBrands();
-    const longLoadTimer = window.setTimeout(() => setShowLongLoadHint(true), 5000);
+    setIsLoadingCatalog(true);
+    setIsFadingOut(false);
+    setIsCatalogReady(false);
+    setCatalogLoadError(null);
+    setCatalogLoadStage('checking-cache');
+    setShowLongLoadHint(false);
+    setShowCatalogRetryHint(false);
+    setIsCatalogRetrying(forceRefresh);
+    setTargetProgress(0);
+    setDisplayProgress(0);
+
+    const longLoadTimer = window.setTimeout(() => {
+      if (catalogLoadRequestIdRef.current === requestId) setShowLongLoadHint(true);
+    }, 5000);
+    const retryHintTimer = window.setTimeout(() => {
+      if (catalogLoadRequestIdRef.current === requestId) setShowCatalogRetryHint(true);
+    }, 12000);
+    catalogLoadTimersRef.current = [longLoadTimer, retryHintTimer];
+
     fetchFullCatalog((pct, stage) => {
+      if (catalogLoadRequestIdRef.current !== requestId) return;
       if (stage) setCatalogLoadStage(stage);
       setTargetProgress(Math.min(96, pct));
-    }).then(catalog => {
-      if (catalog && catalog.length > 0) {
-        // 前台硬過濾防護牆 (Strict Sanitizer Guard)
-        const sanitized = catalog.filter(s => {
-          const t = s.title || '';
-          const snippet = getMeaningfulLyricsSnippet(s);
-          if (/\bVol\.\d+|\bVOL\.\d+|\bvol\.\d+|\bNo\.\d+/i.test(t)) return false;
-          if (snippet.includes('10 大 KTV 歌號對照') || (snippet.includes('包廂歡唱') && snippet.includes('歌號'))) return false;
-          return true;
-        });
-        setAllSongs(sanitized);
-        setIsCatalogReady(sanitized.length > 0);
-      }
-      window.clearTimeout(longLoadTimer);
+    }, { forceRefresh }).then(catalog => {
+      if (catalogLoadRequestIdRef.current !== requestId) return;
+      const sanitized = (catalog || []).filter(s => {
+        const t = s.title || '';
+        const snippet = getMeaningfulLyricsSnippet(s);
+        if (/\bVol\.\d+|\bVOL\.\d+|\bvol\.\d+|\bNo\.\d+/i.test(t)) return false;
+        if (snippet.includes('10 大 KTV 歌號對照') || (snippet.includes('包廂歡唱') && snippet.includes('歌號'))) return false;
+        return true;
+      });
+      if (!sanitized.length) throw new Error('empty catalog');
+      setAllSongs(sanitized);
+      setIsCatalogReady(true);
+      clearCatalogLoadTimers();
       setCatalogLoadStage('ready');
       setShowLongLoadHint(false);
+      setShowCatalogRetryHint(false);
+      setIsCatalogRetrying(false);
       setTargetProgress(100);
     }).catch(() => {
-      window.clearTimeout(longLoadTimer);
+      if (catalogLoadRequestIdRef.current !== requestId) return;
+      clearCatalogLoadTimers();
       setCatalogLoadStage('error');
       setShowLongLoadHint(false);
+      setShowCatalogRetryHint(true);
+      setIsCatalogRetrying(false);
       setIsCatalogReady(false);
       setCatalogLoadError('歌庫資料暫時無法載入。請稍候再試，或確認網路連線後重新整理。');
       setTargetProgress(100);
     });
-    return () => window.clearTimeout(longLoadTimer);
-  }, []);
+  }, [clearCatalogLoadTimers]);
+
+  // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
+  useEffect(() => {
+    loadCatalog();
+    return () => {
+      catalogLoadRequestIdRef.current += 1;
+      clearCatalogLoadTimers();
+    };
+  }, [clearCatalogLoadTimers, loadCatalog]);
 
   useEffect(() => {
     let cancelled = false;
@@ -197,6 +241,24 @@ export function App() {
       window.clearTimeout(wakeTimer);
     };
   }, []);
+
+  const isCatalogDisplayReady = isCatalogReady && !isLoadingCatalog;
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible' || isCatalogDisplayReady) return;
+      if (isLoadingCatalog && Date.now() - catalogLoadStartedAtRef.current > 12000) {
+        setShowCatalogRetryHint(true);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isCatalogDisplayReady, isLoadingCatalog]);
+
+  const handleCatalogRetry = useCallback(() => {
+    if (isCatalogRetrying) return;
+    loadCatalog(true);
+  }, [isCatalogRetrying, loadCatalog]);
 
   // 平滑進度條插值器 (即使本地端極速連線，也能順暢呈現 0% -> 100% 填滿過程)
   useEffect(() => {
@@ -230,9 +292,9 @@ export function App() {
     }
   }, [catalogLoadError, displayProgress, isCatalogReady, targetProgress]);
 
-  const isCatalogDisplayReady = isCatalogReady && !isLoadingCatalog;
-  const catalogLoadTitle = apiHealthStatus === 'waking' ? '資料服務喚醒中' : '歌庫資料準備中';
+  const catalogLoadTitle = catalogLoadError ? '歌庫資料需要重新載入' : apiHealthStatus === 'waking' ? '資料服務喚醒中' : '歌庫資料準備中';
   const catalogLoadMessage = catalogLoadError || (() => {
+    if (showCatalogRetryHint) return '資料仍在整理中。如果剛剛切換分頁、鎖屏或網路不穩，可以重新載入歌庫。';
     if (displayProgress >= 100) return '歌庫資料已準備完成，正在整理畫面。';
     if (catalogLoadStage === 'checking-cache') return '正在確認本機快取，若曾經載入過會更快完成。';
     if (catalogLoadStage === 'downloading-catalog') return '正在下載歌曲資料，完成後會自動套用你的搜尋。';
@@ -245,6 +307,7 @@ export function App() {
   const pendingSearchHint = filters.searchQuery.trim()
     ? `載入完成後會自動搜尋「${filters.searchQuery.trim()}」。`
     : '你可以先輸入歌名或歌手，資料完成後會自動套用。';
+  const shouldShowCatalogRetry = showCatalogRetryHint || Boolean(catalogLoadError);
 
   useEffect(() => {
     const wasReady = wasCatalogDisplayReadyRef.current;
@@ -807,10 +870,11 @@ export function App() {
               {catalogLoadMessage}
             </p>
 
-            {isMobile && (filters.searchQuery.trim() || showLongLoadHint) && (
+            {isMobile && (filters.searchQuery.trim() || showLongLoadHint || shouldShowCatalogRetry) && (
               <div className="loading-guidance" aria-live="polite">
                 {filters.searchQuery.trim() && <span>{pendingSearchHint}</span>}
                 {showLongLoadHint && <span>第一次載入完整歌庫可能較久，完成後下次會優先使用本機快取。</span>}
+                {shouldShowCatalogRetry && <span>重新載入只會更新歌庫資料，不會清空你目前輸入的搜尋條件。</span>}
               </div>
             )}
 
@@ -861,6 +925,18 @@ export function App() {
                 />
               ))}
             </div>
+
+            {shouldShowCatalogRetry && (
+              <button
+                type="button"
+                className="catalog-retry-button"
+                onClick={handleCatalogRetry}
+                disabled={isCatalogRetrying}
+              >
+                <RefreshCw size={16} />
+                {isCatalogRetrying ? '重新載入中' : '重新載入歌庫'}
+              </button>
+            )}
           </div>
         ) : catalogLoadError ? (
           <div className="error-state-panel" style={{
@@ -875,6 +951,15 @@ export function App() {
           }}>
             <h3 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', marginBottom: '8px' }}>歌庫資料暫時無法載入</h3>
             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{catalogLoadError}</p>
+            <button
+              type="button"
+              className="catalog-retry-button"
+              onClick={handleCatalogRetry}
+              disabled={isCatalogRetrying}
+            >
+              <RefreshCw size={16} />
+              {isCatalogRetrying ? '重新載入中' : '重新載入歌庫'}
+            </button>
           </div>
         ) : isCatalogReady && filteredSongs.length === 0 ? (
           <div className="empty-state-panel glass-panel" style={{
