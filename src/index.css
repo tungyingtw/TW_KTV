@@ -31,6 +31,7 @@
   --radius-lg: 20px;
   --radius-full: 9999px;
   --shadow-glow: 0 0 24px rgba(128, 82, 255, 0.28);
+  --mobile-sticky-offset: 150px;
 }
 
 /* 莫蘭迪日光/暖沙亮色模式 (Light Theme - Morandi Warm Oat Cream) */
@@ -7885,6 +7886,71 @@ header,
 [data-theme="light"] .taiwan-demo-ranking button:focus-visible,
 [data-theme="light"] .taiwan-demo-ranking button.is-active {
   background: color-mix(in srgb, #ffffff 88%, var(--accent-support) 5%) !important;
+}
+
+.app-results-region {
+  min-height: 56vh;
+}
+
+.loading-guidance {
+  display: grid;
+  gap: 8px;
+  margin: -10px 0 18px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.loading-guidance span {
+  border: 1px solid color-mix(in srgb, var(--border-color) 82%, var(--accent-support) 18%);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-card-hover) 76%, var(--accent-support) 6%);
+  padding: 8px 10px;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --mobile-sticky-offset: 156px;
+  }
+
+  .mobile-navbar {
+    min-height: 112px;
+    contain: layout paint;
+  }
+
+  .mobile-search-shell {
+    min-height: 126px;
+    scroll-margin-top: var(--mobile-sticky-offset);
+  }
+
+  .mobile-search-panel {
+    min-height: 118px;
+  }
+
+  .app-results-region {
+    min-height: 62vh;
+    scroll-margin-top: var(--mobile-sticky-offset) !important;
+  }
+
+  .loading-state-panel {
+    min-height: 340px !important;
+    margin-top: 18px !important;
+    padding: 48px 18px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  :root {
+    --mobile-sticky-offset: 164px;
+  }
+
+  .mobile-search-shell {
+    min-height: 136px;
+  }
+
+  .mobile-search-panel {
+    min-height: 126px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

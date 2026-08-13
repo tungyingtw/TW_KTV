@@ -175,7 +175,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             {isSearching ? (
               <>正在即時比對...</>
             ) : isCatalogLoading ? (
-              <>{isServerWaking ? '資料服務喚醒中' : isServerUnavailable ? '資料服務暫時未連線' : '歌庫準備中'}</>
+              <>{filters.searchQuery.trim() ? '資料載入完成後會自動搜尋' : isServerWaking ? '資料服務喚醒中' : isServerUnavailable ? '資料服務暫時未連線' : '歌庫準備中'}</>
             ) : filters.searchQuery.trim() ? (
               <>找到 <strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首</>
             ) : (

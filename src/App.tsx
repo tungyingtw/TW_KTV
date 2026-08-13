@@ -19,6 +19,7 @@ import { ToastNotification } from './components/ToastNotification';
 import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
 import { checkApiHealth, fetchFullCatalog } from './services/apiService';
+import type { CatalogLoadStage } from './services/apiService';
 import { fetchBrands } from './data/brands';
 import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
@@ -43,6 +44,7 @@ export function App() {
   const brandList = useBrands();
   const resultsRegionRef = useRef<HTMLElement>(null);
   const fuseIndexRef = useRef<{ songs: Song[]; fuse: Fuse<Song> } | null>(null);
+  const wasCatalogDisplayReadyRef = useRef(false);
   const latestSearchStateRef = useRef({
     query: '',
     resultCount: 0,
@@ -55,6 +57,8 @@ export function App() {
   const [apiHealthStatus, setApiHealthStatus] = useState<'checking' | 'waking' | 'online' | 'unavailable'>('checking');
   const [targetProgress, setTargetProgress] = useState<number>(0);
   const [displayProgress, setDisplayProgress] = useState<number>(0);
+  const [catalogLoadStage, setCatalogLoadStage] = useState<CatalogLoadStage>('checking-cache');
+  const [showLongLoadHint, setShowLongLoadHint] = useState<boolean>(false);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
   const [catalogLoadError, setCatalogLoadError] = useState<string | null>(null);
   const equalizerBars = useMemo(() => (
@@ -144,7 +148,11 @@ export function App() {
   // Load Full Expanded Catalog with IndexedDB 快取 & 串流 0%~100%
   useEffect(() => {
     fetchBrands();
-    fetchFullCatalog((pct) => setTargetProgress(Math.min(96, pct))).then(catalog => {
+    const longLoadTimer = window.setTimeout(() => setShowLongLoadHint(true), 5000);
+    fetchFullCatalog((pct, stage) => {
+      if (stage) setCatalogLoadStage(stage);
+      setTargetProgress(Math.min(96, pct));
+    }).then(catalog => {
       if (catalog && catalog.length > 0) {
         // 前台硬過濾防護牆 (Strict Sanitizer Guard)
         const sanitized = catalog.filter(s => {
@@ -157,12 +165,19 @@ export function App() {
         setAllSongs(sanitized);
         setIsCatalogReady(sanitized.length > 0);
       }
+      window.clearTimeout(longLoadTimer);
+      setCatalogLoadStage('ready');
+      setShowLongLoadHint(false);
       setTargetProgress(100);
     }).catch(() => {
+      window.clearTimeout(longLoadTimer);
+      setCatalogLoadStage('error');
+      setShowLongLoadHint(false);
       setIsCatalogReady(false);
       setCatalogLoadError('歌庫資料暫時無法載入。請稍候再試，或確認網路連線後重新整理。');
       setTargetProgress(100);
     });
+    return () => window.clearTimeout(longLoadTimer);
   }, []);
 
   useEffect(() => {
@@ -216,6 +231,38 @@ export function App() {
   }, [catalogLoadError, displayProgress, isCatalogReady, targetProgress]);
 
   const isCatalogDisplayReady = isCatalogReady && !isLoadingCatalog;
+  const catalogLoadTitle = apiHealthStatus === 'waking' ? '資料服務喚醒中' : '歌庫資料準備中';
+  const catalogLoadMessage = catalogLoadError || (() => {
+    if (displayProgress >= 100) return '歌庫資料已準備完成，正在整理畫面。';
+    if (catalogLoadStage === 'checking-cache') return '正在確認本機快取，若曾經載入過會更快完成。';
+    if (catalogLoadStage === 'downloading-catalog') return '正在下載歌曲資料，完成後會自動套用你的搜尋。';
+    if (catalogLoadStage === 'decoding-catalog') return '正在整理歌曲索引，讓歌名、歌手與導唱資訊可以正確查詢。';
+    if (catalogLoadStage === 'syncing-overrides') return '正在套用最新回報與資料修正。';
+    if (apiHealthStatus === 'waking') return '正在連線資料服務，完成後會自動顯示結果。';
+    if (apiHealthStatus === 'unavailable') return '資料服務暫時未連線，會先載入可用歌庫。';
+    return '正在整理歌曲收錄、導唱與 MV 標示。';
+  })();
+  const pendingSearchHint = filters.searchQuery.trim()
+    ? `載入完成後會自動搜尋「${filters.searchQuery.trim()}」。`
+    : '你可以先輸入歌名或歌手，資料完成後會自動套用。';
+
+  useEffect(() => {
+    const wasReady = wasCatalogDisplayReadyRef.current;
+    wasCatalogDisplayReadyRef.current = isCatalogDisplayReady;
+    if (!isMobile || wasReady || !isCatalogDisplayReady) return;
+
+    window.requestAnimationFrame(() => {
+      const resultsRegion = resultsRegionRef.current;
+      if (!resultsRegion) return;
+      const top = resultsRegion.getBoundingClientRect().top + window.scrollY;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+      const currentY = window.scrollY;
+      const isNearLoadingRegion = currentY > top - viewportHeight * 0.45 && currentY < top + viewportHeight * 1.35;
+      if (!isNearLoadingRegion) return;
+      const stickyOffset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--mobile-sticky-offset'), 10) || 150;
+      window.scrollTo({ top: Math.max(0, top - stickyOffset), behavior: 'smooth' });
+    });
+  }, [isCatalogDisplayReady, isMobile]);
 
   // Sync favorites to localStorage
   useEffect(() => {
@@ -726,7 +773,11 @@ export function App() {
       <AdBannerSlot slotType="in_feed" />
 
       {/* Main Content Area */}
-      <main ref={resultsRegionRef} style={{ flex: 1, paddingBottom: '60px', scrollMarginTop: isMobile ? '12px' : '24px' }}>
+      <main
+        ref={resultsRegionRef}
+        className="app-results-region"
+        style={{ flex: 1, paddingBottom: '60px', scrollMarginTop: isMobile ? 'var(--mobile-sticky-offset)' : '24px' }}
+      >
         {isLoadingCatalog || (!isCatalogReady && !catalogLoadError) ? (
           <div className="loading-state-panel" style={{
             textAlign: 'center',
@@ -737,7 +788,7 @@ export function App() {
             borderRadius: '20px',
             margin: '24px auto',
             maxWidth: '560px',
-            minHeight: isMobile ? '260px' : '280px',
+            minHeight: isMobile ? '340px' : '280px',
             border: '1px solid var(--border-color)',
             boxShadow: '0 18px 50px rgba(0,0,0,0.24)',
             opacity: isFadingOut ? 0 : 1,
@@ -750,19 +801,18 @@ export function App() {
             </div>
 
             <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '8px' }}>
-              {apiHealthStatus === 'waking' ? '資料服務喚醒中' : '歌庫資料準備中'}
+              {catalogLoadTitle}
             </h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
-              {catalogLoadError || (displayProgress >= 100
-                ? '歌庫資料已準備完成'
-                : apiHealthStatus === 'waking'
-                  ? '正在連線資料服務，完成後會自動顯示結果。'
-                  : apiHealthStatus === 'online'
-                    ? '正在整理最新回報與歌庫標示。'
-                    : apiHealthStatus === 'unavailable'
-                      ? '暫時無法連線資料服務，先載入可用的歌庫資料。'
-                  : '正在整理歌曲收錄、導唱與 MV 標示')}
+              {catalogLoadMessage}
             </p>
+
+            {isMobile && (filters.searchQuery.trim() || showLongLoadHint) && (
+              <div className="loading-guidance" aria-live="polite">
+                {filters.searchQuery.trim() && <span>{pendingSearchHint}</span>}
+                {showLongLoadHint && <span>第一次載入完整歌庫可能較久，完成後下次會優先使用本機快取。</span>}
+              </div>
+            )}
 
             {/* 進度條容器 */}
             <div className="loading-progress-track" style={{
