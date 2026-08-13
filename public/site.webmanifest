@@ -1,7 +1,7 @@
 {
   "name": "TYFunLab 台灣KTV歌曲查詢",
   "short_name": "TYFunLab",
-  "description": "查詢常見 KTV 系統的歌曲收錄、導唱與原版 MV 類型標示。",
+  "description": "查詢多家 KTV 平台歌曲收錄、導唱功能與原版 MV 類型標示。",
   "lang": "zh-TW",
   "start_url": "/",
   "scope": "/",
