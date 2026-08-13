@@ -47,6 +47,16 @@ export interface VisitRegionCorrectionResponse extends VisitRegionRecordResponse
   from_city_code: VisitRegionCode | null;
 }
 
+export type CatalogLoadStage =
+  | 'checking-cache'
+  | 'downloading-catalog'
+  | 'decoding-catalog'
+  | 'syncing-overrides'
+  | 'ready'
+  | 'error';
+
+export type CatalogLoadProgress = (percent: number, stage?: CatalogLoadStage) => void;
+
 async function parseVisitRegionApiResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : fallbackMessage);
@@ -152,13 +162,13 @@ export async function setCachedCatalog(catalog: Song[]): Promise<void> {
 const TIME_KEY = 'full_catalog_timestamp_v28';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小時快取效期 (避免重複浪費頻寬)
 
-export async function fetchFullCatalog(onProgress?: (percent: number) => void): Promise<Song[]> {
-  onProgress?.(5);
+export async function fetchFullCatalog(onProgress?: CatalogLoadProgress): Promise<Song[]> {
+  onProgress?.(5, 'checking-cache');
 
   // 1. 優先從本機 IndexedDB 快取讀取 (秒級 <50ms 載入)
   const cached = await getCachedCatalog();
   if (cached && cached.length > 0) {
-    onProgress?.(100);
+    onProgress?.(96, 'syncing-overrides');
     const lastFetch = localStorage.getItem(TIME_KEY);
     const now = Date.now();
     const isExpired = !lastFetch || (now - parseInt(lastFetch, 10) > CACHE_TTL_MS);
@@ -172,19 +182,24 @@ export async function fetchFullCatalog(onProgress?: (percent: number) => void): 
         }
       });
     }
-    return mergeCatalogOverrides(cached);
+    const merged = await mergeCatalogOverrides(cached);
+    onProgress?.(100, 'ready');
+    return merged;
   }
 
   // 2. 若無快取，開始真實 HTTP 二進位串流下載解密與進度計算
-  onProgress?.(10);
+  onProgress?.(10, 'downloading-catalog');
   const fresh = await fetchFreshCatalog(onProgress);
   if (fresh && fresh.length > 0) {
     setCachedCatalog(fresh);
     try { localStorage.setItem(TIME_KEY, String(Date.now())); } catch {}
-    return mergeCatalogOverrides(fresh);
+    onProgress?.(96, 'syncing-overrides');
+    const merged = await mergeCatalogOverrides(fresh);
+    onProgress?.(100, 'ready');
+    return merged;
   }
 
-  onProgress?.(100);
+  onProgress?.(100, 'error');
   throw new Error('正式歌庫載入失敗');
 }
 
@@ -217,16 +232,15 @@ async function fetchCatalogOverrides(): Promise<{ songs: Song[]; deletedIds: str
   }
 }
 
-async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promise<Song[] | null> {
+async function fetchFreshCatalog(onProgress?: CatalogLoadProgress): Promise<Song[] | null> {
   try {
     const baseUrl = import.meta.env.BASE_URL || './';
     const normalizedBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
     const catalogBytes = await fetchChunkedCatalog(normalizedBase, onProgress) || await fetchSingleCatalog(`${normalizedBase}songs_catalog.bin`, onProgress);
 
     if (catalogBytes && catalogBytes.length > 0) {
-      onProgress?.(95);
+      onProgress?.(95, 'decoding-catalog');
       const catalogData = await decodeCatalogBytes(catalogBytes);
-      onProgress?.(100);
 
       if (Array.isArray(catalogData) && catalogData.length > 0) {
         return catalogData;
@@ -297,7 +311,7 @@ async function decodeCatalogBytes(catalogBytes: Uint8Array): Promise<Song[] | nu
   });
 }
 
-async function fetchChunkedCatalog(baseUrl: string, onProgress?: (percent: number) => void): Promise<Uint8Array | null> {
+async function fetchChunkedCatalog(baseUrl: string, onProgress?: CatalogLoadProgress): Promise<Uint8Array | null> {
   try {
     const manifestResponse = await fetch(`${baseUrl}songs_catalog.manifest.json`, { cache: 'no-cache' });
     if (!manifestResponse.ok) return null;
@@ -316,7 +330,7 @@ async function fetchChunkedCatalog(baseUrl: string, onProgress?: (percent: numbe
       output.set(bytes, loadedBytes);
       loadedBytes += bytes.length;
       const pct = Math.min(92, Math.round(10 + (loadedBytes / totalBytes) * 82));
-      onProgress?.(pct);
+      onProgress?.(pct, 'downloading-catalog');
     }
     return loadedBytes === totalBytes ? output : output.slice(0, loadedBytes);
   } catch (err) {
@@ -325,7 +339,7 @@ async function fetchChunkedCatalog(baseUrl: string, onProgress?: (percent: numbe
   }
 }
 
-async function fetchSingleCatalog(catalogUrl: string, onProgress?: (percent: number) => void): Promise<Uint8Array | null> {
+async function fetchSingleCatalog(catalogUrl: string, onProgress?: CatalogLoadProgress): Promise<Uint8Array | null> {
   const response = await fetch(catalogUrl);
   if (!response.ok || !response.body) return null;
 
@@ -343,11 +357,11 @@ async function fetchSingleCatalog(catalogUrl: string, onProgress?: (percent: num
 
     if (totalBytes > 0) {
       const pct = Math.min(92, Math.round(10 + (loadedBytes / totalBytes) * 82));
-      onProgress?.(pct);
+      onProgress?.(pct, 'downloading-catalog');
     } else {
       // 估算進度（針對未回傳 content-length 之情況）
       const estPct = Math.min(90, Math.round(10 + 80 * (1 - Math.exp(-loadedBytes / 15000000))));
-      onProgress?.(estPct);
+      onProgress?.(estPct, 'downloading-catalog');
     }
   }
 
