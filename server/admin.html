@@ -841,9 +841,6 @@
         <textarea id="song-lyrics-snippet"></textarea>
       </div>
       <div>
-        <label><input id="song-mainland-viral" type="checkbox" style="width:auto;margin-right:6px;" />陸歌/大陸熱歌標記</label>
-      </div>
-      <div>
         <label><input id="song-niche" type="checkbox" style="width:auto;margin-right:6px;" />冷門歌標記</label>
       </div>
     </div>
@@ -2306,7 +2303,6 @@ async function openSongEditorFromReport(reportId) {
     releaseYear: snapshot.releaseYear || undefined,
     lyricsSnippet: snapshot.lyricsSnippet || report.lyricsSnippet || '',
     youtubeUrl: snapshot.youtubeUrl || report.youtubeUrl || '',
-    isMainlandViral: Boolean(snapshot.isMainlandViral),
     isNiche: Boolean(snapshot.isNiche),
     brands: { ...(snapshot.brands || {}) },
   };
@@ -2702,7 +2698,6 @@ async function openSongEditor(songIdValue = '') {
       releaseYear: undefined,
       lyricsSnippet: '',
       youtubeUrl: '',
-      isMainlandViral: false,
       isNiche: false,
       brands: {},
     };
@@ -2734,7 +2729,6 @@ function fillSongEditor(song) {
   document.getElementById('song-composer').value = song.composer || '';
   document.getElementById('song-youtube-url').value = song.youtubeUrl || '';
   document.getElementById('song-lyrics-snippet').value = song.lyricsSnippet || '';
-  document.getElementById('song-mainland-viral').checked = Boolean(song.isMainlandViral);
   document.getElementById('song-niche').checked = Boolean(song.isNiche);
 
   document.getElementById('song-brand-editor').innerHTML = getAdminBrands().map(([brandId, label]) => {
@@ -2786,7 +2780,6 @@ function collectSongEditorPayload() {
     composer: document.getElementById('song-composer').value.trim(),
     youtubeUrl: document.getElementById('song-youtube-url').value.trim(),
     lyricsSnippet: document.getElementById('song-lyrics-snippet').value.trim(),
-    isMainlandViral: document.getElementById('song-mainland-viral').checked,
     isNiche: document.getElementById('song-niche').checked,
     brands,
   };

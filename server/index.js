@@ -3126,10 +3126,8 @@ function sanitizeSongSnapshot(snapshot, fallback = {}) {
     zhuyin: sanitizeText(snapshot.zhuyin).slice(0, 120),
     pinyin: sanitizeText(snapshot.pinyin).slice(0, 120),
     releaseYear: cleanCatalogReleaseYear(snapshot.releaseYear),
-    popularRank: Number.isFinite(Number(snapshot.popularRank)) ? Number(snapshot.popularRank) : undefined,
     lyricsSnippet: sanitizeText(snapshot.lyricsSnippet).slice(0, 500) || undefined,
     youtubeUrl: sanitizeText(snapshot.youtubeUrl).slice(0, 500) || undefined,
-    isMainlandViral: Boolean(snapshot.isMainlandViral),
     isNiche: Boolean(snapshot.isNiche),
     brands,
   };
@@ -5127,10 +5125,8 @@ async function normalizeAdminSongPayload(body, existingSong = null) {
     zhuyin: cleanCatalogPhonetic(body.zhuyin || existingSong?.zhuyin),
     pinyin: cleanCatalogPhonetic(body.pinyin || existingSong?.pinyin),
     releaseYear: cleanCatalogReleaseYear(body.releaseYear || existingSong?.releaseYear),
-    popularRank: body.popularRank ? Number.parseInt(String(body.popularRank), 10) : existingSong?.popularRank,
     lyricsSnippet: String(body.lyricsSnippet || '').trim() || undefined,
     youtubeUrl: String(body.youtubeUrl || '').trim() || undefined,
-    isMainlandViral: Boolean(body.isMainlandViral),
     isNiche: Boolean(body.isNiche),
     brands,
   };

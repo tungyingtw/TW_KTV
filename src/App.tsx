@@ -85,7 +85,6 @@ export function App() {
       selectedTitleLength: 'all',
       onlyOfficialMv: false,
       onlyGuidedVocal: false,
-      onlyMainlandViral: false,
       onlyNicheSongs: false,
       viewMode: initialViewMode,
       sortBy: 'length',
@@ -138,7 +137,6 @@ export function App() {
     filters.selectedTitleLength,
     filters.onlyOfficialMv,
     filters.onlyGuidedVocal,
-    filters.onlyMainlandViral,
     filters.onlyNicheSongs,
     filters.sortBy,
   ]);
@@ -365,15 +363,14 @@ export function App() {
         return languageMap[songLang] || songLang;
       };
 
-      const isLanguageMatch = (songLang: string, selectedLangs: Language[], isMainlandViral?: boolean) => {
+      const isLanguageMatch = (songLang: string, selectedLangs: Language[]) => {
         if (selectedLangs.length === 0) return true;
         const normalizedSongLang = normalizeLanguage(songLang);
         return selectedLangs.some(sel => {
-          if (sel === '陸歌' && (songLang === '陸歌' || isMainlandViral)) return true;
           return normalizedSongLang === sel;
         });
       };
-      result = result.filter(song => isLanguageMatch(song.language, filters.selectedLanguages, song.isMainlandViral));
+      result = result.filter(song => isLanguageMatch(song.language, filters.selectedLanguages));
     }
 
     // 4. Character Count Filter
@@ -411,12 +408,7 @@ export function App() {
       });
     }
 
-    // 6.5 Mainland Viral Filter
-    if (filters.onlyMainlandViral) {
-      result = result.filter(song => song.isMainlandViral || song.language === '陸歌');
-    }
-
-    // 6.6 Niche Songs Filter
+    // 6.5 Niche Songs Filter
     if (filters.onlyNicheSongs) {
       result = result.filter(song => song.isNiche);
     }
@@ -432,8 +424,6 @@ export function App() {
         return a.title.localeCompare(b.title, 'zh-Hant-u-co-stroke');
       } else if (filters.sortBy === 'stroke') {
         return a.title.localeCompare(b.title, 'zh-Hant-u-co-stroke');
-      } else if (filters.sortBy === 'popular') {
-        return (a.popularRank || 999) - (b.popularRank || 999);
       } else {
         return a.title.localeCompare(b.title, 'zh-Hant');
       }
@@ -446,7 +436,6 @@ export function App() {
     filters.selectedTitleLength,
     filters.onlyOfficialMv,
     filters.onlyGuidedVocal,
-    filters.onlyMainlandViral,
     filters.onlyNicheSongs,
     filters.sortBy,
     debouncedSearchQuery,
@@ -844,7 +833,6 @@ export function App() {
                     selectedTitleLength: 'all',
                     onlyOfficialMv: false,
                     onlyGuidedVocal: false,
-                    onlyMainlandViral: false,
                     onlyNicheSongs: false,
                   }));
                   setDisplayedCount(40);

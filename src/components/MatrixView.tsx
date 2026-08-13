@@ -415,11 +415,6 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   <td style={{ padding: '9px 14px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     <div className="song-title-text" style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.96rem', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                       <span style={{ color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{song.title}</span>
-                      {song.isMainlandViral && (
-                        <span className="badge badge-mainland" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
-                          🔥 爆紅
-                        </span>
-                      )}
                       {song.isNiche && (
                         <span className="status-label" style={{
                           fontSize: '0.68rem',

@@ -1,15 +1,15 @@
 {
-  "version": "da91c4f87d67d3b5",
+  "version": "b6e62715d5181990",
   "format": "twktv-xor-bin",
   "mode": "single",
-  "totalBytes": 16197209,
-  "chunkSize": 16197209,
-  "sha256": "da91c4f87d67d3b51f9ba6395c4bab93bb86ec5472f75c0af41fd9418fbfda5c",
+  "totalBytes": 16164204,
+  "chunkSize": 16164204,
+  "sha256": "b6e62715d5181990d6dcbfce0cba77eab0e1d1b9f10fbb1aeec53e625f8ad7ac",
   "chunks": [
     {
       "file": "songs_catalog.bin",
-      "bytes": 16197209,
-      "sha256": "da91c4f87d67d3b51f9ba6395c4bab93bb86ec5472f75c0af41fd9418fbfda5c"
+      "bytes": 16164204,
+      "sha256": "b6e62715d5181990d6dcbfce0cba77eab0e1d1b9f10fbb1aeec53e625f8ad7ac"
     }
   ]
 }

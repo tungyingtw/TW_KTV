@@ -53,10 +53,8 @@ export interface Song {
   zhuyin?: string;
   pinyin?: string;
   releaseYear?: number;
-  popularRank?: number;
   lyricsSnippet?: string;
   youtubeUrl?: string;
-  isMainlandViral?: boolean;
   isNiche?: boolean; // 新增：是否為冷門/獨立/特定廠牌獨家歌曲
   brands: Record<BrandId, BrandSongStatus>;
 }
@@ -109,8 +107,7 @@ export interface FilterOptions {
   selectedTitleLength: TitleLengthFilter;
   onlyOfficialMv: boolean;
   onlyGuidedVocal: boolean;
-  onlyMainlandViral: boolean;
   onlyNicheSongs: boolean; // 僅看冷門/獨立私房對照歌曲
   viewMode: 'matrix' | 'cards';
-  sortBy: 'length' | 'stroke' | 'popular' | 'title';
+  sortBy: 'length' | 'stroke' | 'title';
 }
