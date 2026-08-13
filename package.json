@@ -7,6 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "node scripts/checkBrandMasking.js && node scripts/buildCatalogBin.js && tsc -b && vite build",
     "lint": "oxlint",
+    "qa:mobile-first-load": "node scripts/checkMobileFirstLoadQa.js",
     "preview": "vite preview",
     "server": "tsx server/index.js",
     "share": "npx localtunnel --port 5173"
