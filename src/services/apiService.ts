@@ -57,6 +57,10 @@ export type CatalogLoadStage =
 
 export type CatalogLoadProgress = (percent: number, stage?: CatalogLoadStage) => void;
 
+export interface FetchFullCatalogOptions {
+  forceRefresh?: boolean;
+}
+
 async function parseVisitRegionApiResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : fallbackMessage);
@@ -140,11 +144,33 @@ export async function getCachedCatalog(): Promise<Song[] | null> {
       const tx = db.transaction(STORE_NAME, 'readonly');
       const store = tx.objectStore(STORE_NAME);
       const req = store.get(KEY_NAME);
-      req.onsuccess = () => resolve(req.result || null);
+      req.onsuccess = () => {
+        if (!req.result) {
+          resolve(null);
+          return;
+        }
+        if (Array.isArray(req.result)) {
+          resolve(req.result);
+          return;
+        }
+        clearCachedCatalog();
+        resolve(null);
+      };
       req.onerror = () => resolve(null);
     });
   } catch {
     return null;
+  }
+}
+
+export async function clearCachedCatalog(): Promise<void> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).delete(KEY_NAME);
+    try { localStorage.removeItem(TIME_KEY); } catch {}
+  } catch (e) {
+    console.warn('[API Service] 清除 IndexedDB 快取失敗:', e);
   }
 }
 
@@ -162,11 +188,11 @@ export async function setCachedCatalog(catalog: Song[]): Promise<void> {
 const TIME_KEY = 'full_catalog_timestamp_v28';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小時快取效期 (避免重複浪費頻寬)
 
-export async function fetchFullCatalog(onProgress?: CatalogLoadProgress): Promise<Song[]> {
+export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options: FetchFullCatalogOptions = {}): Promise<Song[]> {
   onProgress?.(5, 'checking-cache');
 
   // 1. 優先從本機 IndexedDB 快取讀取 (秒級 <50ms 載入)
-  const cached = await getCachedCatalog();
+  const cached = options.forceRefresh ? null : await getCachedCatalog();
   if (cached && cached.length > 0) {
     onProgress?.(96, 'syncing-overrides');
     const lastFetch = localStorage.getItem(TIME_KEY);
