@@ -361,7 +361,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   </a>
                 ) : null}
 
-                {/* 回報錯誤小按鈕 */}
+                {/* 回報資料問題小按鈕 */}
                 <button
                   onClick={e => { e.stopPropagation(); setReportingSong(song); }}
                   title="回報資料問題"
@@ -383,7 +383,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   onMouseLeave={e => (e.currentTarget.style.color = '#64748b')}
                 >
                   <Flag size={12} />
-                  回報錯誤
+                  回報資料問題
                 </button>
               </div>
 
