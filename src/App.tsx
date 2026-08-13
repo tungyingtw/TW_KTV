@@ -217,6 +217,8 @@ export function App() {
     }
   }, [catalogLoadError, displayProgress, isCatalogReady, targetProgress]);
 
+  const isCatalogDisplayReady = isCatalogReady && !isLoadingCatalog;
+
   // Sync favorites to localStorage
   useEffect(() => {
     localStorage.setItem('ktv_favorites', JSON.stringify(favorites));
@@ -252,6 +254,7 @@ export function App() {
     brandList.forEach(b => {
       counts[b.id] = 0;
     });
+    if (!isCatalogDisplayReady) return counts;
 
     allSongs.forEach(song => {
       if (!song.brands) return;
@@ -262,10 +265,11 @@ export function App() {
       });
     });
     return counts;
-  }, [allSongs, brandList]);
+  }, [allSongs, brandList, isCatalogDisplayReady]);
 
   // Main Multi-Dimensional Filter Logic
   const filteredSongs = useMemo(() => {
+    if (!isCatalogDisplayReady) return [];
     let result = allSongs;
     const rawQuery = debouncedSearchQuery.trim();
 
@@ -448,6 +452,7 @@ export function App() {
     debouncedSearchQuery,
     getFuseIndex,
     allSongs,
+    isCatalogDisplayReady,
   ]);
 
   // Currently Paginated Songs
@@ -486,7 +491,7 @@ export function App() {
 
   const handleMobileSearchComplete = () => {
     if (!isMobile) return;
-    if (!isCatalogReady) {
+    if (!isCatalogDisplayReady) {
       showToast(apiHealthStatus === 'waking' ? '資料服務喚醒中，稍候自動顯示' : '歌庫準備中，請稍候');
       return;
     }
@@ -557,7 +562,7 @@ export function App() {
           查詢多家 KTV 平台的收錄狀態，並一起補完原版 MV 或伴唱帶類型、導唱與現場版本差異。
         </p>
         <div className="home-hero-metrics" aria-label="目前資料概況">
-          <span><strong>{isCatalogReady ? allSongs.length.toLocaleString() : '準備中'}</strong><em>歌曲</em></span>
+          <span><strong>{isCatalogDisplayReady ? allSongs.length.toLocaleString() : '準備中'}</strong><em>歌曲</em></span>
           <span><strong>{brandList.length.toLocaleString()}</strong><em>KTV 品牌</em></span>
           <span><strong>MV / 導唱</strong><em>對照</em></span>
         </div>
@@ -571,7 +576,7 @@ export function App() {
           onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
           resultCount={filteredSongs.length}
           isSearching={isSearching}
-          isCatalogLoading={!isCatalogReady}
+          isCatalogLoading={!isCatalogDisplayReady}
           isServerWaking={apiHealthStatus === 'waking'}
           isServerUnavailable={apiHealthStatus === 'unavailable'}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
@@ -584,7 +589,7 @@ export function App() {
           onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
           resultCount={filteredSongs.length}
           isSearching={isSearching}
-          isCatalogLoading={!isCatalogReady}
+          isCatalogLoading={!isCatalogDisplayReady}
           isServerWaking={apiHealthStatus === 'waking'}
           isServerUnavailable={apiHealthStatus === 'unavailable'}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
@@ -657,9 +662,9 @@ export function App() {
               brandFilterMode: prev.brandFilterMode === 'all_of_them' ? 'any' : 'all_of_them',
             }));
           }}
-          brandSongCounts={isCatalogReady ? brandSongCounts : undefined}
-          totalSongCount={isCatalogReady ? allSongs.length : undefined}
-          isCatalogLoading={!isCatalogReady}
+          brandSongCounts={isCatalogDisplayReady ? brandSongCounts : undefined}
+          totalSongCount={isCatalogDisplayReady ? allSongs.length : undefined}
+          isCatalogLoading={!isCatalogDisplayReady}
         />
       ) : (
         <BrandTabScroll
@@ -703,8 +708,8 @@ export function App() {
               brandFilterMode: prev.brandFilterMode === 'all_of_them' ? 'any' : 'all_of_them',
             }));
           }}
-          brandSongCounts={isCatalogReady ? brandSongCounts : undefined}
-          totalSongCount={isCatalogReady ? allSongs.length : undefined}
+          brandSongCounts={isCatalogDisplayReady ? brandSongCounts : undefined}
+          totalSongCount={isCatalogDisplayReady ? allSongs.length : undefined}
         />
       )}
 
