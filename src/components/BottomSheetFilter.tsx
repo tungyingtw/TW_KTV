@@ -49,7 +49,6 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
       selectedTitleLength: 'all',
       onlyOfficialMv: false,
       onlyGuidedVocal: false,
-      onlyMainlandViral: false,
       onlyNicheSongs: false,
       sortBy: 'length',
     }));
@@ -134,7 +133,6 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           <div className="bottom-sheet-grid bottom-sheet-grid-sort" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
             {[
               { id: 'length', label: '字數排序（預設）' },
-              { id: 'popular', label: '熱門程度' },
               { id: 'stroke', label: '首字筆劃' },
               { id: 'title', label: '注音與字典序' },
             ].map(item => (

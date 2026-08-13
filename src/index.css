@@ -4187,10 +4187,6 @@ body,
   color: var(--accent-support) !important;
 }
 
-.matrix-data-table .badge-mainland {
-  color: var(--accent-highlight) !important;
-}
-
 .search-input:focus,
 .mobile-search-input:focus,
 input:focus,
@@ -4764,7 +4760,6 @@ header,
   color: var(--accent-support) !important;
 }
 
-.matrix-data-table .badge-mainland,
 .loading-progress-fill {
   color: var(--accent-highlight) !important;
 }
