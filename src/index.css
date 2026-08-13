@@ -6830,56 +6830,70 @@ header,
   border-color: rgba(177, 207, 234, 0.22) !important;
 }
 
-.brand-vote-card .brand-vote-action.is-positive:not(.is-selected):hover,
-.brand-vote-card .brand-vote-action.is-guided:not(.is-selected):hover,
-.brand-vote-card .brand-vote-action.is-mv:not(.is-selected):hover {
+.brand-vote-card .brand-vote-action:not(.is-selected):hover {
   color: var(--text-primary) !important;
-  background: rgba(39, 214, 199, 0.08) !important;
-  border-color: rgba(39, 214, 199, 0.32) !important;
+  background: rgba(177, 207, 234, 0.08) !important;
+  border-color: rgba(177, 207, 234, 0.34) !important;
 }
 
-.brand-vote-card .brand-vote-action.is-negative:not(.is-selected):hover,
-.brand-vote-card .brand-vote-action.is-muted:not(.is-selected):hover,
-.brand-vote-card .brand-vote-action.is-edited:not(.is-selected):hover {
-  color: var(--text-primary) !important;
-  background: rgba(156, 175, 190, 0.1) !important;
-  border-color: rgba(156, 175, 190, 0.3) !important;
+.brand-vote-card .brand-vote-action.is-selected {
+  color: #f8fbff !important;
+  background: rgba(39, 214, 199, 0.13) !important;
+  border-color: rgba(39, 214, 199, 0.42) !important;
 }
 
-.brand-vote-card .brand-vote-action.is-positive.is-selected {
+.brand-vote-card .brand-vote-action.is-positive.is-selected span {
   color: #27d6c7 !important;
-  background: rgba(39, 214, 199, 0.14) !important;
-  border-color: rgba(39, 214, 199, 0.48) !important;
 }
 
-.brand-vote-card .brand-vote-action.is-negative.is-selected {
-  color: #ff7b99 !important;
-  background: rgba(255, 91, 126, 0.13) !important;
-  border-color: rgba(255, 91, 126, 0.42) !important;
+.brand-vote-card .brand-vote-action.is-negative.is-selected span {
+  color: #ff8aa4 !important;
 }
 
-.brand-vote-card .brand-vote-action.is-guided.is-selected {
+.brand-vote-card .brand-vote-action.is-guided.is-selected span {
   color: #c7a9ff !important;
-  background: rgba(167, 139, 250, 0.16) !important;
-  border-color: rgba(199, 169, 255, 0.42) !important;
 }
 
-.brand-vote-card .brand-vote-action.is-muted.is-selected {
+.brand-vote-card .brand-vote-action.is-muted.is-selected span {
   color: #b8c7d8 !important;
-  background: rgba(156, 175, 190, 0.13) !important;
-  border-color: rgba(156, 175, 190, 0.36) !important;
 }
 
-.brand-vote-card .brand-vote-action.is-mv.is-selected {
+.brand-vote-card .brand-vote-action.is-mv.is-selected span {
   color: #5ee7ff !important;
-  background: rgba(94, 231, 255, 0.14) !important;
-  border-color: rgba(94, 231, 255, 0.42) !important;
 }
 
-.brand-vote-card .brand-vote-action.is-edited.is-selected {
+.brand-vote-card .brand-vote-action.is-edited.is-selected span {
   color: #93c5fd !important;
-  background: rgba(96, 165, 250, 0.13) !important;
-  border-color: rgba(96, 165, 250, 0.36) !important;
+}
+
+.brand-vote-card .brand-vote-action.is-positive.is-selected em {
+  color: #062925 !important;
+  background: #5eead4 !important;
+}
+
+.brand-vote-card .brand-vote-action.is-negative.is-selected em {
+  color: #3b0713 !important;
+  background: #fda4af !important;
+}
+
+.brand-vote-card .brand-vote-action.is-guided.is-selected em {
+  color: #211044 !important;
+  background: #c4b5fd !important;
+}
+
+.brand-vote-card .brand-vote-action.is-muted.is-selected em {
+  color: #0f172a !important;
+  background: #cbd5e1 !important;
+}
+
+.brand-vote-card .brand-vote-action.is-mv.is-selected em {
+  color: #082f49 !important;
+  background: #7dd3fc !important;
+}
+
+.brand-vote-card .brand-vote-action.is-edited.is-selected em {
+  color: #172554 !important;
+  background: #bfdbfe !important;
 }
 
 .brand-vote-confidence {
@@ -6967,56 +6981,70 @@ header,
   border-color: rgba(15, 23, 42, 0.16) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-positive:not(.is-selected):hover,
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-guided:not(.is-selected):hover,
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-mv:not(.is-selected):hover {
-  color: #0f766e !important;
-  background: rgba(13, 148, 136, 0.07) !important;
-  border-color: rgba(13, 148, 136, 0.28) !important;
+[data-theme="light"] .brand-vote-card .brand-vote-action:not(.is-selected):hover {
+  color: #0f172a !important;
+  background: rgba(15, 23, 42, 0.035) !important;
+  border-color: rgba(15, 23, 42, 0.24) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-negative:not(.is-selected):hover,
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-muted:not(.is-selected):hover,
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-edited:not(.is-selected):hover {
-  color: #334155 !important;
-  background: rgba(100, 116, 139, 0.07) !important;
-  border-color: rgba(100, 116, 139, 0.24) !important;
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-selected {
+  color: #0f172a !important;
+  background: rgba(0, 139, 131, 0.085) !important;
+  border-color: rgba(0, 139, 131, 0.3) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-positive.is-selected {
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-positive.is-selected span {
   color: #008b83 !important;
-  background: rgba(0, 139, 131, 0.1) !important;
-  border-color: rgba(0, 139, 131, 0.32) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-negative.is-selected {
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-negative.is-selected span {
   color: #be123c !important;
-  background: rgba(244, 63, 94, 0.09) !important;
-  border-color: rgba(244, 63, 94, 0.28) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-guided.is-selected {
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-guided.is-selected span {
   color: #6d4cff !important;
-  background: rgba(109, 76, 255, 0.1) !important;
-  border-color: rgba(109, 76, 255, 0.3) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-muted.is-selected {
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-muted.is-selected span {
   color: #475569 !important;
-  background: rgba(100, 116, 139, 0.09) !important;
-  border-color: rgba(100, 116, 139, 0.24) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-mv.is-selected {
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-mv.is-selected span {
   color: #0284c7 !important;
-  background: rgba(2, 132, 199, 0.1) !important;
-  border-color: rgba(2, 132, 199, 0.3) !important;
 }
 
-[data-theme="light"] .brand-vote-card .brand-vote-action.is-edited.is-selected {
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-edited.is-selected span {
   color: #2563eb !important;
-  background: rgba(37, 99, 235, 0.08) !important;
-  border-color: rgba(37, 99, 235, 0.24) !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-positive.is-selected em {
+  color: #064e3b !important;
+  background: rgba(45, 212, 191, 0.28) !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-negative.is-selected em {
+  color: #9f1239 !important;
+  background: rgba(251, 113, 133, 0.22) !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-guided.is-selected em {
+  color: #5b21b6 !important;
+  background: rgba(167, 139, 250, 0.26) !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-muted.is-selected em {
+  color: #334155 !important;
+  background: rgba(148, 163, 184, 0.24) !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-mv.is-selected em {
+  color: #075985 !important;
+  background: rgba(56, 189, 248, 0.24) !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-action.is-edited.is-selected em {
+  color: #1d4ed8 !important;
+  background: rgba(96, 165, 250, 0.2) !important;
 }
 
 @media (max-width: 640px) {
