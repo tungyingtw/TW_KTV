@@ -105,14 +105,14 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
           <Disc size={36} color="var(--text-muted)" style={{ marginBottom: '12px' }} />
           
           <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary, #fff)', fontWeight: 800 }}>
-            {isSingleBrand ? `📍 【${currentBrandInfo?.name}】目前尚無資料` : '未找到符合條件的歌曲'}
+            {isSingleBrand ? `【${currentBrandInfo?.name}】目前尚無資料` : '未找到符合條件的歌曲'}
           </h3>
 
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted, #94a3b8)', marginTop: '8px', maxWidth: '560px', margin: '8px auto 20px', lineHeight: 1.6 }}>
             {isSingleBrand ? (
               <>
-                資料庫中暫無【{currentBrandInfo?.shortName}】的驗證收錄對照記錄。<br />
-                實體包廂多採用雲端對應系統（建議可先參考 Sing○ / 享○馨 收錄狀態）。
+                目前尚無【{currentBrandInfo?.shortName}】的已確認收錄資料。<br />
+                可先參考其他 KTV 門市或伴唱品牌的收錄狀態，或提供現場線索協助補充。
               </>
             ) : (
               '嘗試更換關鍵字或取消過濾條件。'
@@ -139,7 +139,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               }}
             >
               <Flag size={16} />
-              <span>協助提供 / 回報【{currentBrandInfo?.shortName}】收錄狀態</span>
+              <span>提供【{currentBrandInfo?.shortName}】收錄線索</span>
             </button>
           )}
           <div style={{ marginTop: '20px' }}>
@@ -356,7 +356,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       width: isSingleBrand ? '360px' : (isFewBrands ? '180px' : '90px'),
                     }}
                   >
-                    <span className="brand-column-label">{isSingleBrand ? `【${b.shortName}】收錄狀態與詳細` : (isMultiHighlighted ? `✓ ${b.shortName}` : b.shortName)}</span>
+                    <span className="brand-column-label">{isSingleBrand ? `【${b.shortName}】收錄狀態與詳細` : b.shortName}</span>
                   </th>
                 );
               })}

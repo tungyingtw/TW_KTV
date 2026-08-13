@@ -13,7 +13,7 @@ interface ReportModalProps {
 const ISSUE_OPTIONS: { value: IssueType; label: string }[] = [
   { value: 'no_song',    label: '實際上沒有這首歌（系統誤標為收錄）' },
   { value: 'has_song',   label: '實際上有這首歌（系統誤標為未收錄）' },
-  { value: 'wrong_info', label: '歌名 / 歌手 / 收錄狀態有誤' },
+  { value: 'wrong_info', label: '歌名、歌手或收錄狀態有誤' },
   { value: 'other',      label: '其他問題' },
 ];
 
@@ -27,7 +27,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  // 支援 Esc 鍵優先關閉此二級彈窗
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -113,7 +112,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
             <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>已收到您的回報</div>
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
-              感謝協助校對資料。我們會完成確認後更新網站內容。
+              感謝提供現場線索。我們會完成確認後更新網站內容。
             </div>
           </div>
         ) : (
@@ -122,10 +121,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               <AlertTriangle size={20} color="currentColor" />
               <div>
                 <div style={{ fontWeight: 700, color: 'var(--text-primary, #fff)', fontSize: '1.05rem' }}>
-                  回報歌曲資料異常
+                  回報歌曲資料問題
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#f472b6', marginTop: '2px', fontWeight: 600 }}>
-                  《{song.title}》— {song.artist}
+                  《{song.title}》／{song.artist}
                 </div>
               </div>
             </div>
@@ -180,7 +179,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                     cursor: 'pointer',
                   }}
                 >
-                  <option value="" style={{ background: 'var(--bg-card, #1e293b)' }}>── 請選擇廠牌 ──</option>
+                  <option value="" style={{ background: 'var(--bg-card, #1e293b)' }}>請選擇廠牌</option>
                   {brandList.map(b => (
                     <option key={b.id} value={b.id} style={{ background: 'var(--bg-card, #1e293b)' }}>
                       {b.name}
@@ -224,7 +223,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 value={helperNickname}
                 onChange={e => setHelperNickname(e.target.value)}
                 maxLength={24}
-                placeholder="方便管理者辨識協助者，處理後會清除"
+                placeholder="方便管理者辨識協助者，處理完成後會清除"
                 style={{
                   width: '100%',
                   background: 'var(--bg-glass, rgba(255,255,255,0.04))',
@@ -275,7 +274,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               }}
             >
               <Send size={16} />
-              <span>{isSubmitting ? '送出中...' : '送出資料修正回報'}</span>
+              <span>{isSubmitting ? '送出中...' : '送出資料問題回報'}</span>
             </button>
           </>
         )}

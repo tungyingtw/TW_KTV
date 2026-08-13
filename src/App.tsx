@@ -588,9 +588,9 @@ export function App() {
       {showCollabNotice && (
         <section className="collab-notice" aria-label="協作提示">
           <div className="collab-notice-copy">
-            <h2>一起校對現場資訊</h2>
+            <h2>一起補充現場資訊</h2>
             <p>
-              KTV 收錄、導唱與 MV 類型常需要現場確認；若發現缺漏或資料不對，可使用「提供建議」或歌曲內的「回報」功能補充線索。
+              KTV 收錄、導唱與 MV 類型常需要現場確認；若發現缺漏或資料不對，可使用「提供建議」或歌曲內的「回報」功能留下線索。
             </p>
           </div>
           <button
@@ -738,7 +738,7 @@ export function App() {
                 : apiHealthStatus === 'waking'
                   ? '正在連線資料服務，完成後會自動顯示結果。'
                   : apiHealthStatus === 'online'
-                    ? '正在套用最新回報與歌庫標示。'
+                    ? '正在整理最新回報與歌庫標示。'
                     : apiHealthStatus === 'unavailable'
                       ? '暫時無法連線資料服務，先載入可用的歌庫資料。'
                   : '正在比對歌曲收錄、導唱與 MV 標示')}
@@ -876,7 +876,7 @@ export function App() {
               className="btn-primary"
               style={{ padding: '12px 28px', fontSize: '0.95rem' }}
             >
-              <span>載入更多歌曲 (已顯示 {paginatedSongs.length} / {filteredSongs.length} 首)</span>
+              <span>顯示更多歌曲 (目前 {paginatedSongs.length} / {filteredSongs.length} 首)</span>
               <ChevronDown size={18} />
             </button>
           </div>
@@ -1051,7 +1051,7 @@ export function App() {
               <Sparkles size={14} color="#10b981" /> 原版MV標示
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Music size={14} color="#ec4899" /> 導唱功能對照
+              <Music size={14} color="#ec4899" /> 導唱功能查詢
             </span>
           </div>
         </div>

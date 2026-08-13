@@ -330,10 +330,9 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
       paddingTop: '8px',
       borderTop: '1px dashed rgba(255,255,255,0.08)',
     }}>
-      {/* 列一：收錄對照 (正名) */}
       <div className="brand-vote-row brand-vote-row-availability" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
         <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0 }}>
-          收錄對照
+          收錄狀態
         </span>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
@@ -377,7 +376,6 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
         </div>
       </div>
 
-      {/* 列二：導唱功能 */}
       <div className="brand-vote-row brand-vote-row-guided" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
         <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0 }}>
           導唱功能
@@ -424,7 +422,6 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
         </div>
       </div>
 
-      {/* 列三：MV 類型 (Feature Flag 控制) */}
       {ENABLE_MV_VOTE && (
         <div className="brand-vote-row brand-vote-row-mv" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
           <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, flexShrink: 0 }}>
@@ -473,7 +470,6 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
         </div>
       )}
 
-      {/* 下拉細項數據按鈕 */}
       <button
         className="brand-vote-breakdown-toggle"
         onClick={e => { e.stopPropagation(); setShowBreakdown(prev => !prev); }}
@@ -498,7 +494,6 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
         <ChevronDown size={12} style={{ transform: showBreakdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
       </button>
 
-      {/* 展開後的社群統計 */}
       {showBreakdown && (
         <div className="brand-vote-breakdown" style={{
           background: 'rgba(15, 23, 42, 0.65)',
