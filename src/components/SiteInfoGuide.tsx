@@ -61,7 +61,7 @@ export const SiteInfoGuide: React.FC = () => {
   return (
     <section
       className="site-info-guide"
-      aria-label="全台 KTV 歌曲對照與歡唱知識指南"
+      aria-label="全台 KTV 歌曲查詢與歡唱知識指南"
       style={{
         width: '100%',
         maxWidth: '1400px',
@@ -121,7 +121,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-primary, #f8fafc)',
                 }}
               >
-                全台 KTV 歌曲對照與歡唱知識指南
+                全台 KTV 歌曲查詢與歡唱知識指南
               </h2>
               <p
                 style={{
@@ -130,7 +130,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                整理多家 KTV 平台與伴唱系統的收錄對照、導唱標示與歡唱前參考資訊
+                整理多家 KTV 平台與伴唱系統的收錄狀態、導唱標示與歡唱前參考資訊
               </p>
             </div>
           </div>
@@ -164,10 +164,8 @@ export const SiteInfoGuide: React.FC = () => {
           </button>
         </div>
 
-        {/* Expandable Content */}
         {isExpanded && (
           <div>
-            {/* Top Navigation Tabs (無圖示、一律保持純文字風格對齊) */}
             <div
               style={{
                 display: 'flex',
@@ -194,7 +192,7 @@ export const SiteInfoGuide: React.FC = () => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                廠牌收錄對照
+                廠牌收錄查詢
               </button>
 
               <button
@@ -287,7 +285,7 @@ export const SiteInfoGuide: React.FC = () => {
             >
               {[
                 { href: './how-to-use.html', label: '使用教學', desc: '搜尋、篩選與歌單整理方式' },
-                { href: './data-source.html', label: '資料來源', desc: '公開資訊、回報與人工校對' },
+                { href: './data-source.html', label: '資料來源', desc: '公開資訊、使用者回報與人工確認' },
                 { href: './ktv-audio-types.html', label: '版本說明', desc: '導唱、伴奏與 MV 標示差異' },
                 { href: './community-verification.html', label: '社群驗證', desc: '收錄、原版 MV 與導唱投票說明' },
                 { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型差異', desc: '原版 MV、伴唱畫面與剪輯 MV 分類' },
@@ -315,7 +313,6 @@ export const SiteInfoGuide: React.FC = () => {
               ))}
             </div>
 
-            {/* Tab 1: Overview */}
             {activeTab === 'overview' && (
               <div style={{ fontSize: '0.92rem', lineHeight: 1.8 }}>
                   <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px', alignItems: 'start' }}>
@@ -329,7 +326,7 @@ export const SiteInfoGuide: React.FC = () => {
                     全台連鎖門市與自助式伴唱系統採用的曲庫與影音版本各不相同，主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
                   </p>
                   <p style={{ margin: 0 }}>
-                    本網站透過大眾共識校對與數據彙整，為歌友提供動態擴充的跨廠牌門市收錄對照，幫助您在歡唱前快速掌握現場是否有收錄該曲目。
+                    本網站透過使用者回報與資料彙整，為歌友提供動態擴充的跨廠牌門市收錄查詢，幫助您在歡唱前快速掌握現場是否可能收錄該曲目。
                   </p>
                   <p style={{ margin: 0 }}>
                     KTV 現場設備會因門市、包廂機型、曲庫更新批次與授權範圍不同而有差異。公開資料通常只能回答大方向，真正能補齊「現場是否點得到、畫面是否接近原版 MV、是否能開導唱」的，是實際到店使用者的回報與投票。
@@ -362,17 +359,16 @@ export const SiteInfoGuide: React.FC = () => {
               </div>
             )}
 
-            {/* Tab 2: How to Use (系統操作指引與教學) */}
             {activeTab === 'how_to_use' && (
               <>
               <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
                     <Search size={18} />
-                    <span>1. 快速搜尋與門市對照</span>
+                    <span>1. 快速搜尋與門市查詢</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌曲辨識線索</strong>，系統將自動即時比對多家 KTV 門市與伴唱系統之收錄狀態。您亦可點擊頂部廠牌頁籤快速篩選特定門市或伴唱機系統查看收錄狀況。
+                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌曲辨識線索</strong>，系統會比對多家 KTV 門市與伴唱系統之收錄狀態。您亦可點擊頂部廠牌頁籤快速篩選特定門市或伴唱機系統查看收錄狀況。
                   </p>
                 </div>
 
@@ -402,7 +398,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>4. 社群投票與資料回報</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    找不到欲點唱的歌曲？可透過「提供建議」送出歌曲線索。若在門市現場發現狀況有誤，亦可在歌曲詳情中透過「收錄對照、導唱功能、MV 類型」進行即時投票協助校對。
+                    找不到欲點唱的歌曲？可透過「提供建議」送出歌曲線索。若在門市現場發現狀況有誤，亦可在歌曲詳情中透過「收錄狀態、導唱功能、MV 類型」投票或回報，協助後續人工確認。
                   </p>
                 </div>
               </div>
@@ -422,10 +418,8 @@ export const SiteInfoGuide: React.FC = () => {
               </>
             )}
 
-            {/* Tab 3: Articles (Knowledge Hub) */}
             {activeTab === 'articles' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Article Sub-selector */}
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {articles.map((art, idx) => {
                     const isSelected = activeArticleIndex === idx;
@@ -451,7 +445,6 @@ export const SiteInfoGuide: React.FC = () => {
                   })}
                 </div>
 
-                {/* Active Article Detail */}
                 {articles[activeArticleIndex] && (
                   <article
                     className="site-info-panel"
@@ -502,7 +495,6 @@ export const SiteInfoGuide: React.FC = () => {
               </div>
             )}
 
-            {/* Tab 4: FAQ */}
             {activeTab === 'faq' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem', lineHeight: 1.65 }}>
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
@@ -543,7 +535,6 @@ export const SiteInfoGuide: React.FC = () => {
               </div>
             )}
 
-            {/* Column 4: Disclaimer Summary */}
             <div
               style={{
                 marginTop: '20px',
@@ -558,7 +549,7 @@ export const SiteInfoGuide: React.FC = () => {
             >
               <ShieldAlert size={18} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <strong>客觀對照與版權免責</strong>：本網站為民間獨立開發之非官方歌曲索引對照庫，非任何 KTV 連鎖門市、伴唱系統或伴唱機製造商之官方網站。網站內記載之品牌與商標權均歸原註冊公司所有；影音連結均引用第三方公開平台（如 YouTube），本站不儲存任何音訊影片檔案。門市實體收錄狀態請以各門市現場點歌機器為準。
+                <strong>客觀查詢與版權免責</strong>：本網站為民間獨立開發之非官方歌曲索引查詢庫，非任何 KTV 連鎖門市、伴唱系統或伴唱機製造商之官方網站。網站內記載之品牌與商標權均歸原註冊公司所有；影音連結均引用第三方公開平台（如 YouTube），本站不儲存任何音訊影片檔案。門市實體收錄狀態請以各門市現場點歌機器為準。
               </div>
             </div>
           </div>
