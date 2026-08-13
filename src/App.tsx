@@ -507,6 +507,26 @@ export function App() {
     }, settleDelay);
   };
 
+  const showCatalogBusyToast = () => {
+    showToast(apiHealthStatus === 'waking' ? '資料服務喚醒中，稍候自動顯示' : '歌庫準備中，請稍候');
+  };
+
+  const handleOpenMobileFilters = () => {
+    if (!isCatalogDisplayReady) {
+      showCatalogBusyToast();
+      return;
+    }
+    setIsMobileFilterOpen(true);
+  };
+
+  const handleOpenSuggestSong = () => {
+    if (!isCatalogDisplayReady) {
+      showCatalogBusyToast();
+      return;
+    }
+    setIsSuggestModalOpen(true);
+  };
+
   // Favorite Songs list objects
   const favoriteSongObjects = useMemo(() => {
     return allSongs.filter(s => favorites.includes(s.id));
@@ -528,7 +548,7 @@ export function App() {
           setFilters={setFilters}
           favoriteCount={favorites.length}
           onOpenFavorites={() => setIsFavoritesOpen(true)}
-          onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
+          onOpenSuggestSong={handleOpenSuggestSong}
         />
       ) : (
         <Navbar
@@ -562,13 +582,13 @@ export function App() {
         <MobileSearchBar
           filters={filters}
           setFilters={setFilters}
-          onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
+          onOpenMobileFilters={handleOpenMobileFilters}
           resultCount={filteredSongs.length}
           isSearching={isSearching}
           isCatalogLoading={!isCatalogDisplayReady}
           isServerWaking={apiHealthStatus === 'waking'}
           isServerUnavailable={apiHealthStatus === 'unavailable'}
-          onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
+          onOpenSuggestSong={handleOpenSuggestSong}
           onSearchComplete={handleMobileSearchComplete}
         />
       ) : (
