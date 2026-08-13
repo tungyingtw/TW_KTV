@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle, Sun, Moon } from 'lucide-react';
+import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle } from 'lucide-react';
 import type { FilterOptions } from '../types/ktv';
 import { formatCompactZhNumber } from '../utils/stringUtils';
 import { getKtvVisitorId } from '../services/apiService';
@@ -158,12 +158,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="nav-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           {/* Light / Dark Mode Toggle Button */}
           <button
+            type="button"
             onClick={toggleTheme}
-            className="nav-action-link"
-            title={theme === 'dark' ? '切換至莫蘭迪日光/亮色模式' : '切換至微光夜間模式'}
+            className="theme-switch"
+            title={theme === 'dark' ? '切換至日光模式' : '切換至夜間模式'}
+            aria-label={theme === 'dark' ? '切換至日光模式' : '切換至夜間模式'}
           >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            <span>{theme === 'dark' ? '日光' : '夜間'}</span>
+            <span className="theme-switch-thumb" aria-hidden="true" />
+            <span className="theme-switch-label is-light">日</span>
+            <span className="theme-switch-label is-dark">夜</span>
           </button>
 
           {/* Suggest Addition Button */}
