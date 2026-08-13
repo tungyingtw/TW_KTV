@@ -124,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <div className="navbar-brand-copy">
             <h1 className="navbar-title">
-              TYFunLab KTV歌曲查詢
+              TYFunLab 台灣KTV歌曲查詢
             </h1>
 
             <div 

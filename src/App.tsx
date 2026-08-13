@@ -542,18 +542,18 @@ export function App() {
 
       <section className="home-hero" aria-labelledby="home-hero-title">
         <div className="home-hero-kicker">
-          <span>歌友共同校對的 KTV 現場資料</span>
+          <span>歌友共同補充的 KTV 現場資訊</span>
         </div>
         <h1 id="home-hero-title" className="home-hero-title">
-          一起確認 KTV 現場到底有沒有這首歌
+          查詢 KTV 現場收錄、導唱與 MV 資訊
         </h1>
         <p className="home-hero-copy">
-          查詢多家 KTV 平台的收錄狀態，並一起補完原版 MV 或伴唱帶類型、導唱與現場版本差異。
+          搜尋歌曲或歌手，快速查看各 KTV 平台收錄狀態、導唱功能與 MV 類型標示。
         </p>
         <div className="home-hero-metrics" aria-label="目前資料概況">
           <span><strong>{isCatalogDisplayReady ? allSongs.length.toLocaleString() : '準備中'}</strong><em>歌曲</em></span>
           <span><strong>{brandList.length.toLocaleString()}</strong><em>KTV 品牌</em></span>
-          <span><strong>MV / 導唱</strong><em>對照</em></span>
+          <span><strong>MV / 導唱</strong><em>查詢</em></span>
         </div>
       </section>
 
