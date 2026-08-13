@@ -225,28 +225,7 @@ async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promis
 
     if (catalogBytes && catalogBytes.length > 0) {
       onProgress?.(95);
-
-      // 驗證 Magic Header
-      let isHeaderMatch = true;
-      for (let i = 0; i < MAGIC_HEADER.length; i++) {
-        if (catalogBytes[i] !== MAGIC_HEADER[i]) {
-          isHeaderMatch = false;
-          break;
-        }
-      }
-
-      const payloadOffset = isHeaderMatch ? MAGIC_HEADER.length : 0;
-      const payloadLength = catalogBytes.length - payloadOffset;
-      const decodedBytes = new Uint8Array(payloadLength);
-
-      // 記憶體中 Byte 解混淆 (In-Memory De-obfuscation)
-      for (let i = 0; i < payloadLength; i++) {
-        const keyByte = XOR_KEY[i % XOR_KEY.length];
-        decodedBytes[i] = catalogBytes[payloadOffset + i] ^ keyByte;
-      }
-
-      const text = new TextDecoder('utf-8').decode(decodedBytes);
-      const catalogData = JSON.parse(text);
+      const catalogData = await decodeCatalogBytes(catalogBytes);
       onProgress?.(100);
 
       if (Array.isArray(catalogData) && catalogData.length > 0) {
@@ -257,6 +236,65 @@ async function fetchFreshCatalog(onProgress?: (percent: number) => void): Promis
     console.warn('[API Service] 串流下載或解密 static catalog BIN 失敗:', err);
   }
   return null;
+}
+
+function decodeCatalogBytesSync(catalogBytes: Uint8Array): Song[] | null {
+  let isHeaderMatch = true;
+  for (let i = 0; i < MAGIC_HEADER.length; i++) {
+    if (catalogBytes[i] !== MAGIC_HEADER[i]) {
+      isHeaderMatch = false;
+      break;
+    }
+  }
+
+  const payloadOffset = isHeaderMatch ? MAGIC_HEADER.length : 0;
+  const payloadLength = catalogBytes.length - payloadOffset;
+  const decodedBytes = new Uint8Array(payloadLength);
+
+  for (let i = 0; i < payloadLength; i++) {
+    decodedBytes[i] = catalogBytes[payloadOffset + i] ^ XOR_KEY[i % XOR_KEY.length];
+  }
+
+  const catalogData = JSON.parse(new TextDecoder('utf-8').decode(decodedBytes));
+  return Array.isArray(catalogData) && catalogData.length > 0 ? catalogData : null;
+}
+
+async function decodeCatalogBytes(catalogBytes: Uint8Array): Promise<Song[] | null> {
+  if (typeof Worker === 'undefined') return decodeCatalogBytesSync(catalogBytes);
+
+  return new Promise((resolve) => {
+    let worker: Worker;
+    try {
+      worker = new Worker(new URL('../workers/catalogDecodeWorker.ts', import.meta.url), { type: 'module' });
+    } catch {
+      resolve(decodeCatalogBytesSync(catalogBytes));
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      worker.terminate();
+      resolve(decodeCatalogBytesSync(catalogBytes));
+    }, 30000);
+
+    worker.onmessage = (event: MessageEvent<{ ok: boolean; catalog?: Song[] | null; error?: string }>) => {
+      window.clearTimeout(timer);
+      worker.terminate();
+      if (event.data.ok) resolve(event.data.catalog || null);
+      else {
+        console.warn('[API Service] Worker 解碼歌庫失敗，改用主執行緒備援:', event.data.error);
+        resolve(decodeCatalogBytesSync(catalogBytes));
+      }
+    };
+
+    worker.onerror = () => {
+      window.clearTimeout(timer);
+      worker.terminate();
+      resolve(decodeCatalogBytesSync(catalogBytes));
+    };
+
+    const transferBytes = catalogBytes.slice();
+    worker.postMessage(transferBytes, [transferBytes.buffer]);
+  });
 }
 
 async function fetchChunkedCatalog(baseUrl: string, onProgress?: (percent: number) => void): Promise<Uint8Array | null> {
