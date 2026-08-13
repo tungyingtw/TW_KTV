@@ -6487,6 +6487,8 @@ header,
 .brand-vote-overview {
   display: grid !important;
   gap: 8px !important;
+  padding: 10px 0 !important;
+  border-bottom: 1px solid rgba(177, 207, 234, 0.12) !important;
 }
 
 .brand-vote-overview-head {
@@ -6529,6 +6531,46 @@ header,
   border-radius: var(--radius-sm) !important;
   color: var(--status-available-color) !important;
   background: color-mix(in srgb, currentColor 11%, transparent) !important;
+  cursor: help !important;
+  transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease !important;
+}
+
+.brand-vote-state-mark:hover,
+.brand-vote-state-mark:focus-visible {
+  border-color: currentColor !important;
+  background: color-mix(in srgb, currentColor 16%, transparent) !important;
+  outline: none !important;
+  transform: translateY(-1px) !important;
+}
+
+.brand-vote-state-tooltip {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  right: 0 !important;
+  z-index: 3 !important;
+  width: max-content !important;
+  max-width: 180px !important;
+  padding: 6px 8px !important;
+  border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent) !important;
+  border-radius: 6px !important;
+  color: var(--text-secondary) !important;
+  background: #0b1421 !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-3px) !important;
+  transition: opacity 0.14s ease, transform 0.14s ease !important;
+  white-space: normal !important;
+}
+
+.brand-vote-state-mark:hover .brand-vote-state-tooltip,
+.brand-vote-state-mark:focus-visible .brand-vote-state-tooltip,
+.brand-vote-state-mark:active .brand-vote-state-tooltip {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
 
 .brand-vote-card.is-leanOk .brand-vote-state-mark {
@@ -6637,12 +6679,12 @@ header,
   min-height: 34px !important;
   margin: 0 !important;
   padding: 6px 8px 6px 10px !important;
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 38%, var(--border-color)) !important;
+  border: 1px solid rgba(143, 129, 255, 0.38) !important;
   border-radius: var(--radius-sm) !important;
-  color: var(--accent-purple) !important;
+  color: #e2dcff !important;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 15%, transparent), transparent 72%),
-    color-mix(in srgb, var(--bg-card-hover) 48%, transparent) !important;
+    linear-gradient(90deg, rgba(143, 129, 255, 0.18), rgba(75, 98, 255, 0.07)),
+    color-mix(in srgb, var(--bg-card-hover) 42%, transparent) !important;
   font-size: 0.74rem !important;
   font-weight: 850 !important;
   cursor: pointer !important;
@@ -6652,10 +6694,10 @@ header,
 .brand-vote-card .brand-vote-breakdown-toggle:hover,
 .brand-vote-card .brand-vote-breakdown-toggle:focus-visible {
   color: var(--text-primary) !important;
-  border-color: color-mix(in srgb, var(--accent-primary) 62%, var(--border-color)) !important;
+  border-color: rgba(178, 166, 255, 0.7) !important;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 21%, transparent), transparent 72%),
-    color-mix(in srgb, var(--bg-card-hover) 58%, transparent) !important;
+    linear-gradient(90deg, rgba(143, 129, 255, 0.26), rgba(75, 98, 255, 0.12)),
+    color-mix(in srgb, var(--bg-card-hover) 52%, transparent) !important;
   outline: none !important;
 }
 
@@ -6685,9 +6727,9 @@ header,
   gap: 10px !important;
   margin-top: 0 !important;
   padding: 9px !important;
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--border-color)) !important;
+  border: 1px solid rgba(177, 207, 234, 0.16) !important;
   border-radius: var(--radius-sm) !important;
-  background: color-mix(in srgb, var(--bg-card-hover) 64%, transparent) !important;
+  background: #142236 !important;
   box-shadow: none !important;
 }
 
@@ -6716,7 +6758,7 @@ header,
   justify-content: center !important;
   gap: 4px !important;
   width: 100% !important;
-  min-height: 29px !important;
+  min-height: 28px !important;
   padding: 4px 6px !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 7px !important;
@@ -6829,15 +6871,36 @@ header,
 }
 
 [data-theme="light"] .brand-vote-card .brand-vote-breakdown-toggle {
-  color: var(--accent-primary) !important;
+  color: #6d4cff !important;
+  border-color: rgba(109, 76, 255, 0.32) !important;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 10%, transparent), transparent 72%),
+    linear-gradient(90deg, rgba(109, 76, 255, 0.1), rgba(2, 132, 199, 0.035)),
     #f8fafc !important;
+}
+
+[data-theme="light"] .brand-vote-card .brand-vote-breakdown-toggle:hover,
+[data-theme="light"] .brand-vote-card .brand-vote-breakdown-toggle:focus-visible {
+  color: #4f35d8 !important;
+  border-color: rgba(109, 76, 255, 0.52) !important;
+  background:
+    linear-gradient(90deg, rgba(109, 76, 255, 0.15), rgba(2, 132, 199, 0.06)),
+    #ffffff !important;
+}
+
+[data-theme="light"] .brand-vote-state-tooltip {
+  color: #334155 !important;
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14) !important;
 }
 
 [data-theme="light"] .brand-vote-card .brand-vote-breakdown {
   background: #f8fafc !important;
-  border-color: color-mix(in srgb, var(--accent-primary) 22%, var(--border-color)) !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+}
+
+[data-theme="light"] .brand-vote-overview {
+  border-color: rgba(15, 23, 42, 0.1) !important;
 }
 
 @media (max-width: 640px) {

@@ -1,16 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
-  BarChart2,
   Check,
   ChevronDown,
-  Film,
   HelpCircle,
-  Mic2,
-  MicOff,
-  ThumbsDown,
-  ThumbsUp,
-  Video,
   X,
 } from 'lucide-react';
 import type { BrandId, VoteConfidence, VoteData } from '../types/ktv';
@@ -45,12 +38,12 @@ const getVoteState = (voteData: VoteData): VoteState => {
   return 'negative';
 };
 
-const stateConfig: Record<VoteState, { label: string; hint: string; icon: React.ReactNode }> = {
-  ok: { label: '一致度高', hint: '可唱', icon: <Check size={15} /> },
-  leanOk: { label: '偏向可唱', hint: '尚未穩定', icon: <HelpCircle size={15} /> },
-  disputed: { label: '回報分歧', hint: '需現場確認', icon: <AlertCircle size={15} /> },
-  empty: { label: '資料不足', hint: '需要第一筆回報', icon: <HelpCircle size={15} /> },
-  negative: { label: '反向一致', hint: '多數回報未收錄', icon: <X size={15} /> },
+const stateConfig: Record<VoteState, { label: string; hint: string; tooltip: string; icon: React.ReactNode }> = {
+  ok: { label: '一致度高', hint: '可唱', tooltip: '多數歌友回報可唱，且結果一致度高', icon: <Check size={15} /> },
+  leanOk: { label: '偏向可唱', hint: '尚未穩定', tooltip: '目前偏向可唱，但回報比例尚未穩定', icon: <HelpCircle size={15} /> },
+  disputed: { label: '回報分歧', hint: '需現場確認', tooltip: '正反回報接近，建議以現場狀況為準', icon: <AlertCircle size={15} /> },
+  empty: { label: '資料不足', hint: '需要第一筆回報', tooltip: '尚無歌友回報，需要第一筆現場資料', icon: <HelpCircle size={15} /> },
+  negative: { label: '反向一致', hint: '多數回報未收錄', tooltip: '多數歌友回報未收錄或無導唱', icon: <X size={15} /> },
 };
 
 const confidenceLabel: Record<VoteConfidence, string> = {
@@ -289,7 +282,10 @@ export const BrandVoteBarV2: React.FC<BrandVoteBarProps> = ({ songId, brandId, i
             <strong>回報統計</strong>
             <span>{stateInfo.label}</span>
           </div>
-          <span className="brand-vote-state-mark" role="img" aria-label={stateInfo.hint} title={stateInfo.hint}>{stateInfo.icon}</span>
+          <span className="brand-vote-state-mark" role="img" aria-label={stateInfo.tooltip} tabIndex={0}>
+            {stateInfo.icon}
+            <span className="brand-vote-state-tooltip">{stateInfo.tooltip}</span>
+          </span>
         </div>
         <MetricRow label="收錄" positiveLabel="有收錄" negativeLabel="未收錄" positive={voteData.confirm} negative={voteData.deny} kind="availability" />
         <MetricRow label="導唱" positiveLabel="有導唱" negativeLabel="無導唱" positive={guidedCount} negative={noGuidedCount} kind="guided" />
@@ -298,8 +294,8 @@ export const BrandVoteBarV2: React.FC<BrandVoteBarProps> = ({ songId, brandId, i
       </div>
 
       <button className="brand-vote-breakdown-toggle" type="button" onClick={e => { e.stopPropagation(); setShowBreakdown(prev => !prev); }} aria-expanded={showBreakdown} aria-label={actionLabel}>
-        <span><BarChart2 size={12} />{actionLabel}</span>
-        <ChevronDown size={14} />
+        <span>{actionLabel}</span>
+        <ChevronDown size={13} aria-hidden="true" />
       </button>
 
       {showBreakdown && (
@@ -310,12 +306,12 @@ export const BrandVoteBarV2: React.FC<BrandVoteBarProps> = ({ songId, brandId, i
             {ENABLE_MV_VOTE && <div><strong>MV</strong><span>{mvTotal > 0 ? `${officialMvCount} 原版 / ${editedMvCount} 伴唱` : '尚無回報'}</span></div>}
           </div>
           <div className="brand-vote-actions">
-            <button type="button" className={`brand-vote-action is-positive ${userVote === 'confirm' ? 'is-selected' : ''}`} disabled={isVoting} onClick={e => { e.stopPropagation(); handleVote('confirm'); }} aria-pressed={userVote === 'confirm'}><ThumbsUp size={12} /><span>有收錄</span>{voteData.confirm > 0 && <em>{voteData.confirm}</em>}</button>
-            <button type="button" className={`brand-vote-action is-negative ${userVote === 'deny' ? 'is-selected' : ''}`} disabled={isVoting} onClick={e => { e.stopPropagation(); handleVote('deny'); }} aria-pressed={userVote === 'deny'}><ThumbsDown size={12} /><span>未收錄</span>{voteData.deny > 0 && <em>{voteData.deny}</em>}</button>
-            <button type="button" className={`brand-vote-action is-guided ${userGuideVote === 'guided' ? 'is-selected' : ''}`} disabled={isGuideVoting} onClick={e => { e.stopPropagation(); handleGuideVote('guided'); }} aria-pressed={userGuideVote === 'guided'}><Mic2 size={12} /><span>有導唱</span>{guidedCount > 0 && <em>{guidedCount}</em>}</button>
-            <button type="button" className={`brand-vote-action is-muted ${userGuideVote === 'none' ? 'is-selected' : ''}`} disabled={isGuideVoting} onClick={e => { e.stopPropagation(); handleGuideVote('none'); }} aria-pressed={userGuideVote === 'none'}><MicOff size={12} /><span>無導唱</span>{noGuidedCount > 0 && <em>{noGuidedCount}</em>}</button>
-            {ENABLE_MV_VOTE && <button type="button" className={`brand-vote-action is-mv ${userMvVote === 'official' ? 'is-selected' : ''}`} disabled={isMvVoting} onClick={e => { e.stopPropagation(); handleMvVote('official'); }} aria-pressed={userMvVote === 'official'}><Video size={12} /><span>原版 MV</span>{officialMvCount > 0 && <em>{officialMvCount}</em>}</button>}
-            {ENABLE_MV_VOTE && <button type="button" className={`brand-vote-action is-edited ${userMvVote === 'edited' ? 'is-selected' : ''}`} disabled={isMvVoting} onClick={e => { e.stopPropagation(); handleMvVote('edited'); }} aria-pressed={userMvVote === 'edited'}><Film size={12} /><span>伴唱畫面</span>{editedMvCount > 0 && <em>{editedMvCount}</em>}</button>}
+            <button type="button" className={`brand-vote-action is-positive ${userVote === 'confirm' ? 'is-selected' : ''}`} disabled={isVoting} onClick={e => { e.stopPropagation(); handleVote('confirm'); }} aria-pressed={userVote === 'confirm'}><span>有收錄</span>{voteData.confirm > 0 && <em>{voteData.confirm}</em>}</button>
+            <button type="button" className={`brand-vote-action is-negative ${userVote === 'deny' ? 'is-selected' : ''}`} disabled={isVoting} onClick={e => { e.stopPropagation(); handleVote('deny'); }} aria-pressed={userVote === 'deny'}><span>未收錄</span>{voteData.deny > 0 && <em>{voteData.deny}</em>}</button>
+            <button type="button" className={`brand-vote-action is-guided ${userGuideVote === 'guided' ? 'is-selected' : ''}`} disabled={isGuideVoting} onClick={e => { e.stopPropagation(); handleGuideVote('guided'); }} aria-pressed={userGuideVote === 'guided'}><span>有導唱</span>{guidedCount > 0 && <em>{guidedCount}</em>}</button>
+            <button type="button" className={`brand-vote-action is-muted ${userGuideVote === 'none' ? 'is-selected' : ''}`} disabled={isGuideVoting} onClick={e => { e.stopPropagation(); handleGuideVote('none'); }} aria-pressed={userGuideVote === 'none'}><span>無導唱</span>{noGuidedCount > 0 && <em>{noGuidedCount}</em>}</button>
+            {ENABLE_MV_VOTE && <button type="button" className={`brand-vote-action is-mv ${userMvVote === 'official' ? 'is-selected' : ''}`} disabled={isMvVoting} onClick={e => { e.stopPropagation(); handleMvVote('official'); }} aria-pressed={userMvVote === 'official'}><span>原版 MV</span>{officialMvCount > 0 && <em>{officialMvCount}</em>}</button>}
+            {ENABLE_MV_VOTE && <button type="button" className={`brand-vote-action is-edited ${userMvVote === 'edited' ? 'is-selected' : ''}`} disabled={isMvVoting} onClick={e => { e.stopPropagation(); handleMvVote('edited'); }} aria-pressed={userMvVote === 'edited'}><span>伴唱畫面</span>{editedMvCount > 0 && <em>{editedMvCount}</em>}</button>}
           </div>
           {voteData.confidence !== 'neutral' && <div className="brand-vote-confidence">{confidenceLabel[voteData.confidence]}</div>}
         </div>
