@@ -146,7 +146,7 @@ export function TaiwanMapDemo() {
 
       <section className="taiwan-demo-note">
         <Music2 size={18} />
-        <p>這個頁面僅供本機檢視互動效果；正式入口請使用首頁的累積查詢標籤。</p>
+        <p>這個頁面用來檢視地圖互動效果；正式查詢入口請回到首頁使用累積查詢標籤。</p>
       </section>
     </main>
   );

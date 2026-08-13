@@ -18,7 +18,6 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
   onToggleFavorite,
 }) => {
   const brandList = useBrands();
-  // 支援 Esc 鍵關閉抽屜
   React.useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,7 +107,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
             <Mic2 size={36} opacity={0.4} style={{ marginBottom: '12px' }} />
             <p style={{ fontWeight: 600, fontSize: '1rem' }}>歌本目前沒有歌曲</p>
             <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
-              點擊歌曲旁的愛心按鈕即可新增至歌本對照表
+              點擊歌曲旁的愛心按鈕即可新增至我的歌單
             </p>
           </div>
         ) : (

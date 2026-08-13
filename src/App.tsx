@@ -741,7 +741,7 @@ export function App() {
                     ? '正在整理最新回報與歌庫標示。'
                     : apiHealthStatus === 'unavailable'
                       ? '暫時無法連線資料服務，先載入可用的歌庫資料。'
-                  : '正在比對歌曲收錄、導唱與 MV 標示')}
+                  : '正在整理歌曲收錄、導唱與 MV 標示')}
             </p>
 
             {/* 進度條容器 */}
@@ -1015,7 +1015,7 @@ export function App() {
               href="./community-verification.html"
               style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
-              社群驗證
+              社群回報
             </a>
 
             <a
