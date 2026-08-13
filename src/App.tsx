@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Fuse from 'fuse.js';
 import type { Song, FilterOptions, BrandId, Language } from './types/ktv';
 import { Navbar } from './components/Navbar';
@@ -42,6 +42,7 @@ export function App() {
   const isMobile = useIsMobile();
   const brandList = useBrands();
   const resultsRegionRef = useRef<HTMLElement>(null);
+  const fuseIndexRef = useRef<{ songs: Song[]; fuse: Fuse<Song> } | null>(null);
   const latestSearchStateRef = useRef({
     query: '',
     resultCount: 0,
@@ -221,9 +222,9 @@ export function App() {
     localStorage.setItem('ktv_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // Fuse.js Fuzzy Search Setup (歌名、歌手與歌曲導引資訊比對)
-  const fuse = useMemo(() => {
-    return new Fuse(allSongs, {
+  const getFuseIndex = useCallback(() => {
+    if (fuseIndexRef.current?.songs === allSongs) return fuseIndexRef.current.fuse;
+    const fuse = new Fuse(allSongs, {
       keys: [
         { name: 'title', weight: 0.35 },
         { name: 'artist', weight: 0.3 },
@@ -241,6 +242,8 @@ export function App() {
         return Fuse.config.getFn(song, path);
       },
     });
+    fuseIndexRef.current = { songs: allSongs, fuse };
+    return fuse;
   }, [allSongs]);
 
   // Dynamic brand song count auditing
@@ -318,7 +321,7 @@ export function App() {
           return 0;
         });
       } else {
-        const fuzzyResults = fuse.search(rawQuery);
+        const fuzzyResults = getFuseIndex().search(rawQuery);
         result = fuzzyResults.map(res => res.item);
       }
     }
@@ -443,7 +446,7 @@ export function App() {
     filters.onlyNicheSongs,
     filters.sortBy,
     debouncedSearchQuery,
-    fuse,
+    getFuseIndex,
     allSongs,
   ]);
 
