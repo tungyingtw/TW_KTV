@@ -56,9 +56,11 @@ export type CatalogLoadStage =
   | 'error';
 
 export type CatalogLoadProgress = (percent: number, stage?: CatalogLoadStage) => void;
+export type CatalogOverrideSyncStatus = 'synced' | 'unavailable';
 
 export interface FetchFullCatalogOptions {
   forceRefresh?: boolean;
+  onOverrideSync?: (status: CatalogOverrideSyncStatus) => void;
 }
 
 async function parseVisitRegionApiResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
@@ -208,7 +210,7 @@ export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options
         }
       });
     }
-    const merged = await mergeCatalogOverrides(cached);
+    const merged = await mergeCatalogOverrides(cached, options.onOverrideSync);
     onProgress?.(100, 'ready');
     return merged;
   }
@@ -220,7 +222,7 @@ export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options
     setCachedCatalog(fresh);
     try { localStorage.setItem(TIME_KEY, String(Date.now())); } catch {}
     onProgress?.(96, 'syncing-overrides');
-    const merged = await mergeCatalogOverrides(fresh);
+    const merged = await mergeCatalogOverrides(fresh, options.onOverrideSync);
     onProgress?.(100, 'ready');
     return merged;
   }
@@ -229,8 +231,13 @@ export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options
   throw new Error('正式歌庫載入失敗');
 }
 
-async function mergeCatalogOverrides(catalog: Song[]): Promise<Song[]> {
+async function mergeCatalogOverrides(catalog: Song[], onOverrideSync?: (status: CatalogOverrideSyncStatus) => void): Promise<Song[]> {
   const overrides = await fetchCatalogOverrides();
+  if (!overrides.ok) {
+    onOverrideSync?.('unavailable');
+    return catalog;
+  }
+  onOverrideSync?.('synced');
   if (!overrides.songs.length && !overrides.deletedIds.length) return catalog;
 
   const deletedIds = new Set(overrides.deletedIds);
@@ -243,7 +250,7 @@ async function mergeCatalogOverrides(catalog: Song[]): Promise<Song[]> {
   return Array.from(byId.values());
 }
 
-async function fetchCatalogOverrides(): Promise<{ songs: Song[]; deletedIds: string[] }> {
+async function fetchCatalogOverrides(): Promise<{ songs: Song[]; deletedIds: string[]; ok: boolean }> {
   try {
     const response = await fetch(`${API_BASE}/api/catalog-overrides?t=${Date.now()}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -251,10 +258,11 @@ async function fetchCatalogOverrides(): Promise<{ songs: Song[]; deletedIds: str
     return {
       songs: Array.isArray(data.songs) ? data.songs : [],
       deletedIds: Array.isArray(data.deletedIds) ? data.deletedIds : [],
+      ok: true,
     };
   } catch (err) {
     console.warn('[API Service] 讀取歌庫覆寫資料失敗，僅使用靜態歌庫:', err);
-    return { songs: [], deletedIds: [] };
+    return { songs: [], deletedIds: [], ok: false };
   }
 }
 

@@ -19,7 +19,7 @@ import { ToastNotification } from './components/ToastNotification';
 import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
 import { checkApiHealth, fetchFullCatalog } from './services/apiService';
-import type { CatalogLoadStage } from './services/apiService';
+import type { CatalogLoadStage, CatalogOverrideSyncStatus } from './services/apiService';
 import { fetchBrands } from './data/brands';
 import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
@@ -64,6 +64,7 @@ export function App() {
   const [showLongLoadHint, setShowLongLoadHint] = useState<boolean>(false);
   const [showCatalogRetryHint, setShowCatalogRetryHint] = useState<boolean>(false);
   const [isCatalogRetrying, setIsCatalogRetrying] = useState<boolean>(false);
+  const [catalogOverrideSyncStatus, setCatalogOverrideSyncStatus] = useState<CatalogOverrideSyncStatus | 'checking'>('checking');
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
   const [catalogLoadError, setCatalogLoadError] = useState<string | null>(null);
   const equalizerBars = useMemo(() => (
@@ -166,6 +167,7 @@ export function App() {
     setIsCatalogReady(false);
     setCatalogLoadError(null);
     setCatalogLoadStage('checking-cache');
+    setCatalogOverrideSyncStatus('checking');
     setShowLongLoadHint(false);
     setShowCatalogRetryHint(false);
     setIsCatalogRetrying(forceRefresh);
@@ -184,7 +186,12 @@ export function App() {
       if (catalogLoadRequestIdRef.current !== requestId) return;
       if (stage) setCatalogLoadStage(stage);
       setTargetProgress(Math.min(96, pct));
-    }, { forceRefresh }).then(catalog => {
+    }, {
+      forceRefresh,
+      onOverrideSync: status => {
+        if (catalogLoadRequestIdRef.current === requestId) setCatalogOverrideSyncStatus(status);
+      },
+    }).then(catalog => {
       if (catalogLoadRequestIdRef.current !== requestId) return;
       const sanitized = (catalog || []).filter(s => {
         const t = s.title || '';
@@ -308,6 +315,10 @@ export function App() {
     ? `載入完成後會自動搜尋「${filters.searchQuery.trim()}」。`
     : '你可以先輸入歌名或歌手，資料完成後會自動套用。';
   const shouldShowCatalogRetry = showCatalogRetryHint || Boolean(catalogLoadError);
+  const shouldShowCatalogSyncNotice = isCatalogDisplayReady && (catalogOverrideSyncStatus === 'unavailable' || apiHealthStatus === 'unavailable');
+  const catalogSyncNoticeMessage = catalogOverrideSyncStatus === 'unavailable'
+    ? '目前可正常搜尋本機歌庫，最新回報與資料修正稍後會再同步。'
+    : '資料服務暫時未連線，查詢仍會使用目前可用的歌庫資料。';
 
   useEffect(() => {
     const wasReady = wasCatalogDisplayReadyRef.current;
@@ -834,6 +845,13 @@ export function App() {
 
       {/* 內容間廣告區 */}
       <AdBannerSlot slotType="in_feed" />
+
+      {shouldShowCatalogSyncNotice && (
+        <div className="catalog-sync-notice" role="status" aria-live="polite">
+          <span>資料同步提示</span>
+          <p>{catalogSyncNoticeMessage}</p>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main
