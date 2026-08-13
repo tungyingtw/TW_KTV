@@ -14,6 +14,7 @@ interface MobileBrandTabScrollProps {
   onToggleFilterMode?: () => void;
   brandSongCounts?: Record<BrandId, number>;
   totalSongCount?: number;
+  isCatalogLoading?: boolean;
 }
 
 export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
@@ -26,6 +27,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   onToggleFilterMode,
   brandSongCounts,
   totalSongCount,
+  isCatalogLoading = false,
 }) => {
   const brandList = useBrands();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -101,6 +103,7 @@ export const MobileBrandTabScroll: React.FC<MobileBrandTabScrollProps> = ({
   };
 
   const formatCount = (count?: number) => {
+    if (isCatalogLoading) return ' (準備中)';
     if (count === undefined) return '';
     return ` (${formatCompactZhNumber(count)})`;
   };
