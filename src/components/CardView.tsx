@@ -61,14 +61,14 @@ export const CardView: React.FC<CardViewProps> = ({
           <Disc size={36} color="var(--text-muted)" style={{ marginBottom: '12px' }} />
           
           <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 800 }}>
-            {isSingleBrand ? `📍 【${currentBrandInfo?.name}】目前尚無資料` : '未找到符合條件的歌曲'}
+            {isSingleBrand ? `【${currentBrandInfo?.name}】目前尚無資料` : '未找到符合條件的歌曲'}
           </h3>
 
           <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '8px', maxWidth: '560px', margin: '8px auto 20px', lineHeight: 1.6 }}>
             {isSingleBrand ? (
               <>
-                資料庫中暫無【{currentBrandInfo?.shortName}】的驗證收錄對照記錄。<br />
-                實體包廂多採用雲端對應系統（建議可先參考其他 KTV 門市/伴唱品牌的收錄狀態）。
+                目前尚無【{currentBrandInfo?.shortName}】的已確認收錄資料。<br />
+                可先參考其他 KTV 門市或伴唱品牌的收錄狀態，或提供現場線索協助補充。
               </>
             ) : (
               '嘗試更換關鍵字或取消過濾條件。'
@@ -96,7 +96,7 @@ export const CardView: React.FC<CardViewProps> = ({
               }}
             >
               <Flag size={16} />
-              <span>協助提供 / 回報【{currentBrandInfo?.shortName}】收錄資料</span>
+              <span>提供【{currentBrandInfo?.shortName}】收錄線索</span>
             </button>
           )}
           <div style={{ marginTop: '20px' }}>
@@ -364,7 +364,7 @@ export const CardView: React.FC<CardViewProps> = ({
                 {/* 回報錯誤小按鈕 */}
                 <button
                   onClick={e => { e.stopPropagation(); setReportingSong(song); }}
-                  title="回報資料錯誤"
+                  title="回報資料問題"
                   className="action-text-link"
                   style={{
                     background: 'none',
@@ -402,7 +402,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   fontSize: '0.8rem',
                 }}
               >
-                全台 KTV 門市收錄對照 <ChevronRight size={16} />
+                全台 KTV 門市收錄查詢 <ChevronRight size={16} />
               </button>
             </div>
           </div>

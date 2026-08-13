@@ -252,7 +252,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 }}
               >
                 <span>歌曲導引：可前往公開影音平台參考官方版本資訊</span>
-                <span style={{ fontSize: '0.78rem', color: 'var(--accent-blue, #38bdf8)', fontWeight: 600 }}>[即時對照]</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--accent-blue, #38bdf8)', fontWeight: 600 }}>版本參考</span>
               </div>
             )}
 
@@ -434,7 +434,6 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               })}
             </div>
 
-            {/* 回報錯誤按鈕 */}
             <div className="song-detail-report-row" style={{ marginTop: '24px', borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingTop: '16px' }}>
               <button
                 onClick={() => setShowReport(true)}
@@ -457,9 +456,9 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251, 191, 36, 0.08)')}
               >
                 <Flag size={16} />
-                回報資料錯誤
+                回報資料問題
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', fontWeight: 400 }}>
-                  （幫助我們讓資料更準確）
+                  協助補充現場線索
                 </span>
               </button>
             </div>

@@ -191,10 +191,10 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
               </div>
               <div>
                 <div style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '1.15rem' }}>
-                  提供資料建議
+                  提供歌曲或廠牌線索
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #94a3b8)', marginTop: '2px' }}>
-                  找不到歌曲或發現新的 KTV 廠牌時，可以在這裡提供線索。
+                  找不到歌曲或發現新的 KTV 廠牌時，可以在這裡補充資訊。
                 </div>
               </div>
             </div>
@@ -462,7 +462,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 value={helperNickname}
                 onChange={event => setHelperNickname(event.target.value)}
                 maxLength={24}
-                placeholder="方便管理者辨識協助者，處理後會清除"
+                placeholder="方便管理者辨識協助者，處理完成後會清除"
                 style={{ ...inputStyle(), fontSize: '0.85rem' }}
               />
             </div>
