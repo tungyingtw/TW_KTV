@@ -8,7 +8,6 @@ import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
-import { getMeaningfulComposer, getMeaningfulLyricist } from '../utils/songCredits';
 
 interface CardViewProps {
   songs: Song[];
@@ -123,8 +122,6 @@ export const CardView: React.FC<CardViewProps> = ({
     }}>
       {songs.map((song, index) => {
         const isFav = favorites.includes(song.id);
-        const lyricist = getMeaningfulLyricist(song);
-        const composer = getMeaningfulComposer(song);
 
         const displayBrands = isMultiSelecting
           ? selectedBrands.map(bId => sortedBrandList.find(b => b.id === bId) || BRANDS[bId]).filter(Boolean)
@@ -224,20 +221,13 @@ export const CardView: React.FC<CardViewProps> = ({
                 </button>
               </div>
 
-              {/* Lyricist / Composer & Snippet */}
+              {/* Snippet */}
               <div style={{
                 fontSize: '0.78rem',
                 color: 'var(--text-secondary)',
                 marginTop: '8px',
                 lineHeight: 1.4,
               }}>
-                {(lyricist || composer) && (
-                  <div>
-                    {lyricist && <span>詞: {lyricist}</span>}
-                    {lyricist && composer && <span> | </span>}
-                    {composer && <span>曲: {composer}</span>}
-                  </div>
-                )}
                 {getMeaningfulLyricsSnippet(song) && (
                   <p style={{
                     color: 'var(--text-muted)',

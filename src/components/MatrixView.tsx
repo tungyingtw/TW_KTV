@@ -8,7 +8,6 @@ import { AdBannerSlot } from './AdBannerSlot';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
 import { getYoutubeReferenceUrl } from '../utils/songReference';
-import { getMeaningfulComposer, getMeaningfulLyricist } from '../utils/songCredits';
 
 interface MatrixViewProps {
   songs: Song[];
@@ -337,7 +336,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               color: 'var(--text-secondary, #cbd5e1)',
             }}>
               <th style={{ padding: '9px 10px', width: '54px', textAlign: 'center', whiteSpace: 'nowrap' }}>最愛</th>
-              <th style={{ padding: '9px 14px', width: isSingleBrand ? '35%' : (isFewBrands ? '32%' : '300px') }}>歌名 / 歌手 / 創作者</th>
+              <th style={{ padding: '9px 14px', width: isSingleBrand ? '35%' : (isFewBrands ? '32%' : '300px') }}>歌名 / 歌手</th>
               <th style={{ padding: '9px 10px', width: '68px', textAlign: 'center' }}>語種</th>
 
               {activeBrands.map(b => {
@@ -368,8 +367,6 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
             {songs.map((song, index) => {
               const isFav = favorites.includes(song.id);
               const isSelected = selectedSongId === song.id;
-              const lyricist = getMeaningfulLyricist(song);
-              const composer = getMeaningfulComposer(song);
 
               return (
                 <React.Fragment key={song.id}>
@@ -411,7 +408,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </button>
                   </td>
 
-                  {/* Song Title & Artist & Authors */}
+                  {/* Song Title & Artist */}
                   <td style={{ padding: '9px 14px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     <div className="song-title-text" style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.96rem', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                       <span style={{ color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{song.title}</span>
@@ -431,11 +428,6 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </div>
                     <div className="song-meta-text" style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span className="song-artist-text" style={{ fontWeight: 600, color: 'var(--text-secondary, #cbd5e1)' }}>{song.artist}</span>
-                      {(lyricist || composer) && (
-                        <span style={{ fontSize: '0.78rem', marginLeft: '6px', opacity: 0.8 }}>
-                          (詞: {lyricist || '—'} / 曲: {composer || '—'})
-                        </span>
-                      )}
                     </div>
                   </td>
 
