@@ -1,41 +1,24 @@
-# React + TypeScript + Vite
+# TYFunLab KTV 歌曲查詢
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+TYFunLab KTV 歌曲查詢是一個整理台灣常見 KTV／伴唱平台現場收錄狀態的查詢網站，協助使用者快速確認歌曲是否可能被不同平台收錄，以及是否具備原版 MV、導唱等現場資訊。
 
-Currently, two official plugins are available:
+網站資料以公開可查詢資料、站方整理資料與使用者回報線索作為參考。由於各 KTV 門市、伴唱系統與曲庫版本可能不同，實際可點唱狀態仍以現場設備顯示為準。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 主要功能
 
-## React Compiler
+- 搜尋歌名、歌手與點歌相關資料
+- 依語種、字數、平台與收錄狀態篩選歌曲
+- 查看各 KTV／伴唱平台的收錄、導唱與 MV 類型參考
+- 提供歌曲資料建議與現場狀態回報
+- 收藏常查歌曲至本機歌本
+- 提供小遊戲頁面作為附加互動內容
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 資料聲明
 
-## Expanding the Oxlint configuration
+本網站不提供、儲存或散佈任何未授權音訊、影片、歌詞全文或盜版影音內容。站內如出現 YouTube 等第三方影音平台連結，僅作為官方或公開來源參考，相關內容版權屬原權利人與發布平台所有。
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+歌曲收錄、導唱、MV 類型與點歌資訊可能因平台版本、門市設備、授權狀態或資料更新時間而有所差異。使用者應以實際 KTV 現場設備資訊為準。
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## 技術
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
-
-## Project Notes
-
-小遊戲入口位於 `public/games/`。新增或更新小遊戲前，必須先閱讀 `docs/games-integration-plan.md`。
-
-- `網頁遊戲構想/` 是本機草稿區，維持不上傳。
-- 已上線遊戲放在 `public/games/{game-slug}/index.html`。
-- 遊戲大廳只列可遊玩的遊戲；未完成遊戲只保留中性「追加中」佔位。
-- 不要自行新增排行榜、登入、積分、後台管理或會增加伺服器負擔的功能。
+本專案以前端網頁為主，使用 React、TypeScript 與 Vite 建置。
