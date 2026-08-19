@@ -184,6 +184,31 @@
     width: 100%; margin-top: 5px; background: #0f172a; border: 1px solid var(--border);
     border-radius: 6px; padding: 6px 8px; color: var(--text); font-size: 0.78rem;
   }
+  .song-similar-panel {
+    margin-top: 14px; background: rgba(96,165,250,0.07); border: 1px solid rgba(96,165,250,0.18);
+    border-radius: 10px; padding: 12px;
+  }
+  .song-similar-panel.is-warning {
+    background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.28);
+  }
+  .song-similar-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #dbeafe;
+    font-size: 0.82rem; font-weight: 800; margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .song-similar-hint { color: var(--muted); font-size: 0.76rem; font-weight: 600; }
+  .song-similar-section { margin-top: 10px; }
+  .song-similar-section:first-child { margin-top: 0; }
+  .song-similar-section-title { color: var(--yellow); font-size: 0.78rem; font-weight: 800; margin-bottom: 5px; }
+  .song-similar-row {
+    display: grid; grid-template-columns: minmax(130px, 1.1fr) minmax(130px, 1fr) 72px 82px 72px;
+    gap: 8px; align-items: center; padding: 7px 0; border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.78rem;
+  }
+  .song-similar-row:first-of-type { border-top: 0; }
+  .song-similar-title { color: var(--text); font-weight: 800; }
+  .song-similar-artist { color: #fbbf24; }
+  .song-similar-meta { color: var(--muted); }
+  .song-similar-empty { color: var(--muted); font-size: 0.78rem; padding: 8px 0 2px; }
   .song-editor-actions {
     margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08);
     display: flex; gap: 12px; align-items: center;
@@ -222,6 +247,7 @@
     .song-editor-grid { grid-template-columns: 1fr; }
     .song-editor-grid .wide, .song-editor-grid .full { grid-column: 1; }
     .song-result-row { grid-template-columns: auto 1fr; }
+    .song-similar-row { grid-template-columns: 1fr; gap: 3px; }
   }
 
   /* ── Empty ── */
@@ -844,6 +870,11 @@
         <label><input id="song-niche" type="checkbox" style="width:auto;margin-right:6px;" />冷門歌標記</label>
       </div>
     </div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <button type="button" class="btn btn-blue" onclick="loadSongSimilarMatches()">檢查相似歌曲</button>
+      <span style="color:var(--muted);font-size:0.78rem;">需要判斷是否已存在時再查詢，避免輸入時連續請求。</span>
+    </div>
+    <div id="song-similar-panel" class="song-similar-panel" style="display:none;"></div>
     <h4 style="margin-top:16px;font-size:0.95rem;">廠牌收錄</h4>
     <div id="song-brand-editor" class="brand-editor-grid"></div>
     <div class="song-editor-actions">
@@ -2318,6 +2349,8 @@ async function openSongEditorFromReport(reportId) {
   currentSongEditorData = song;
   document.getElementById('song-editor-title').textContent = '依回報編輯歌曲';
   fillSongEditor(song);
+  bindSongSimilarResetInputs();
+  resetSongSimilarPanel();
   captureSongEditorSnapshot();
   document.getElementById('song-editor-modal').style.display = 'flex';
 }
@@ -2659,6 +2692,156 @@ function updateSingleSongRowInDOM(songId, payload) {
   }
 }
 
+let songSimilarAbort = null;
+let currentSongSimilarMatches = { exact: [], sameTitle: [], similar: [] };
+const songSimilarCache = new Map();
+
+function normalizeSongCompareText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[\uFF01-\uFF5E]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    .replace(/\u3000/g, ' ')
+    .replace(/\b5月天\b/g, '五月天')
+    .replace(/[《》〈〉『』「」()（）[\]【】\s\-_.,!?]/g, '')
+    .trim();
+}
+
+function resetSongSimilarPanel(message = '') {
+  currentSongSimilarMatches = { exact: [], sameTitle: [], similar: [] };
+  if (songSimilarAbort) songSimilarAbort.abort();
+  const panel = document.getElementById('song-similar-panel');
+  if (!panel) return;
+  panel.classList.remove('is-warning');
+  panel.style.display = message ? 'block' : 'none';
+  panel.innerHTML = message ? `<div class="song-similar-empty">${escapeHtml(message)}</div>` : '';
+}
+
+function bindSongSimilarResetInputs() {
+  ['song-title', 'song-artist'].forEach(id => {
+    const input = document.getElementById(id);
+    if (!input || input.dataset.similarResetBound === '1') return;
+    input.dataset.similarResetBound = '1';
+    input.addEventListener('input', () => resetSongSimilarPanel());
+  });
+}
+
+async function fetchSongSimilarQuery(query, signal) {
+  const key = query.toLowerCase();
+  if (songSimilarCache.has(key)) return songSimilarCache.get(key);
+  const res = await apiFetch(`/api/admin/songs?query=${encodeURIComponent(query)}&page=1&limit=12&sort=relevance_len_asc`, { signal });
+  if (!res.ok) return [];
+  const data = await res.json().catch(() => ({ songs: [] }));
+  const songs = Array.isArray(data.songs) ? data.songs : [];
+  songSimilarCache.set(key, songs);
+  if (songSimilarCache.size > 80) songSimilarCache.delete(songSimilarCache.keys().next().value);
+  return songs;
+}
+
+function classifySongSimilarMatches(songs, title, artist) {
+  const currentId = document.getElementById('song-editor-id')?.value || '';
+  const normTitle = normalizeSongCompareText(title);
+  const normArtist = normalizeSongCompareText(artist);
+  const exact = [];
+  const sameTitle = [];
+  const similar = [];
+
+  songs.forEach(song => {
+    if (!song || String(song.id || '') === currentId) return;
+    const songTitle = normalizeSongCompareText(song.title);
+    const songArtist = normalizeSongCompareText(song.artist);
+    if (normTitle && normArtist && songTitle === normTitle && songArtist === normArtist) exact.push(song);
+    else if (normTitle && songTitle === normTitle) sameTitle.push(song);
+    else similar.push(song);
+  });
+
+  return {
+    exact: exact.slice(0, 5),
+    sameTitle: sameTitle.slice(0, 6),
+    similar: similar.slice(0, 8),
+  };
+}
+
+function renderSongSimilarSection(title, songs) {
+  if (!songs.length) return '';
+  return `
+    <div class="song-similar-section">
+      <div class="song-similar-section-title">${escapeHtml(title)}</div>
+      ${songs.map(song => `
+        <div class="song-similar-row">
+          <div class="song-similar-title">${escapeHtml(song.title || '')}</div>
+          <div class="song-similar-artist">${escapeHtml(song.artist || '')}</div>
+          <div class="song-similar-meta">${escapeHtml(song.language || '未分類')}</div>
+          <div class="song-similar-meta">${countAvailableBrands(song)} 家收錄</div>
+          <button class="btn btn-blue" onclick="openSongEditorFromSimilar('${encodeURIComponent(song.id)}')">編輯</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function openSongEditorFromSimilar(songIdValue) {
+  if (!closeSongEditor(false)) return;
+  await openSongEditor(songIdValue);
+}
+
+function renderSongSimilarPanel(matches, title, artist) {
+  const panel = document.getElementById('song-similar-panel');
+  if (!panel) return;
+  const total = matches.exact.length + matches.sameTitle.length + matches.similar.length;
+  currentSongSimilarMatches = matches;
+  panel.style.display = 'block';
+  panel.classList.toggle('is-warning', matches.exact.length > 0 || matches.sameTitle.length > 0);
+  if (!total) {
+    panel.innerHTML = `
+      <div class="song-similar-head">
+        <span>可能已存在 / 類似歌曲</span>
+        <span class="song-similar-hint">沒有找到明顯相近結果</span>
+      </div>
+    `;
+    return;
+  }
+  panel.innerHTML = `
+    <div class="song-similar-head">
+      <span>可能已存在 / 類似歌曲</span>
+      <span class="song-similar-hint">依「${escapeHtml(title || artist)}」查詢，最多顯示少量參考結果</span>
+    </div>
+    ${renderSongSimilarSection('高度相符：同歌名 + 同歌手', matches.exact)}
+    ${renderSongSimilarSection('同名歌曲：歌名相同，歌手不同', matches.sameTitle)}
+    ${renderSongSimilarSection('相似結果：歌名或歌手接近', matches.similar)}
+  `;
+}
+
+async function loadSongSimilarMatches() {
+  const title = document.getElementById('song-title')?.value.trim() || '';
+  const artist = document.getElementById('song-artist')?.value.trim() || '';
+  if (!title && artist.length < 2) {
+    resetSongSimilarPanel('請先填寫歌名，或輸入至少 2 個字的歌手名稱。');
+    return;
+  }
+
+  if (songSimilarAbort) songSimilarAbort.abort();
+  songSimilarAbort = new AbortController();
+  const signal = songSimilarAbort.signal;
+
+  const queries = [];
+  if (title) queries.push(title);
+  if (artist.length >= 2) queries.push(artist);
+  const uniqueQueries = Array.from(new Set(queries.map(q => q.trim()).filter(Boolean))).slice(0, 2);
+
+  try {
+    const batches = await Promise.all(uniqueQueries.map(q => fetchSongSimilarQuery(q, signal)));
+    if (signal.aborted) return;
+    const merged = new Map();
+    batches.flat().forEach(song => {
+      if (song?.id && !merged.has(song.id)) merged.set(song.id, song);
+    });
+    renderSongSimilarPanel(classifySongSimilarMatches(Array.from(merged.values()), title, artist), title, artist);
+  } catch (err) {
+    if (err.name === 'AbortError') return;
+    resetSongSimilarPanel('相似歌曲查詢暫時失敗，不影響儲存。');
+  }
+}
+
 let initialSongEditorSnapshot = null;
 
 function captureSongEditorSnapshot() {
@@ -2704,6 +2887,8 @@ async function openSongEditor(songIdValue = '') {
   }
 
   fillSongEditor(currentSongEditorData);
+  bindSongSimilarResetInputs();
+  resetSongSimilarPanel();
   captureSongEditorSnapshot();
   modal.style.display = 'flex';
 }
@@ -2716,6 +2901,7 @@ function closeSongEditor(force = false) {
   }
   document.getElementById('song-editor-modal').style.display = 'none';
   initialSongEditorSnapshot = null;
+  resetSongSimilarPanel();
   return true;
 }
 
@@ -2791,6 +2977,13 @@ async function saveSongEditor() {
     if (!payload.title || !payload.artist) {
       showToast('資料未完整：請填寫歌名與歌手', 'error');
       return;
+    }
+    if (currentSongSimilarMatches.exact.length > 0) {
+      const preview = currentSongSimilarMatches.exact
+        .slice(0, 3)
+        .map(song => `《${song.title}》 - ${song.artist} (${song.language || '未分類'}，${countAvailableBrands(song)} 家收錄)`)
+        .join('\n');
+      if (!confirm(`系統找到同歌名、同歌手的既有歌曲：\n\n${preview}\n\n仍要儲存目前這筆歌曲資料嗎？`)) return;
     }
 
     const songId = document.getElementById('song-editor-id').value;
