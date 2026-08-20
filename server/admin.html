@@ -402,6 +402,24 @@
         </div>
       </div>
 
+      <div class="card" style="margin-top:20px; border-color:rgba(34,211,238,0.24)">
+        <h3 style="margin-bottom:10px; font-size:0.95rem; color:#67e8f9;">首頁協作提示</h3>
+        <p style="color:var(--muted); font-size:0.85rem; line-height:1.7; margin-bottom:12px;">
+          控制首頁「一起補充現場資訊」提示。儲存不同內容後會更新提示版本，曾關閉舊提示的使用者會重新看到新版。
+        </p>
+        <label style="display:flex; align-items:center; gap:8px; color:var(--text); font-size:0.86rem; margin-bottom:10px;">
+          <input type="checkbox" id="site-notice-enabled" checked /> 啟用首頁提示
+        </label>
+        <div style="display:grid; grid-template-columns:minmax(180px, 0.55fr) minmax(260px, 1.45fr); gap:10px;">
+          <input id="site-notice-title" maxlength="36" placeholder="提示標題" style="padding:9px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:#0f172a; color:#fff;" />
+          <input id="site-notice-body" maxlength="220" placeholder="提示內文" style="padding:9px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:#0f172a; color:#fff;" />
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:10px; flex-wrap:wrap;">
+          <span id="site-notice-meta" style="color:var(--muted); font-size:0.78rem;">尚未載入</span>
+          <button class="btn btn-blue" id="site-notice-save-btn" onclick="saveSiteNotice()">儲存首頁提示</button>
+        </div>
+      </div>
+
       <div class="card" style="margin-top:20px; border-color:rgba(96,165,250,0.2)">
         <h3 style="margin-bottom:12px; font-size:0.95rem;">維護工作流程</h3>
         <ol style="color:var(--muted); line-height:2; padding-left:18px; font-size:0.88rem;">
@@ -1394,6 +1412,12 @@ function applyAdminPermissionsUI(admin) {
 
   const btnOpenCreateAdmin = document.getElementById('btn-open-create-admin');
   if (btnOpenCreateAdmin) btnOpenCreateAdmin.style.display = !singleAdminMode && perms.includes('admins.manage') ? 'inline-block' : 'none';
+
+  const canManageSiteNotice = perms.includes('site_notice.manage');
+  ['site-notice-enabled', 'site-notice-title', 'site-notice-body', 'site-notice-save-btn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !canManageSiteNotice;
+  });
 }
 
 // ── 統計 ──
@@ -1457,7 +1481,52 @@ async function loadStats() {
     <div class="stat-chip">收錄狀態待確認 <b style="color:var(--red)">${disputedVotes.toLocaleString()}</b></div>
     <div class="stat-chip">儲存模式 <b style="color:${storageColor}">${escapeHtml(`${storageLabel}${storageNote}`)}</b></div>
   `;
+  loadSiteNoticeAdmin();
   applyAdminWorkflowLabels();
+}
+
+async function loadSiteNoticeAdmin() {
+  const enabledEl = document.getElementById('site-notice-enabled');
+  const titleEl = document.getElementById('site-notice-title');
+  const bodyEl = document.getElementById('site-notice-body');
+  const metaEl = document.getElementById('site-notice-meta');
+  if (!enabledEl || !titleEl || !bodyEl || !metaEl) return;
+  try {
+    const res = await apiFetch('/api/admin/site-notice');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    enabledEl.checked = data.enabled !== false;
+    titleEl.value = data.title || '';
+    bodyEl.value = data.body || '';
+    metaEl.textContent = `版本：${data.id || '-'}，更新：${(data.updated_at || '').slice(0, 19).replace('T', ' ') || '-'}`;
+  } catch (err) {
+    metaEl.textContent = `首頁提示載入失敗：${err.message || '連線失敗'}`;
+    metaEl.style.color = 'var(--red)';
+  }
+}
+
+async function saveSiteNotice() {
+  const enabledEl = document.getElementById('site-notice-enabled');
+  const titleEl = document.getElementById('site-notice-title');
+  const bodyEl = document.getElementById('site-notice-body');
+  const btn = document.getElementById('site-notice-save-btn');
+  const payload = {
+    enabled: !!enabledEl?.checked,
+    title: titleEl?.value || '',
+    body: bodyEl?.value || '',
+  };
+  if (btn) btn.disabled = true;
+  try {
+    const res = await apiFetch('/api/admin/site-notice', { method: 'PATCH', body: JSON.stringify(payload) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    showToast('首頁協作提示已更新', 'success');
+    loadSiteNoticeAdmin();
+  } catch (err) {
+    showToast('首頁提示儲存失敗：' + (err.message || '連線失敗'), 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 // ── Tab 切換 ──

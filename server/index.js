@@ -270,6 +270,7 @@ const ALL_PERMISSIONS = [
   'aliases.view',
   'aliases.manage',
   'stats.reset',
+  'site_notice.manage',
   'logs.view',
   'backup.export',
   'backup.validate',
@@ -293,6 +294,7 @@ const DEFAULT_ADMIN_PERMISSIONS = [
   'mv.update',
   'aliases.view',
   'aliases.manage',
+  'site_notice.manage',
 ];
 
 function hashPassword(password) {
@@ -463,6 +465,7 @@ const ADMIN_LOG_MAX_BYTES = Math.max(256 * 1024, parseInt(process.env.ADMIN_LOG_
 const CATALOG_OVERRIDES_PATH = path.join(__dirname, 'catalog_overrides.json');
 const BRAND_SETTINGS_PATH = path.join(__dirname, 'brand_settings.json');
 const BRAND_SETTINGS_REDIS_KEY = 'ktv:brandSettings';
+const SITE_NOTICE_PATH = resolveDataPath('SITE_NOTICE_PATH', 'site_notice.json');
 const VISIT_REGION_STATS_PATH = resolveDataPath('VISIT_REGION_STATS_PATH', 'visit_region_stats.json');
 const VISIT_REGION_STATS_REDIS_KEY = process.env.VISIT_REGION_STATS_REDIS_KEY || 'ktv:visitRegionStats';
 
@@ -811,6 +814,74 @@ async function saveBrandSettingsStore(data, options = {}) {
     console.warn('[BrandSettings] Local JSON write failed:', err.message);
   }
   invalidateAdminDerivedCaches();
+}
+
+const DEFAULT_SITE_NOTICE = {
+  enabled: true,
+  id: 'field-collab-default',
+  title: '一起補充現場資訊',
+  body: 'KTV 收錄、導唱與 MV 類型常需要現場確認；若發現缺漏或資料不對，可使用「提供建議」或歌曲內的「回報」功能留下線索。',
+  updated_at: '2026-08-20T00:00:00.000Z',
+};
+
+function sanitizeSiteNoticeText(value, fallback, maxLength) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return (text || fallback).slice(0, maxLength);
+}
+
+function normalizeSiteNotice(data) {
+  const source = data && typeof data === 'object' ? data : {};
+  const enabled = source.enabled !== false;
+  const title = sanitizeSiteNoticeText(source.title, DEFAULT_SITE_NOTICE.title, 36);
+  const body = sanitizeSiteNoticeText(source.body, DEFAULT_SITE_NOTICE.body, 220);
+  const updatedAt = typeof source.updated_at === 'string' ? source.updated_at : DEFAULT_SITE_NOTICE.updated_at;
+  const id = sanitizeSiteNoticeText(source.id, DEFAULT_SITE_NOTICE.id, 80);
+  return { enabled, id, title, body, updated_at: updatedAt };
+}
+
+function loadSiteNoticeLocal() {
+  try {
+    if (fs.existsSync(SITE_NOTICE_PATH)) return normalizeSiteNotice(JSON.parse(fs.readFileSync(SITE_NOTICE_PATH, 'utf8')));
+  } catch (err) {
+    console.warn('[SiteNotice] Local JSON read failed:', err.message);
+  }
+  try { safeAtomicWriteJson(SITE_NOTICE_PATH, DEFAULT_SITE_NOTICE); } catch {}
+  return DEFAULT_SITE_NOTICE;
+}
+
+async function loadSiteNoticeStore() {
+  if (USE_REDIS) {
+    try {
+      const raw = await redisCmd('get', SITE_NOTICE_REDIS_KEY);
+      if (raw) return normalizeSiteNotice(JSON.parse(raw));
+    } catch (err) {
+      console.warn('[SiteNotice] Redis read failed:', err.message);
+    }
+  }
+  return loadSiteNoticeLocal();
+}
+
+async function saveSiteNoticeStore(data, options = {}) {
+  const { requirePersistent = false } = options;
+  const payload = normalizeSiteNotice(data);
+  if (USE_REDIS) {
+    try {
+      await redisCmd('set', SITE_NOTICE_REDIS_KEY, JSON.stringify(payload));
+      try { safeAtomicWriteJson(SITE_NOTICE_PATH, payload); } catch (err) {
+        console.warn('[SiteNotice] Local JSON backup write failed:', err.message);
+      }
+      return payload;
+    } catch (err) {
+      try { safeAtomicWriteJson(SITE_NOTICE_PATH, payload); } catch (localErr) {
+        console.warn('[SiteNotice] Local JSON fallback write failed:', localErr.message);
+      }
+      console.warn('[SiteNotice] Redis write failed:', err.message);
+      if (requirePersistent) throw new Error('首頁提示暫時無法持久化儲存，請稍後再試');
+      return payload;
+    }
+  }
+  safeAtomicWriteJson(SITE_NOTICE_PATH, payload);
+  return payload;
 }
 
 async function getActiveBrands() {
@@ -2778,6 +2849,7 @@ const REVIEW_ACTIONS_ARCHIVE_REDIS_PREFIX = 'ktv:reviewActionsArchive:';
 const ADMIN_LOG_REDIS_KEY = 'ktv:adminLogs';
 const CATALOG_OVERRIDES_REDIS_KEY = 'ktv:catalogOverrides';
 const ARTIST_ALIASES_OVERRIDES_REDIS_KEY = 'ktv:artistAliasesOverrides';
+const SITE_NOTICE_REDIS_KEY = 'ktv:siteNotice';
 
 if (USE_REDIS) {
   console.log('[Stats] Upstash Redis 已啟用：累積查詢人數將持久化儲存');
@@ -2919,6 +2991,7 @@ if (USE_REDIS) {
   initializeJsonStoreInRedis(REVIEW_ACTIONS_REDIS_KEY, loadReviewActions(), 'ReviewActions');
   initializeJsonStoreInRedis(CATALOG_OVERRIDES_REDIS_KEY, loadCatalogOverrides(), 'CatalogOverrides');
   initializeJsonStoreInRedis(ARTIST_ALIASES_OVERRIDES_REDIS_KEY, loadArtistAliasesOverridesFromDisk(), 'ArtistAliasesOverrides');
+  initializeJsonStoreInRedis(SITE_NOTICE_REDIS_KEY, loadSiteNoticeLocal(), 'SiteNotice');
 
   redisCmd('get', STATS_REDIS_TOTAL_KEY).then(val => {
     if (val !== null && val !== undefined) {
@@ -5935,6 +6008,33 @@ app.get('/api/quick-status', async (req, res) => {
     checkedAt: new Date().toISOString(),
     meta: { cache, ttlMs: ADMIN_STATS_CACHE_TTL_MS },
   });
+});
+
+app.get('/api/site-notice', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(await loadSiteNoticeStore());
+});
+
+app.get('/api/admin/site-notice', requirePermission('dashboard.view'), async (req, res) => {
+  res.json(await loadSiteNoticeStore());
+});
+
+app.patch('/api/admin/site-notice', requirePermission('site_notice.manage'), async (req, res) => {
+  const current = await loadSiteNoticeStore();
+  const nextEnabled = req.body.enabled !== false;
+  const nextTitle = sanitizeSiteNoticeText(req.body.title, current.title, 36);
+  const nextBody = sanitizeSiteNoticeText(req.body.body, current.body, 220);
+  const changed = current.enabled !== nextEnabled || current.title !== nextTitle || current.body !== nextBody;
+  const saved = await saveSiteNoticeStore({
+    ...current,
+    enabled: nextEnabled,
+    title: nextTitle,
+    body: nextBody,
+    id: changed ? `field-collab-${Date.now()}` : current.id,
+    updated_at: changed ? new Date().toISOString() : current.updated_at,
+  }, { requirePersistent: true });
+  if (changed) logAdminAction('UPDATE_SITE_NOTICE', { before: current, after: saved }, req);
+  res.json(saved);
 });
 
 app.get('/api/admin/stats', requirePermission('dashboard.view'), async (req, res) => {
