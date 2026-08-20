@@ -669,13 +669,13 @@ export function App() {
     },
     {
       question: 'KTV 導唱是什麼？',
-      answer: 'KTV 導唱是伴唱系統提供的跟唱輔助功能，讓不熟歌曲的人可以跟著聲音或旋律提示演唱。不同平台或歌曲版本不一定都有導唱。',
+      answer: 'KTV 導唱是伴唱系統提供的跟唱輔助功能，不等於歌手本人原唱。本站只整理目前資料是否顯示可能提供導唱，實際仍以現場點歌系統為準。',
       href: './ktv-guided-vocal.html',
       linkLabel: '查看導唱說明',
     },
     {
       question: '有 MV 標示代表一定是原版 MV 嗎？',
-      answer: '不是。MV 標示代表目前資料顯示現場畫面可能接近原版 MV 或相關影像，實際仍可能因平台、門市或機台版本不同而變動。',
+      answer: '不是。MV 類型標示用來區分現場畫面可能接近原版 MV，或可能屬於伴唱帶、Live、剪輯等類型。實際畫面仍可能因平台、門市或機台版本不同而變動。',
       href: './original-mv-vs-karaoke-video.html',
       linkLabel: '查看 MV 類型差異',
     },
@@ -737,10 +737,10 @@ export function App() {
           <span>歌友共同補充的 KTV 現場資訊</span>
         </div>
         <h1 id="home-hero-title" className="home-hero-title">
-          查詢 KTV 現場收錄、導唱與 MV 資訊
+          一起確認 KTV 現場到底有沒有這首歌
         </h1>
         <p className="home-hero-copy">
-          搜尋歌曲或歌手，快速查看各 KTV 平台收錄狀態、導唱功能與 MV 類型標示。
+          搜尋歌名或歌手，快速查看多家 KTV 平台的收錄、導唱與 MV 類型參考。
         </p>
         <div className="home-hero-metrics" aria-label="目前資料概況">
           <span><strong>{isCatalogDisplayReady ? allSongs.length.toLocaleString() : '準備中'}</strong><em>歌曲</em></span>
@@ -807,7 +807,7 @@ export function App() {
               TYFunLab 可以查什麼
             </h2>
             <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.65 }}>
-              查歌前先確認收錄、導唱與 MV 類型，現場仍以包廂點歌系統為準。
+              收錄、導唱與 MV 類型可能因平台、門市或機台版本不同而變動，現場仍以包廂點歌系統為準。
             </p>
           </div>
           {homepageFaqItems.map(item => (
@@ -1096,10 +1096,10 @@ export function App() {
           }}>
             <Music size={36} style={{ color: 'var(--text-muted)', marginBottom: '14px' }} />
             <h3 style={{ color: 'var(--text-primary)', fontSize: isMobile ? '1rem' : '1.15rem', marginBottom: '8px' }}>
-              目前沒有符合條件的歌曲
+              找不到這首歌嗎？
             </h3>
             <p style={{ margin: '0 auto 18px', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.75, maxWidth: '460px' }}>
-              目前找不到符合條件的歌曲。你可以嘗試縮短歌名、改用歌手名稱、放寬語種或導唱 / MV 篩選；若你在現場確認有這首歌，也可以使用「提供建議」協助補充線索。
+              先縮短歌名，再改用歌手搜尋；也可以放寬語種、字數、導唱或 MV 類型篩選。若你在現場確認有這首歌，請回報歌曲線索協助後續整理。
             </p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <button
@@ -1122,7 +1122,7 @@ export function App() {
                 清除篩選
               </button>
               <button className="btn-primary" onClick={() => setIsSuggestModalOpen(true)}>
-                提供建議
+                回報歌曲線索
               </button>
             </div>
           </div>
@@ -1307,10 +1307,10 @@ export function App() {
             </a>
 
             <a
-              href="./ktv-audio-types.html"
+              href="./original-mv-vs-karaoke-video.html"
               style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
-              版本說明
+              MV 類型說明
             </a>
 
             <a

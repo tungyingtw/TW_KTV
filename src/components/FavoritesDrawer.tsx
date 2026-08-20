@@ -107,11 +107,17 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
             <Mic2 size={36} opacity={0.4} style={{ marginBottom: '12px' }} />
             <p style={{ fontWeight: 600, fontSize: '1rem' }}>歌本目前沒有歌曲</p>
             <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
-              點擊歌曲旁的愛心按鈕即可新增至我的歌單
+              我的歌本適合先存想唱與備用歌曲，現場可快速回來確認平台收錄、導唱與 MV 類型。下次唱歌前，也可以回來檢查新歌、備用歌與朋友想唱的歌。
+            </p>
+            <p style={{ fontSize: '0.8rem', marginTop: '8px', lineHeight: 1.6 }}>
+              我的歌本保存在目前裝置與瀏覽器中。換裝置、清除瀏覽器資料或使用不同瀏覽器時，收藏可能不會保留。
             </p>
           </div>
         ) : (
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0 0 2px' }}>
+              我的歌本適合先存想唱與備用歌曲，現場可快速回來確認平台收錄、導唱與 MV 類型。我的歌本保存在目前裝置與瀏覽器中。換裝置、清除瀏覽器資料或使用不同瀏覽器時，收藏可能不會保留。
+            </p>
             {favoriteSongs.map(song => (
               <div 
                 key={song.id}

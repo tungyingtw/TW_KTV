@@ -14,9 +14,9 @@ export const SiteInfoGuide: React.FC = () => {
       tag: '音軌切換指南',
       summary: '整理 KTV 門市導唱切換與純伴奏差異，協助判讀現場是否能開啟導唱。',
       content: [
-        '在連鎖 KTV 門市歡唱時，使用者最需要知道的是這首歌現場能不能開啟導唱。導唱功能通常代表伴唱系統能提供跟唱輔助，讓不熟歌曲的人可以跟著旋律與節奏進入狀態。',
-        '本站後續只整理「有導唱」與「無導唱」這類現場可操作狀態，不再額外區分聲音來源。若未顯示導唱標示，代表目前資料尚未確認，實際狀態仍以現場設備為準。',
-        '原版 MV 通常指接近唱片公司、藝人頻道或公開影音平台常見的 MV；現場也可能出現伴唱帶、Live、剪輯或通用背景影像。本站標示 MV 類型，是為了協助使用者在歡唱前預期畫面版本。'
+        '導唱功能是 KTV 伴唱系統提供的跟唱輔助，可能以示範聲音、旋律提示或其他平台設定呈現。TYFunLab 只整理使用者在現場是否可能開啟導唱，不判定聲音來源，也不保證所有門市一致。',
+        '若未顯示導唱標示，代表目前資料尚未確認，不等於一定沒有導唱。使用者可以把導唱欄位視為歡唱前的參考線索，現場仍以包廂點歌系統為準。',
+        '原版 MV 通常指接近公開常見音樂錄影帶的畫面。伴唱帶類型則可能是字幕背景、風景畫面、棚拍、Live 或剪輯素材。兩者都可能可以用來唱歌，TYFunLab 標示它們是為了讓使用者在行前預期現場畫面類型。'
       ]
     },
     {
@@ -289,9 +289,9 @@ export const SiteInfoGuide: React.FC = () => {
                 { href: './before-ktv-song-checklist.html', label: '歌單準備清單', desc: '去 KTV 前先整理想唱歌曲' },
                 { href: './ktv-song-not-found.html', label: '找不到歌怎麼辦', desc: '查不到歌曲時的常見原因與做法' },
                 { href: './data-source.html', label: '資料來源', desc: '公開資訊、使用者回報與人工確認' },
-                { href: './ktv-audio-types.html', label: '版本說明', desc: '導唱、伴奏與 MV 標示差異' },
+                { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型說明', desc: '原版 MV、伴唱帶類型與剪輯 MV 分類' },
                 { href: './community-verification.html', label: '社群回報', desc: '收錄、原版 MV 與導唱投票說明' },
-                { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型差異', desc: '原版 MV、伴唱畫面與剪輯 MV 分類' },
+                { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型差異', desc: '原版 MV、伴唱帶類型與剪輯 MV 分類' },
                 { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '有導唱與純伴奏切換解析' },
                 { href: './ktv-song-availability-differences.html', label: '平台收錄差異', desc: '授權範圍、曲庫更新與門市差異' },
                 { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
@@ -353,7 +353,7 @@ export const SiteInfoGuide: React.FC = () => {
                 <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', borderRadius: '10px', overflow: 'hidden' }}>
                   {[
                     ['收錄', '回答這個品牌是否能點到這首歌。列表中的收錄數代表目前品牌範圍內有幾家收錄。'],
-                    ['原版 MV', '回答播放畫面是否接近公開常見 MV，不代表歌曲是否一定收錄，也不代表有導唱。'],
+                    ['原版 MV', '回答播放畫面是否接近公開常見 MV，不代表歌曲已收錄，也不代表有導唱。'],
                     ['導唱功能', '回答現場是否能開啟導唱。導唱欄只表示有或沒有導唱，未標示代表尚未確認。'],
                   ].map(([term, desc]) => (
                     <div key={term} style={{ padding: '14px', background: 'var(--bg-glass, rgba(15, 23, 42, 0.45))', borderRight: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))' }}>
@@ -523,7 +523,7 @@ export const SiteInfoGuide: React.FC = () => {
                     Q1：TYFunLab 可以查什麼？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：TYFunLab 可查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能、MV 類型與使用者回報線索。查詢結果是歡唱前參考，現場仍以包廂點歌系統為準。
+                    答：TYFunLab 可查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能、MV 類型與使用者回報線索。查詢結果適合歡唱前準備，現場仍以包廂點歌系統為準。
                   </p>
                 </div>
 
@@ -541,7 +541,7 @@ export const SiteInfoGuide: React.FC = () => {
                     Q3：有 MV 標示代表一定是原版 MV 嗎？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：不是。MV 標示代表目前資料顯示現場畫面可能接近原版 MV 或相關影像，實際仍可能因平台、門市或機台版本不同而變動。
+                    答：不是。MV 類型標示用來區分現場畫面可能接近原版 MV，或可能屬於伴唱帶、Live、剪輯等類型。實際畫面仍可能因平台、門市或機台版本不同而變動。
                   </p>
                 </div>
 
@@ -556,7 +556,7 @@ export const SiteInfoGuide: React.FC = () => {
 
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q5：查到有收錄，現場一定點得到嗎？
+                    Q5：查到有收錄，現場就能點到嗎？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
                     答：不一定。本站資料是公開資訊、使用者回報與人工整理的參考，實際點歌結果請以現場點歌系統為準。

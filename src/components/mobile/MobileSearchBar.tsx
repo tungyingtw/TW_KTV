@@ -187,6 +187,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             <button
               onClick={onOpenSuggestSong}
               className="inline-suggest-link"
+              title="找不到歌曲或想補充現場線索時，可送出歌曲資料建議。"
             >
               <PlusCircle size={16} />
               <span>提供建議</span>

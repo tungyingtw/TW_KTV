@@ -110,9 +110,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
         {submitted ? (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>已收到您的回報</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>回報已送出</div>
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
-              感謝提供現場線索。我們會完成確認後更新網站內容。
+              已收到您的回報。這筆資料會作為人工整理與後續修正線索，不會立即覆蓋查詢結果。
             </div>
           </div>
         ) : (
@@ -121,7 +121,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               <AlertTriangle size={20} color="currentColor" />
               <div>
                 <div style={{ fontWeight: 700, color: 'var(--text-primary, #fff)', fontSize: '1.05rem' }}>
-                  回報歌曲資料問題
+                  回報現場差異
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#f472b6', marginTop: '2px', fontWeight: 600 }}>
                   《{song.title}》／{song.artist}
@@ -193,11 +193,14 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
                 補充說明
               </label>
+              <p style={{ margin: '0 0 0.45rem', color: 'var(--text-secondary, #94a3b8)', fontSize: '0.82rem', lineHeight: 1.55 }}>
+                請盡量提供歌名、歌手、KTV 平台或門市線索、現場看到的是有收錄或未收錄、是否有導唱，以及 MV 類型是原版 MV、伴唱帶、Live、剪輯或不確定。
+              </p>
               <textarea
                 value={note}
                 onChange={e => setNote(e.target.value)}
                 maxLength={300}
-                placeholder="例如：我在門市包廂點歌輸入歌名沒有搜出這首..."
+                placeholder="例如：某門市查得到但標示未收錄，或現場畫面不是原版 MV..."
                 rows={3}
                 style={{
                   width: '100%',
@@ -274,7 +277,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               }}
             >
               <Send size={16} />
-              <span>{isSubmitting ? '送出中...' : '送出資料問題回報'}</span>
+              <span>{isSubmitting ? '送出中...' : '送出現場差異回報'}</span>
             </button>
           </>
         )}

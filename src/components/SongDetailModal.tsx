@@ -262,7 +262,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   justifyContent: 'space-between',
                 }}
               >
-                <span>歌曲導引：可前往公開影音平台參考官方版本資訊</span>
+                <span>歌曲導引：可前往公開影音平台參考歌曲版本資訊</span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--accent-blue, #38bdf8)', fontWeight: 600 }}>版本參考</span>
               </div>
             )}
@@ -335,7 +335,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   transition: 'all 0.2s ease',
                 }}
               >
-                <Video size={18} /> 前往 YouTube 參考官方版本
+                <Video size={18} /> 前往 YouTube 參考公開影音版本
               </a>
             )}
 
@@ -466,7 +466,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251, 191, 36, 0.08)')}
               >
                 <Flag size={16} />
-                回報資料問題
+                回報現場差異
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', fontWeight: 400 }}>
                   協助補充現場線索
                 </span>
