@@ -4648,8 +4648,7 @@ body {
   line-height: 1.28;
 }
 
-.homepage-quick-help-header > a,
-.homepage-quick-help-card-action {
+.homepage-quick-help-header > a {
   color: var(--accent-support);
   font-size: 0.8rem;
   font-weight: 800;
@@ -4657,9 +4656,7 @@ body {
 }
 
 .homepage-quick-help-header > a:hover,
-.homepage-quick-help-header > a:focus-visible,
-.homepage-quick-help-card:hover .homepage-quick-help-card-action,
-.homepage-quick-help-card:focus-visible .homepage-quick-help-card-action {
+.homepage-quick-help-header > a:focus-visible {
   color: var(--accent-highlight);
 }
 
@@ -4676,7 +4673,7 @@ body {
 
 .homepage-quick-help-card {
   display: flex;
-  min-height: 150px;
+  min-height: 128px;
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px;
@@ -4703,7 +4700,6 @@ body {
 }
 
 .homepage-quick-help-card p {
-  flex: 1;
   margin: 0;
   color: var(--text-secondary);
   font-size: 0.82rem;
@@ -4938,7 +4934,7 @@ body {
 
   .homepage-quick-help-card {
     min-width: min(78vw, 300px);
-    min-height: 138px;
+    min-height: 122px;
     scroll-snap-align: start;
   }
 
