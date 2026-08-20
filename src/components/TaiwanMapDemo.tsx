@@ -106,7 +106,7 @@ export function TaiwanMapDemo() {
   return (
     <main className="taiwan-demo-shell">
       <section className="taiwan-demo-hero">
-        <div className="taiwan-demo-kicker"><Sparkles size={15} /> 全台 KTV 歌友到訪紀錄</div>
+        <div className="taiwan-demo-kicker"><Sparkles size={15} /> 台灣 KTV 歌友到訪紀錄</div>
         <div className="taiwan-demo-title-row">
           <div>
             <h1>歌友熱度分布</h1>

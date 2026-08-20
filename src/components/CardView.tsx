@@ -392,7 +392,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   fontSize: '0.8rem',
                 }}
               >
-                全台 KTV 門市收錄查詢 <ChevronRight size={16} />
+                台灣 KTV 門市收錄查詢 <ChevronRight size={16} />
               </button>
             </div>
           </div>

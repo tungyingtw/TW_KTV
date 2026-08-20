@@ -660,6 +660,57 @@ export function App() {
     } catch {}
   };
 
+  const homepageFaqItems = [
+    {
+      question: 'TYFunLab 可以查什麼？',
+      answer: 'TYFunLab 可查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能、MV 類型與使用者回報線索。查詢結果是歡唱前參考，現場仍以包廂點歌系統為準。',
+      href: './how-to-use.html',
+      linkLabel: '查看使用教學',
+    },
+    {
+      question: 'KTV 導唱是什麼？',
+      answer: 'KTV 導唱是伴唱系統提供的跟唱輔助功能，讓不熟歌曲的人可以跟著聲音或旋律提示演唱。不同平台或歌曲版本不一定都有導唱。',
+      href: './ktv-guided-vocal.html',
+      linkLabel: '查看導唱說明',
+    },
+    {
+      question: '有 MV 標示代表一定是原版 MV 嗎？',
+      answer: '不是。MV 標示代表目前資料顯示現場畫面可能接近原版 MV 或相關影像，實際仍可能因平台、門市或機台版本不同而變動。',
+      href: './original-mv-vs-karaoke-video.html',
+      linkLabel: '查看 MV 類型差異',
+    },
+    {
+      question: '為什麼同一首歌不同 KTV 平台收錄不同？',
+      answer: '不同平台可能有不同授權範圍、曲庫更新時間、機台版本與影音素材，因此同一首歌的收錄、導唱與 MV 類型可能不同。',
+      href: './ktv-song-availability-differences.html',
+      linkLabel: '查看收錄差異',
+    },
+    {
+      question: '查到有收錄，現場就能點到嗎？',
+      answer: '不一定。本站資料是公開資訊、使用者回報與人工整理的參考，實際點歌結果請以現場點歌系統為準。',
+      href: './faq.html',
+      linkLabel: '查看常見問題',
+    },
+    {
+      question: 'KTV 歌曲查詢要怎麼做？',
+      answer: '建議先搜尋歌名或歌手，再依序查看平台收錄、導唱功能與 MV 類型。這樣比較能避免只看到有收錄，卻忽略現場版本差異。',
+      href: './ktv-song-search-guide.html',
+      linkLabel: '查看查詢指南',
+    },
+    {
+      question: '去 KTV 前怎麼準備歌單？',
+      answer: '可以先列出想唱歌曲，用 TYFunLab 查收錄、導唱與 MV 類型，再把想唱的歌加入我的最愛，現場以點歌系統確認。',
+      href: './before-ktv-song-checklist.html',
+      linkLabel: '查看歌單清單',
+    },
+    {
+      question: 'KTV 找不到歌怎麼辦？',
+      answer: '先縮短歌名、改用歌手名稱、嘗試別名或放寬篩選。若現場確認有收錄，也可以回報給 TYFunLab 作為修正線索。',
+      href: './ktv-song-not-found.html',
+      linkLabel: '查看查詢建議',
+    },
+  ];
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Navbar */}
@@ -725,6 +776,63 @@ export function App() {
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
         />
       )}
+
+      <section
+        className="homepage-faq"
+        aria-labelledby="homepage-faq-title"
+        style={{
+          maxWidth: '1400px',
+          width: '100%',
+          margin: isMobile ? '14px auto 0' : '18px auto 0',
+          padding: isMobile ? '0 12px' : '0 20px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '10px',
+          }}
+        >
+          <div
+            style={{
+              padding: '14px 16px',
+              background: 'var(--bg-glass)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '12px',
+            }}
+          >
+            <h2 id="homepage-faq-title" style={{ margin: '0 0 6px', color: 'var(--text-primary)', fontSize: '1rem' }}>
+              TYFunLab 可以查什麼
+            </h2>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.65 }}>
+              查歌前先確認收錄、導唱與 MV 類型，現場仍以包廂點歌系統為準。
+            </p>
+          </div>
+          {homepageFaqItems.map(item => (
+            <article
+              key={item.question}
+              style={{
+                padding: '14px 16px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+              }}
+            >
+              <h3 style={{ margin: '0 0 6px', color: 'var(--text-primary)', fontSize: '0.92rem' }}>
+                {item.question}
+              </h3>
+              <p style={{ margin: '0 0 8px', color: 'var(--text-secondary)', fontSize: '0.82rem', lineHeight: 1.6 }}>
+                {item.answer}
+              </p>
+              <a href={item.href} style={{ color: '#38bdf8', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none' }}>
+                {item.linkLabel}
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {showCollabNotice && (
         <section className="collab-notice" aria-label="協作提示">
@@ -991,7 +1099,7 @@ export function App() {
               目前沒有符合條件的歌曲
             </h3>
             <p style={{ margin: '0 auto 18px', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.75, maxWidth: '460px' }}>
-              請調整搜尋字、切換品牌或放寬篩選條件。若現場確定有這首歌，請提供建議補充線索。
+              目前找不到符合條件的歌曲。你可以嘗試縮短歌名、改用歌手名稱、放寬語種或導唱 / MV 篩選；若你在現場確認有這首歌，也可以使用「提供建議」協助補充線索。
             </p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <button
@@ -1168,6 +1276,27 @@ export function App() {
               style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
               使用教學
+            </a>
+
+            <a
+              href="./ktv-song-search-guide.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              查詢指南
+            </a>
+
+            <a
+              href="./before-ktv-song-checklist.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              歌單清單
+            </a>
+
+            <a
+              href="./ktv-song-not-found.html"
+              style={{ color: '#38bdf8', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              找不到歌
             </a>
 
             <a

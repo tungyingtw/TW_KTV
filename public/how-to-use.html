@@ -4,36 +4,62 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="theme-sync.js"></script>
-  <title>使用教學 | TYFunLab 台灣KTV歌曲查詢</title>
-  <meta name="description" content="學習如何使用 TYFunLab 台灣KTV歌曲查詢搜尋歌曲、比對門市收錄狀態、判讀導唱與原版 MV 標示。" />
+  <title>如何使用 TYFunLab 查 KTV 歌曲、導唱與 MV 類型</title>
+  <meta name="description" content="教你使用 TYFunLab 搜尋 KTV 歌曲、比對平台收錄狀態、判讀導唱功能與原版 MV 或伴唱帶類型。" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://tyfunlab.com/how-to-use.html" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Noto Sans TC', sans-serif; background: #0f172a; color: #cbd5e1; line-height: 1.8; min-height: 100vh; }
+    body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Noto Sans TC', sans-serif; background: #0f172a; color: #cbd5e1; line-height: 1.85; min-height: 100vh; }
     header { background: rgba(15,23,42,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     header a { color: #38bdf8; text-decoration: none; font-size: 0.9rem; }
-    header a:hover, footer a:hover { text-decoration: underline; }
+    header a:hover, footer a:hover, main a:hover { text-decoration: underline; }
     .site-name { color: #fff; font-weight: 800; font-size: 1.1rem; }
-    main { max-width: 780px; margin: 40px auto; padding: 0 24px 60px; }
+    main { max-width: 860px; margin: 40px auto; padding: 0 24px 60px; }
     .breadcrumb { font-size: 0.82rem; color: #64748b; margin-bottom: 24px; }
     .breadcrumb a, main a { color: #38bdf8; text-decoration: none; }
-    h1 { font-size: 1.7rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; }
-    .meta { font-size: 0.82rem; color: #64748b; margin-bottom: 32px; }
-    h2 { font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin: 28px 0 8px; }
+    h1 { font-size: 1.72rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; line-height: 1.35; }
+    .meta { font-size: 0.82rem; color: #64748b; margin-bottom: 28px; }
+    h2 { font-size: 1.08rem; font-weight: 800; color: #38bdf8; margin: 30px 0 8px; }
+    h3 { font-size: 0.98rem; font-weight: 800; color: #f8fafc; margin: 20px 0 6px; }
     p { margin-bottom: 12px; }
-    ol, ul { padding-left: 20px; margin-bottom: 16px; }
+    ul, ol { padding-left: 20px; margin-bottom: 16px; }
     li { margin-bottom: 6px; }
-    .note { font-size: 0.85rem; color: #94a3b8; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border-left: 3px solid #38bdf8; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0 22px; }
+    th, td { border: 1px solid rgba(148,163,184,0.24); padding: 10px 12px; vertical-align: top; }
+    th { color: #f8fafc; background: rgba(56,189,248,0.12); text-align: left; }
+    .answer, .note { color: #dbeafe; background: rgba(56,189,248,0.08); padding: 12px 15px; border-radius: 8px; border-left: 3px solid #38bdf8; margin: 18px 0; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .links a { border: 1px solid rgba(56,189,248,0.28); border-radius: 999px; padding: 6px 10px; }
     footer { background: rgba(15,23,42,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 24px; text-align: center; font-size: 0.82rem; color: #64748b; }
     footer a { color: #38bdf8; text-decoration: none; margin: 0 8px; }
   </style>
   <link rel="stylesheet" href="legal-pages.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "首頁",
+        "item": "https://tyfunlab.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "使用教學",
+        "item": "https://tyfunlab.com/how-to-use.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <header>
-    <span class="site-name">TYFunLab 台灣KTV歌曲查詢</span>
-    <a href="https://tyfunlab.com/">返回首頁</a>
+    <span class="site-name">TYFunLab KTV歌曲查詢</span>
+    <a href="https://tyfunlab.com/">回到查詢工具</a>
   </header>
 
   <main>
@@ -41,56 +67,69 @@
       <a href="https://tyfunlab.com/">首頁</a> &rsaquo; 使用教學
     </nav>
 
-    <h1>如何使用 TYFunLab 台灣KTV歌曲查詢</h1>
-    <p class="meta">搜尋歌曲、比對門市收錄與判讀版本標示</p>
+    <h1>如何使用 TYFunLab 查 KTV 歌曲、導唱與 MV 類型</h1>
+    <div class="meta">更新日期：2026/08/20。本站整理的是歡唱前參考資訊，現場仍以包廂點歌系統為準。</div>
+    <p class="answer">使用 TYFunLab 時，先搜尋歌名或歌手，再查看多家 KTV 平台的可能收錄狀態、導唱功能與 MV 類型，最後把想唱的歌加入我的最愛，現場再以包廂點歌系統確認。</p>
 
-    <p>
-      本站適合在歡唱前或包廂內快速查詢歌曲是否可能被不同 KTV 門市與伴唱系統收錄。你可以把它當成出發前的歌單規劃工具：先找出想唱的歌曲，再比對不同系統的收錄狀態、導唱與原版 MV 標示，最後到現場以門市機台結果為準。
-    </p>
+    <h2>使用 TYFunLab 查歌的步驟</h2>
+    <ol>
+      <li><strong>搜尋歌名或歌手。</strong>輸入完整歌名、部分歌名、歌手或常見關鍵字。</li>
+      <li><strong>比對平台收錄狀態。</strong>查看歌曲在多家 KTV 平台是否有收錄線索。</li>
+      <li><strong>判讀導唱與 MV 類型。</strong>確認是否可能有導唱功能，以及畫面可能是原版 MV 或伴唱帶類型。</li>
+      <li><strong>加入我的最愛。</strong>把聚會想唱的歌先整理成清單。</li>
+      <li><strong>到現場再次確認。</strong>包廂點歌系統仍是現場判斷依據。</li>
+      <li><strong>發現錯誤時提供建議或回報。</strong>把現場觀察補充回來，協助下一位使用者。</li>
+    </ol>
 
-    <h2>1. 搜尋歌名或歌手</h2>
-    <p>
-      在首頁搜尋框輸入歌名、歌手名稱或關鍵字，即可篩出相關歌曲。若你只記得部分歌名，也可以輸入片段文字。系統會嘗試比對歌名、歌手與歌曲導引資訊，協助你從大量曲庫資料中找到可能目標。
-    </p>
+    <h2>哪些情境適合使用 TYFunLab</h2>
+    <table>
+      <thead>
+        <tr><th>使用情境</th><th>適合查什麼</th><th>使用建議</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>聚會前準備歌單</td><td>查歌曲是否可能收錄、哪些平台比較有線索。</td><td>先收藏想唱的歌，現場再快速確認。</td></tr>
+        <tr><td>想唱新歌或冷門歌</td><td>查新歌、非主流歌曲或較少被點唱的歌曲。</td><td>用歌名和歌手都查一次，避免漏掉別名版本。</td></tr>
+        <tr><td>想確認有沒有導唱</td><td>查看導唱功能標示與社群回報。</td><td>不熟的歌可優先找有導唱線索的版本。</td></tr>
+        <tr><td>想確認畫面是否可能接近原版 MV</td><td>查看 MV 類型是否偏向原版 MV 或伴唱帶類型。</td><td>把畫面期待和歌曲收錄分開判讀。</td></tr>
+      </tbody>
+    </table>
 
-    <h2>2. 比對不同門市與伴唱系統</h2>
-    <p>
-      搜尋結果會以不同廠牌或系統的收錄狀態呈現。你可以切換單一品牌，也可以使用多品牌查詢，快速確認某首歌在哪些系統中可能有收錄。這對聚會前選店、安排歌單或確認冷門歌曲很有幫助。
-    </p>
-    <div class="note">
-      本站不提供點歌碼查詢，也不建議將本站資料作為現場輸入點歌碼使用。實際點歌方式、歌曲編號、曲庫更新與包廂機台顯示，請以現場 KTV 系統為準。
+    <h2>查不到歌曲時可以怎麼做</h2>
+    <ul>
+      <li>縮短歌名，只輸入最有辨識度的關鍵字。</li>
+      <li>改用歌手名稱搜尋。</li>
+      <li>嘗試中英文、日文、別名或括號外的主歌名。</li>
+      <li>放寬語種、字數、導唱與 MV 篩選。</li>
+      <li>若現場確認有收錄，使用提供建議協助補充。</li>
+    </ul>
+
+    <h2>常見問題</h2>
+    <h3>TYFunLab 可以取代現場點歌系統嗎？</h3>
+    <p>不可以。TYFunLab 是歡唱前參考工具，現場仍以包廂點歌系統為準。</p>
+    <h3>查到收錄就代表現場一定點得到嗎？</h3>
+    <p>不一定。平台、門市、機台版本與更新時間都可能影響現場結果。</p>
+    <h3>我的最愛會同步到帳號嗎？</h3>
+    <p>目前我的最愛主要存在你的瀏覽器中，適合聚會前快速整理歌單。</p>
+    <h3>導唱和原版 MV 要怎麼一起看？</h3>
+    <p>先看是否收錄，再看導唱功能，最後看 MV 類型；三個資訊不要混成同一個判斷。</p>
+    <h3>發現資料不一樣要怎麼辦？</h3>
+    <p>可以使用提供建議或回報功能，把現場觀察提供給 TYFunLab 作為修正線索。</p>
+
+    <h2>相關頁面</h2>
+    <div class="links">
+      <a href="https://tyfunlab.com/">首頁</a>
+      <a href="how-to-use.html">使用教學</a>
+      <a href="before-ktv-song-checklist.html">去 KTV 前歌單清單</a>
+      <a href="ktv-song-search-guide.html">KTV 歌曲查詢指南</a>
+      <a href="ktv-guided-vocal.html">KTV 導唱說明</a>
+      <a href="original-mv-vs-karaoke-video.html">原版 MV 與伴唱帶差異</a>
+      <a href="ktv-song-availability-differences.html">KTV 收錄差異</a>
+      <a href="ktv-song-not-found.html">KTV 找不到歌</a>
+      <a href="data-source.html">資料來源</a>
+      <a href="faq.html">FAQ</a>
     </div>
 
-    <h2>3. 判讀導唱與原版 MV</h2>
-    <p>
-      「導唱」表示使用者可在歡唱時跟著導唱聲音練唱；「原版 MV」代表該系統可能提供接近公開常見 MV 的畫面；若不是原版 MV，可能會是伴唱帶、剪輯或其他背景影像。不同門市授權與機台更新不同，標示只作為歡唱前的參考。
-    </p>
-
-    <h2>4. 使用我的最愛</h2>
-    <p>
-      看到想唱的歌曲時，可以使用愛心加入「我的最愛」歌單。這份歌單會存在你的瀏覽器中，方便你在聚會前整理歌曲，也方便在包廂內快速回看。本站不要求註冊帳號，也不會把你的個人歌單上傳成公開資料。
-    </p>
-
-    <h2>5. 參與社群回報與資料修正</h2>
-    <p>
-      在歌曲詳情中，你可以透過三列社群回報功能（<b>收錄狀態</b>、<b>導唱功能</b>、<b>MV 類型</b>）參與現場投票：
-    </p>
-    <ul style="color:var(--text-secondary); margin: 6px 0 12px 20px; line-height: 1.8;">
-      <li><b>收錄狀態</b>：回報現場是否點得到這首歌。</li>
-      <li><b>導唱功能</b>：回報現場是否可切換或播放導唱。</li>
-      <li><b>MV 類型</b>：回報現場畫面較接近原版 MV 或伴唱/剪輯影像 (風景帶)。</li>
-    </ul>
-    <p>
-      社群投票為大眾歡唱實測經驗分享與資料修正線索，僅供趨勢參考與管理員審查，不會立即自動覆寫主資料庫。若發現歌名、歌手或語言有誤，也可以透過回報功能提供修正線索。
-    </p>
-
-    <h2>6. 使用時的最佳方式</h2>
-    <ol>
-      <li>出發前先搜尋想唱歌曲，建立候選歌單。</li>
-      <li>比對不同門市或系統的收錄狀態，挑出較有機會唱到的歌曲。</li>
-      <li>到現場後以包廂機台為準，若資料不同再回報本站。</li>
-      <li>不要把本站資料視為保證結果，應作為歡唱前的輔助參考。</li>
-    </ol>
+    <p class="note">本站為民間獨立歌冊對照平台，不代表任何 KTV 業者。資料會隨平台、門市與時間變動，歡唱現場請以包廂點歌系統為準。</p>
   </main>
 
   <footer>
@@ -100,12 +139,11 @@
     <a href="ktv-audio-types.html">版本說明</a>
     <a href="faq.html">常見問題</a>
     <a href="privacy.html">隱私權政策</a>
-    <a href="terms.html">免責聲明與條款</a>
+    <a href="terms.html">服務條款</a>
     <a href="about.html">關於本站</a>
     <a href="contact.html">聯絡我們</a>
     <br><br>
-    &copy; 2024–2026 TYFunLab 台灣KTV歌曲查詢 — 民間獨立非官方平台
+    &copy; 2024-2026 TYFunLab KTV歌曲查詢。本站為社群協作資訊工具，非各 KTV 業者網站。
   </footer>
 </body>
 </html>
-

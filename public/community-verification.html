@@ -15,7 +15,7 @@
     header a { color: #38bdf8; text-decoration: none; font-size: 0.9rem; }
     header a:hover, footer a:hover, main a:hover { text-decoration: underline; }
     .site-name { color: #fff; font-weight: 800; font-size: 1.1rem; }
-    main { max-width: 780px; margin: 40px auto; padding: 0 24px 60px; }
+    main { max-width: 860px; margin: 40px auto; padding: 0 24px 60px; }
     .breadcrumb { font-size: 0.82rem; color: #64748b; margin-bottom: 24px; }
     .breadcrumb a, main a { color: #38bdf8; text-decoration: none; }
     h1 { font-size: 1.72rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; line-height: 1.35; }
@@ -30,10 +30,32 @@
     .feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0 20px; }
     .feature-card { background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; }
     .feature-card b { display: block; color: #f8fafc; margin-bottom: 4px; }
+    .link-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .link-row a { color: #38bdf8; border: 1px solid rgba(56,189,248,0.28); border-radius: 999px; padding: 6px 10px; text-decoration: none; }
     footer { background: rgba(15,23,42,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 24px; text-align: center; font-size: 0.82rem; color: #64748b; }
     footer a { color: #38bdf8; text-decoration: none; margin: 0 8px; }
   </style>
   <link rel="stylesheet" href="legal-pages.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "首頁",
+        "item": "https://tyfunlab.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "社群回報與投票說明",
+        "item": "https://tyfunlab.com/community-verification.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <header>
@@ -47,19 +69,30 @@
     </nav>
 
     <h1>為什麼 KTV 歌曲資料需要使用者回報補充？</h1>
-    <p class="meta">本站重點不只是查某平台有沒有某首歌，也希望整理原版 MV 或伴唱帶類型、導唱等現場才知道的參考資訊。</p>
+    <div class="meta">使用者回報、社群投票與人工整理的資料修正說明</div>
 
-    <p>
-      多數 KTV 平台會提供歌曲名稱、歌手或現場點歌資訊，但不一定公開完整的版本資訊；本站也不提供點歌碼查詢。對真正要去唱歌的人來說，單純知道「有這首歌」常常還不夠。使用者更在意的是：畫面是否接近原版 MV？是公開 MV、演唱會片段，還是重新剪輯的伴唱帶？歌曲播放時有沒有導唱？不同門市、不同系統、不同更新批次，也可能讓同一首歌在實際現場呈現不同狀態。
-    </p>
+    <p>TYFunLab 的使用者回報是用來補充 KTV 現場差異的資料線索，包含歌曲是否收錄、是否可開導唱、畫面是否接近原版 MV，或是否屬於伴唱帶、Live、剪輯等類型。</p>
+
+    <h2>為什麼 KTV 歌曲資料需要回報</h2>
+    <p>多數 KTV 平台會提供歌曲名稱、歌手或現場點歌資訊，但不一定公開完整的版本資訊；本站也不提供點歌碼查詢。對真正要去唱歌的人來說，單純知道「有這首歌」常常還不夠。</p>
 
     <p>
       這些細節往往只有到現場點歌後才會知道，因此本站希望透過民眾回報與投票，把零散的現場經驗整理成可查詢的參考資料。當越多人確認同一首歌在同一個 KTV 平台的收錄狀態、MV 類型與導唱狀態，資料就越能幫助下一位使用者做行前判斷。
     </p>
 
     <div class="note">
-      本站不是 KTV 業者官方資料庫，而是以公開資訊、使用者回報、社群投票與人工確認共同維護的查詢工具。資料會持續更新，但仍建議以現場機台實際顯示為準。
+      本站不是 KTV 業者網站，而是以公開資訊、使用者回報、社群投票與人工整理共同維護的查詢工具。資料會持續更新，但仍建議以現場機台實際顯示為準。
     </div>
+
+    <h2>什麼情況值得回報</h2>
+    <ul>
+      <li>現場查得到，但本站顯示未收錄。</li>
+      <li>本站顯示有收錄，但現場找不到。</li>
+      <li>現場可開導唱，但本站未標示。</li>
+      <li>現場沒有導唱，但本站標示可能有。</li>
+      <li>現場畫面不是期待的原版 MV。</li>
+      <li>現場看到伴唱帶、Live 或剪輯畫面。</li>
+    </ul>
 
     <h2>我們想補足公開歌單不一定包含的資訊</h2>
     <div class="feature-grid">
@@ -69,7 +102,7 @@
       </div>
       <div class="feature-card">
         <b>是否可能為原版 MV</b>
-        <span>許多人在意畫面是否接近公開常見的原版 MV，尤其是新歌、偶像團體、動畫歌曲與經典 MV。</span>
+        <span>許多人在意畫面是否接近公開常見的原版 MV，尤其是新歌、團體歌曲、動畫歌曲與經典 MV。</span>
       </div>
       <div class="feature-card">
         <b>是否為伴唱帶或剪輯 MV</b>
@@ -90,7 +123,7 @@
       舉例來說，一首歌可能確實在某平台有收錄，但使用者回報現場畫面不像原版 MV，而是剪輯畫面。另一位使用者到現場確認後，也投票表示同樣狀態。當這類回報逐漸累積，系統就能把它標示成較可信的參考，而不是只停留在「某人說有」或「某人說沒有」。
     </p>
 
-    <h2>投票資料如何被使用</h2>
+    <h2>回報如何被使用</h2>
     <ol>
       <li>使用者查詢歌曲後，可以針對特定 KTV 平台回報是否有收錄。</li>
       <li>若歌曲有收錄，可以進一步補充音訊類型、MV 類型或導唱狀態。</li>
@@ -98,14 +131,12 @@
       <li>當某項資料出現明顯爭議，後台可再由管理者人工檢查與修正。</li>
     </ol>
 
-    <p>
-      投票不是為了取代公開歌單，而是補上公開資料不一定包含的體驗細節。尤其是原版 MV、伴唱帶、導唱這些資訊，通常不會完整出現在公開歌單中，但對使用者的實際體驗很重要。
-    </p>
+    <p>回報不會立即改寫主資料。使用者回報會先成為審查線索，當同一歌曲、同一平台累積多筆一致回報，管理者再依資料狀況人工確認與修正。</p>
 
     <h2>原版 MV、伴唱帶與導唱的差異</h2>
     <h3>原版 MV</h3>
     <p>
-      原版 MV 通常指唱片公司、藝人頻道或公開影音平台可查的音樂錄影帶，或現場播放時接近這類素材的版本。使用者如果期待看到熟悉的畫面、劇情、舞蹈或歌手本人演出，通常會偏好原版 MV。
+      原版 MV 通常指公開影音平台可查的音樂錄影帶，或現場播放時接近這類素材的版本。使用者如果期待看到熟悉的畫面、劇情、舞蹈或歌曲相關影像，通常會偏好原版 MV。
     </p>
 
     <h3>伴唱帶或重新剪輯畫面</h3>
@@ -118,9 +149,17 @@
       導唱通常是能讓使用者跟著導唱或示範聲音唱的輔助功能。對冷門歌、新歌、台語歌、日語歌或不熟旋律的歌曲特別有幫助，但並非每首歌都提供導唱。
     </p>
 
-    <h2>資料可信度與限制</h2>
+    <h2>如何讓回報更有用</h2>
+    <ul>
+      <li>提供歌名與歌手，避免只寫片段印象。</li>
+      <li>補充 KTV 平台、門市或觀察時間。</li>
+      <li>分開描述收錄、導唱與 MV 類型，不要混在同一句話。</li>
+      <li>不確定時直接寫不確定，避免猜測變成資料誤差。</li>
+    </ul>
+
+    <h2>社群回報的限制</h2>
     <p>
-      社群資料的價值在於累積，但也需要誠實面對限制。某些歌曲可能因平台更新、門市差異或使用者記憶誤差而產生不同結果。本站會盡量透過多次投票、使用者回報與後台人工確認提高可靠度，但不會把任何一筆回報視為永久不變的結論。
+      社群資料的價值在於累積，但也需要誠實面對限制。某些歌曲可能因平台更新、門市差異或使用者記憶誤差而產生不同結果。本站會盡量透過多次投票、使用者回報與人工整理提高可靠度，但不會把任何一筆回報視為永久不變的結論。
     </p>
 
     <div class="warning">
@@ -139,10 +178,15 @@
       這樣的資料不適合只靠單一管理者維護，因為 KTV 歌庫變動快，且許多細節只有現場使用者會知道。本站希望把大家分散的經驗整理成結構化資料，讓找歌、揪團、練歌與選平台都更有效率。
     </p>
 
-    <h2>相關說明</h2>
-    <p>
-      若想了解更多音訊與 MV 分類，可閱讀 <a href="ktv-audio-types.html">KTV 音訊類型與 MV 類型說明</a>。若想了解資料來源與修正方式，可閱讀 <a href="data-source.html">資料來源與人工確認機制</a>。
-    </p>
+    <h2>相關頁面</h2>
+    <div class="link-row">
+      <a href="https://tyfunlab.com/">首頁</a>
+      <a href="how-to-use.html">使用教學</a>
+      <a href="data-source.html">資料來源</a>
+      <a href="community-verification.html">社群回報</a>
+      <a href="faq.html">常見問題</a>
+      <a href="contact.html">聯絡我們</a>
+    </div>
   </main>
 
   <footer>
