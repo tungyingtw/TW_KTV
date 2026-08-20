@@ -21,11 +21,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tyfunlab.com/ktv-audio-types.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://tyfunlab.com/community-verification.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -37,16 +32,6 @@
   </url>
   <url>
     <loc>https://tyfunlab.com/contact.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tyfunlab.com/privacy.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tyfunlab.com/terms.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

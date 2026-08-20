@@ -517,17 +517,17 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             
                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
                               {isOfficialMv && (
-                                <span className="badge badge-official-mv" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
+                                <span className="badge badge-official-mv" title="目前資料顯示現場畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
                                   MV
                                 </span>
                               )}
                               {isReeditedMv && (
-                                <span className="badge" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px' }}>
+                                <span className="badge" title="目前資料顯示現場畫面可能不是公開常見原版 MV，可能是伴唱帶、Live 或剪輯類型。" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px' }}>
                                   伴唱帶
                                 </span>
                               )}
                               {hasGuidedVocal && (
-                                <span className="badge badge-guided-vocal" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                <span className="badge badge-guided-vocal" title="目前資料顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
                                   導唱
                                 </span>
                               )}
@@ -569,17 +569,17 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           
                           <div style={{ display: 'flex', gap: '2px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {isOfficialMv && (
-                              <span className="badge badge-official-mv" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
+                              <span className="badge badge-official-mv" title="目前資料顯示現場畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
                                 MV
                               </span>
                             )}
                             {isReeditedMv && (
-                              <span className="badge" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '3px' }}>
+                              <span className="badge" title="目前資料顯示現場畫面可能不是公開常見原版 MV，可能是伴唱帶、Live 或剪輯類型。" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '3px' }}>
                                 伴唱帶
                               </span>
                             )}
                             {hasGuidedVocal && (
-                              <span className="badge badge-guided-vocal" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
+                              <span className="badge badge-guided-vocal" title="目前資料顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
                                 導唱
                               </span>
                             )}

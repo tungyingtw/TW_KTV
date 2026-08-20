@@ -356,7 +356,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                     >
                       <option value="unknown" style={{ background: 'var(--bg-card, #1e293b)' }}>不確定</option>
                       <option value="official" style={{ background: 'var(--bg-card, #1e293b)' }}>原版 MV</option>
-                      <option value="karaoke" style={{ background: 'var(--bg-card, #1e293b)' }}>伴唱畫面</option>
+                      <option value="karaoke" style={{ background: 'var(--bg-card, #1e293b)' }}>伴唱帶類型</option>
                     </select>
                   </label>
 

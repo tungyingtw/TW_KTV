@@ -181,7 +181,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
           <div className="search-bar-bottom-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <label className={`quality-filter-chip is-mv ${filters.onlyOfficialMv ? 'is-selected' : ''}`} style={{
+              <label className={`quality-filter-chip is-mv ${filters.onlyOfficialMv ? 'is-selected' : ''}`} title="篩出目前資料顯示畫面可能接近公開常見 MV 的歌曲。" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
@@ -200,7 +200,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 <Video size={16} /> 原版 MV
               </label>
 
-              <label className={`quality-filter-chip is-guided ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} style={{
+              <label className={`quality-filter-chip is-guided ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} title="篩出目前資料顯示可能提供導唱功能的歌曲。" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
@@ -233,7 +233,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 <button
                   onClick={onOpenSuggestSong}
                   className="inline-suggest-link"
-                  title="找不到想唱的歌曲，或想提供 KTV 廠牌資料時可送出建議"
+                  title="找不到歌曲或想補充現場線索時，可送出歌曲資料建議。"
                 >
                   <PlusCircle size={16} />
                   <span>提供建議</span>

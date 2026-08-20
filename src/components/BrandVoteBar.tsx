@@ -386,7 +386,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
             className={`brand-vote-action is-guided ${userGuideVote === 'guided' ? 'is-selected' : ''}`}
             onClick={e => { e.stopPropagation(); handleGuideVote('guided'); }}
             disabled={isGuideVoting}
-            title="現場可切換或播放導唱"
+            title="目前資料顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。"
             style={{
               ...buttonBaseStyle,
               background: userGuideVote === 'guided' ? 'rgba(34,211,238,0.2)' : 'rgba(255,255,255,0.04)',
@@ -405,7 +405,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
             className={`brand-vote-action is-muted ${userGuideVote === 'none' ? 'is-selected' : ''}`}
             onClick={e => { e.stopPropagation(); handleGuideVote('none'); }}
             disabled={isGuideVoting}
-            title="現場無法使用導唱"
+            title="目前資料未顯示可用導唱，或使用者回報現場沒有。"
             style={{
               ...buttonBaseStyle,
               background: userGuideVote === 'none' ? 'rgba(251,146,60,0.22)' : 'rgba(255,255,255,0.04)',
@@ -433,7 +433,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
               className={`brand-vote-action is-mv ${userMvVote === 'official' ? 'is-selected' : ''}`}
               onClick={e => { e.stopPropagation(); handleMvVote('official'); }}
               disabled={isMvVoting}
-              title="唱片公司、藝人頻道或公開平台常見的 MV 畫面"
+              title="目前資料顯示現場畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。"
               style={{
                 ...buttonBaseStyle,
                 background: userMvVote === 'official' ? 'rgba(56,189,248,0.22)' : 'rgba(255,255,255,0.04)',
@@ -452,7 +452,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
               className={`brand-vote-action is-edited ${userMvVote === 'edited' ? 'is-selected' : ''}`}
               onClick={e => { e.stopPropagation(); handleMvVote('edited'); }}
               disabled={isMvVoting}
-              title="可能為風景、模特兒、現場或重新剪輯畫面"
+              title="目前資料顯示現場畫面可能不是公開常見原版 MV，可能是伴唱帶、Live 或剪輯類型。"
               style={{
                 ...buttonBaseStyle,
                 background: userMvVote === 'edited' ? 'rgba(168,85,247,0.22)' : 'rgba(255,255,255,0.04)',
@@ -463,7 +463,7 @@ export const BrandVoteBar: React.FC<BrandVoteBarProps> = ({ songId, brandId, ini
               }}
             >
               <Film size={11} />
-              <span>伴唱畫面</span>
+              <span>伴唱帶</span>
               {editedMvCount > 0 && <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '4px', padding: '0 4px', fontSize: '0.65rem' }}>{editedMvCount}</span>}
             </button>
           </div>

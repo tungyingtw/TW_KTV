@@ -291,17 +291,17 @@ export const CardView: React.FC<CardViewProps> = ({
                         {b.shortName}
                       </span>
                       {status.mvType === 'official_mv' && (
-                        <span className="badge badge-official-mv" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
+                        <span className="badge badge-official-mv" title="目前資料顯示現場畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
                           MV
                         </span>
                       )}
                       {status.mvType === 'reedited_mv' && (
-                        <span className="badge" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
+                        <span className="badge" title="目前資料顯示現場畫面可能不是公開常見原版 MV，可能是伴唱帶、Live 或剪輯類型。" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
                           伴唱帶
                         </span>
                       )}
                       {status.audioType === 'guided_vocal' && (
-                        <span className="badge badge-guided-vocal" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                        <span className="badge badge-guided-vocal" title="目前資料顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
                           導唱
                         </span>
                       )}
@@ -351,10 +351,10 @@ export const CardView: React.FC<CardViewProps> = ({
                   </a>
                 ) : null}
 
-                {/* 回報資料問題小按鈕 */}
+                {/* 回報現場差異小按鈕 */}
                 <button
                   onClick={e => { e.stopPropagation(); setReportingSong(song); }}
-                  title="回報資料問題"
+                  title="現場看到的收錄、導唱或 MV 類型和本站不同時，可提供回報線索。"
                   className="action-text-link"
                   style={{
                     background: 'none',
@@ -373,7 +373,7 @@ export const CardView: React.FC<CardViewProps> = ({
                   onMouseLeave={e => (e.currentTarget.style.color = '#64748b')}
                 >
                   <Flag size={12} />
-                  回報資料問題
+                  回報現場差異
                 </button>
               </div>
 
