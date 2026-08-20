@@ -1,586 +1,163 @@
 import React, { useState } from 'react';
-import { BookOpen, HelpCircle, Music2, ShieldAlert, ChevronDown, ChevronUp, Sliders, Disc, Mic2, Search, CheckCircle2, Heart, Vote } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronUp, HelpCircle, Mic2, Search, ShieldAlert, Vote } from 'lucide-react';
+
+type GuideTab = 'query' | 'data' | 'media' | 'faq';
+
+const guideLinks = [
+  { href: './how-to-use.html', label: '使用教學', desc: '搜尋、篩選與歌單整理方式' },
+  { href: './ktv-song-search-guide.html', label: 'KTV 查詢指南', desc: '收錄、導唱與 MV 類型怎麼看' },
+  { href: './before-ktv-song-checklist.html', label: '歌單準備清單', desc: '去 KTV 前先整理想唱歌曲' },
+  { href: './ktv-song-not-found.html', label: '找不到歌怎麼辦', desc: '查不到歌曲時的常見原因與做法' },
+  { href: './data-source.html', label: '資料來源', desc: '公開資訊、使用者回報與人工確認' },
+  { href: './community-verification.html', label: '社群回報', desc: '收錄、導唱與 MV 類型回報說明' },
+  { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '有導唱與純伴奏切換參考' },
+  { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型說明', desc: '原版 MV、伴唱帶類型與其他畫面分類' },
+  { href: './ktv-song-availability-differences.html', label: '平台收錄差異', desc: '曲庫更新、門市與機台差異' },
+  { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
+];
+
+const faqItems = [
+  {
+    question: 'TYFunLab 的查詢結果可以直接當現場保證嗎？',
+    answer: '不行。本站整理公開資訊、使用者回報與人工確認線索，適合歡唱前準備歌單；實際是否能點唱，仍以門市包廂內點歌系統為準。',
+  },
+  {
+    question: '同一首歌為什麼不同平台結果不同？',
+    answer: '不同平台、門市、機台版本與曲庫更新時間都可能造成差異。本站會把這些差異整理成可比較的查詢參考，但不取代現場系統。',
+  },
+  {
+    question: '我查不到歌曲時該怎麼做？',
+    answer: '先縮短歌名、改用歌手名稱、嘗試常見別名或放寬篩選。若現場確認有收錄，也可以提供建議，讓資料後續能修正。',
+  },
+];
 
 export const SiteInfoGuide: React.FC = () => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'how_to_use' | 'articles' | 'faq'>('overview');
-  const [activeArticleIndex, setActiveArticleIndex] = useState<number>(0);
-
-  const articles = [
-    {
-      id: 'vocal-mv-guide',
-      title: '導唱功能 vs 純伴奏切換完全解析',
-      icon: Mic2,
-      tag: '音軌切換指南',
-      summary: '整理 KTV 門市導唱切換與純伴奏差異，協助判讀現場是否能開啟導唱。',
-      content: [
-        '導唱功能是 KTV 伴唱系統提供的跟唱輔助，可能以示範聲音、旋律提示或其他平台設定呈現。TYFunLab 只整理使用者在現場是否可能開啟導唱，不判定聲音來源，也不保證所有門市一致。',
-        '若未顯示導唱標示，代表目前資料尚未確認，不等於一定沒有導唱。使用者可以把導唱欄位視為歡唱前的參考線索，現場仍以包廂點歌系統為準。',
-        '原版 MV 通常指接近公開常見音樂錄影帶的畫面。伴唱帶類型則可能是字幕背景、風景畫面、棚拍、Live 或剪輯素材。兩者都可能可以用來唱歌，TYFunLab 標示它們是為了讓使用者在行前預期現場畫面類型。'
-      ]
-    },
-    {
-      id: 'system-licensing',
-      title: '營業連鎖門市 vs 專業伴唱機系統 版權生態解密',
-      icon: Disc,
-      tag: '系統與版權',
-      summary: '為什麼營業門市與電腦伴唱機的新歌上架時間不同？揭開公播授權與歌本發行機制。',
-      content: [
-        '台灣 KTV 與伴唱系統主要分為兩大體系：一為「連鎖營業門市專用伴唱系統」；二為「家用與專業電腦伴唱機體系」。',
-        '連鎖門市專用伴唱系統採用「連鎖營業公播授權」，新歌從唱片公司授權、門市伴唱機網路自動同步到門市專用影音資料庫的時間較短。',
-        '家用與專業電腦伴唱機則需配合電腦伴唱機規格、卡拉OK晶片音源製作與每月歌本更新發行，因此在不同伴唱機品牌間，同一首新歌的上架發行時間點會有所差異。'
-      ]
-    },
-    {
-      id: 'pitch-key-tips',
-      title: '歡唱技巧：男歌女唱與女歌男唱升降調 (Pitch/Key) 實用指南',
-      icon: Sliders,
-      tag: '練歌與調性',
-      summary: '包廂歡唱如何調 Key 不變形？掌握男女聲調轉換黃金法則，輕鬆飆高音不鎖喉。',
-      content: [
-        '在包廂點唱異性歌手的歌曲時，盲目硬唱容易導致鎖喉或音準不佳。由於男女平均音域通常相差約 4 至 5 個半音（Half Steps），適當使用伴唱機的升降調（Key / Pitch Adjust）是發揮歌聲的關鍵。',
-        '【男唱女歌建議】：建議將 Key 調降 3 至 4 個半音 (-3 ~ -4 Key)，或升 1 至 2 個半音 (+1 ~ +2 Key) 並降八度唱，這樣可以在舒適的中低音域展現磁性音調。',
-        '【女唱男歌建議】：建議將 Key 升 3 至 4 個半音 (+3 ~ +4 Key)，讓旋律落在女聲自然明亮的真聲與混音發聲區間。'
-      ]
-    },
-    {
-      id: 'party-songs-guide',
-      title: '歡唱情境與合唱歌單分類建議',
-      icon: BookOpen,
-      tag: '歡唱指南',
-      summary: '包廂破冰開嗓、男女對唱金曲、飆高音紓壓等情境歌單心法。',
-      content: [
-        '歡唱聚會的成功關鍵在於氣氛的鋪陳與歌單的輪替。建議將歡唱過程分為三個階段：',
-        '1. 【開嗓破冰期】：選擇節奏明快、傳唱度高的中速流行歌或台語經典，讓包廂全員快速進入歡唱狀態。',
-        '2. 【氣氛高峰期】：安排男女經典對唱、團體合唱或飆高音抒情歌曲，帶動全場氣氛。',
-        '3. 【尾聲暖心期】：歡唱結束前最後半小時，適合點選感性懷舊金曲或全員大合唱曲目，為聚會畫下完美句點。'
-      ]
-    }
-  ];
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<GuideTab>('query');
 
   return (
-    <section
-      className="site-info-guide"
-      aria-label="台灣 KTV 歌曲查詢與歡唱知識指南"
-      style={{
-        width: '100%',
-        maxWidth: '1400px',
-        margin: '24px auto',
-        padding: '0 20px',
-        boxSizing: 'border-box',
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          boxSizing: 'border-box',
-          background: 'var(--bg-glass, rgba(30, 41, 59, 0.6))',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-          borderRadius: '16px',
-          padding: '24px',
-          color: 'var(--text-secondary, #cbd5e1)',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: isExpanded ? '1px solid var(--border-color, rgba(255, 255, 255, 0.08))' : 'none',
-            paddingBottom: isExpanded ? '16px' : '0',
-            marginBottom: isExpanded ? '20px' : '0',
-            cursor: 'pointer',
-          }}
-          onClick={() => setIsExpanded(!isExpanded)}
+    <section className="site-info-guide" aria-labelledby="site-info-guide-title">
+      <div className="site-info-guide-shell">
+        <button
+          type="button"
+          className="site-info-guide-toggle"
+          onClick={() => setIsExpanded(prev => !prev)}
+          aria-expanded={isExpanded}
+          aria-controls="site-info-guide-body"
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
-                background: 'rgba(219, 39, 119, 0.075)',
-                border: '1px solid rgba(219, 39, 119, 0.24)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--accent-pink, #f472b6)',
-                flexShrink: 0,
-              }}
-            >
-              <BookOpen size={20} />
-            </div>
-            <div>
-              <h2
-                style={{
-                  margin: 0,
-                  fontSize: '1.15rem',
-                  fontWeight: 700,
-                  color: 'var(--text-primary, #f8fafc)',
-                }}
-              >
-                台灣 KTV 歌曲查詢與歡唱知識指南
-              </h2>
-              <p
-                style={{
-                  margin: '2px 0 0 0',
-                  fontSize: '0.8rem',
-                  color: 'var(--text-muted, #94a3b8)',
-                }}
-              >
-                整理多家 KTV 平台與伴唱系統的收錄狀態、導唱標示與歡唱前參考資訊
-              </p>
-            </div>
-          </div>
-
-          <button
-            style={{
-              background: 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
-              border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-              borderRadius: '8px',
-              padding: '6px 12px',
-              color: 'var(--text-secondary, #cbd5e1)',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            {isExpanded ? (
-              <>
-                <span>收起指南</span>
-                <ChevronUp size={16} />
-              </>
-            ) : (
-              <>
-                <span>閱讀完整指南</span>
-                <ChevronDown size={16} />
-              </>
-            )}
-          </button>
-        </div>
+          <span className="site-info-guide-icon" aria-hidden="true">
+            <BookOpen size={20} />
+          </span>
+          <span className="site-info-guide-heading">
+            <span id="site-info-guide-title">台灣 KTV 歌曲查詢完整指南</span>
+            <small>想看操作教學、資料來源、導唱與 MV 類型說明，可以從這裡進一步閱讀。</small>
+          </span>
+          <span className="site-info-guide-action">
+            {isExpanded ? '收起指南' : '閱讀指南'}
+            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </span>
+        </button>
 
         {isExpanded && (
-          <div>
-            <div
-              style={{
-                display: 'flex',
-                gap: '8px',
-                marginBottom: '20px',
-                borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                paddingBottom: '12px',
-                overflowX: 'auto',
-              }}
-            >
-              <button
-                className={`site-info-tab ${activeTab === 'overview' ? 'is-selected' : ''}`}
-                onClick={() => setActiveTab('overview')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: 'none',
-                  background: activeTab === 'overview' ? '#38bdf8' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
-                  color: activeTab === 'overview' ? '#0f172a' : 'var(--text-secondary, #cbd5e1)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                廠牌收錄查詢
-              </button>
-
-              <button
-                className={`site-info-tab ${activeTab === 'how_to_use' ? 'is-selected' : ''}`}
-                onClick={() => setActiveTab('how_to_use')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: 'none',
-                  background: activeTab === 'how_to_use' ? '#10b981' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
-                  color: activeTab === 'how_to_use' ? '#0f172a' : 'var(--text-secondary, #cbd5e1)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                系統操作指引與教學
-              </button>
-
-              <button
-                className={`site-info-tab ${activeTab === 'articles' ? 'is-selected' : ''}`}
-                onClick={() => setActiveTab('articles')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: 'none',
-                  background: activeTab === 'articles' ? '#ec4899' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
-                  color: activeTab === 'articles' ? '#ffffff' : 'var(--text-secondary, #cbd5e1)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                KTV 歡唱知識學堂 (原創專題)
-              </button>
-
-              <button
-                className={`site-info-tab ${activeTab === 'faq' ? 'is-selected' : ''}`}
-                onClick={() => setActiveTab('faq')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: 'none',
-                  background: activeTab === 'faq' ? '#f59e0b' : 'var(--bg-glass, rgba(255, 255, 255, 0.05))',
-                  color: activeTab === 'faq' ? '#0f172a' : 'var(--text-secondary, #cbd5e1)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                常見問答 FAQ
-              </button>
-            </div>
-
-            <div
-              style={{
-                marginBottom: '20px',
-                padding: '18px 0 2px',
-                maxWidth: '980px',
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  color: 'var(--text-secondary, #cbd5e1)',
-                  fontSize: '0.98rem',
-                  lineHeight: 1.85,
-                }}
-              >
-                本區整理本站的資料判讀方式：哪些資訊來自公開曲庫、哪些來自歌友現場回報，哪些需要透過投票累積共識。你可以把它視為查歌前的說明書，先理解「收錄」、「原版 MV」與「導唱功能」各自代表什麼，再回到上方列表比較不同 KTV 品牌的實際狀態。
-              </p>
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-                gap: '1px',
-                marginBottom: '24px',
-                overflow: 'hidden',
-                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                borderRadius: '10px',
-              }}
-            >
-              {[
-                { href: './how-to-use.html', label: '使用教學', desc: '搜尋、篩選與歌單整理方式' },
-                { href: './ktv-song-search-guide.html', label: 'KTV 查詢指南', desc: '收錄、導唱與 MV 類型怎麼看' },
-                { href: './before-ktv-song-checklist.html', label: '歌單準備清單', desc: '去 KTV 前先整理想唱歌曲' },
-                { href: './ktv-song-not-found.html', label: '找不到歌怎麼辦', desc: '查不到歌曲時的常見原因與做法' },
-                { href: './data-source.html', label: '資料來源', desc: '公開資訊、使用者回報與人工確認' },
-                { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型說明', desc: '原版 MV、伴唱帶類型與剪輯 MV 分類' },
-                { href: './community-verification.html', label: '社群回報', desc: '收錄、原版 MV 與導唱投票說明' },
-                { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型差異', desc: '原版 MV、伴唱帶類型與剪輯 MV 分類' },
-                { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '有導唱與純伴奏切換解析' },
-                { href: './ktv-song-availability-differences.html', label: '平台收錄差異', desc: '授權範圍、曲庫更新與門市差異' },
-                { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
-              ].map(link => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  style={{
-                    display: 'block',
-                    textDecoration: 'none',
-                    background: 'var(--bg-card, rgba(15, 23, 42, 0.72))',
-                    padding: '12px 14px',
-                  }}
-                >
-                  <div style={{ color: '#38bdf8', fontSize: '0.86rem', fontWeight: 700, marginBottom: '2px' }}>
-                    {link.label}
-                  </div>
-                  <div style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.76rem', lineHeight: 1.45 }}>
-                    {link.desc}
-                  </div>
+          <div id="site-info-guide-body" className="site-info-guide-body">
+            <nav className="site-info-guide-links" aria-label="完整指南頁面入口">
+              {guideLinks.map(link => (
+                <a key={link.href} href={link.href} className="site-info-guide-link">
+                  <strong>{link.label}</strong>
+                  <span>{link.desc}</span>
                 </a>
+              ))}
+            </nav>
+
+            <div className="site-info-guide-tabs" role="tablist" aria-label="指南分類">
+              {[
+                ['query', '查詢工具指南', Search],
+                ['data', '資料與回報', Vote],
+                ['media', '導唱與 MV 類型', Mic2],
+                ['faq', '常見問題', HelpCircle],
+              ].map(([id, label, Icon]) => (
+                <button
+                  key={id as GuideTab}
+                  type="button"
+                  className={`site-info-tab ${activeTab === id ? 'is-selected' : ''}`}
+                  onClick={() => setActiveTab(id as GuideTab)}
+                  role="tab"
+                  aria-selected={activeTab === id}
+                >
+                  <Icon size={16} />
+                  <span>{label as string}</span>
+                </button>
               ))}
             </div>
 
-            {activeTab === 'overview' && (
-              <div style={{ fontSize: '0.92rem', lineHeight: 1.8 }}>
-                  <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px', alignItems: 'start' }}>
-                {/* Column 1: System Differences & Brands */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <p style={{ margin: 0 }}>
-                    TYFunLab 可用來查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能與 MV 類型。查詢結果適合歡唱前準備歌單，現場仍以包廂點歌系統為準。
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
-                    <Music2 size={18} />
-                    <span>為什麼需要歌友共同回報現場資訊</span>
-                  </div>
-                  <p style={{ margin: 0 }}>
-                    台灣連鎖門市與自助式伴唱系統採用的曲庫與影音版本各不相同，主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    本網站透過使用者回報與資料彙整，為歌友提供動態擴充的跨廠牌門市收錄查詢，幫助您在歡唱前快速掌握現場是否可能收錄該曲目。
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    KTV 現場設備會因門市、包廂機型、曲庫更新批次與授權範圍不同而有差異。公開資料通常只能回答大方向，真正能補齊「現場是否點得到、畫面是否接近原版 MV、是否能開導唱」的，是實際到店使用者的回報與投票。
-                  </p>
+            {activeTab === 'query' && (
+              <div className="site-info-guide-panel">
+                <div>
+                  <h3>查詢時先看什麼？</h3>
+                  <p>先搜尋歌名或歌手，再依序查看平台收錄、導唱功能與 MV 類型。這樣能避免只看到有收錄，卻忽略現場版本、門市或機台差異。</p>
                 </div>
-
-                <aside className="site-info-panel" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', borderRadius: '10px', background: 'var(--bg-card, rgba(15, 23, 42, 0.72))' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700 }}>
-                    <HelpCircle size={18} />
-                    <span>資料使用提醒</span>
-                  </div>
-                  <p style={{ margin: 0 }}>
-                    本站提供的是歌友共同維護的查詢參考，不是任何 KTV 品牌的正式說明。出發前可先查詢與收藏，現場仍請以門市點歌系統實際顯示為準。
-                  </p>
-                </aside>
+                <div>
+                  <h3>去 KTV 前怎麼準備？</h3>
+                  <p>先列出想唱歌曲，用 TYFunLab 查收錄、導唱與 MV 類型，再把想唱的歌加入我的最愛。到現場後，仍以包廂內點歌系統再次確認。</p>
                 </div>
-
-                <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', borderRadius: '10px', overflow: 'hidden' }}>
-                  {[
-                    ['收錄', '回答這個品牌是否能點到這首歌。列表中的收錄數代表目前品牌範圍內有幾家收錄。'],
-                    ['原版 MV', '回答播放畫面是否接近公開常見 MV，不代表歌曲已收錄，也不代表有導唱。'],
-                    ['導唱功能', '回答現場是否能開啟導唱。導唱欄只表示有或沒有導唱，未標示代表尚未確認。'],
-                  ].map(([term, desc]) => (
-                    <div key={term} style={{ padding: '14px', background: 'var(--bg-glass, rgba(15, 23, 42, 0.45))', borderRight: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))' }}>
-                      <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--text-primary, #f8fafc)' }}>{term}</strong>
-                      <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)', fontSize: '0.84rem', lineHeight: 1.65 }}>{desc}</p>
-                    </div>
-                  ))}
+                <div>
+                  <h3>找不到歌怎麼辦？</h3>
+                  <p>縮短歌名、改用歌手名稱、嘗試別名或放寬篩選。若確認現場有收錄，可以提供建議作為後續修正線索。</p>
                 </div>
               </div>
             )}
 
-            {activeTab === 'how_to_use' && (
-              <>
-              <p style={{ margin: '0 0 14px', color: 'var(--text-secondary, #cbd5e1)', fontSize: '0.92rem', lineHeight: 1.75 }}>
-                使用 TYFunLab 時，先搜尋歌名或歌手，再查看多家 KTV 平台的可能收錄狀態、導唱功能與 MV 類型，最後把想唱的歌加入我的最愛，現場再以包廂點歌系統確認。
-              </p>
-              <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
-                    <Search size={18} />
-                    <span>1. 快速搜尋與門市查詢</span>
-                  </div>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    在頂部搜尋欄輸入<strong>歌手名稱、歌名關鍵字或歌曲辨識線索</strong>，系統會比對多家 KTV 門市與伴唱系統之收錄狀態。您亦可點擊頂部廠牌頁籤快速篩選特定門市或伴唱機系統查看收錄狀況。
-                  </p>
+            {activeTab === 'data' && (
+              <div className="site-info-guide-panel">
+                <div>
+                  <h3>本站資料從哪裡來？</h3>
+                  <p>本站整理公開可查資料、使用者回報與人工確認線索，目標是協助歡唱前快速比對，不宣稱代表任何 KTV 官方資料。</p>
                 </div>
-
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ec4899', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
-                    <CheckCircle2 size={18} />
-                    <span>2. 辨識導唱與 MV 標示</span>
-                  </div>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    歌曲卡片上標示 <strong>導唱</strong> 代表該系統可能可提供導唱功能；標示 <strong>MV</strong> 則代表目前資料顯示可能為原版 MV 或接近公開常見 MV 的畫面。若未顯示標籤，代表目前資料尚未確認，實際狀態仍以現場設備為準。
-                  </p>
+                <div>
+                  <h3>為什麼需要回報？</h3>
+                  <p>KTV 現場會受門市、機台、曲庫更新與平台差異影響。使用者回報能補足公開資料無法即時呈現的現場狀況。</p>
                 </div>
-
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
-                    <Heart size={18} />
-                    <span>3. 我的最愛口袋歌單</span>
-                  </div>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單，方便您在歡唱時快速瀏覽個人專屬愛歌與比對多家 KTV 平台收錄狀態。
-                  </p>
-                </div>
-
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(168, 85, 247, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a855f7', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
-                    <Vote size={18} />
-                    <span>4. 社群投票與資料回報</span>
-                  </div>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    找不到欲點唱的歌曲？可透過「提供建議」送出歌曲線索。若在門市現場發現狀況有誤，亦可在歌曲詳情中透過「收錄狀態、導唱功能、MV 類型」投票或回報，協助後續人工確認。
-                  </p>
+                <div>
+                  <h3>資料可信度怎麼看？</h3>
+                  <p>把查詢結果視為出發前參考最合適。若資訊牽涉是否能點唱、是否有導唱或畫面類型，請以現場點歌系統為準。</p>
                 </div>
               </div>
-
-              <div style={{
-                marginTop: '18px',
-                background: 'rgba(251, 191, 36, 0.1)',
-                border: '1px solid rgba(251, 191, 36, 0.28)',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                color: 'var(--text-secondary, #cbd5e1)',
-                fontSize: '0.86rem',
-                lineHeight: 1.7,
-              }}>
-                本站不提供點歌碼查詢，也不建議將本站資料作為現場輸入點歌碼使用；實際點歌方式與歌曲編號請以各門市包廂內點歌系統顯示為準。
-              </div>
-              </>
             )}
 
-            {activeTab === 'articles' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {articles.map((art, idx) => {
-                    const isSelected = activeArticleIndex === idx;
-                    return (
-                      <button
-                        key={art.id}
-                        className={`site-info-article-tab ${isSelected ? 'is-selected' : ''}`}
-                        onClick={() => setActiveArticleIndex(idx)}
-                        style={{
-                          padding: '8px 14px',
-                          borderRadius: '8px',
-                          border: isSelected ? '1px solid #ec4899' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                          background: isSelected ? 'rgba(236, 72, 153, 0.15)' : 'var(--bg-glass, rgba(15, 23, 42, 0.4))',
-                          color: isSelected ? '#f472b6' : 'var(--text-muted, #94a3b8)',
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <span>{art.tag}</span>
-                      </button>
-                    );
-                  })}
+            {activeTab === 'media' && (
+              <div className="site-info-guide-panel">
+                <div>
+                  <h3>KTV 導唱是什麼？</h3>
+                  <p>導唱是伴唱系統可能提供的跟唱輔助功能，不等於歌手本人原唱。本站只整理目前資料是否顯示可能提供導唱。</p>
                 </div>
-
-                {articles[activeArticleIndex] && (
-                  <article
-                    className="site-info-panel"
-                    style={{
-                      background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <span
-                        style={{
-                          background: 'rgba(236, 72, 153, 0.2)',
-                          color: '#ec4899',
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                        }}
-                      >
-                        {articles[activeArticleIndex].tag}
-                      </span>
-                    </div>
-                    <h3
-                      style={{
-                        fontSize: '1.1rem',
-                        fontWeight: 700,
-                        color: 'var(--text-primary, #f8fafc)',
-                        marginTop: 0,
-                        marginBottom: '12px',
-                      }}
-                    >
-                      {articles[activeArticleIndex].title}
-                    </h3>
-                    <h4 style={{ color: '#38bdf8', margin: '0 0 6px', fontSize: '0.92rem' }}>
-                      問題
-                    </h4>
-                    <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary, #cbd5e1)', margin: '0 0 12px', lineHeight: 1.65 }}>
-                      {articles[activeArticleIndex].title}
-                    </p>
-                    <h4 style={{ color: '#38bdf8', margin: '0 0 6px', fontSize: '0.92rem' }}>
-                      短答案
-                    </h4>
-                    <p style={{ fontSize: '0.85rem', color: '#38bdf8', fontStyle: 'italic', margin: '0 0 16px', lineHeight: 1.65 }}>
-                      {articles[activeArticleIndex].summary}
-                    </p>
-                    <h4 style={{ color: '#38bdf8', margin: '0 0 8px', fontSize: '0.92rem' }}>
-                      說明
-                    </h4>
-                    <div style={{ fontSize: '0.88rem', lineHeight: 1.75, color: 'var(--text-secondary, #cbd5e1)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {articles[activeArticleIndex].content.map((paragraph, pIdx) => (
-                        <p key={pIdx} style={{ margin: 0 }}>
-                          {paragraph}
-                        </p>
-                      ))}
-                    </div>
-                  </article>
-                )}
+                <div>
+                  <h3>MV 標示怎麼看？</h3>
+                  <p>MV 類型標示用來區分現場畫面可能接近原版 MV、伴唱帶類型或其他版本。它不是品質評分，也不代表所有門市一致。</p>
+                </div>
+                <div>
+                  <h3>平台差異會影響什麼？</h3>
+                  <p>同一首歌在不同平台可能出現收錄、導唱與 MV 類型不同。查詢時建議同時看多個品牌，不只看單一欄位。</p>
+                </div>
               </div>
             )}
 
             {activeTab === 'faq' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem', lineHeight: 1.65 }}>
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
-                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q1：TYFunLab 可以查什麼？
-                  </h4>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：TYFunLab 可查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能、MV 類型與使用者回報線索。查詢結果適合歡唱前準備，現場仍以包廂點歌系統為準。
-                  </p>
-                </div>
-
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
-                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q2：KTV 導唱是什麼？
-                  </h4>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：KTV 導唱是伴唱系統提供的跟唱輔助功能，讓不熟歌曲的人可以跟著聲音或旋律提示演唱。不同平台或歌曲版本不一定都有導唱。
-                  </p>
-                </div>
-
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
-                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q3：有 MV 標示代表一定是原版 MV 嗎？
-                  </h4>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：不是。MV 類型標示用來區分現場畫面可能接近原版 MV，或可能屬於伴唱帶、Live、剪輯等類型。實際畫面仍可能因平台、門市或機台版本不同而變動。
-                  </p>
-                </div>
-
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
-                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q4：為什麼同一首歌不同 KTV 平台收錄不同？
-                  </h4>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：不同平台可能有不同授權範圍、曲庫更新時間、機台版本與影音素材，因此同一首歌的收錄、導唱與 MV 類型可能不同。
-                  </p>
-                </div>
-
-                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
-                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q5：查到有收錄，現場就能點到嗎？
-                  </h4>
-                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：不一定。本站資料是公開資訊、使用者回報與人工整理的參考，實際點歌結果請以現場點歌系統為準。
-                  </p>
-                </div>
+              <div className="site-info-guide-faq">
+                {faqItems.map(item => (
+                  <article key={item.question}>
+                    <h3>{item.question}</h3>
+                    <p>{item.answer}</p>
+                  </article>
+                ))}
               </div>
             )}
 
-            <div
-              style={{
-                marginTop: '20px',
-                paddingTop: '16px',
-                borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                fontSize: '0.82rem',
-                color: 'var(--text-muted, #94a3b8)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-              }}
-            >
-              <ShieldAlert size={18} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <strong>客觀查詢與版權免責</strong>：本網站為民間獨立開發之非官方歌曲索引查詢庫，非任何 KTV 連鎖門市、伴唱系統或伴唱機製造商之官方網站。網站內記載之品牌與商標權均歸原註冊公司所有；影音連結均引用第三方公開平台（如 YouTube），本站不儲存任何音訊影片檔案。門市實體收錄狀態請以各門市現場點歌機器為準。
-              </div>
+            <div className="site-info-guide-disclaimer">
+              <ShieldAlert size={18} />
+              <p>
+                <strong>客觀查詢與版權免責：</strong>
+                本站為民間獨立開發之非官方歌曲索引查詢庫，非任何 KTV 連鎖門市、伴唱系統或伴唱機製造商之官方網站。網站內記載之品牌與商標權均歸原註冊公司所有；影音連結均引用第三方公開平台，本站不儲存任何音訊影片檔案。門市實體收錄狀態請以各門市現場點歌機器為準。
+              </p>
             </div>
           </div>
         )}
