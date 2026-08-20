@@ -101,8 +101,10 @@ export function App() {
     };
   });
 
-  // Debounced Search Query (280ms delay)
-  const debouncedSearchQuery = useDebounce(filters.searchQuery, 280);
+  const [mobileSearchDraft, setMobileSearchDraft] = useState('');
+
+  // Desktop keeps delayed live search; mobile applies search only after submit.
+  const debouncedSearchQuery = useDebounce(filters.searchQuery, isMobile ? 0 : 500);
   const isSearching = filters.searchQuery !== debouncedSearchQuery;
 
   // Favorites State (Default: [] empty array)
@@ -136,6 +138,10 @@ export function App() {
   const [displayedCount, setDisplayedCount] = useState<number>(40);
 
   // Reset pagination when search query or filter changes
+  useEffect(() => {
+    if (isMobile) setMobileSearchDraft(filters.searchQuery);
+  }, [filters.searchQuery, isMobile]);
+
   useEffect(() => {
     setDisplayedCount(40);
   }, [
@@ -736,6 +742,8 @@ export function App() {
         <MobileSearchBar
           filters={filters}
           setFilters={setFilters}
+          searchDraft={mobileSearchDraft}
+          setSearchDraft={setMobileSearchDraft}
           onOpenMobileFilters={handleOpenMobileFilters}
           resultCount={filteredSongs.length}
           isSearching={isSearching}

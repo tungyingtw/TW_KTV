@@ -5,6 +5,8 @@ import type { FilterOptions } from '../../types/ktv';
 interface MobileSearchBarProps {
   filters: FilterOptions;
   setFilters: React.Dispatch<React.SetStateAction<FilterOptions>>;
+  searchDraft: string;
+  setSearchDraft: React.Dispatch<React.SetStateAction<string>>;
   onOpenMobileFilters: () => void;
   resultCount: number;
   isSearching?: boolean;
@@ -18,6 +20,8 @@ interface MobileSearchBarProps {
 export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   filters,
   setFilters,
+  searchDraft,
+  setSearchDraft,
   onOpenMobileFilters,
   resultCount,
   isSearching = false,
@@ -33,15 +37,17 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
+    setSearchDraft(e.target.value);
   };
 
   const handleClearQuery = () => {
     setFilters(prev => ({ ...prev, searchQuery: '' }));
+    setSearchDraft('');
     inputRef.current?.focus();
   };
 
   const handleSearchComplete = () => {
+    setFilters(prev => ({ ...prev, searchQuery: searchDraft.trim() }));
     inputRef.current?.blur();
     setIsInputFocused(false);
     onSearchComplete?.();
@@ -86,7 +92,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               type="text"
               inputMode="search"
               enterKeyHint="search"
-              value={filters.searchQuery}
+              value={searchDraft}
               onChange={handleQueryChange}
               onKeyDown={handleInputKeyDown}
               onFocus={() => setIsInputFocused(true)}
@@ -95,7 +101,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
               className="mobile-search-input"
               style={{ borderColor: isInputFocused ? 'var(--accent-pink, #ec4899)' : 'var(--border-color, rgba(255, 255, 255, 0.12))' }}
             />
-            {filters.searchQuery && (
+            {searchDraft && (
               <button
                 onClick={handleClearQuery}
                 aria-label="清除搜尋文字"
@@ -110,7 +116,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
           <button
             onClick={handleSearchComplete}
             aria-label="搜尋並查看結果"
-            className={`mobile-search-submit ${filters.searchQuery ? 'is-active' : ''}`}
+            className={`mobile-search-submit ${searchDraft.trim() ? 'is-active' : ''}`}
             disabled={isInteractionLocked}
             aria-disabled={isInteractionLocked}
             style={{
@@ -173,11 +179,13 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'normal', lineHeight: 1.45 }}
           >
             {isSearching ? (
-              <>正在即時比對...</>
+              <>正在更新結果...</>
             ) : isCatalogLoading ? (
-              <>{filters.searchQuery.trim() ? '資料載入完成後會自動搜尋' : isServerWaking ? '資料服務喚醒中' : isServerUnavailable ? '資料服務暫時未連線' : '歌庫準備中'}</>
+              <>{searchDraft.trim() ? '資料載入完成後會自動搜尋' : isServerWaking ? '資料服務喚醒中' : isServerUnavailable ? '資料服務暫時未連線' : '歌庫準備中'}</>
             ) : filters.searchQuery.trim() ? (
               <>找到 <strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首</>
+            ) : searchDraft.trim() ? (
+              <>輸入完成後按搜尋查看結果</>
             ) : (
               <>結果：<strong style={{ color: 'var(--accent-pink)', fontSize: '0.85rem' }}>{resultCount.toLocaleString()}</strong> 首</>
             )}
