@@ -8466,3 +8466,304 @@ header,
     flex: 1 1 100%;
   }
 }
+
+/* Phase 9 mobile result cards: quick judgement first, platform details on demand */
+.song-card-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  cursor: pointer;
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.82));
+}
+
+.song-card-mobile-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.song-card-mobile-title-group {
+  min-width: 0;
+  flex: 1;
+}
+
+.song-card-mobile-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.song-card-mobile-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 850;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.song-card-mobile-language {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.song-card-mobile-artist {
+  margin: 4px 0 0;
+  color: var(--accent-pink);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.song-card-mobile-favorite {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.song-card-mobile-favorite.heart-active {
+  border-color: rgba(236, 72, 153, 0.45);
+  background: rgba(236, 72, 153, 0.16);
+  color: var(--accent-pink);
+}
+
+.song-card-mobile-snippet {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-card-mobile-summary {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 212, 191, 0.22);
+  background: rgba(15, 118, 110, 0.13);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.song-card-mobile-summary strong {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.song-card-mobile-summary small {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.song-card-mobile-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.song-card-mobile-platform-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 5px 9px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.56);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.song-card-mobile-platform-chip.is-muted {
+  color: var(--text-muted);
+}
+
+.song-card-mobile-platform-name {
+  color: inherit;
+  font-weight: 900;
+}
+
+.song-card-mobile-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.song-card-mobile-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.song-card-mobile-action-primary {
+  border-color: rgba(248, 113, 113, 0.28);
+  color: #fca5a5;
+}
+
+.song-card-mobile-details {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.song-card-mobile-detail-list {
+  display: grid;
+  gap: 7px;
+}
+
+.song-card-mobile-detail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(2, 6, 23, 0.2);
+}
+
+.song-card-mobile-detail-row > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.song-card-mobile-detail-row strong,
+.song-card-mobile-detail-row span {
+  overflow-wrap: anywhere;
+}
+
+.song-card-mobile-detail-row > div:first-child span {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.song-card-mobile-detail-row.is-available {
+  border-color: rgba(45, 212, 191, 0.2);
+}
+
+.song-card-mobile-detail-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.song-card-mobile-backing-badge {
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.17);
+  color: #fbbf24;
+}
+
+.song-card-mobile-muted-mark {
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.song-card-mobile-detail-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.song-card-mobile-report {
+  justify-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: #fbbf24;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+[data-theme="light"] .song-card-mobile {
+  border-color: rgba(14, 165, 233, 0.2);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+}
+
+[data-theme="light"] .song-card-mobile-summary {
+  border-color: rgba(13, 148, 136, 0.24);
+  background: rgba(240, 253, 250, 0.8);
+}
+
+[data-theme="light"] .song-card-mobile-platform-chip,
+[data-theme="light"] .song-card-mobile-action {
+  background: rgba(248, 250, 252, 0.86);
+}
+
+[data-theme="light"] .song-card-mobile-detail-row {
+  background: rgba(248, 250, 252, 0.72);
+}
+
+@media (max-width: 640px) {
+  .song-card-mobile {
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .song-card-mobile-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .song-card-mobile-detail-row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .song-card-mobile-detail-badges {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 360px) {
+  .song-card-mobile-title-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .song-card-mobile-action {
+    font-size: 0.78rem;
+  }
+}
