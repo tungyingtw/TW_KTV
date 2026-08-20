@@ -5,6 +5,7 @@ import { useBrands } from '../hooks/useBrands';
 import { Heart, Video, Disc, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
+import { ResultLegend } from './ResultLegend';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
 import { getYoutubeReferenceUrl } from '../utils/songReference';
@@ -111,10 +112,10 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
             {isSingleBrand ? (
               <>
                 目前尚無【{currentBrandInfo?.shortName}】的已確認收錄資料。<br />
-                可先參考其他 KTV 門市或伴唱品牌的收錄狀態，或提供現場線索協助補充。
+                可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供現場線索協助補充。
               </>
             ) : (
-              '嘗試更換關鍵字或取消過濾條件。'
+              '目前沒有找到相符歌曲。可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供建議作為後續整理參考。'
             )}
           </p>
 
@@ -159,6 +160,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   if (compact) {
     return (
       <div className="matrix-view-container" style={{ padding: '0 10px' }}>
+        <ResultLegend />
         <div className="glass-panel" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
           <table className="data-table matrix-data-table" style={{
             width: '100%',
@@ -216,7 +218,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}
-                        title={isFav ? '移出歌本' : '加入歌本'}
+                        aria-label={isFav ? '從我的歌本移除' : '加入我的歌本'}
+                        title={isFav ? '從我的歌本移除' : '加入我的歌本'}
                       >
                         <Heart size={18} fill={isFav ? 'var(--accent-pink, #ec4899)' : 'none'} />
                       </button>
@@ -320,6 +323,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
 
   return (
     <div className="matrix-view-container" style={{ padding: '0 20px', overflowX: 'auto', scrollbarGutter: 'stable' }}>
+      <ResultLegend />
       <div className="glass-panel" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
         <table className="data-table matrix-data-table" style={{
           width: '100%',
@@ -398,7 +402,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         justifyContent: 'center',
                         transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                       }}
-                      title={isFav ? '移出歌單' : '加入歌單'}
+                      aria-label={isFav ? '從我的歌本移除' : '加入我的歌本'}
+                      title={isFav ? '從我的歌本移除' : '加入我的歌本'}
                     >
                       <Heart 
                         size={18} 

@@ -273,7 +273,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '8px 0 4px 0' }}>1. 第三方非官方獨立平台聲明 (Independent Platform Statement)</h5>
               <p>
-                本網站為<strong>民間社群獨立開發維護之客觀歌曲索引與查詢平台</strong>，非任何 KTV 伴唱業者（包括但不限於錢○、好○迪、享○馨、星○點、Sing○、V-M○X、超○巨星、音○、金○、弘○等）之官方網站、營利附屬機構或授權代表。本網站與上述任何連鎖業者及伴唱機品牌無商業隸屬或官方授權關係。
+                本網站為<strong>民間社群獨立開發維護之歌曲索引與查詢參考平台</strong>，不是任何 KTV 伴唱業者或伴唱機品牌的官方網站、營利附屬機構或代表窗口。本網站提及的品牌與名稱僅作為使用者辨識收錄平台與現場查詢情境之參考。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> This platform is an independent, non-official community song catalog reference index. It is not affiliated with, endorsed by, or commercially connected to any commercial karaoke brand or hardware manufacturer.
@@ -289,7 +289,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>3. 音樂影音與著作權聲明 (Audio/Video Copyright Compliance)</h5>
               <p>
-                本網站<strong>不儲存、上傳、託管或散佈任何未經授權之 MP3、MP4 音訊、影片檔案或盜版影音資源</strong>。網站內展示之原版 MV 影片連結，均來自第三方公開影音平台（如 YouTube 官方頻道）之標準嵌入或超連結，版權均屬原唱片公司、創作者及原發布平台所有。
+                本網站<strong>不儲存、上傳、託管或散佈 MP3、MP4 音訊、影片檔案或影音資源</strong>。網站內展示之 MV 參考連結，均導向第三方公開影音平台之標準嵌入或超連結；相關內容權利歸各權利人、創作者及原發布平台所有。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> We do NOT host, store, stream, or distribute copyrighted MP3/MP4 audio or video files. All media previews utilize standard embeds or hyperlinks directly to third-party public platforms (e.g., YouTube official channels).
@@ -311,10 +311,10 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
                 關於「TYFunLab 台灣KTV歌曲查詢」 (About This Site)
               </h4>
               <p>
-                「TYFunLab 台灣KTV歌曲查詢」成立旨在解決廣大歌友在多家 KTV 連鎖門市或伴唱系統歡唱時，常遇到「不確定現場門市有無收錄」及「不清楚能否使用導唱」等痛點。
+                「TYFunLab 台灣KTV歌曲查詢」整理多家 KTV 平台的歌曲收錄、導唱與 MV 類型參考，協助歌友在出發前先準備歌單，也能在現場快速比對可能的收錄狀態。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
-                <b>English Summary:</b> Taiwan KTV Song Catalog is a crowdsourced reference directory helping users cross-check song availability, original vocals, and official MVs across top karaoke venue systems.
+                <b>English Summary:</b> Taiwan KTV Song Catalog is a community-maintained reference directory helping users cross-check song availability, guided vocals, and MV type references across karaoke venue systems.
               </div>
 
               <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色 (Key Features)</h5>

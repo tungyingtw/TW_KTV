@@ -75,6 +75,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="關閉我的歌本"
             className="action-icon modal-close-button"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
@@ -106,6 +107,9 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           }}>
             <Mic2 size={36} opacity={0.4} style={{ marginBottom: '12px' }} />
             <p style={{ fontWeight: 600, fontSize: '1rem' }}>歌本目前沒有歌曲</p>
+            <p style={{ fontSize: '0.88rem', marginTop: '6px', color: 'var(--text-secondary)' }}>
+              先收藏想唱的歌曲，出發前整理自己的歌單。
+            </p>
             <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
               我的歌本適合先存想唱與備用歌曲，現場可快速回來確認平台收錄、導唱與 MV 類型。下次唱歌前，也可以回來檢查新歌、備用歌與朋友想唱的歌。
             </p>
@@ -135,6 +139,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
                   </div>
                   <button
                     onClick={() => onToggleFavorite(song.id)}
+                    aria-label="從我的歌本移除"
                     className="action-icon"
                     style={{
                       background: 'none',
