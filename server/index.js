@@ -2759,6 +2759,7 @@ const visitorCooldowns = new Map();
 const VISIT_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 小時冷卻期
 
 const STATS_PATH = path.join(__dirname, 'stats.json');
+const DAILY_STATS_PATH = path.join(__dirname, 'stats_daily.json');
 const BASE_INITIAL_VISITS = 1;
 
 // ── Upstash Redis 環境設定 ──
@@ -2766,6 +2767,8 @@ const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
 const STATS_REDIS_TOTAL_KEY = 'ktv:totalVisits';
+const STATS_DAILY_REDIS_PREFIX = process.env.STATS_DAILY_REDIS_PREFIX || 'ktv:dailyVisits:';
+const STATS_DAILY_RETENTION_DAYS = Math.max(10, parseInt(process.env.STATS_DAILY_RETENTION_DAYS, 10) || 45);
 const VOTES_REDIS_KEY = 'ktv:votes';
 const VOTES_ARCHIVE_REDIS_KEY = 'ktv:votesArchivedSignals';
 const REPORTS_REDIS_KEY = 'ktv:reports';
@@ -2809,6 +2812,75 @@ function saveStats(data) {
 }
 
 let currentStats = loadStats();
+
+function getRecentDailyVisitDateKeys(days = 10, now = new Date()) {
+  const safeDays = Math.min(30, Math.max(1, parseInt(String(days), 10) || 10));
+  const baseUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Array.from({ length: safeDays }, (_, index) => {
+    const dayOffset = safeDays - 1 - index;
+    return new Date(baseUtc - dayOffset * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  });
+}
+
+function parseDailyVisitCount(value) {
+  const parsed = parseInt(String(value ?? 0), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
+function loadDailyStatsLocal() {
+  try {
+    const data = JSON.parse(fs.readFileSync(DAILY_STATS_PATH, 'utf8'));
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return {};
+    return Object.fromEntries(Object.entries(data).map(([date, count]) => [date, parseDailyVisitCount(count)]));
+  } catch {
+    return {};
+  }
+}
+
+function cleanupDailyStatsLocal(data, now = new Date()) {
+  const keepDates = new Set(getRecentDailyVisitDateKeys(STATS_DAILY_RETENTION_DAYS, now));
+  return Object.fromEntries(Object.entries(data).filter(([date]) => keepDates.has(date)));
+}
+
+function saveDailyStatsLocal(data) {
+  try { safeAtomicWriteJson(DAILY_STATS_PATH, data); } catch {}
+}
+
+async function incrementDailyVisitCount(now = new Date()) {
+  const dateKey = now.toISOString().slice(0, 10);
+  if (USE_REDIS) {
+    const key = `${STATS_DAILY_REDIS_PREFIX}${dateKey}`;
+    const nextCount = await redisCmd('incr', key);
+    await redisCmd('expire', key, STATS_DAILY_RETENTION_DAYS * 24 * 60 * 60).catch((err) => {
+      console.warn('[Stats] Daily Redis TTL failed:', err.message);
+    });
+    return parseDailyVisitCount(nextCount);
+  }
+
+  const data = cleanupDailyStatsLocal(loadDailyStatsLocal(), now);
+  data[dateKey] = parseDailyVisitCount(data[dateKey]) + 1;
+  saveDailyStatsLocal(data);
+  return data[dateKey];
+}
+
+async function readDailyVisitCounts(days = 10) {
+  const dateKeys = getRecentDailyVisitDateKeys(days);
+  let counts;
+  if (USE_REDIS) {
+    counts = await Promise.all(dateKeys.map((date) => redisCmd('get', `${STATS_DAILY_REDIS_PREFIX}${date}`).then(parseDailyVisitCount)));
+  } else {
+    const localStats = loadDailyStatsLocal();
+    counts = dateKeys.map((date) => parseDailyVisitCount(localStats[date]));
+  }
+  const items = dateKeys.map((date, index) => ({ date, count: counts[index] }));
+  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
+  return {
+    days: dateKeys.length,
+    total_count: totalCount,
+    today_count: items[items.length - 1]?.count || 0,
+    items,
+  };
+}
 
 async function readCurrentTotalVisits() {
   if (!USE_REDIS) return { totalVisits: currentStats.totalVisits, persistent: false };
@@ -2882,6 +2954,28 @@ app.get('/api/stats/total', async (req, res) => {
   }
 });
 
+app.get('/api/stats/daily', async (req, res) => {
+  try {
+    const days = Math.min(30, Math.max(1, parseInt(String(req.query.days || '10'), 10) || 10));
+    const result = await readDailyVisitCounts(days);
+    res.json({
+      ...result,
+      persistent: USE_REDIS,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn('[Stats] 每日到訪統計讀取失敗:', err.message);
+    res.status(503).json({
+      error: '每日到訪統計暫時無法讀取',
+      days: 0,
+      total_count: 0,
+      today_count: 0,
+      persistent: USE_REDIS,
+      items: [],
+    });
+  }
+});
+
 app.get('/api/stats/ping', async (req, res) => {
   const clientIp = getRequestClientIp(req);
   const visitorId = (req.query.vid && typeof req.query.vid === 'string') ? req.query.vid : clientIp;
@@ -2911,6 +3005,7 @@ app.get('/api/stats/ping', async (req, res) => {
       if (visitReserved) {
         // 新訪客（或冷卻已過）：原子遞增，並設定 12h TTL 去重 key
         const newTotal = await redisCmd('incr', TOTAL_KEY);
+        await incrementDailyVisitCount().catch((err) => console.warn('[Stats] Daily Redis count failed:', err.message));
         totalVisits = typeof newTotal === 'number' ? newTotal : parseInt(String(newTotal), 10);
         try {
           const geoIpResult = await lookupVisitRegionGeoIp(req);
@@ -2949,6 +3044,7 @@ app.get('/api/stats/ping', async (req, res) => {
       currentStats.totalVisits = (currentStats.totalVisits || 0) + 1;
       visitorCooldowns.set(visitorId, now);
       saveStats(currentStats);
+      incrementDailyVisitCount().catch((err) => console.warn('[Stats] Daily local count failed:', err.message));
     }
     totalVisits = currentStats.totalVisits;
 

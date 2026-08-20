@@ -47,6 +47,20 @@ export interface VisitRegionCorrectionResponse extends VisitRegionRecordResponse
   from_city_code: VisitRegionCode | null;
 }
 
+export interface DailyVisitStat {
+  date: string;
+  count: number;
+}
+
+export interface DailyVisitStatsResponse {
+  days: number;
+  total_count: number;
+  today_count: number;
+  persistent: boolean;
+  updatedAt: string;
+  items: DailyVisitStat[];
+}
+
 export type CatalogLoadStage =
   | 'checking-cache'
   | 'downloading-catalog'
@@ -100,6 +114,12 @@ export async function fetchVisitRegionStats(): Promise<VisitRegionStatsResponse>
   const params = new URLSearchParams({ t: String(Date.now()), vid: getKtvVisitorId() });
   const response = await fetch(`${API_BASE}/api/visit-region-stats?${params.toString()}`, { cache: 'no-store' });
   return parseVisitRegionApiResponse<VisitRegionStatsResponse>(response, '到訪紀錄暫時無法讀取');
+}
+
+export async function fetchDailyVisitStats(days = 10): Promise<DailyVisitStatsResponse> {
+  const params = new URLSearchParams({ days: String(days), t: String(Date.now()) });
+  const response = await fetch(`${API_BASE}/api/stats/daily?${params.toString()}`, { cache: 'no-store' });
+  return parseVisitRegionApiResponse<DailyVisitStatsResponse>(response, '每日到訪統計暫時無法讀取');
 }
 
 export async function recordVisitRegion(cityCode: VisitRegionCode): Promise<VisitRegionRecordResponse> {

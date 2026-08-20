@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, X } from 'lucide-react';
-import { correctVisitRegion, fetchVisitRegionStats, type VisitRegionStatsResponse } from '../services/apiService';
+import { correctVisitRegion, fetchDailyVisitStats, fetchVisitRegionStats, type DailyVisitStatsResponse, type VisitRegionStatsResponse } from '../services/apiService';
 import { TaiwanHeatMap, type RegionPath, type RegionPulse } from './TaiwanHeatMap';
 import { VisitStatsPanel } from './VisitStatsPanel';
 
@@ -59,14 +59,33 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionMessage, setActionMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDailyStatsLoading, setIsDailyStatsLoading] = useState(false);
+  const [dailyStats, setDailyStats] = useState<DailyVisitStatsResponse | null>(null);
+  const [dailyStatsError, setDailyStatsError] = useState('');
   const [error, setError] = useState('');
   const pulseTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
+    setIsDailyStatsLoading(true);
     setError('');
+    setDailyStats(null);
+    setDailyStatsError('');
     setActionMessage('');
+
+    fetchDailyVisitStats(10)
+      .then((nextDailyStats) => {
+        if (!isMounted) return;
+        setDailyStats(nextDailyStats);
+        setDailyStatsError('');
+      })
+      .catch(() => {
+        if (isMounted) setDailyStatsError('近 10 日統計暫時無法讀取');
+      })
+      .finally(() => {
+        if (isMounted) setIsDailyStatsLoading(false);
+      });
 
     Promise.all([
       fetch('/MapSVG/TaiwanMap.svg').then((response) => {
@@ -214,6 +233,11 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
             joinActionDisabled={joinActionDisabled}
             joinActionLabel={joinActionLabel}
             actionMessage={actionMessage}
+            dailyStats={dailyStats?.items || []}
+            dailyTotal={dailyStats?.total_count || 0}
+            todayCount={dailyStats?.today_count || 0}
+            isDailyStatsLoading={isDailyStatsLoading}
+            dailyStatsError={dailyStatsError}
           />
         </div>
       )}
