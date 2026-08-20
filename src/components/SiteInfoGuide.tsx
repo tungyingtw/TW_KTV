@@ -10,7 +10,7 @@ const guideLinks = [
   { href: './ktv-song-not-found.html', label: '找不到歌怎麼辦', desc: '查不到歌曲時的常見原因與做法' },
   { href: './data-source.html', label: '資料來源', desc: '公開資訊、使用者回報與人工確認' },
   { href: './community-verification.html', label: '社群回報', desc: '收錄、導唱與 MV 類型回報說明' },
-  { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '有導唱與純伴奏切換參考' },
+  { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '有導唱、無導唱與純伴奏差異' },
   { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型說明', desc: '原版 MV、伴唱帶類型與其他畫面分類' },
   { href: './ktv-song-availability-differences.html', label: '平台收錄差異', desc: '曲庫更新、門市與機台差異' },
   { href: './faq.html', label: '常見問題', desc: '非官方聲明與資料準確度' },
@@ -104,6 +104,10 @@ export const SiteInfoGuide: React.FC = () => {
                   <h3>找不到歌怎麼辦？</h3>
                   <p>縮短歌名、改用歌手名稱、嘗試別名或放寬篩選。若確認現場有收錄，可以提供建議作為後續修正線索。</p>
                 </div>
+                <div>
+                  <h3>哪些搜尋詞適合用？</h3>
+                  <p>歌名最準，歌手次之；只記得片段時可先用短關鍵字，再搭配語種、字數、導唱或 MV 類型篩選縮小範圍。</p>
+                </div>
               </div>
             )}
 
@@ -121,6 +125,10 @@ export const SiteInfoGuide: React.FC = () => {
                   <h3>資料可信度怎麼看？</h3>
                   <p>把查詢結果視為出發前參考最合適。若資訊牽涉是否能點唱、是否有導唱或畫面類型，請以現場點歌系統為準。</p>
                 </div>
+                <div>
+                  <h3>為什麼不用單一答案？</h3>
+                  <p>KTV 現場結果會受平台、門市、機台與更新時間影響。本站用多欄位並列，讓使用者自行比較不同線索。</p>
+                </div>
               </div>
             )}
 
@@ -137,6 +145,10 @@ export const SiteInfoGuide: React.FC = () => {
                 <div>
                   <h3>平台差異會影響什麼？</h3>
                   <p>同一首歌在不同平台可能出現收錄、導唱與 MV 類型不同。查詢時建議同時看多個品牌，不只看單一欄位。</p>
+                </div>
+                <div>
+                  <h3>有導唱和有 MV 要一起看嗎？</h3>
+                  <p>要分開看。有導唱代表可能有跟唱輔助；有 MV 則是畫面類型參考，兩者不互相保證。</p>
                 </div>
               </div>
             )}

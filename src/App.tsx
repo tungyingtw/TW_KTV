@@ -680,10 +680,22 @@ export function App() {
       linkLabel: '查看 MV 類型',
     },
     {
+      question: '去 KTV 前要怎麼準備歌單？',
+      answer: '先列想唱與備用歌曲，再查收錄、導唱與 MV 類型，聚會現場比較不容易卡在找歌。',
+      href: './before-ktv-song-checklist.html',
+      linkLabel: '查看歌單清單',
+    },
+    {
+      question: 'KTV 找不到歌怎麼辦？',
+      answer: '先縮短歌名、改查歌手或別名，再放寬篩選；若現場確認有收錄，也能回報線索。',
+      href: './ktv-song-not-found.html',
+      linkLabel: '查看查不到歌建議',
+    },
+    {
       question: '查到有收錄，現場就能點到嗎？',
       answer: '不代表現場必然可點播。曲庫、門市、機台與更新時間都可能造成差異，實際仍以現場點歌系統為準。',
-      href: './faq.html',
-      linkLabel: '查看常見問題',
+      href: './ktv-song-availability-differences.html',
+      linkLabel: '查看收錄差異',
     },
   ];
 
@@ -760,7 +772,7 @@ export function App() {
         <div className="homepage-quick-help-header">
           <div>
             <p className="homepage-quick-help-kicker">查歌前快速提示</p>
-            <h2 id="homepage-quick-help-title">先看懂這 4 件事</h2>
+            <h2 id="homepage-quick-help-title">先看懂這些查歌情境</h2>
           </div>
           <a href="./ktv-song-search-guide.html">完整查詢指南</a>
         </div>
