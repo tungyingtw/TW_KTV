@@ -166,7 +166,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
       {!compactHeader && (
         <header className="visit-region-modal-header">
           <div>
-            <span><Activity size={15} /> 全台 KTV 歌友</span>
+            <span><Activity size={15} /> 台灣 KTV 歌友</span>
             <h2 id="visit-region-modal-title">歌友熱度分布</h2>
           </div>
           {onClose && (

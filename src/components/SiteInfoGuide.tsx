@@ -26,7 +26,7 @@ export const SiteInfoGuide: React.FC = () => {
       tag: '系統與版權',
       summary: '為什麼營業門市與電腦伴唱機的新歌上架時間不同？揭開公播授權與歌本發行機制。',
       content: [
-        '全台伴唱系統主要分為兩大體系：一為「連鎖營業門市專用伴唱系統」；二為「家用與專業電腦伴唱機體系」。',
+        '台灣 KTV 與伴唱系統主要分為兩大體系：一為「連鎖營業門市專用伴唱系統」；二為「家用與專業電腦伴唱機體系」。',
         '連鎖門市專用伴唱系統採用「連鎖營業公播授權」，新歌從唱片公司授權、門市伴唱機網路自動同步到門市專用影音資料庫的時間較短。',
         '家用與專業電腦伴唱機則需配合電腦伴唱機規格、卡拉OK晶片音源製作與每月歌本更新發行，因此在不同伴唱機品牌間，同一首新歌的上架發行時間點會有所差異。'
       ]
@@ -61,7 +61,7 @@ export const SiteInfoGuide: React.FC = () => {
   return (
     <section
       className="site-info-guide"
-      aria-label="全台 KTV 歌曲查詢與歡唱知識指南"
+      aria-label="台灣 KTV 歌曲查詢與歡唱知識指南"
       style={{
         width: '100%',
         maxWidth: '1400px',
@@ -121,7 +121,7 @@ export const SiteInfoGuide: React.FC = () => {
                   color: 'var(--text-primary, #f8fafc)',
                 }}
               >
-                全台 KTV 歌曲查詢與歡唱知識指南
+                台灣 KTV 歌曲查詢與歡唱知識指南
               </h2>
               <p
                 style={{
@@ -285,6 +285,9 @@ export const SiteInfoGuide: React.FC = () => {
             >
               {[
                 { href: './how-to-use.html', label: '使用教學', desc: '搜尋、篩選與歌單整理方式' },
+                { href: './ktv-song-search-guide.html', label: 'KTV 查詢指南', desc: '收錄、導唱與 MV 類型怎麼看' },
+                { href: './before-ktv-song-checklist.html', label: '歌單準備清單', desc: '去 KTV 前先整理想唱歌曲' },
+                { href: './ktv-song-not-found.html', label: '找不到歌怎麼辦', desc: '查不到歌曲時的常見原因與做法' },
                 { href: './data-source.html', label: '資料來源', desc: '公開資訊、使用者回報與人工確認' },
                 { href: './ktv-audio-types.html', label: '版本說明', desc: '導唱、伴奏與 MV 標示差異' },
                 { href: './community-verification.html', label: '社群回報', desc: '收錄、原版 MV 與導唱投票說明' },
@@ -318,12 +321,15 @@ export const SiteInfoGuide: React.FC = () => {
                   <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px', alignItems: 'start' }}>
                 {/* Column 1: System Differences & Brands */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <p style={{ margin: 0 }}>
+                    TYFunLab 可用來查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能與 MV 類型。查詢結果適合歡唱前準備歌單，現場仍以包廂點歌系統為準。
+                  </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700 }}>
                     <Music2 size={18} />
                     <span>為什麼需要歌友共同回報現場資訊</span>
                   </div>
                   <p style={{ margin: 0 }}>
-                    全台連鎖門市與自助式伴唱系統採用的曲庫與影音版本各不相同，主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
+                    台灣連鎖門市與自助式伴唱系統採用的曲庫與影音版本各不相同，主要包含 <strong>營業門市專用伴唱系統</strong> 以及 <strong>家用/專業電腦伴唱機體系</strong>。
                   </p>
                   <p style={{ margin: 0 }}>
                     本網站透過使用者回報與資料彙整，為歌友提供動態擴充的跨廠牌門市收錄查詢，幫助您在歡唱前快速掌握現場是否可能收錄該曲目。
@@ -339,7 +345,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>資料使用提醒</span>
                   </div>
                   <p style={{ margin: 0 }}>
-                    本站提供的是歌友共同維護的查詢參考，不是任何 KTV 品牌的正式保證。出發前可先查詢與收藏，現場仍請以門市點歌系統實際顯示為準。
+                    本站提供的是歌友共同維護的查詢參考，不是任何 KTV 品牌的正式說明。出發前可先查詢與收藏，現場仍請以門市點歌系統實際顯示為準。
                   </p>
                 </aside>
                 </div>
@@ -361,6 +367,9 @@ export const SiteInfoGuide: React.FC = () => {
 
             {activeTab === 'how_to_use' && (
               <>
+              <p style={{ margin: '0 0 14px', color: 'var(--text-secondary, #cbd5e1)', fontSize: '0.92rem', lineHeight: 1.75 }}>
+                使用 TYFunLab 時，先搜尋歌名或歌手，再查看多家 KTV 平台的可能收錄狀態、導唱功能與 MV 類型，最後把想唱的歌加入我的最愛，現場再以包廂點歌系統確認。
+              </p>
               <div className="site-info-content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', fontSize: '0.88rem', lineHeight: 1.65 }}>
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.5))', padding: '18px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.98rem', marginBottom: '8px' }}>
@@ -388,7 +397,7 @@ export const SiteInfoGuide: React.FC = () => {
                     <span>3. 我的最愛口袋歌單</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單，方便您在歡唱時快速瀏覽個人專屬愛歌與比對各大門市收錄狀態。
+                    點擊歌曲愛心圖示可將歌曲加入<strong>「我的最愛」</strong>口袋歌單，方便您在歡唱時快速瀏覽個人專屬愛歌與比對多家 KTV 平台收錄狀態。
                   </p>
                 </div>
 
@@ -480,9 +489,21 @@ export const SiteInfoGuide: React.FC = () => {
                     >
                       {articles[activeArticleIndex].title}
                     </h3>
-                    <p style={{ fontSize: '0.85rem', color: '#38bdf8', fontStyle: 'italic', marginBottom: '16px' }}>
-                      說明：{articles[activeArticleIndex].summary}
+                    <h4 style={{ color: '#38bdf8', margin: '0 0 6px', fontSize: '0.92rem' }}>
+                      問題
+                    </h4>
+                    <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary, #cbd5e1)', margin: '0 0 12px', lineHeight: 1.65 }}>
+                      {articles[activeArticleIndex].title}
                     </p>
+                    <h4 style={{ color: '#38bdf8', margin: '0 0 6px', fontSize: '0.92rem' }}>
+                      短答案
+                    </h4>
+                    <p style={{ fontSize: '0.85rem', color: '#38bdf8', fontStyle: 'italic', margin: '0 0 16px', lineHeight: 1.65 }}>
+                      {articles[activeArticleIndex].summary}
+                    </p>
+                    <h4 style={{ color: '#38bdf8', margin: '0 0 8px', fontSize: '0.92rem' }}>
+                      說明
+                    </h4>
                     <div style={{ fontSize: '0.88rem', lineHeight: 1.75, color: 'var(--text-secondary, #cbd5e1)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {articles[activeArticleIndex].content.map((paragraph, pIdx) => (
                         <p key={pIdx} style={{ margin: 0 }}>
@@ -499,37 +520,46 @@ export const SiteInfoGuide: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem', lineHeight: 1.65 }}>
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q1：為什麼同一首歌在不同 KTV 門市的收錄狀況不一樣？
+                    Q1：TYFunLab 可以查什麼？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：不同 KTV 門市與伴唱機廠牌版權授權進度與歌本目錄更新頻率不同，因此同一首歌曲在不同連鎖門市與伴唱系統中的收錄時間點有所差異。
+                    答：TYFunLab 可查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能、MV 類型與使用者回報線索。查詢結果是歡唱前參考，現場仍以包廂點歌系統為準。
                   </p>
                 </div>
 
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q2：如何區分 KTV 門市的「導唱」與「原版 MV」標示？
+                    Q2：KTV 導唱是什麼？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：「導唱」代表現場可能可開啟導唱；「原版 MV」代表門市播放畫面可能接近公開常見 MV，非風景照、通用背景或重新剪輯畫面。
+                    答：KTV 導唱是伴唱系統提供的跟唱輔助功能，讓不熟歌曲的人可以跟著聲音或旋律提示演唱。不同平台或歌曲版本不一定都有導唱。
                   </p>
                 </div>
 
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q3：門市沒有收錄我想唱的歌曲該怎麼辦？
+                    Q3：有 MV 標示代表一定是原版 MV 嗎？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：您可透過本站的「提供建議」或歌曲詳情中的回報功能送出線索。使用者回饋會作為後續資料修正參考。
+                    答：不是。MV 標示代表目前資料顯示現場畫面可能接近原版 MV 或相關影像，實際仍可能因平台、門市或機台版本不同而變動。
                   </p>
                 </div>
 
                 <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
                   <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
-                    Q4：連鎖營業門市與家用/專業伴唱機系統有何差異？
+                    Q4：為什麼同一首歌不同 KTV 平台收錄不同？
                   </h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
-                    答：連鎖營業門市專用伴唱系統採用連鎖營業公播授權，可能包含較完整的影音素材與曲庫版本；家用與專業伴唱機則採用電腦伴唱規格與發行模式，歌冊目錄更新頻率與版權範圍各有不同。
+                    答：不同平台可能有不同授權範圍、曲庫更新時間、機台版本與影音素材，因此同一首歌的收錄、導唱與 MV 類型可能不同。
+                  </p>
+                </div>
+
+                <div className="site-info-panel" style={{ background: 'var(--bg-glass, rgba(15, 23, 42, 0.4))', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.05))' }}>
+                  <h4 style={{ color: '#f59e0b', margin: '0 0 6px 0', fontSize: '0.95rem' }}>
+                    Q5：查到有收錄，現場一定點得到嗎？
+                  </h4>
+                  <p style={{ margin: 0, color: 'var(--text-secondary, #cbd5e1)' }}>
+                    答：不一定。本站資料是公開資訊、使用者回報與人工整理的參考，實際點歌結果請以現場點歌系統為準。
                   </p>
                 </div>
               </div>
