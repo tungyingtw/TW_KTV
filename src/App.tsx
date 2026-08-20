@@ -665,37 +665,31 @@ export function App() {
       question: 'TYFunLab 可以查什麼？',
       answer: '查詢歌曲在多家 KTV 平台的可能收錄狀態、導唱功能與 MV 類型，歡唱前先有參考方向。',
       href: './how-to-use.html',
-      linkLabel: '查看使用教學',
     },
     {
       question: 'KTV 導唱是什麼？',
       answer: '導唱是伴唱系統可能提供的跟唱輔助功能。本站只整理資料是否顯示可能提供導唱。',
       href: './ktv-guided-vocal.html',
-      linkLabel: '查看導唱說明',
     },
     {
       question: '有 MV 標示代表就是原版 MV 嗎？',
       answer: '不是。MV 類型只是用來區分現場畫面可能接近原版 MV、伴唱帶或其他版本。',
       href: './original-mv-vs-karaoke-video.html',
-      linkLabel: '查看 MV 類型',
     },
     {
       question: '去 KTV 前要怎麼準備歌單？',
       answer: '先列想唱與備用歌曲，再查收錄、導唱與 MV 類型，聚會現場比較不容易卡在找歌。',
       href: './before-ktv-song-checklist.html',
-      linkLabel: '查看歌單清單',
     },
     {
       question: 'KTV 找不到歌怎麼辦？',
       answer: '先縮短歌名、改查歌手或別名，再放寬篩選；若現場確認有收錄，也能回報線索。',
       href: './ktv-song-not-found.html',
-      linkLabel: '查看查不到歌建議',
     },
     {
       question: '查到有收錄，現場就能點到嗎？',
       answer: '不代表現場必然可點播。曲庫、門市、機台與更新時間都可能造成差異，實際仍以現場點歌系統為準。',
       href: './ktv-song-availability-differences.html',
-      linkLabel: '查看收錄差異',
     },
   ];
 
@@ -782,11 +776,10 @@ export function App() {
               key={item.question}
               href={item.href}
               className="homepage-quick-help-card"
-              aria-label={`${item.question} ${item.linkLabel}`}
+              aria-label={item.question}
             >
               <h3>{item.question}</h3>
               <p>{item.answer}</p>
-              <span className="homepage-quick-help-card-action">{item.linkLabel}</span>
             </a>
           ))}
         </div>
