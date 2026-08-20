@@ -4618,6 +4618,367 @@ body {
     var(--bg-dark) !important;
 }
 
+/* Phase 4: home quick help and complete guide information architecture */
+.homepage-quick-help {
+  width: min(1400px, 100%);
+  margin: 18px auto 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.homepage-quick-help-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.homepage-quick-help-kicker {
+  margin: 0 0 3px;
+  color: var(--accent-highlight);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.homepage-quick-help h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.28;
+}
+
+.homepage-quick-help-header > a,
+.homepage-quick-help-card-action {
+  color: var(--accent-support);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.homepage-quick-help-header > a:hover,
+.homepage-quick-help-header > a:focus-visible,
+.homepage-quick-help-card:hover .homepage-quick-help-card-action,
+.homepage-quick-help-card:focus-visible .homepage-quick-help-card-action {
+  color: var(--accent-highlight);
+}
+
+.homepage-quick-help-header > a:focus-visible,
+.homepage-quick-help-card:focus-visible {
+  outline: none;
+}
+
+.homepage-quick-help-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.homepage-quick-help-card {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  text-decoration: none;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.homepage-quick-help-card:hover,
+.homepage-quick-help-card:focus-visible {
+  background: color-mix(in srgb, var(--bg-card-hover) 92%, transparent);
+  border-color: color-mix(in srgb, var(--accent-support) 42%, var(--border-color));
+  transform: translateY(-1px);
+}
+
+.homepage-quick-help-card h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.homepage-quick-help-card p {
+  flex: 1;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.62;
+}
+
+.site-info-guide {
+  width: min(1400px, 100%);
+  margin: 24px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.site-info-guide-shell {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.site-info-guide-toggle {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 16px 18px;
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.site-info-guide-icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-pink);
+  background: rgba(219, 39, 119, 0.075);
+  border: 1px solid rgba(219, 39, 119, 0.24);
+  border-radius: var(--radius-sm);
+}
+
+.site-info-guide-heading {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.site-info-guide-heading > span {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.28;
+}
+
+.site-info-guide-heading > small {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.site-info-guide-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.site-info-guide-body {
+  padding: 0 18px 18px;
+  border-top: 1px solid var(--border-color);
+}
+
+.site-info-guide-links {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin: 18px 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.site-info-guide-link {
+  display: flex;
+  min-height: 78px;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--bg-card-hover) 72%, transparent);
+  text-decoration: none;
+}
+
+.site-info-guide-link strong {
+  color: var(--accent-support);
+  font-size: 0.86rem;
+}
+
+.site-info-guide-link span {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.site-info-guide-link:hover,
+.site-info-guide-link:focus-visible {
+  background: color-mix(in srgb, var(--bg-card-hover) 92%, transparent);
+  outline: none;
+}
+
+.site-info-guide-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.site-info-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 14px;
+  color: var(--text-secondary);
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.site-info-tab.is-selected {
+  color: var(--accent-pink);
+  background: rgba(219, 39, 119, 0.075);
+  border-color: rgba(219, 39, 119, 0.26);
+}
+
+.site-info-guide-panel,
+.site-info-guide-faq {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.site-info-guide-panel > div,
+.site-info-guide-faq > article {
+  padding: 14px;
+  background: color-mix(in srgb, var(--bg-card) 82%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.site-info-guide h3 {
+  margin: 0 0 7px;
+  color: var(--text-primary);
+  font-size: 0.94rem;
+  line-height: 1.35;
+}
+
+.site-info-guide p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.72;
+}
+
+.site-info-guide-disclaimer {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-color);
+}
+
+.site-info-guide-disclaimer svg {
+  flex: 0 0 auto;
+  color: var(--accent-highlight);
+  margin-top: 2px;
+}
+
+@media (max-width: 1100px) {
+  .homepage-quick-help-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .site-info-guide-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .site-info-guide-panel,
+  .site-info-guide-faq {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .homepage-quick-help {
+    margin-top: 14px;
+    padding: 0 12px;
+  }
+
+  .homepage-quick-help-header {
+    align-items: start;
+  }
+
+  .homepage-quick-help h2 {
+    font-size: 0.96rem;
+  }
+
+  .homepage-quick-help-grid {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 2px 2px 8px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .homepage-quick-help-card {
+    min-width: min(78vw, 300px);
+    min-height: 138px;
+    scroll-snap-align: start;
+  }
+
+  .site-info-guide {
+    margin: 18px auto;
+    padding: 0 12px;
+  }
+
+  .site-info-guide-toggle {
+    grid-template-columns: auto minmax(0, 1fr);
+    min-height: 72px;
+    padding: 14px;
+  }
+
+  .site-info-guide-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .site-info-guide-heading > span {
+    font-size: 1rem;
+  }
+
+  .site-info-guide-heading > small {
+    font-size: 0.78rem;
+  }
+
+  .site-info-guide-body {
+    padding: 0 12px 14px;
+  }
+
+  .site-info-guide-links {
+    grid-template-columns: 1fr;
+  }
+
+  .site-info-guide-link {
+    min-height: 62px;
+  }
+}
+
 header,
 .mobile-navbar {
   background: color-mix(in srgb, var(--bg-glass) 92%, transparent) !important;
@@ -8046,5 +8407,30 @@ header,
 
   .catalog-retry-button:disabled svg {
     animation: none !important;
+  }
+}
+
+/* Phase 4 final overrides: keep rebuilt guide from legacy guide patches */
+.site-info-guide .site-info-guide-shell {
+  padding: 0 !important;
+}
+
+.site-info-guide .site-info-guide-toggle {
+  padding: 16px 18px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.site-info-guide .site-info-guide-body {
+  padding: 0 18px 18px !important;
+}
+
+@media (max-width: 640px) {
+  .site-info-guide .site-info-guide-toggle {
+    padding: 14px !important;
+  }
+
+  .site-info-guide .site-info-guide-body {
+    padding: 0 12px 14px !important;
   }
 }
