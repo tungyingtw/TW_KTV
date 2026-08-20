@@ -8529,8 +8529,23 @@ header,
 }
 
 .result-legend strong {
-  color: var(--text-primary);
   font-weight: 900;
+}
+
+.result-legend-key.is-available {
+  color: var(--status-available-color);
+}
+
+.result-legend-key.is-empty {
+  color: var(--text-muted);
+}
+
+.result-legend-key.is-guided {
+  color: var(--status-guided-color);
+}
+
+.result-legend-key.is-mv {
+  color: var(--status-mv-color);
 }
 
 @media (max-width: 640px) {

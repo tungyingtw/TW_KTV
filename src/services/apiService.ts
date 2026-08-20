@@ -61,6 +61,14 @@ export interface DailyVisitStatsResponse {
   items: DailyVisitStat[];
 }
 
+export interface SiteNoticeResponse {
+  enabled: boolean;
+  id: string;
+  title: string;
+  body: string;
+  updated_at: string;
+}
+
 export type CatalogLoadStage =
   | 'checking-cache'
   | 'downloading-catalog'
@@ -120,6 +128,11 @@ export async function fetchDailyVisitStats(days = 10): Promise<DailyVisitStatsRe
   const params = new URLSearchParams({ days: String(days), t: String(Date.now()) });
   const response = await fetch(`${API_BASE}/api/stats/daily?${params.toString()}`, { cache: 'no-store' });
   return parseVisitRegionApiResponse<DailyVisitStatsResponse>(response, '每日到訪統計暫時無法讀取');
+}
+
+export async function fetchSiteNotice(): Promise<SiteNoticeResponse> {
+  const response = await fetch(`${API_BASE}/api/site-notice?t=${Date.now()}`, { cache: 'no-store' });
+  return parseVisitRegionApiResponse<SiteNoticeResponse>(response, '首頁提示暫時無法讀取');
 }
 
 export async function recordVisitRegion(cityCode: VisitRegionCode): Promise<VisitRegionRecordResponse> {

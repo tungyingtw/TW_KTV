@@ -18,8 +18,8 @@ import { FavoritesDrawer } from './components/FavoritesDrawer';
 import { ToastNotification } from './components/ToastNotification';
 import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
-import { checkApiHealth, fetchFullCatalog } from './services/apiService';
-import type { CatalogLoadStage, CatalogOverrideSyncStatus } from './services/apiService';
+import { checkApiHealth, fetchFullCatalog, fetchSiteNotice } from './services/apiService';
+import type { CatalogLoadStage, CatalogOverrideSyncStatus, SiteNoticeResponse } from './services/apiService';
 import { fetchBrands } from './data/brands';
 import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
@@ -37,7 +37,26 @@ function getSearchablePhonetic(value?: string): string {
 }
 
 const COLLAB_NOTICE_DISMISSED_UNTIL_KEY = 'tw_ktv_collab_notice_dismissed_until';
+const COLLAB_NOTICE_DISMISSED_STATE_KEY = 'tw_ktv_collab_notice_dismissed_v2';
 const COLLAB_NOTICE_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+const DEFAULT_COLLAB_NOTICE: SiteNoticeResponse = {
+  enabled: true,
+  id: 'field-collab-default',
+  title: '一起補充現場資訊',
+  body: 'KTV 收錄、導唱與 MV 類型常需要現場確認；若發現缺漏或資料不對，可使用「提供建議」或歌曲內的「回報」功能留下線索。',
+  updated_at: '2026-08-20T00:00:00.000Z',
+};
+
+function shouldShowCollabNotice(notice: SiteNoticeResponse): boolean {
+  if (!notice.enabled) return false;
+  try {
+    const state = JSON.parse(localStorage.getItem(COLLAB_NOTICE_DISMISSED_STATE_KEY) || 'null');
+    if (state?.id === notice.id && Number(state.dismissedUntil || 0) > Date.now()) return false;
+    const legacyDismissedUntil = Number(localStorage.getItem(COLLAB_NOTICE_DISMISSED_UNTIL_KEY) || 0);
+    if (notice.id === DEFAULT_COLLAB_NOTICE.id && legacyDismissedUntil > Date.now()) return false;
+  } catch {}
+  return true;
+}
 
 export function App() {
   const isMobile = useIsMobile();
@@ -125,17 +144,29 @@ export function App() {
   const [reportModalSong, setReportModalSong] = useState<Song | null>(null);
   const [legalNoticeTab, setLegalNoticeTab] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [showCollabNotice, setShowCollabNotice] = useState<boolean>(() => {
-    try {
-      const dismissedUntil = Number(localStorage.getItem(COLLAB_NOTICE_DISMISSED_UNTIL_KEY) || 0);
-      return !dismissedUntil || Date.now() > dismissedUntil;
-    } catch {
-      return true;
-    }
-  });
+  const [collabNotice, setCollabNotice] = useState<SiteNoticeResponse>(DEFAULT_COLLAB_NOTICE);
+  const [showCollabNotice, setShowCollabNotice] = useState<boolean>(() => shouldShowCollabNotice(DEFAULT_COLLAB_NOTICE));
 
   // Pagination / Load More limit state (Default display: 40)
   const [displayedCount, setDisplayedCount] = useState<number>(40);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchSiteNotice()
+      .then(notice => {
+        if (cancelled) return;
+        setCollabNotice(notice);
+        setShowCollabNotice(shouldShowCollabNotice(notice));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCollabNotice(DEFAULT_COLLAB_NOTICE);
+        setShowCollabNotice(shouldShowCollabNotice(DEFAULT_COLLAB_NOTICE));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Reset pagination when search query or filter changes
   useEffect(() => {
@@ -662,7 +693,10 @@ export function App() {
   const dismissCollabNotice = () => {
     setShowCollabNotice(false);
     try {
-      localStorage.setItem(COLLAB_NOTICE_DISMISSED_UNTIL_KEY, String(Date.now() + COLLAB_NOTICE_DISMISS_MS));
+      localStorage.setItem(
+        COLLAB_NOTICE_DISMISSED_STATE_KEY,
+        JSON.stringify({ id: collabNotice.id, dismissedUntil: Date.now() + COLLAB_NOTICE_DISMISS_MS })
+      );
     } catch {}
   };
 
@@ -796,10 +830,8 @@ export function App() {
       {showCollabNotice && (
         <section className="collab-notice" aria-label="協作提示">
           <div className="collab-notice-copy">
-            <h2>一起補充現場資訊</h2>
-            <p>
-              KTV 收錄、導唱與 MV 類型常需要現場確認；若發現缺漏或資料不對，可使用「提供建議」或歌曲內的「回報」功能留下線索。
-            </p>
+            <h2>{collabNotice.title}</h2>
+            <p>{collabNotice.body}</p>
           </div>
           <button
             type="button"
