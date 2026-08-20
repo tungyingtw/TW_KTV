@@ -509,6 +509,7 @@ textarea:focus {
 
 .taiwan-demo-panel,
 .taiwan-demo-stat,
+.taiwan-demo-daily-trend,
 .taiwan-demo-user-region,
 .taiwan-demo-selected,
 .taiwan-demo-ranking,
@@ -872,11 +873,12 @@ textarea:focus {
 
 .taiwan-demo-side {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-auto-rows: auto;
   gap: 14px;
 }
 
 .taiwan-demo-stat,
+.taiwan-demo-daily-trend,
 .taiwan-demo-user-region,
 .taiwan-demo-selected,
 .taiwan-demo-ranking {
@@ -903,6 +905,88 @@ textarea:focus {
 .taiwan-demo-stat strong {
   font-size: 2.1rem;
   line-height: 1;
+}
+
+.taiwan-demo-daily-trend {
+  display: grid;
+  gap: 12px;
+}
+
+.taiwan-demo-daily-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.taiwan-demo-daily-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.taiwan-demo-daily-head svg {
+  color: var(--accent-cyan);
+}
+
+.taiwan-demo-daily-head strong {
+  color: var(--text-primary);
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.taiwan-demo-daily-bars {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  align-items: end;
+  min-height: 118px;
+  padding-top: 4px;
+}
+
+.taiwan-demo-daily-bar {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  align-items: end;
+  gap: 5px;
+  min-width: 0;
+  text-align: center;
+}
+
+.taiwan-demo-daily-bar i {
+  display: block;
+  width: 100%;
+  min-height: 4px;
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, var(--accent-pink), var(--accent-cyan));
+  box-shadow: 0 0 16px rgba(244, 114, 182, 0.22);
+}
+
+.taiwan-demo-daily-bar span,
+.taiwan-demo-daily-bar em {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.1;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.taiwan-demo-daily-bar em {
+  color: var(--text-secondary);
+}
+
+.taiwan-demo-daily-note,
+.taiwan-demo-daily-empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.55;
 }
 
 .taiwan-demo-user-region {
@@ -7610,6 +7694,7 @@ header,
 
 [data-theme="light"] .taiwan-demo-panel,
 [data-theme="light"] .taiwan-demo-stat,
+[data-theme="light"] .taiwan-demo-daily-trend,
 [data-theme="light"] .taiwan-demo-user-region,
 [data-theme="light"] .taiwan-demo-selected,
 [data-theme="light"] .taiwan-demo-ranking,
@@ -7641,6 +7726,11 @@ header,
 [data-theme="light"] .taiwan-demo-title-row p,
 [data-theme="light"] .taiwan-demo-panel-head span,
 [data-theme="light"] .taiwan-demo-stat span,
+[data-theme="light"] .taiwan-demo-daily-head span,
+[data-theme="light"] .taiwan-demo-daily-bar span,
+[data-theme="light"] .taiwan-demo-daily-bar em,
+[data-theme="light"] .taiwan-demo-daily-note,
+[data-theme="light"] .taiwan-demo-daily-empty,
 [data-theme="light"] .taiwan-demo-user-region span,
 [data-theme="light"] .taiwan-demo-selected span,
 [data-theme="light"] .taiwan-demo-user-region p,
@@ -7653,6 +7743,7 @@ header,
 }
 
 [data-theme="light"] .taiwan-demo-stat strong,
+[data-theme="light"] .taiwan-demo-daily-head strong,
 [data-theme="light"] .taiwan-demo-panel-head h2,
 [data-theme="light"] .taiwan-demo-selected h2,
 [data-theme="light"] .taiwan-demo-ranking-title,

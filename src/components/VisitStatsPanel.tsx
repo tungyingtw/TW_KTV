@@ -1,6 +1,6 @@
-import { MapPinned, TrendingUp, UsersRound } from 'lucide-react';
+import { BarChart3, MapPinned, TrendingUp, UsersRound } from 'lucide-react';
 import type { RegionPath } from './TaiwanHeatMap';
-import type { VisitRegionStat } from '../services/apiService';
+import type { DailyVisitStat, VisitRegionStat } from '../services/apiService';
 
 type VisitStatsPanelProps = {
   totalVisits: number;
@@ -19,10 +19,20 @@ type VisitStatsPanelProps = {
   joinActionDisabled?: boolean;
   joinActionLabel?: string;
   actionMessage?: string;
+  dailyStats?: DailyVisitStat[];
+  dailyTotal?: number;
+  todayCount?: number;
+  isDailyStatsLoading?: boolean;
+  dailyStatsError?: string;
 };
 
 function formatCount(value: number) {
   return value.toLocaleString('zh-TW');
+}
+
+function formatShortDate(date: string) {
+  const [, month, day] = date.split('-').map(Number);
+  return month && day ? `${month}/${day}` : date;
 }
 
 export function VisitStatsPanel({
@@ -42,8 +52,14 @@ export function VisitStatsPanel({
   joinActionDisabled,
   joinActionLabel,
   actionMessage,
+  dailyStats = [],
+  dailyTotal = 0,
+  todayCount = 0,
+  isDailyStatsLoading = false,
+  dailyStatsError = '',
 }: VisitStatsPanelProps) {
   const userRegionName = regionLabels[userRegionId] || '未選擇';
+  const maxDailyCount = Math.max(1, ...dailyStats.map((item) => item.count));
 
   return (
     <aside className="taiwan-demo-side">
@@ -51,6 +67,32 @@ export function VisitStatsPanel({
         <UsersRound size={22} />
         <span>累積歌友到訪</span>
         <strong>{formatCount(totalVisits)}</strong>
+      </div>
+
+      <div className="taiwan-demo-daily-trend">
+        <div className="taiwan-demo-daily-head">
+          <span><BarChart3 size={16} /> 近 10 日到訪</span>
+          <strong>{formatCount(dailyTotal)}</strong>
+        </div>
+        {isDailyStatsLoading && <p className="taiwan-demo-daily-empty">每日統計讀取中...</p>}
+        {!isDailyStatsLoading && dailyStatsError && <p className="taiwan-demo-daily-empty">{dailyStatsError}</p>}
+        {!isDailyStatsLoading && !dailyStatsError && (
+          <>
+            <div className="taiwan-demo-daily-bars" aria-label="近 10 日每日到訪人數">
+              {dailyStats.map((item) => {
+                const height = item.count ? Math.max(12, Math.round((item.count / maxDailyCount) * 100)) : 4;
+                return (
+                  <div key={item.date} className="taiwan-demo-daily-bar" title={`${formatShortDate(item.date)}：${formatCount(item.count)} 人`}>
+                    <i style={{ height: `${height}%` }} />
+                    <span>{formatShortDate(item.date)}</span>
+                    <em>{formatCount(item.count)}</em>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="taiwan-demo-daily-note">今日 {formatCount(todayCount)} 人；以 12 小時去重後統計。</p>
+          </>
+        )}
       </div>
 
       {showUserRegion && (
