@@ -483,6 +483,34 @@ main a:focus-visible {
   border-color: var(--ty-line) !important;
 }
 
+[data-theme="dark"] .answer {
+  color: var(--ty-text-2) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 78%, var(--ty-cyan) 5%) !important;
+  border-color: color-mix(in srgb, var(--ty-cyan) 26%, var(--ty-line)) !important;
+  border-left-color: var(--ty-cyan) !important;
+}
+
+[data-theme="dark"] .links a,
+[data-theme="dark"] .link-row a {
+  color: var(--ty-cyan) !important;
+  background: color-mix(in srgb, var(--ty-surface) 88%, var(--ty-cyan) 3%) !important;
+  border-color: color-mix(in srgb, var(--ty-cyan) 32%, var(--ty-line)) !important;
+}
+
+[data-theme="dark"] table {
+  border-color: var(--ty-line) !important;
+}
+
+[data-theme="dark"] th {
+  color: var(--ty-text) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 88%, var(--ty-cyan) 5%) !important;
+}
+
+[data-theme="dark"] td {
+  color: var(--ty-text-2) !important;
+  border-color: var(--ty-line) !important;
+}
+
 [data-theme="light"] {
   --ty-bg: #fff8ef;
   --ty-surface: #ffffff;
@@ -549,6 +577,13 @@ main a:focus-visible {
   border-left-color: var(--ty-cyan) !important;
 }
 
+[data-theme="light"] .answer {
+  color: var(--ty-text-2) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 86%, var(--ty-cyan) 4%) !important;
+  border-color: color-mix(in srgb, var(--ty-cyan) 28%, var(--ty-line)) !important;
+  border-left-color: var(--ty-cyan) !important;
+}
+
 [data-theme="light"] .warning {
   color: var(--ty-text-2) !important;
   background: color-mix(in srgb, var(--ty-surface-soft) 88%, var(--ty-gold) 6%) !important;
@@ -560,4 +595,32 @@ main a:focus-visible {
 [data-theme="light"] .email-card {
   border-color: var(--ty-line) !important;
   box-shadow: 0 1px 0 rgba(91, 59, 37, 0.04) !important;
+}
+
+[data-theme="light"] .links a,
+[data-theme="light"] .link-row a {
+  color: var(--ty-cyan) !important;
+  background: color-mix(in srgb, var(--ty-surface) 92%, var(--ty-cyan) 4%) !important;
+  border-color: color-mix(in srgb, var(--ty-cyan) 35%, var(--ty-line)) !important;
+}
+
+[data-theme="light"] .links a:hover,
+[data-theme="light"] .links a:focus-visible,
+[data-theme="light"] .link-row a:hover,
+[data-theme="light"] .link-row a:focus-visible {
+  background: color-mix(in srgb, var(--ty-cyan) 10%, var(--ty-surface)) !important;
+}
+
+[data-theme="light"] table {
+  border-color: var(--ty-line) !important;
+}
+
+[data-theme="light"] th {
+  color: var(--ty-text) !important;
+  background: color-mix(in srgb, var(--ty-surface-soft) 88%, var(--ty-cyan) 5%) !important;
+}
+
+[data-theme="light"] td {
+  color: var(--ty-text-2) !important;
+  border-color: var(--ty-line) !important;
 }
