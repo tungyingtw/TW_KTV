@@ -674,14 +674,14 @@ export function App() {
       linkLabel: '查看導唱說明',
     },
     {
-      question: '有 MV 標示代表一定是原版 MV 嗎？',
-      answer: '不一定。MV 類型只是用來區分現場畫面可能接近原版 MV、伴唱帶或其他版本。',
+      question: '有 MV 標示代表就是原版 MV 嗎？',
+      answer: '不是。MV 類型只是用來區分現場畫面可能接近原版 MV、伴唱帶或其他版本。',
       href: './original-mv-vs-karaoke-video.html',
       linkLabel: '查看 MV 類型',
     },
     {
       question: '查到有收錄，現場就能點到嗎？',
-      answer: '不一定。曲庫、門市、機台與更新時間都可能造成差異，實際仍以現場點歌系統為準。',
+      answer: '不代表現場必然可點播。曲庫、門市、機台與更新時間都可能造成差異，實際仍以現場點歌系統為準。',
       href: './faq.html',
       linkLabel: '查看常見問題',
     },

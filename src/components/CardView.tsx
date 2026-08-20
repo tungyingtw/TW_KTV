@@ -5,6 +5,7 @@ import { useBrands } from '../hooks/useBrands';
 import { Heart, Video, Disc, ChevronRight, CheckCircle2, Flag } from 'lucide-react';
 import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
+import { ResultLegend } from './ResultLegend';
 import { getLanguageStyle } from '../utils/languageStyle';
 import { isBrandAvailable } from '../utils/brandAvailability';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
@@ -67,10 +68,10 @@ export const CardView: React.FC<CardViewProps> = ({
             {isSingleBrand ? (
               <>
                 目前尚無【{currentBrandInfo?.shortName}】的已確認收錄資料。<br />
-                可先參考其他 KTV 門市或伴唱品牌的收錄狀態，或提供現場線索協助補充。
+                可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供現場線索協助補充。
               </>
             ) : (
-              '嘗試更換關鍵字或取消過濾條件。'
+              '目前沒有找到相符歌曲。可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供建議作為後續整理參考。'
             )}
           </p>
 
@@ -112,6 +113,7 @@ export const CardView: React.FC<CardViewProps> = ({
 
   return (
     <>
+    <ResultLegend />
     <div className="card-view-container" style={{
       maxWidth: '1400px',
       margin: '0 auto',
@@ -215,7 +217,8 @@ export const CardView: React.FC<CardViewProps> = ({
                     cursor: 'pointer',
                     color: isFav ? '#ec4899' : 'var(--text-muted)',
                   }}
-                  title={isFav ? '移出歌單' : '加入歌單'}
+                  aria-label={isFav ? '從我的歌本移除' : '加入我的歌本'}
+                  title={isFav ? '從我的歌本移除' : '加入我的歌本'}
                 >
                   <Heart size={18} fill={isFav ? 'var(--accent-pink)' : 'none'} className={isFav ? 'heart-pop-anim' : ''} />
                 </button>

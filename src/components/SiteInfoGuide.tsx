@@ -18,7 +18,7 @@ const guideLinks = [
 
 const faqItems = [
   {
-    question: 'TYFunLab 的查詢結果可以直接當現場保證嗎？',
+    question: 'TYFunLab 的查詢結果可以直接當現場依據嗎？',
     answer: '不行。本站整理公開資訊、使用者回報與人工確認線索，適合歡唱前準備歌單；實際是否能點唱，仍以門市包廂內點歌系統為準。',
   },
   {
@@ -111,7 +111,7 @@ export const SiteInfoGuide: React.FC = () => {
               <div className="site-info-guide-panel">
                 <div>
                   <h3>本站資料從哪裡來？</h3>
-                  <p>本站整理公開可查資料、使用者回報與人工確認線索，目標是協助歡唱前快速比對，不宣稱代表任何 KTV 官方資料。</p>
+                  <p>本站整理公開可查資料、使用者回報與人工確認線索，目標是協助歡唱前快速比對，不宣稱代表任何 KTV 品牌或伴唱系統。</p>
                 </div>
                 <div>
                   <h3>為什麼需要回報？</h3>
@@ -127,8 +127,8 @@ export const SiteInfoGuide: React.FC = () => {
             {activeTab === 'media' && (
               <div className="site-info-guide-panel">
                 <div>
-                  <h3>KTV 導唱是什麼？</h3>
-                  <p>導唱是伴唱系統可能提供的跟唱輔助功能，不等於歌手本人原唱。本站只整理目前資料是否顯示可能提供導唱。</p>
+                  <h3>收錄狀態、導唱與 MV 類型怎麼分？</h3>
+                  <p>收錄狀態代表資料顯示歌曲可能可在該平台查到，導唱代表平台可能提供跟唱輔助，MV 類型則是畫面來源或呈現方式參考。三者都適合歡唱前準備，現場仍以包廂點歌系統為準。</p>
                 </div>
                 <div>
                   <h3>MV 標示怎麼看？</h3>
@@ -155,8 +155,8 @@ export const SiteInfoGuide: React.FC = () => {
             <div className="site-info-guide-disclaimer">
               <ShieldAlert size={18} />
               <p>
-                <strong>客觀查詢與版權免責：</strong>
-                本站為民間獨立開發之非官方歌曲索引查詢庫，非任何 KTV 連鎖門市、伴唱系統或伴唱機製造商之官方網站。網站內記載之品牌與商標權均歸原註冊公司所有；影音連結均引用第三方公開平台，本站不儲存任何音訊影片檔案。門市實體收錄狀態請以各門市現場點歌機器為準。
+                <strong>查詢參考與權利聲明：</strong>
+                本站為民間整理的 KTV 歌曲收錄對照工具，非任何 KTV 品牌官方網站；查詢結果僅供歡唱前參考，現場仍以包廂點歌系統顯示為準。頁面中提及之品牌名稱、商標或服務名稱均屬其各自權利人所有；本站不儲存、不上傳、不提供下載音訊或影片檔。
               </p>
             </div>
           </div>

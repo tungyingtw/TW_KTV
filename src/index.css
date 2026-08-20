@@ -8425,6 +8425,27 @@ header,
   padding: 0 18px 18px !important;
 }
 
+.result-legend {
+  max-width: 1400px;
+  margin: 0 auto 12px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 78%, var(--accent-support) 18%);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-card) 82%, var(--accent-support) 6%);
+  color: var(--text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.result-legend strong {
+  color: var(--text-primary);
+  font-weight: 900;
+}
+
 @media (max-width: 640px) {
   .site-info-guide .site-info-guide-toggle {
     padding: 14px !important;
@@ -8432,5 +8453,16 @@ header,
 
   .site-info-guide .site-info-guide-body {
     padding: 0 12px 14px !important;
+  }
+
+  .result-legend {
+    margin: 0 0 10px;
+    padding: 9px 10px;
+    gap: 6px;
+    font-size: 0.78rem;
+  }
+
+  .result-legend span {
+    flex: 1 1 100%;
   }
 }

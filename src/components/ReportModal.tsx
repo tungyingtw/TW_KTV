@@ -112,7 +112,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
             <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>回報已送出</div>
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
-              已收到您的回報。這筆資料會作為人工整理與後續修正線索，不會立即覆蓋查詢結果。
+              已收到你的回報。這筆資料會作為人工整理與後續修正線索，不會立即覆蓋查詢結果。你的回報會幫助後續查詢更完整。
             </div>
           </div>
         ) : (
@@ -195,6 +195,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               </label>
               <p style={{ margin: '0 0 0.45rem', color: 'var(--text-secondary, #94a3b8)', fontSize: '0.82rem', lineHeight: 1.55 }}>
                 請盡量提供歌名、歌手、KTV 平台或門市線索、現場看到的是有收錄或未收錄、是否有導唱，以及 MV 類型是原版 MV、伴唱帶、Live、剪輯或不確定。
+              </p>
+              <p style={{ margin: '0 0 0.55rem', color: 'var(--text-muted, #94a3b8)', fontSize: '0.78rem', lineHeight: 1.55 }}>
+                回報內容會作為後續人工整理參考，不代表立即更新。請勿提供個資、內部資料，或不適合公開的截圖、音訊與影片檔；若資料互相衝突，後續需人工確認。
               </p>
               <textarea
                 value={note}
