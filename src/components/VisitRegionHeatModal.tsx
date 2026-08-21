@@ -234,7 +234,6 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
             joinActionLabel={joinActionLabel}
             actionMessage={actionMessage}
             dailyStats={dailyStats?.items || []}
-            dailyTotal={dailyStats?.total_count || 0}
             todayCount={dailyStats?.today_count || 0}
             isDailyStatsLoading={isDailyStatsLoading}
             dailyStatsError={dailyStatsError}

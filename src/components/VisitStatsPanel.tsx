@@ -20,7 +20,6 @@ type VisitStatsPanelProps = {
   joinActionLabel?: string;
   actionMessage?: string;
   dailyStats?: DailyVisitStat[];
-  dailyTotal?: number;
   todayCount?: number;
   isDailyStatsLoading?: boolean;
   dailyStatsError?: string;
@@ -53,7 +52,6 @@ export function VisitStatsPanel({
   joinActionLabel,
   actionMessage,
   dailyStats = [],
-  dailyTotal = 0,
   todayCount = 0,
   isDailyStatsLoading = false,
   dailyStatsError = '',
@@ -72,7 +70,6 @@ export function VisitStatsPanel({
       <div className="taiwan-demo-daily-trend">
         <div className="taiwan-demo-daily-head">
           <span><BarChart3 size={16} /> 近 10 日到訪</span>
-          <strong>{formatCount(dailyTotal)}</strong>
         </div>
         {isDailyStatsLoading && <p className="taiwan-demo-daily-empty">每日統計讀取中...</p>}
         {!isDailyStatsLoading && dailyStatsError && <p className="taiwan-demo-daily-empty">{dailyStatsError}</p>}
