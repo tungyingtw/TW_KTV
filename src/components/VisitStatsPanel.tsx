@@ -90,7 +90,7 @@ export function VisitStatsPanel({
                 );
               })}
             </div>
-            <p className="taiwan-demo-daily-note">今日 {formatCount(todayCount)} 人；以 12 小時去重後統計。</p>
+            <p className="taiwan-demo-daily-note">今日 {formatCount(todayCount)} 人</p>
           </>
         )}
       </div>
