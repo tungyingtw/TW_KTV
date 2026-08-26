@@ -2440,6 +2440,8 @@ const ADMIN_VOTE_CALIBRATION_FIELDS = {
   mv: { officialMv: 'editedMv', editedMv: 'officialMv' },
 };
 
+const ADMIN_VOTE_REVIEW_MIN_TOTAL = 3;
+
 function normalizeVoteCounts(data = {}) {
   return Object.fromEntries(
     Object.entries(DEFAULT_VOTE_COUNTS).map(([field, fallback]) => [field, Math.max(0, Number.parseInt(data[field], 10) || fallback)])
@@ -4562,7 +4564,7 @@ async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
       const guided = data.guidedVocal || 0;
       const noGuided = data.noGuidedVocal || 0;
       const guidedTotal = guided + noGuided;
-      if (guidedTotal > 0) {
+      if (guidedTotal >= ADMIN_VOTE_REVIEW_MIN_TOTAL) {
         const suggestedAudioType = guided > noGuided ? 'guided_vocal' : (noGuided > guided ? 'backing_track' : 'needs_review');
         const currentAudioType = brandData?.audioType || 'unknown';
         const alreadyMatches = suggestedAudioType !== 'needs_review' && currentAudioType === suggestedAudioType;
@@ -4584,7 +4586,7 @@ async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
       const official = data.officialMv || 0;
       const edited = data.editedMv || 0;
       const mvTotal = official + edited;
-      if (mvTotal > 0) {
+      if (mvTotal >= ADMIN_VOTE_REVIEW_MIN_TOTAL) {
         const suggestedMvType = official > edited ? 'official_mv' : (edited > official ? 'reedited_mv' : 'needs_review');
         const currentMvType = brandData?.mvType || 'unknown';
         const alreadyMatches = suggestedMvType !== 'needs_review' && currentMvType === suggestedMvType;
@@ -5251,13 +5253,16 @@ app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, 
   const votes = await loadVotesStore();
   const handledReviewItemIds = await loadHandledReviewItemIds();
   const guidedVotes = [];
+  const minTotal = req.query.minTotal !== undefined
+    ? Math.max(ADMIN_VOTE_REVIEW_MIN_TOTAL, parseInt(req.query.minTotal, 10) || ADMIN_VOTE_REVIEW_MIN_TOTAL)
+    : ADMIN_VOTE_REVIEW_MIN_TOTAL;
 
   for (const [key, data] of Object.entries(votes)) {
     if (handledReviewItemIds.has(`guided_vote:${key}`)) continue;
     const guided = data.guidedVocal || 0;
     const noGuided = data.noGuidedVocal || 0;
     const total = guided + noGuided;
-    if (!total) continue;
+    if (total < minTotal) continue;
 
     const { songId, brandId } = await parseVoteKeyDynamic(key);
     const song = await getAdminSongById(songId);
@@ -5283,7 +5288,7 @@ app.get('/api/admin/guided-votes', requirePermission('votes.view'), async (req, 
   }
 
   guidedVotes.sort((a, b) => (b.total - a.total) || (b.guided - a.guided));
-  res.json({ total: guidedVotes.length, guidedVotes });
+  res.json({ total: guidedVotes.length, guidedVotes, minTotal });
 });
 
 // ── 查看 MV 投票 ──
@@ -5292,8 +5297,8 @@ app.get('/api/admin/mv-votes', requirePermission('votes.view'), async (req, res)
   const handledReviewItemIds = await loadHandledReviewItemIds();
   const mvVotes = [];
   const minTotal = req.query.minTotal !== undefined
-    ? Math.max(1, parseInt(req.query.minTotal) || 1)
-    : 3;
+    ? Math.max(ADMIN_VOTE_REVIEW_MIN_TOTAL, parseInt(req.query.minTotal, 10) || ADMIN_VOTE_REVIEW_MIN_TOTAL)
+    : ADMIN_VOTE_REVIEW_MIN_TOTAL;
   const filterType = String(req.query.type || 'all').toLowerCase();
   const limit = Math.min(200, Math.max(5, parseInt(req.query.limit) || 50));
 
