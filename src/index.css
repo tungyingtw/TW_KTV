@@ -940,18 +940,22 @@ textarea:focus {
 
 .taiwan-demo-daily-bars {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(10, minmax(22px, 1fr));
+  gap: 4px;
   align-items: stretch;
   height: 118px;
-  padding-top: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 2px 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.28) transparent;
 }
 
 .taiwan-demo-daily-bar {
   display: grid;
   grid-template-rows: minmax(72px, 1fr) auto auto;
   align-items: end;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
   text-align: center;
 }
@@ -968,18 +972,27 @@ textarea:focus {
 
 .taiwan-demo-daily-bar span,
 .taiwan-demo-daily-bar em {
-  overflow: hidden;
+  min-width: 0;
+  overflow: visible;
   color: var(--text-muted);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-style: normal;
   font-weight: 800;
-  line-height: 1.1;
-  text-overflow: clip;
+  line-height: 1.15;
   white-space: nowrap;
 }
 
 .taiwan-demo-daily-bar em {
   color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.taiwan-demo-daily-bar.is-today span {
+  color: var(--accent-cyan);
+}
+
+.taiwan-demo-daily-bar.is-today i {
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.26), 0 0 18px rgba(244, 114, 182, 0.18);
 }
 
 .taiwan-demo-daily-note,
