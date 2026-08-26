@@ -151,6 +151,7 @@
 
   .vote-bar { display: flex; gap: 12px; align-items: center; font-size: 0.82rem; margin-top: 6px; }
   .vote-confirm { color: var(--green); font-weight: 700; }
+  .vote-calibration-note { color: var(--muted); font-size: 0.78rem; line-height: 1.5; margin: 4px 0 8px; }
 
   /* ── Filters ── */
   .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
@@ -470,7 +471,8 @@
     <!-- ── 收錄狀態待確認 ── -->
     <div id="tab-disputed" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">收錄狀態待確認清單</h2>
-      <p class="tab-help"><b>用途：</b>確認社群對收錄狀態有明顯分歧的歌曲。<b>完成標準：</b>人工查證後套用正確收錄狀態。</p>
+      <p class="tab-help"><b>用途：</b>確認社群對收錄狀態有明顯分歧的歌曲。<b>完成標準：</b>人工查證後套用正確收錄狀態，或只校正社群票數。</p>
+      <p class="tab-help">校正票數只調整社群票選結果，不改歌曲主資料；後續仍可能被新的群眾票選反轉。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadDisputed()">重新整理</button>
       </div>
@@ -480,7 +482,8 @@
     <!-- ── 已驗證建議 ── -->
     <div id="tab-verified" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">社群已驗證清單</h2>
-      <p class="tab-help"><b>用途：</b>查看社群票數高度一致的收錄建議。<b>完成標準：</b>確認資料一致後套用或保留現況。</p>
+      <p class="tab-help"><b>用途：</b>查看社群票數高度一致的收錄建議。<b>完成標準：</b>確認資料一致後套用、校正票數或保留現況。</p>
+      <p class="tab-help">直接編輯歌曲資料會覆蓋主資料，適合長期確定資料；校正票數適合修正目前社群判斷。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadVerified()">重新整理</button>
       </div>
@@ -490,7 +493,8 @@
     <!-- ── 導唱票選 ── -->
     <div id="tab-guided" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">導唱票選清單</h2>
-      <p class="tab-help"><b>用途：</b>依社群回報修正歌曲導唱功能。<b>完成標準：</b>標記為有導唱或純伴奏，並確認資料已儲存。</p>
+      <p class="tab-help"><b>用途：</b>依社群回報修正歌曲導唱功能。<b>完成標準：</b>標記主資料，或只校正社群票數。</p>
+      <p class="tab-help">校正票數只調整社群票選結果，不改歌曲主資料；後續仍可能被新的群眾票選反轉。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadGuidedVotes()">重新整理</button>
       </div>
@@ -500,7 +504,8 @@
     <!-- ── MV 類型票選 ── -->
     <div id="tab-mv" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">MV 類型社群票選清單</h2>
-      <p class="tab-help"><b>用途：</b>依社群票選修正 MV 類型。<b>完成標準：</b>標記為原版 MV、Live MV、伴唱畫面或動畫 MV。</p>
+      <p class="tab-help"><b>用途：</b>依社群票選修正 MV 類型。<b>完成標準：</b>標記主資料，或只校正社群票數。</p>
+      <p class="tab-help">校正票數只調整社群票選結果，不改歌曲主資料；後續仍可能被新的群眾票選反轉。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadMvVotes()">重新整理</button>
       </div>
@@ -2459,6 +2464,9 @@ async function loadDisputed() {
           </div>
         </div>
         <div class="card-actions">
+          <span class="vote-calibration-note">校正票數不改主資料</span>
+          <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'availability', 'confirm')">校正為有收錄</button>
+          <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'availability', 'deny')">校正為未收錄</button>
           <button class="btn btn-green" onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'has_song', ${jsArg(reviewListCardId('availability-vote', d.key))}, ${jsArg(`availability_vote:${d.key}`)})">套用為有收錄</button>
           <button class="btn btn-red"   onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'no_song', ${jsArg(reviewListCardId('availability-vote', d.key))}, ${jsArg(`availability_vote:${d.key}`)})">套用為未收錄</button>
         </div>
@@ -2488,6 +2496,9 @@ async function loadVerified() {
           </div>
         </div>
         <div class="card-actions">
+          <span class="vote-calibration-note">校正票數不改主資料</span>
+          <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'availability', 'confirm')">校正為有收錄</button>
+          <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'availability', 'deny')">校正為未收錄</button>
           ${!d.currentStatus ? `<button class="btn btn-green" onclick="openFix(${jsArg(d.songId)}, ${jsArg(d.songTitle)}, ${jsArg(d.artist)}, ${jsArg(d.brandId)}, 'has_song', ${jsArg(reviewListCardId('availability-vote', d.key))}, ${jsArg(`availability_vote:${d.key}`)})">套用為有收錄</button>` : `<span style="color:var(--muted);font-size:0.82rem;">目前資料已正確</span>`}
         </div>
       </div>
@@ -2517,6 +2528,8 @@ async function loadGuidedVotes() {
         </div>
         <div class="card-actions">
           <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後再調整資料</span>
+          <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'guided', 'guidedVocal')">校正為有導唱</button>
+          <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'guided', 'noGuidedVocal')">校正為無導唱</button>
           <button class="btn btn-green" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'guided_vocal', ${jsArg(reviewListCardId('guided-vote', d.key))}, { reviewItemId: ${jsArg(`guided_vote:${d.key}`)} })">標記導唱</button>
           <button class="btn btn-yellow" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'backing_track', ${jsArg(reviewListCardId('guided-vote', d.key))}, { reviewItemId: ${jsArg(`guided_vote:${d.key}`)} })">標記純伴奏</button>
         </div>
@@ -2593,10 +2606,14 @@ async function loadMvVotes() {
         <div class="card-actions">
           ${d.isLowSample ? `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
+            <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'officialMv')">校正為原版 MV</button>
+            <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'editedMv')">校正為伴唱畫面</button>
             <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記原版 MV</button>
             <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記伴唱畫面</button>
           ` : `
             <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
+            <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'officialMv')">校正為原版 MV</button>
+            <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'editedMv')">校正為伴唱畫面</button>
             <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記原版 MV</button>
             <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記伴唱畫面</button>
           `}
@@ -2615,6 +2632,52 @@ function mvTypeLabel(type) {
     unknown: '未標記',
   };
   return labels[type] || type || '未標記';
+}
+
+function voteCalibrationValueLabel(dimension, value) {
+  const labels = {
+    availability: { confirm: '有收錄', deny: '未收錄' },
+    guided: { guidedVocal: '有導唱', noGuidedVocal: '無導唱' },
+    mv: { officialMv: '原版 MV', editedMv: '伴唱畫面' },
+  };
+  return labels[dimension]?.[value] || value;
+}
+
+function refreshVoteCalibrationLists(dimension) {
+  scheduleStatsSync();
+  scheduleAdminListSync('review-queue', () => loadReviewQueue());
+  if (dimension === 'availability') {
+    scheduleAdminListSync('disputed', () => loadDisputed(), 500);
+    scheduleAdminListSync('verified', () => loadVerified(), 700);
+  } else if (dimension === 'guided') {
+    scheduleAdminListSync('guided-votes', () => loadGuidedVotes(), 500);
+  } else if (dimension === 'mv') {
+    scheduleAdminListSync('mv-votes', () => loadMvVotes(), 500);
+  }
+}
+
+async function calibrateCommunityVote(songIdValue, brandIdValue, dimension, value) {
+  const songId = decodeURIComponent(songIdValue);
+  const brandId = decodeURIComponent(brandIdValue);
+  const label = voteCalibrationValueLabel(dimension, value);
+  if (!confirm('確認只校正社群票數為「' + label + '」？\n這不會修改歌曲主資料，後續仍可能被群眾票選反轉。')) return false;
+
+  try {
+    const res = await apiFetch('/api/admin/vote-calibration', {
+      method: 'POST',
+      body: JSON.stringify({ songId, brandId, dimension, value }),
+    });
+    const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
+    if (!res.ok || !data.success) throw new Error(data.error || '票數校正未儲存');
+
+    const suffix = data.changed ? `已補到反方 + ${data.randomGap} 票` : '原本票數已足夠，未再增加';
+    showToast('已完成：社群票數校正為「' + label + '」，' + suffix, 'success');
+    refreshVoteCalibrationLists(dimension);
+    return true;
+  } catch (err) {
+    showToast(err.message || '票數校正未儲存', 'error');
+    return false;
+  }
 }
 
 async function applyMvFix(songIdValue, brandIdValue, mvType, sourceCardId = '', options = {}) {
@@ -3303,6 +3366,29 @@ function reviewQueueSignalLabel(item) {
   return helper ? `${helper} / ${note}` : note;
 }
 
+function renderReviewQueueCalibrationActions(item) {
+  if (!item.songId || !item.brandId) return '';
+  if (item.itemType === 'availability') {
+    return `
+      <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(item.songId))}, ${jsArg(encodeURIComponent(item.brandId))}, 'availability', 'confirm')">校正為有收錄</button>
+      <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(item.songId))}, ${jsArg(encodeURIComponent(item.brandId))}, 'availability', 'deny')">校正為未收錄</button>
+    `;
+  }
+  if (item.itemType === 'guided') {
+    return `
+      <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(item.songId))}, ${jsArg(encodeURIComponent(item.brandId))}, 'guided', 'guidedVocal')">校正為有導唱</button>
+      <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(item.songId))}, ${jsArg(encodeURIComponent(item.brandId))}, 'guided', 'noGuidedVocal')">校正為無導唱</button>
+    `;
+  }
+  if (item.itemType === 'mv') {
+    return `
+      <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(item.songId))}, ${jsArg(encodeURIComponent(item.brandId))}, 'mv', 'officialMv')">校正為原版 MV</button>
+      <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(item.songId))}, ${jsArg(encodeURIComponent(item.brandId))}, 'mv', 'editedMv')">校正為伴唱畫面</button>
+    `;
+  }
+  return '';
+}
+
 function renderReviewQueueActions(item) {
   if (item.itemType === 'availability') {
     return `
@@ -3366,6 +3452,7 @@ async function loadReviewQueue() {
           <div class="sub" style="margin-top:4px;color:#94a3b8">${escapeHtml(reviewQueueSignalLabel(item))}</div>
         </div>
         <div class="card-actions">
+          ${renderReviewQueueCalibrationActions(item)}
           ${renderReviewQueueActions(item)}
           <button class="btn btn-ghost" onclick="rejectReviewQueueItem(${jsArg(item.id)})">駁回</button>
           <button class="btn btn-ghost" onclick="openReviewQueueSource(${jsArg(item.id)})">查看來源</button>

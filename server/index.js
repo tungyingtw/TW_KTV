@@ -2425,6 +2425,27 @@ function getVoteConfidence(confirm, deny) {
   return 'uncertain';
 }
 
+const DEFAULT_VOTE_COUNTS = {
+  confirm: 0,
+  deny: 0,
+  guidedVocal: 0,
+  noGuidedVocal: 0,
+  officialMv: 0,
+  editedMv: 0,
+};
+
+const ADMIN_VOTE_CALIBRATION_FIELDS = {
+  availability: { confirm: 'deny', deny: 'confirm' },
+  guided: { guidedVocal: 'noGuidedVocal', noGuidedVocal: 'guidedVocal' },
+  mv: { officialMv: 'editedMv', editedMv: 'officialMv' },
+};
+
+function normalizeVoteCounts(data = {}) {
+  return Object.fromEntries(
+    Object.entries(DEFAULT_VOTE_COUNTS).map(([field, fallback]) => [field, Math.max(0, Number.parseInt(data[field], 10) || fallback)])
+  );
+}
+
 // ─────────────────────────────────────────────
 // 自動滾動備份與容量極限控管引擎 (Rolling Backup & Storage Quota Guard)
 // ─────────────────────────────────────────────
@@ -3851,6 +3872,64 @@ app.post('/api/votes/batch', async (req, res) => {
   }
 
   res.json({ votes: result });
+});
+
+app.post('/api/admin/vote-calibration', requirePermission('votes.view'), async (req, res) => {
+  const songId = String(req.body?.songId || '').trim();
+  const brandId = String(req.body?.brandId || '').trim();
+  const dimension = String(req.body?.dimension || '').trim();
+  const value = String(req.body?.value || '').trim();
+  const fieldMap = ADMIN_VOTE_CALIBRATION_FIELDS[dimension];
+  const oppositeField = fieldMap?.[value];
+
+  if (!songId || !brandId) return res.status(400).json({ error: '缺少歌曲或品牌資料' });
+  if (!oppositeField) return res.status(400).json({ error: '校正票數欄位不合法' });
+
+  const isBrandActive = await brandExists(brandId, { activeOnly: true });
+  if (!isBrandActive) return res.status(400).json({ error: `無效或已停用的品牌 ID: "${brandId}"` });
+
+  try {
+    const votes = await loadVotesStore();
+    const key = `${songId}_${brandId}`;
+    const beforeVotes = normalizeVoteCounts(votes[key]);
+    const randomGap = Math.floor(Math.random() * 7) + 1;
+    const targetVotes = beforeVotes[oppositeField] + randomGap;
+    const afterVotes = { ...beforeVotes };
+    const changed = afterVotes[value] < targetVotes;
+
+    if (changed) afterVotes[value] = targetVotes;
+    votes[key] = { ...(votes[key] || {}), ...afterVotes };
+    await saveVotesStore(votes);
+    invalidateAdminDerivedCaches();
+
+    logAdminAction('CALIBRATE_COMMUNITY_VOTE', {
+      songId,
+      brandId,
+      dimension,
+      value,
+      oppositeField,
+      randomGap,
+      targetVotes,
+      beforeVotes,
+      afterVotes,
+      changed,
+    }, req);
+
+    res.json({
+      success: true,
+      key,
+      changed,
+      randomGap,
+      targetVotes,
+      votes: {
+        ...afterVotes,
+        confidence: getVoteConfidence(afterVotes.confirm || 0, afterVotes.deny || 0),
+      },
+    });
+  } catch (err) {
+    console.error('[Admin Vote Calibration Error]', err);
+    res.status(503).json({ error: '校正票數暫時無法儲存，請稍後再試' });
+  }
 });
 
 // ═══════════════════════════════════════════════════════
