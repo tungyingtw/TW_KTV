@@ -914,9 +914,9 @@ textarea:focus {
 
 .taiwan-demo-daily-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .taiwan-demo-daily-head span {
@@ -934,8 +934,11 @@ textarea:focus {
 
 .taiwan-demo-daily-head strong {
   color: var(--text-primary);
-  font-size: 1.55rem;
-  line-height: 1;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .taiwan-demo-daily-bars {
@@ -956,7 +959,7 @@ textarea:focus {
   grid-template-rows: minmax(72px, 1fr) auto auto;
   align-items: end;
   gap: 4px;
-  min-width: 0;
+  min-width: 22px;
   text-align: center;
 }
 
@@ -972,6 +975,7 @@ textarea:focus {
 
 .taiwan-demo-daily-bar span,
 .taiwan-demo-daily-bar em {
+  display: block;
   min-width: 0;
   overflow: visible;
   color: var(--text-muted);
@@ -987,12 +991,32 @@ textarea:focus {
   font-variant-numeric: tabular-nums;
 }
 
+.taiwan-demo-daily-bar small {
+  display: block;
+  margin-bottom: 1px;
+  color: var(--accent-cyan);
+  font-size: 0.56rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .taiwan-demo-daily-bar.is-today span {
   color: var(--accent-cyan);
 }
 
 .taiwan-demo-daily-bar.is-today i {
   box-shadow: 0 0 18px rgba(34, 211, 238, 0.26), 0 0 18px rgba(244, 114, 182, 0.18);
+}
+
+.taiwan-demo-daily-bar.is-zero i {
+  opacity: 0.58;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.42), rgba(56, 189, 248, 0.46));
+  box-shadow: none;
+}
+
+.taiwan-demo-daily-bar.is-zero em {
+  color: color-mix(in srgb, var(--text-muted) 78%, transparent);
 }
 
 .taiwan-demo-daily-note,
@@ -1336,6 +1360,27 @@ textarea:focus {
 
   .taiwan-demo-side {
     grid-template-rows: none;
+  }
+
+  .taiwan-demo-daily-bars {
+    grid-template-columns: repeat(10, minmax(24px, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .taiwan-demo-daily-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .taiwan-demo-daily-head strong {
+    text-align: left;
+  }
+
+  .taiwan-demo-daily-bars {
+    grid-template-columns: repeat(10, 26px);
+    padding-bottom: 5px;
   }
 }
 
