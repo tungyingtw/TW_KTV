@@ -34,9 +34,9 @@ function formatShortDate(date: string) {
   return month && day ? `${month}/${day}` : date;
 }
 
-function getDateParts(date: string) {
-  const [, month, day] = date.split('-').map(Number);
-  return { month, day };
+function formatDayLabel(date: string) {
+  const [, , day] = date.split('-').map(Number);
+  return day ? String(day) : formatShortDate(date);
 }
 
 export function VisitStatsPanel({
@@ -77,8 +77,11 @@ export function VisitStatsPanel({
 
       <div className="taiwan-demo-daily-trend">
         <div className="taiwan-demo-daily-head">
-          <span><BarChart3 size={16} /> 近 10 日到訪</span>
-          {dailyDateRange && <strong>{dailyDateRange}</strong>}
+          <div>
+            <span><BarChart3 size={16} /> 近 10 日到訪</span>
+            {dailyDateRange && <small>{dailyDateRange}</small>}
+          </div>
+          <strong>今日 {formatCount(todayCount)} 人</strong>
         </div>
         {isDailyStatsLoading && <p className="taiwan-demo-daily-empty">每日統計讀取中...</p>}
         {!isDailyStatsLoading && dailyStatsError && <p className="taiwan-demo-daily-empty">{dailyStatsError}</p>}
@@ -88,9 +91,6 @@ export function VisitStatsPanel({
               {dailyStats.map((item, index) => {
                 const height = item.count ? Math.max(12, Math.round((item.count / maxDailyCount) * 100)) : 4;
                 const isToday = index === dailyStats.length - 1;
-                const current = getDateParts(item.date);
-                const previous = dailyStats[index - 1] ? getDateParts(dailyStats[index - 1].date) : null;
-                const showsMonth = index === 0 || (previous && current.month !== previous.month);
                 return (
                   <div
                     key={item.date}
@@ -99,16 +99,12 @@ export function VisitStatsPanel({
                     aria-label={`${formatShortDate(item.date)}，${formatCount(item.count)} 人`}
                   >
                     <i style={{ height: `${height}%` }} />
-                    <span>
-                      {showsMonth && current.month ? <small>{current.month}月</small> : null}
-                      {current.day || formatShortDate(item.date)}
-                    </span>
+                    <span>{isToday ? '今' : formatDayLabel(item.date)}</span>
                     <em>{formatCount(item.count)}</em>
                   </div>
                 );
               })}
             </div>
-            <p className="taiwan-demo-daily-note">今日 {formatCount(todayCount)} 人</p>
           </>
         )}
       </div>

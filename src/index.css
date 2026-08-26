@@ -914,9 +914,15 @@ textarea:focus {
 
 .taiwan-demo-daily-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+}
+
+.taiwan-demo-daily-head > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
 .taiwan-demo-daily-head span {
@@ -932,12 +938,26 @@ textarea:focus {
   color: var(--accent-cyan);
 }
 
+.taiwan-demo-daily-head small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .taiwan-demo-daily-head strong {
-  color: var(--text-primary);
+  flex: 0 0 auto;
+  min-height: 26px;
+  padding: 5px 8px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 999px;
+  color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.07);
   font-size: 0.72rem;
   font-weight: 900;
   line-height: 1.2;
-  text-align: right;
   white-space: nowrap;
 }
 
@@ -989,16 +1009,6 @@ textarea:focus {
 .taiwan-demo-daily-bar em {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
-}
-
-.taiwan-demo-daily-bar small {
-  display: block;
-  margin-bottom: 1px;
-  color: var(--accent-cyan);
-  font-size: 0.56rem;
-  font-weight: 900;
-  line-height: 1;
-  white-space: nowrap;
 }
 
 .taiwan-demo-daily-bar.is-today span {
@@ -1369,13 +1379,12 @@ textarea:focus {
 
 @media (max-width: 420px) {
   .taiwan-demo-daily-head {
-    align-items: flex-start;
     flex-direction: column;
     gap: 5px;
   }
 
   .taiwan-demo-daily-head strong {
-    text-align: left;
+    width: fit-content;
   }
 
   .taiwan-demo-daily-bars {
