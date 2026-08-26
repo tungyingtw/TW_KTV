@@ -34,10 +34,9 @@ function formatShortDate(date: string) {
   return month && day ? `${month}/${day}` : date;
 }
 
-function formatCompactDate(date: string, index: number) {
+function getDateParts(date: string) {
   const [, month, day] = date.split('-').map(Number);
-  if (!month || !day) return date;
-  return index === 0 || day === 1 ? `${month}/${day}` : String(day);
+  return { month, day };
 }
 
 export function VisitStatsPanel({
@@ -64,6 +63,9 @@ export function VisitStatsPanel({
 }: VisitStatsPanelProps) {
   const userRegionName = regionLabels[userRegionId] || '未選擇';
   const maxDailyCount = Math.max(1, ...dailyStats.map((item) => item.count));
+  const dailyDateRange = dailyStats.length > 0
+    ? `${formatShortDate(dailyStats[0].date)} - ${formatShortDate(dailyStats[dailyStats.length - 1].date)}`
+    : '';
 
   return (
     <aside className="taiwan-demo-side">
@@ -76,6 +78,7 @@ export function VisitStatsPanel({
       <div className="taiwan-demo-daily-trend">
         <div className="taiwan-demo-daily-head">
           <span><BarChart3 size={16} /> 近 10 日到訪</span>
+          {dailyDateRange && <strong>{dailyDateRange}</strong>}
         </div>
         {isDailyStatsLoading && <p className="taiwan-demo-daily-empty">每日統計讀取中...</p>}
         {!isDailyStatsLoading && dailyStatsError && <p className="taiwan-demo-daily-empty">{dailyStatsError}</p>}
@@ -85,10 +88,21 @@ export function VisitStatsPanel({
               {dailyStats.map((item, index) => {
                 const height = item.count ? Math.max(12, Math.round((item.count / maxDailyCount) * 100)) : 4;
                 const isToday = index === dailyStats.length - 1;
+                const current = getDateParts(item.date);
+                const previous = dailyStats[index - 1] ? getDateParts(dailyStats[index - 1].date) : null;
+                const showsMonth = index === 0 || (previous && current.month !== previous.month);
                 return (
-                  <div key={item.date} className={`taiwan-demo-daily-bar ${isToday ? 'is-today' : ''}`} title={`${formatShortDate(item.date)}：${formatCount(item.count)} 人`}>
+                  <div
+                    key={item.date}
+                    className={`taiwan-demo-daily-bar ${isToday ? 'is-today' : ''} ${item.count === 0 ? 'is-zero' : ''}`}
+                    title={`${formatShortDate(item.date)}：${formatCount(item.count)} 人`}
+                    aria-label={`${formatShortDate(item.date)}，${formatCount(item.count)} 人`}
+                  >
                     <i style={{ height: `${height}%` }} />
-                    <span aria-label={formatShortDate(item.date)}>{formatCompactDate(item.date, index)}</span>
+                    <span>
+                      {showsMonth && current.month ? <small>{current.month}月</small> : null}
+                      {current.day || formatShortDate(item.date)}
+                    </span>
                     <em>{formatCount(item.count)}</em>
                   </div>
                 );
