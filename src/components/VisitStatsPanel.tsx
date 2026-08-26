@@ -34,6 +34,12 @@ function formatShortDate(date: string) {
   return month && day ? `${month}/${day}` : date;
 }
 
+function formatCompactDate(date: string, index: number) {
+  const [, month, day] = date.split('-').map(Number);
+  if (!month || !day) return date;
+  return index === 0 || day === 1 ? `${month}/${day}` : String(day);
+}
+
 export function VisitStatsPanel({
   totalVisits,
   userRegionId,
@@ -76,12 +82,13 @@ export function VisitStatsPanel({
         {!isDailyStatsLoading && !dailyStatsError && (
           <>
             <div className="taiwan-demo-daily-bars" aria-label="近 10 日每日到訪人數">
-              {dailyStats.map((item) => {
+              {dailyStats.map((item, index) => {
                 const height = item.count ? Math.max(12, Math.round((item.count / maxDailyCount) * 100)) : 4;
+                const isToday = index === dailyStats.length - 1;
                 return (
-                  <div key={item.date} className="taiwan-demo-daily-bar" title={`${formatShortDate(item.date)}：${formatCount(item.count)} 人`}>
+                  <div key={item.date} className={`taiwan-demo-daily-bar ${isToday ? 'is-today' : ''}`} title={`${formatShortDate(item.date)}：${formatCount(item.count)} 人`}>
                     <i style={{ height: `${height}%` }} />
-                    <span>{formatShortDate(item.date)}</span>
+                    <span aria-label={formatShortDate(item.date)}>{formatCompactDate(item.date, index)}</span>
                     <em>{formatCount(item.count)}</em>
                   </div>
                 );
