@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import type { Song, BrandId, BrandInfo } from '../types/ktv';
+import type { Song, BrandId, BrandInfo, SongVotes } from '../types/ktv';
 import { BRANDS } from '../data/brands';
 import { useBrands } from '../hooks/useBrands';
 import { Heart, Video, Disc, CheckCircle2, Flag } from 'lucide-react';
@@ -7,7 +7,7 @@ import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { ResultLegend } from './ResultLegend';
 import { getLanguageStyle } from '../utils/languageStyle';
-import { isBrandAvailable } from '../utils/brandAvailability';
+import { isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
 import { getYoutubeReferenceUrl } from '../utils/songReference';
 
 interface MatrixViewProps {
@@ -20,6 +20,7 @@ interface MatrixViewProps {
   onSelectSongDetail: (song: Song) => void;
   selectedSongId?: string | null; // 目前已開啟詳細資料的歌曲 ID
   brandSongCounts?: Record<BrandId, number>;
+  songVotes?: Record<string, SongVotes>;
 }
 
 export const MatrixView: React.FC<MatrixViewProps> = ({
@@ -32,6 +33,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   onSelectSongDetail,
   selectedSongId,
   brandSongCounts,
+  songVotes = {},
 }) => {
   const brandList = useBrands();
   const [reportingSong, setReportingSong] = useState<Song | null>(null);
@@ -59,12 +61,13 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   const isFewBrands = activeBrands.length > 0 && activeBrands.length <= 4;
 
   const getCompactAvailability = (song: Song) => {
-    const availableBrands = activeBrands.filter(b => isBrandAvailable(song.brands[b.id]));
+    const votes = songVotes[song.id] || {};
+    const availableBrands = activeBrands.filter(b => isStatusAvailableWithCommunity(song.brands[b.id], votes[b.id]));
     const totalBrands = activeBrands.length || brandList.length;
 
     if (isSingleBrand && currentBrandInfo) {
       const status = song.brands[currentBrandInfo.id];
-      if (!isBrandAvailable(status)) {
+      if (!isStatusAvailableWithCommunity(status, votes[currentBrandInfo.id])) {
         return { label: '未收錄', color: 'var(--text-muted, #94a3b8)' };
       }
 
@@ -78,13 +81,15 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
   };
 
   const getCompactMvLabel = (song: Song) => {
-    const hasOfficialMv = activeBrands.some(b => isBrandAvailable(song.brands[b.id]) && song.brands[b.id]?.mvType === 'official_mv');
+    const votes = songVotes[song.id] || {};
+    const hasOfficialMv = activeBrands.some(b => isStatusAvailableWithCommunity(song.brands[b.id], votes[b.id]) && shouldShowOfficialMv(song.brands[b.id], votes[b.id]));
     if (hasOfficialMv) return { label: '有', color: '#38bdf8' };
     return { label: '-', color: 'var(--text-muted, #64748b)' };
   };
 
   const getCompactGuidedLabel = (song: Song) => {
-    const hasGuided = activeBrands.some(b => isBrandAvailable(song.brands[b.id]) && song.brands[b.id]?.audioType === 'guided_vocal');
+    const votes = songVotes[song.id] || {};
+    const hasGuided = activeBrands.some(b => isStatusAvailableWithCommunity(song.brands[b.id], votes[b.id]) && shouldShowGuidedVocal(song.brands[b.id], votes[b.id]));
     if (hasGuided) return { label: '有', color: '#22d3ee' };
     return { label: '-', color: 'var(--text-muted, #64748b)' };
   };
@@ -459,8 +464,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   {/* KTV Brand Status Cells */}
                   {activeBrands.map(b => {
                     const status = song.brands[b.id];
+                    const brandVote = songVotes[song.id]?.[b.id];
 
-                    if (!isBrandAvailable(status)) {
+                    if (!isStatusAvailableWithCommunity(status, brandVote)) {
                       return (
                         <td
                           className="brand-column-cell"
@@ -478,9 +484,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                       );
                     }
 
-                    const hasGuidedVocal = status.audioType === 'guided_vocal';
-                    const isOfficialMv = status.mvType === 'official_mv';
-                    const isReeditedMv = status.mvType === 'reedited_mv';
+                    const hasGuidedVocal = shouldShowGuidedVocal(status, brandVote);
+                    const isOfficialMv = shouldShowOfficialMv(status, brandVote);
+                    const isReeditedMv = status?.mvType === 'reedited_mv';
 
                     if (isSingleBrand) {
                       return (
@@ -522,7 +528,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             
                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
                               {isOfficialMv && (
-                                <span className="badge badge-official-mv" title="目前資料顯示現場畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
+                                <span className="badge badge-official-mv" title="原始資料或歌友回報顯示畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px' }}>
                                   MV
                                 </span>
                               )}
@@ -532,7 +538,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                                 </span>
                               )}
                               {hasGuidedVocal && (
-                                <span className="badge badge-guided-vocal" title="目前資料顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                <span className="badge badge-guided-vocal" title="原始資料或歌友回報顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ padding: '2px 7px', fontSize: '0.72rem', fontWeight: 700 }}>
                                   導唱
                                 </span>
                               )}
@@ -574,7 +580,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                           
                           <div style={{ display: 'flex', gap: '2px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {isOfficialMv && (
-                              <span className="badge badge-official-mv" title="目前資料顯示現場畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
+                              <span className="badge badge-official-mv" title="原始資料或歌友回報顯示畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ padding: '1px 4px', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }}>
                                 MV
                               </span>
                             )}
@@ -584,7 +590,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                               </span>
                             )}
                             {hasGuidedVocal && (
-                              <span className="badge badge-guided-vocal" title="目前資料顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
+                              <span className="badge badge-guided-vocal" title="原始資料或歌友回報顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
                                 導唱
                               </span>
                             )}

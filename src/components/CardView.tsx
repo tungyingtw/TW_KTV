@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import type { Song, BrandId, BrandInfo, BrandSongStatus } from '../types/ktv';
+import type { Song, BrandId, BrandInfo, BrandSongStatus, SongVotes, VoteData } from '../types/ktv';
 import { BRANDS } from '../data/brands';
 import { useBrands } from '../hooks/useBrands';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -8,7 +8,7 @@ import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { ResultLegend } from './ResultLegend';
 import { getLanguageStyle } from '../utils/languageStyle';
-import { isBrandAvailable } from '../utils/brandAvailability';
+import { isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
 
 interface CardViewProps {
@@ -19,19 +19,20 @@ interface CardViewProps {
   onToggleFavorite: (songId: string) => void;
   onSelectSongDetail: (song: Song) => void;
   brandSongCounts?: Record<BrandId, number>;
+  songVotes?: Record<string, SongVotes>;
 }
 
-function getMvLabel(status?: BrandSongStatus): string {
-  if (status?.mvType === 'official_mv') return 'MV';
+function getMvLabel(status?: BrandSongStatus, vote?: VoteData): string {
+  if (shouldShowOfficialMv(status, vote)) return 'MV';
   if (status?.mvType === 'reedited_mv' || status?.mvType === 'live_mv' || status?.mvType === 'anime_mv') return '伴唱帶類型';
   return '';
 }
 
-function getPlatformStatusLabel(status?: BrandSongStatus): string {
-  if (!isBrandAvailable(status)) return '未收錄';
+function getPlatformStatusLabel(status?: BrandSongStatus, vote?: VoteData): string {
+  if (!isStatusAvailableWithCommunity(status, vote)) return '未收錄';
   const labels = ['有收錄'];
-  const mvLabel = getMvLabel(status);
-  if (status?.audioType === 'guided_vocal') labels.push('導唱');
+  const mvLabel = getMvLabel(status, vote);
+  if (shouldShowGuidedVocal(status, vote)) labels.push('導唱');
   if (mvLabel) labels.push(mvLabel);
   return labels.join(' · ');
 }
@@ -44,6 +45,7 @@ export const CardView: React.FC<CardViewProps> = ({
   onToggleFavorite,
   onSelectSongDetail,
   brandSongCounts,
+  songVotes = {},
 }) => {
   const brandList = useBrands();
   const isMobile = useIsMobile();
@@ -69,7 +71,8 @@ export const CardView: React.FC<CardViewProps> = ({
     }
 
     if (selectedBrand === 'all') {
-      const availableInSong = sortedBrandList.filter(b => isBrandAvailable(song.brands?.[b.id]));
+      const votes = songVotes[song.id] || {};
+      const availableInSong = sortedBrandList.filter(b => isStatusAvailableWithCommunity(song.brands?.[b.id], votes[b.id]));
       return availableInSong.length > 0 ? availableInSong.slice(0, 4) : sortedBrandList.slice(0, 4);
     }
 
@@ -85,9 +88,10 @@ export const CardView: React.FC<CardViewProps> = ({
 
   const getMobileSummary = (song: Song) => {
     const detailBrands = getDetailBrands();
-    const availableBrands = detailBrands.filter(b => isBrandAvailable(song.brands?.[b.id]));
-    const guidedCount = availableBrands.filter(b => song.brands?.[b.id]?.audioType === 'guided_vocal').length;
-    const mvCount = availableBrands.filter(b => Boolean(song.brands?.[b.id]?.mvType)).length;
+    const votes = songVotes[song.id] || {};
+    const availableBrands = detailBrands.filter(b => isStatusAvailableWithCommunity(song.brands?.[b.id], votes[b.id]));
+    const guidedCount = availableBrands.filter(b => shouldShowGuidedVocal(song.brands?.[b.id], votes[b.id])).length;
+    const mvCount = availableBrands.filter(b => Boolean(getMvLabel(song.brands?.[b.id], votes[b.id]))).length;
 
     return {
       detailBrands,
@@ -240,7 +244,7 @@ export const CardView: React.FC<CardViewProps> = ({
                     {mobileSummary.topBrands.length > 0 ? mobileSummary.topBrands.map(b => (
                       <span key={b.id} className="song-card-mobile-platform-chip" style={{ borderColor: `${b.color}66`, color: b.color }}>
                         <span className="song-card-mobile-platform-name">{b.shortName}</span>
-                        <span>{getPlatformStatusLabel(song.brands?.[b.id])}</span>
+                        <span>{getPlatformStatusLabel(song.brands?.[b.id], songVotes[song.id]?.[b.id])}</span>
                       </span>
                     )) : (
                       <span className="song-card-mobile-platform-chip is-muted">目前沒有平台摘要</span>
@@ -279,8 +283,9 @@ export const CardView: React.FC<CardViewProps> = ({
                       <div className="song-card-mobile-detail-list">
                         {mobileSummary.detailBrands.map(b => {
                           const status = song.brands?.[b.id];
-                          const available = isBrandAvailable(status);
-                          const mvLabel = getMvLabel(status);
+                          const brandVote = songVotes[song.id]?.[b.id];
+                          const available = isStatusAvailableWithCommunity(status, brandVote);
+                          const mvLabel = getMvLabel(status, brandVote);
 
                           return (
                             <div key={b.id} className={`song-card-mobile-detail-row ${available ? 'is-available' : 'is-unavailable'}`}>
@@ -289,7 +294,7 @@ export const CardView: React.FC<CardViewProps> = ({
                                 <span>{available ? '有收錄參考' : '目前未見收錄'}</span>
                               </div>
                               <div className="song-card-mobile-detail-badges">
-                                {available && status?.audioType === 'guided_vocal' && <span className="badge badge-guided-vocal">導唱</span>}
+                                {available && shouldShowGuidedVocal(status, brandVote) && <span className="badge badge-guided-vocal">導唱</span>}
                                 {available && mvLabel && (
                                   <span className={mvLabel === 'MV' ? 'badge badge-official-mv' : 'badge song-card-mobile-backing-badge'}>
                                     {mvLabel}
@@ -303,7 +308,7 @@ export const CardView: React.FC<CardViewProps> = ({
                       </div>
 
                       <p className="song-card-mobile-detail-note">
-                        本站整理公開資訊與使用者線索，收錄、導唱與 MV 類型仍以現場點歌系統為準。
+                        本站整理公開資訊與歌友回報；列表標籤會參考「有」多於「沒有」的投票方向，現場仍以點歌系統為準。
                       </p>
 
                       <button
@@ -441,8 +446,9 @@ export const CardView: React.FC<CardViewProps> = ({
                 }}>
                   {displayBrands.map(b => {
                     const status = song.brands[b.id];
+                    const brandVote = songVotes[song.id]?.[b.id];
 
-                    if (!isBrandAvailable(status)) {
+                    if (!isStatusAvailableWithCommunity(status, brandVote)) {
                       return (
                         <div
                           key={b.id}
@@ -478,18 +484,18 @@ export const CardView: React.FC<CardViewProps> = ({
                           <span style={{ fontWeight: 700, color: b.color, fontSize: '0.85rem' }}>
                             {b.shortName}
                           </span>
-                          {status.mvType === 'official_mv' && (
-                            <span className="badge badge-official-mv" title="目前資料顯示現場畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
+                          {shouldShowOfficialMv(status, brandVote) && (
+                            <span className="badge badge-official-mv" title="原始資料或歌友回報顯示畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
                               MV
                             </span>
                           )}
-                          {status.mvType === 'reedited_mv' && (
+                          {status?.mvType === 'reedited_mv' && (
                             <span className="badge" title="目前資料顯示現場畫面可能不是公開常見原版 MV，可能是伴唱帶、Live 或剪輯類型。" style={{ fontSize: '0.65rem', padding: '1px 5px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
                               伴唱帶
                             </span>
                           )}
-                          {status.audioType === 'guided_vocal' && (
-                            <span className="badge badge-guided-vocal" title="目前資料顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                          {shouldShowGuidedVocal(status, brandVote) && (
+                            <span className="badge badge-guided-vocal" title="原始資料或歌友回報顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
                               導唱
                             </span>
                           )}

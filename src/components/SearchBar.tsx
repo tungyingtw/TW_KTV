@@ -181,7 +181,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
           <div className="search-bar-bottom-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <label className={`quality-filter-chip is-mv ${filters.onlyOfficialMv ? 'is-selected' : ''}`} title="篩出目前資料顯示畫面可能接近公開常見 MV 的歌曲。" style={{
+              <label className={`quality-filter-chip is-mv ${filters.onlyOfficialMv ? 'is-selected' : ''}`} title="篩出主資料顯示畫面可能接近公開常見 MV 的歌曲。" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
@@ -200,7 +200,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 <Video size={16} /> 原版 MV
               </label>
 
-              <label className={`quality-filter-chip is-guided ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} title="篩出目前資料顯示可能提供導唱功能的歌曲。" style={{
+              <label className={`quality-filter-chip is-guided ${filters.onlyGuidedVocal ? 'is-selected' : ''}`} title="篩出主資料顯示可能提供導唱功能的歌曲。" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',

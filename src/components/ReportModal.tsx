@@ -112,7 +112,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
             <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>回報已送出</div>
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
-              已收到你的回報。這筆資料會作為人工整理與後續修正線索，不會立即覆蓋查詢結果。你的回報會幫助後續查詢更完整。
+              已收到你的回報。投票會先成為列表判讀參考，主資料仍會依一致性與可驗證性後續整理。
             </div>
           </div>
         ) : (

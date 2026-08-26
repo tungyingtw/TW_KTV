@@ -6,7 +6,7 @@ import { BrandVoteBarV2 } from './BrandVoteBarV2';
 import { ReportModal } from './ReportModal';
 import { fetchSongVotes } from '../services/communityService';
 import { getLanguageStyle } from '../utils/languageStyle';
-import { isBrandAvailable } from '../utils/brandAvailability';
+import { isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
 import { getMeaningfulComposer, getMeaningfulLyricist } from '../utils/songCredits';
 
@@ -367,7 +367,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 const status = song.brands[b.id];
                 const brandVote = songVotes[b.id];
 
-                if (!isBrandAvailable(status)) {
+                if (!isStatusAvailableWithCommunity(status, brandVote)) {
                   return (
                     <div
                       className={`song-detail-brand-card is-unavailable ${getCommunityStateClass(brandVote)}`}
@@ -405,18 +405,18 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                           {b.shortName}
                         </div>
                         <div style={{ display: 'flex', gap: '4px', marginTop: '2px', flexWrap: 'wrap' }}>
-                          {status.mvType === 'official_mv' && (
-                            <span className="badge badge-official-mv" style={{ fontSize: '0.6rem', padding: '0 4px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
+                          {shouldShowOfficialMv(status, brandVote) && (
+                            <span className="badge badge-official-mv" title="原始資料或歌友回報顯示畫面可能接近公開常見 MV，實際仍以現場點歌系統為準。" style={{ fontSize: '0.6rem', padding: '0 4px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
                               MV
                             </span>
                           )}
-                          {status.mvType === 'reedited_mv' && (
+                          {status?.mvType === 'reedited_mv' && (
                             <span className="badge" style={{ fontSize: '0.6rem', padding: '0 4px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px', fontWeight: 700 }}>
                               伴唱帶
                             </span>
                           )}
-                          {status.audioType === 'guided_vocal' && (
-                            <span className="badge badge-guided-vocal" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
+                          {shouldShowGuidedVocal(status, brandVote) && (
+                            <span className="badge badge-guided-vocal" title="原始資料或歌友回報顯示此平台或版本可能提供導唱功能，實際以現場點歌系統為準。" style={{ fontSize: '0.6rem', padding: '0 4px' }}>
                               導唱
                             </span>
                           )}

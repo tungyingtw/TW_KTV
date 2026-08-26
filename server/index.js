@@ -3826,6 +3826,33 @@ app.get('/api/votes/:songId', async (req, res) => {
   res.json({ songId, votes: result });
 });
 
+app.post('/api/votes/batch', async (req, res) => {
+  const songIds = Array.isArray(req.body?.songIds)
+    ? [...new Set(req.body.songIds.map(id => String(id || '').trim()).filter(Boolean))].slice(0, 80)
+    : [];
+  if (!songIds.length) return res.json({ votes: {} });
+
+  const songIdSet = new Set(songIds);
+  const votes = await loadVotesStore();
+  const result = Object.fromEntries(songIds.map(songId => [songId, {}]));
+
+  for (const [key, data] of Object.entries(votes)) {
+    const { songId, brandId } = await parseVoteKeyDynamic(key);
+    if (!songIdSet.has(songId) || !brandId || !data) continue;
+    result[songId][brandId] = {
+      confirm: data.confirm || 0,
+      deny: data.deny || 0,
+      guidedVocal: data.guidedVocal || 0,
+      noGuidedVocal: data.noGuidedVocal || 0,
+      officialMv: data.officialMv || 0,
+      editedMv: data.editedMv || 0,
+      confidence: getVoteConfidence(data.confirm || 0, data.deny || 0),
+    };
+  }
+
+  res.json({ votes: result });
+});
+
 // ═══════════════════════════════════════════════════════
 // 管理員 RBAC & Auth API 路由 (管理憑證與身分權限驗證)
 // ═══════════════════════════════════════════════════════

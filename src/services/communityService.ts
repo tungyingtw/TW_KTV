@@ -4,7 +4,7 @@
  * 為何這樣設計：將 fetch 邏輯集中於 service 層，讓 UI 元件保持純淨，方便日後切換到真實後端 API URL。
  */
 
-import type { BrandId, IssueType, Song, VoteData, VoteConfidence } from '../types/ktv';
+import type { BrandId, IssueType, Song, SongVotes, VoteData, VoteConfidence } from '../types/ktv';
 
 const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
@@ -195,6 +195,24 @@ export async function fetchSongVotes(songId: string): Promise<Record<string, Vot
     return data.votes || {};
   } catch (err) {
     console.warn('[CommunityService] fetchSongVotes failed:', err);
+    return {};
+  }
+}
+
+export async function fetchSongsVotes(songIds: string[]): Promise<Record<string, SongVotes>> {
+  const uniqueSongIds = Array.from(new Set(songIds.map(id => String(id || '').trim()).filter(Boolean))).slice(0, 80);
+  if (!uniqueSongIds.length) return {};
+  try {
+    const res = await fetch(`${API_BASE}/api/votes/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ songIds: uniqueSongIds }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data.votes || {};
+  } catch (err) {
+    console.warn('[CommunityService] fetchSongsVotes failed:', err);
     return {};
   }
 }
