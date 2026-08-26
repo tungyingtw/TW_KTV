@@ -297,7 +297,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
 
               <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>4. 門市數據精準度與現場機器免責 (On-Site Accuracy Disclaimer)</h5>
               <p>
-                本網站之門市收錄狀態為使用者回報、公開目錄與人工整理之參考資料，僅供社群歡唱前之輔助查詢。因各類 KTV 門市伴唱機器之維護狀況及更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
+                本網站之門市收錄狀態為使用者回報、公開目錄與人工整理之參考資料，列表標籤可能參考歌友「有」多於「沒有」的投票結果，僅供社群歡唱前之輔助查詢。因各類 KTV 門市伴唱機器之維護狀況及更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
                 <b>English Summary:</b> Store song availability data is crowdsourced for informational purposes. Actual song availability is subject to physical karaoke machine systems on site.
@@ -320,7 +320,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色 (Key Features)</h5>
               <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
                 <li><strong>跨廠牌門市查詢</strong>：整理多家連鎖門市與伴唱系統之歌曲收錄狀態。</li>
-                <li><strong>MV 類型與導唱標示</strong>：協助整理歌曲是否可能提供原版 MV、伴唱帶類型或現場導唱功能參考。</li>
+                <li><strong>MV 類型與導唱標示</strong>：協助整理歌曲是否可能提供原版 MV、伴唱帶類型或現場導唱功能參考，並納入歌友投票方向。</li>
                 <li><strong>使用者回報與人工確認</strong>：提供現場歌友參與歌曲收錄、導唱與 MV 類型回報。</li>
               </ul>
             </div>

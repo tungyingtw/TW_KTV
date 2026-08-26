@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Fuse from 'fuse.js';
-import type { Song, FilterOptions, BrandId, Language } from './types/ktv';
+import type { Song, FilterOptions, BrandId, Language, SongVotes } from './types/ktv';
 import { Navbar } from './components/Navbar';
 import { SearchBar } from './components/SearchBar';
 import { BrandTabScroll } from './components/BrandTabScroll';
@@ -20,6 +20,7 @@ import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
 import { checkApiHealth, fetchFullCatalog, fetchSiteNotice } from './services/apiService';
 import type { CatalogLoadStage, CatalogOverrideSyncStatus, SiteNoticeResponse } from './services/apiService';
+import { fetchSongsVotes } from './services/communityService';
 import { fetchBrands } from './data/brands';
 import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
@@ -146,6 +147,7 @@ export function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [collabNotice, setCollabNotice] = useState<SiteNoticeResponse>(DEFAULT_COLLAB_NOTICE);
   const [showCollabNotice, setShowCollabNotice] = useState<boolean>(() => shouldShowCollabNotice(DEFAULT_COLLAB_NOTICE));
+  const [visibleSongVotes, setVisibleSongVotes] = useState<Record<string, SongVotes>>({});
 
   // Pagination / Load More limit state (Default display: 40)
   const [displayedCount, setDisplayedCount] = useState<number>(40);
@@ -606,6 +608,22 @@ export function App() {
   const paginatedSongs = useMemo(() => {
     return filteredSongs.slice(0, displayedCount);
   }, [filteredSongs, displayedCount]);
+
+  useEffect(() => {
+    if (!isCatalogDisplayReady || paginatedSongs.length === 0) {
+      setVisibleSongVotes({});
+      return;
+    }
+
+    let cancelled = false;
+    fetchSongsVotes(paginatedSongs.map(song => song.id)).then(votes => {
+      if (!cancelled) setVisibleSongVotes(votes);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isCatalogDisplayReady, paginatedSongs]);
 
   useEffect(() => {
     latestSearchStateRef.current = {
@@ -1127,6 +1145,7 @@ export function App() {
             onSelectSongDetail={(song) => setSelectedSongDetail(song)}
             compact={isMobile}
             brandSongCounts={brandSongCounts}
+            songVotes={visibleSongVotes}
           />
         ) : (
           <CardView
@@ -1137,6 +1156,7 @@ export function App() {
             onToggleFavorite={handleToggleFavorite}
             onSelectSongDetail={(song) => setSelectedSongDetail(song)}
             brandSongCounts={brandSongCounts}
+            songVotes={visibleSongVotes}
           />
         )}
 
