@@ -493,7 +493,7 @@
     <!-- ── 導唱票選 ── -->
     <div id="tab-guided" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">導唱票選清單</h2>
-      <p class="tab-help"><b>用途：</b>依社群回報修正歌曲導唱功能。<b>完成標準：</b>標記主資料，或只校正社群票數。</p>
+      <p class="tab-help"><b>用途：</b>依達到門檻的社群回報修正歌曲導唱功能。<b>完成標準：</b>標記主資料，或只校正社群票數。</p>
       <p class="tab-help">校正票數只調整社群票選結果，不改歌曲主資料；後續仍可能被新的群眾票選反轉。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadGuidedVotes()">重新整理</button>
@@ -504,7 +504,7 @@
     <!-- ── MV 類型票選 ── -->
     <div id="tab-mv" class="tab">
       <h2 style="font-size:1.05rem; margin-bottom:12px;">MV 類型社群票選清單</h2>
-      <p class="tab-help"><b>用途：</b>依社群票選修正 MV 類型。<b>完成標準：</b>標記主資料，或只校正社群票數。</p>
+      <p class="tab-help"><b>用途：</b>依達到門檻的社群票選修正 MV 類型。<b>完成標準：</b>標記主資料，或只校正社群票數。</p>
       <p class="tab-help">校正票數只調整社群票選結果，不改歌曲主資料；後續仍可能被新的群眾票選反轉。</p>
       <div class="filter-row">
         <button class="btn btn-ghost" onclick="loadMvVotes()">重新整理</button>
@@ -1118,8 +1118,8 @@ function applyAdminWorkflowLabels() {
     'tab-reports': ['使用者回報', '處理一般使用者送出的資料修正、新歌建議與新品牌建議。採納後必須寫入正式資料或品牌設定。'],
     'tab-disputed': ['收錄狀態待確認', '查看群眾對「此品牌是否收錄此歌」意見分歧或票數不足的項目，人工查證後採納為有收錄或未收錄。'],
     'tab-verified': ['群眾確認收錄', '查看群眾高度一致認為有收錄的項目，確認後可快速採納為正式收錄資料。'],
-    'tab-guided': ['導唱功能待確認', '查看群眾回報的導唱/純伴奏訊號，確認後更新該品牌歌曲的音訊類型。'],
-    'tab-mv': ['MV 類型待確認', '查看群眾回報的原版 MV/伴唱畫面訊號，確認後更新該品牌歌曲的 MV 類型。'],
+    'tab-guided': ['導唱功能待確認', '查看達到門檻且需要人工判斷的導唱/純伴奏訊號；單純 1、2 票只影響前台標籤，不進待辦。'],
+    'tab-mv': ['MV 類型待確認', '查看達到門檻且需要人工判斷的原版 MV/伴唱畫面訊號；單純 1、2 票只影響前台標籤，不進待辦。'],
     'tab-songs': ['歌曲資料庫', '搜尋、新增、編輯或刪除正式歌曲資料。此頁是主資料維護工具，不是日常審核入口。'],
     'tab-brands': ['KTV 品牌', '維護 KTV 品牌名稱、簡稱、顏色與啟用狀態。新品牌建議優先從使用者回報採納。'],
     'tab-aliases': ['歌手別名', '維護歌手別名與搜尋展開規則，讓不同寫法能找到同一位歌手。'],
@@ -2512,7 +2512,7 @@ async function loadGuidedVotes() {
   const data = await res.json();
   const el = document.getElementById('guided-list');
 
-  if (!data.guidedVotes?.length) { el.innerHTML = '<div class="empty">目前沒有導唱票選資料</div>'; return; }
+  if (!data.guidedVotes?.length) { el.innerHTML = '<div class="empty">目前沒有達到後台門檻的導唱票選資料</div>'; return; }
 
   el.innerHTML = data.guidedVotes.map(d => `
     <div class="card" id="${escapeAttr(reviewListCardId('guided-vote', d.key))}" style="border-color:rgba(236,72,153,0.2)">
@@ -2527,7 +2527,7 @@ async function loadGuidedVotes() {
           </div>
         </div>
         <div class="card-actions">
-          <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後再調整資料</span>
+          <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，已達後台門檻，請人工驗證後再調整資料</span>
           <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'guided', 'guidedVocal')">校正為有導唱</button>
           <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'guided', 'noGuidedVocal')">校正為無導唱</button>
           <button class="btn btn-green" onclick="applyGuidedFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'guided_vocal', ${jsArg(reviewListCardId('guided-vote', d.key))}, { reviewItemId: ${jsArg(`guided_vote:${d.key}`)} })">標記導唱</button>
@@ -2569,7 +2569,7 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType, sourceCardId
     }
 
     showToast('已完成：音訊類型已更新為「' + label + '」', 'success');
-    if (sourceCardId) removeAdminListCard(sourceCardId, 'guided-list', '目前沒有導唱票選資料');
+    if (sourceCardId) removeAdminListCard(sourceCardId, 'guided-list', '目前沒有達到後台門檻的導唱票選資料');
     if (!options.skipSync) {
       scheduleStatsSync();
       scheduleAdminListSync('guided-votes', () => loadGuidedVotes());
@@ -2584,11 +2584,11 @@ async function applyGuidedFix(songIdValue, brandIdValue, audioType, sourceCardId
 }
 
 async function loadMvVotes() {
-  const res = await apiFetch('/api/admin/mv-votes?minTotal=1');
+  const res = await apiFetch('/api/admin/mv-votes');
   const data = await res.json();
   const el = document.getElementById('mv-list');
 
-  if (!data.mvVotes?.length) { el.innerHTML = '<div class="empty">目前沒有 MV 社群票選資料</div>'; return; }
+  if (!data.mvVotes?.length) { el.innerHTML = '<div class="empty">目前沒有達到後台門檻的 MV 社群票選資料</div>'; return; }
 
   el.innerHTML = data.mvVotes.map(d => `
     <div class="card" id="${escapeAttr(reviewListCardId('mv-vote', d.key))}" style="border-color:rgba(56,189,248,0.2)">
@@ -2605,13 +2605,13 @@ async function loadMvVotes() {
         </div>
         <div class="card-actions">
           ${d.isLowSample ? `
-            <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
+            <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，已達後台門檻，請人工驗證後套用</span>
             <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'officialMv')">校正為原版 MV</button>
             <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'editedMv')">校正為伴唱畫面</button>
             <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記原版 MV</button>
             <button class="btn btn-yellow" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'reedited_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記伴唱畫面</button>
           ` : `
-            <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，請人工驗證後套用</span>
+            <span style="color:var(--muted);font-size:0.82rem;">共 ${d.total} 票，已達後台門檻，請人工驗證後套用</span>
             <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'officialMv')">校正為原版 MV</button>
             <button class="btn btn-ghost" onclick="calibrateCommunityVote(${jsArg(encodeURIComponent(d.songId))}, ${jsArg(encodeURIComponent(d.brandId))}, 'mv', 'editedMv')">校正為伴唱畫面</button>
             <button class="btn btn-blue" onclick="applyMvFix('${encodeURIComponent(d.songId)}', '${encodeURIComponent(d.brandId)}', 'official_mv', ${jsArg(reviewListCardId('mv-vote', d.key))}, { reviewItemId: ${jsArg(`mv_vote:${d.key}`)} })">標記原版 MV</button>
@@ -2702,7 +2702,7 @@ async function applyMvFix(songIdValue, brandIdValue, mvType, sourceCardId = '', 
     }
 
     showToast('已完成：MV 類型已更新為「' + label + '」', 'success');
-    if (sourceCardId) removeAdminListCard(sourceCardId, 'mv-list', '目前沒有 MV 票選資料');
+    if (sourceCardId) removeAdminListCard(sourceCardId, 'mv-list', '目前沒有達到後台門檻的 MV 票選資料');
     if (!options.skipSync) {
       scheduleStatsSync();
       scheduleAdminListSync('mv-votes', () => loadMvVotes());
