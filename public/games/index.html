@@ -212,6 +212,7 @@
     .planned-item {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 12px;
       padding: 11px 14px;
       border: 1px solid rgba(255, 255, 255, .08);
@@ -220,9 +221,30 @@
       color: var(--muted);
     }
 
+    .planned-main {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
     .planned-item b {
       color: var(--text);
       font-size: .96rem;
+    }
+
+    .planned-action {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 900;
+      background: color-mix(in srgb, var(--panel-2) 72%, transparent);
     }
 
     footer {
@@ -239,7 +261,8 @@
       main { padding: 26px 14px 54px; }
       .game-card { align-items: flex-start; flex-direction: column; min-height: 0; }
       .play { width: 100%; }
-      .planned-item { flex-direction: column; gap: 4px; }
+      .planned-item { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .planned-action { width: 100%; }
     }
     :root {
       --bg: #0c1018;
@@ -478,8 +501,16 @@
     <h2 class="section-title">追加中</h2>
     <section class="planned-list" aria-label="追加中遊戲列表">
       <div class="planned-item">
-        <b>更多小遊戲追加中</b>
-        <span>完成後會直接加入上方列表</span>
+        <span class="planned-main">
+          <b>雀歌開局</b>
+          <span>麻將遊戲開發中，名稱與玩法細節尚未定案。</span>
+          <span class="tags" aria-label="遊戲狀態">
+            <span class="tag status">開發中</span>
+            <span class="tag">暫名</span>
+            <span class="tag">麻將</span>
+          </span>
+        </span>
+        <span class="planned-action" aria-disabled="true">尚未開放</span>
       </div>
     </section>
   </main>
