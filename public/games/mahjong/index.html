@@ -2398,6 +2398,300 @@
       pointer-events: none;
     }
 
+    @media (max-width: 980px) and (max-height: 560px) and (orientation: landscape) {
+      :root {
+        --tile-w: clamp(38px, 5.1vw, 48px);
+        --tile-h: calc(var(--tile-w) * 1.28);
+        --small-tile-w: clamp(20px, 2.9vw, 27px);
+        --small-tile-h: calc(var(--small-tile-w) * 1.28);
+      }
+
+      .game {
+        grid-template-rows: 42px minmax(0, 1fr) 136px;
+        gap: 5px;
+        padding: 5px;
+      }
+
+      .topbar {
+        grid-template-columns: minmax(142px, 1fr) auto auto;
+        min-height: 42px;
+        padding: 4px 7px;
+        gap: 6px;
+      }
+
+      .title {
+        gap: 5px;
+        align-items: center;
+      }
+
+      h1 { font-size: 17px; }
+      .status,
+      .title .ruleset-toggle,
+      #turnText,
+      #roundText {
+        display: none;
+      }
+
+      .help-button {
+        min-width: 38px;
+        min-height: 30px;
+        padding: 4px 8px;
+        font-size: 12px;
+      }
+
+      .utility-actions { gap: 4px; }
+
+      .action-button {
+        min-width: 42px;
+        min-height: 30px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: minmax(92px, auto);
+        gap: 0;
+        font-size: 11px;
+      }
+
+      .wallet-readout {
+        min-height: 28px;
+        padding: 4px 9px;
+      }
+
+      .table {
+        grid-template-columns: minmax(96px, 126px) minmax(0, 1fr) minmax(96px, 126px);
+        grid-template-rows: 78px minmax(0, 1fr);
+        gap: 4px;
+        padding: 5px;
+      }
+
+      .seat {
+        padding: 5px;
+        gap: 3px;
+        border-color: rgba(255, 222, 150, 0.035);
+        background: rgba(2, 24, 22, 0.08);
+      }
+
+      .seat-header {
+        font-size: 12px;
+        gap: 4px;
+      }
+
+      .seat.top {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .seat.left {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+      }
+
+      .seat.right {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+      }
+
+      .side-seat-body { gap: 4px; }
+      .seat.left .side-seat-body { grid-template-columns: 34px minmax(0, 1fr); }
+      .seat.right .side-seat-body { grid-template-columns: minmax(0, 1fr) 34px; }
+
+      .computer-hand {
+        gap: 2px;
+        max-height: 40px;
+      }
+
+      .back-tile {
+        width: 18px;
+        height: 26px;
+        border-radius: 4px;
+      }
+
+      .seat.left .computer-hand,
+      .seat.right .computer-hand {
+        width: 34px;
+        max-height: 100%;
+        gap: 1px;
+      }
+
+      .seat.left .back-tile,
+      .seat.right .back-tile {
+        width: 30px;
+        height: 21px;
+        margin-block: -5px;
+      }
+
+      .seat.left .meld-zone,
+      .seat.right .meld-zone {
+        max-height: 112px;
+        overflow: hidden;
+      }
+
+      .seat.top .meld-zone {
+        max-height: 31px;
+        overflow: hidden;
+      }
+
+      .computer-melds .tile.small {
+        width: 20px;
+        height: 26px;
+      }
+
+      .center {
+        grid-template-rows: 26px minmax(0, 1fr);
+        padding: 4px;
+        gap: 3px;
+      }
+
+      .message {
+        min-height: 24px;
+        padding: 2px 8px;
+        font-size: 12px;
+      }
+
+      .discard-box {
+        padding: 4px;
+        min-height: 0;
+      }
+
+      .discard-label { display: none; }
+
+      .shared-river {
+        --river-tile-w: clamp(21px, 3vw, 29px);
+        min-height: 0;
+        max-height: none;
+        padding: 4px;
+        gap: 2px;
+        align-content: flex-start;
+      }
+
+      .shared-river.river-dense { --river-tile-w: clamp(19px, 2.6vw, 24px); }
+      .shared-river.river-ultra { --river-tile-w: clamp(16px, 2.2vw, 20px); }
+
+      .player-area {
+        grid-template-rows: 26px 30px minmax(0, 1fr);
+        padding: 5px 7px;
+        border-bottom-width: 2px;
+      }
+
+      .player-top {
+        grid-template-columns: minmax(76px, auto) minmax(0, 1fr);
+        gap: 6px;
+        margin-bottom: 0;
+      }
+
+      .player-meta { font-size: 12px; }
+
+      .player-area > .melds {
+        min-height: 28px;
+        max-height: 28px;
+        gap: 5px;
+        padding-left: 4px;
+        transform: none;
+      }
+
+      .player-area > .melds .tile.small {
+        width: 21px;
+        height: 27px;
+      }
+
+      .hint,
+      .activity-panel {
+        display: none;
+      }
+
+      .actions {
+        justify-content: flex-end;
+        gap: 4px;
+      }
+
+      .actions #sortButton { display: none; }
+
+      .hand-stage {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 5px;
+        align-items: end;
+      }
+
+      .hand {
+        min-height: calc(var(--tile-h) + 6px);
+        gap: 2px;
+        align-items: end;
+        overflow: hidden;
+      }
+
+      .tile {
+        width: var(--tile-w);
+        height: var(--tile-h);
+        border-radius: 6px;
+      }
+
+      .tile.drawn { margin-left: 10px; }
+
+      .discard-submit {
+        min-width: 86px;
+        min-height: 42px;
+        padding: 7px 12px;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+
+      .claim-panel {
+        left: 7px;
+        right: 92px;
+        bottom: calc(var(--tile-h) + 12px);
+        width: auto;
+        max-height: 86px;
+        padding: 6px;
+        gap: 5px;
+        justify-content: flex-start;
+        overflow: auto;
+      }
+
+      #winButton:not(:disabled) {
+        min-width: 72px;
+        min-height: 40px;
+        font-size: 16px;
+      }
+
+      .claim-choice {
+        min-width: 82px;
+        min-height: 38px;
+        padding: 5px 6px;
+      }
+
+      .listen-panel {
+        right: 92px;
+        top: 2px;
+        margin: 0;
+      }
+
+      .listen-toggle {
+        min-height: 26px;
+        padding: 4px 8px;
+        font-size: 12px;
+      }
+
+      .listen-details {
+        right: 0;
+        top: calc(100% + 6px);
+        width: min(340px, calc(100vw - 160px));
+        max-height: 82px;
+        padding: 7px;
+      }
+
+      .listen-line {
+        min-height: 32px;
+        font-size: 11px;
+        gap: 4px;
+      }
+
+      .particle-layer { opacity: 0.72; }
+      .event-burst { transform: translate(-50%, -50%) scale(0.72); }
+    }
+
     @media (max-width: 720px) {
       :root {
         --tile-w: 34px;
