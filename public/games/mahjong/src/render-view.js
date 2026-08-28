@@ -269,7 +269,11 @@
     panel.setAttribute("aria-hidden", String(!state.riverDetailOpen));
     body.innerHTML = "";
     if (!state.riverDetailOpen) return;
-    state.discardHistory.forEach(entry => body.appendChild(makeSmallTile(entry.tile)));
+    state.discardHistory.forEach((entry, index) => {
+      const tileEl = makeSmallTile(entry.tile);
+      if (index === state.discardHistory.length - 1) tileEl.classList.add("latest");
+      body.appendChild(tileEl);
+    });
   }
 
   function makeMeldElement(meld, context) {
