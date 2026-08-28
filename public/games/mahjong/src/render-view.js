@@ -51,20 +51,31 @@
     const { state, byId, escapeHtml, makeSmallTile } = context;
     const panel = byId("listenHint");
     const details = byId("listenDetails");
-    panel.classList.toggle("active", options.length > 0);
-    panel.classList.toggle("open", state.showListenHint && options.length > 0);
-    byId("listenButton").textContent = state.showListenHint ? "收起" : `可聽牌 ${options.length}`;
+    const locked = !!state.listenLock;
+    panel.classList.toggle("active", locked || options.length > 0);
+    panel.classList.toggle("locked", locked);
+    panel.classList.toggle("open", state.showListenHint && (locked || options.length > 0));
+    byId("listenButton").textContent = locked ? "已聽牌" : state.showListenHint ? "收起" : `可聽牌 ${options.length}`;
     details.innerHTML = "";
+    if (locked) {
+      const line = document.createElement("div");
+      line.className = "listen-line listen-locked";
+      line.innerHTML = `<strong>等牌中</strong><span>${escapeHtml(state.listenLock.waitLabels.join("、"))}</span><button class="secondary listen-cancel" type="button" data-listen-cancel="1">取消聽牌</button>`;
+      details.appendChild(line);
+      return;
+    }
     if (!options.length) {
       state.showListenHint = false;
       return;
     }
-    options.forEach(option => {
-      const line = document.createElement("div");
-      line.className = "listen-line";
-      line.innerHTML = `<strong>打 ${escapeHtml(option.discard.label)}</strong><span>${option.effective} 張</span>`;
-      option.waits.slice(0, 8).forEach(tile => line.appendChild(makeSmallTile(tile)));
-      details.appendChild(line);
+    options.forEach((option, index) => {
+      const button = document.createElement("button");
+      button.className = "listen-line listen-choice";
+      button.type = "button";
+      button.dataset.listenIndex = String(index);
+      button.innerHTML = `<strong>打 ${escapeHtml(option.discard.label)}</strong><span>${option.effective} 張</span>`;
+      option.waits.slice(0, 8).forEach(tile => button.appendChild(makeSmallTile(tile)));
+      details.appendChild(button);
     });
   }
 

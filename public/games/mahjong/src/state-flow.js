@@ -164,6 +164,7 @@
     state.pendingSelfDrawMethod = "";
     state.result = null;
     state.showListenHint = false;
+    state.listenLock = null;
     state.running = !!options.running;
     state.screen = options.screen || "title";
     if (options.clearLog) state.log = [];
