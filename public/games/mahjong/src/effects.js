@@ -11,6 +11,7 @@
     bigwin: { tier: "highest", label: "大胡", burst: true, safeMargin: 150, secondBurst: true },
     robKong: { tier: "highest", label: "搶槓", burst: true, safeMargin: 150, secondBurst: true },
     kongDrawWin: { tier: "highest", label: "槓花", burst: true, safeMargin: 150, secondBurst: true },
+    shuffle: { tier: "ambient", label: "洗牌", burst: false, safeMargin: 0, secondBurst: false },
     tokenGain: { tier: "settlement", label: "代幣+", burst: false, safeMargin: 0, secondBurst: false },
     tokenLoss: { tier: "settlement", label: "代幣-", burst: false, safeMargin: 0, secondBurst: false }
   };
@@ -18,12 +19,13 @@
   const PARTICLE_SPECS = {
     chi: { count: [10, 16], speed: [1.1, 2.6], size: [1.8, 3.6], life: [360, 560], colors: ["#7dffd0", "#ffe27a", "#fff7d8"] },
     pong: { count: [26, 38], speed: [1.8, 4.8], size: [2.8, 5.8], life: [520, 860], colors: ["#fff0a8", "#ffc95a", "#ffffff"] },
-    kong: { count: [56, 78], speed: [2.8, 6.8], size: [3.4, 7.6], life: [700, 1100], colors: ["#fff2a9", "#ffc14d", "#f6a33c"] },
+    kong: { count: [72, 96], speed: [3.1, 7.4], size: [3.8, 8.4], life: [760, 1180], ringChance: 0.16, colors: ["#fff2a9", "#ffc14d", "#f6a33c", "#ffffff"] },
     flower: { count: [14, 22], speed: [1.2, 3], size: [2, 4.4], life: [420, 680], colors: ["#8fffd2", "#fff0a3", "#d9fff0"] },
     win: { count: [72, 104], speed: [2.8, 6.8], size: [3, 7.2], life: [760, 1160], ringChance: 0.1, colors: ["#fff6bc", "#ffd65f", "#ffffff"] },
     bigwin: { count: [112, 140], speed: [3.2, 8], size: [3.4, 8.4], life: [880, 1360], ringChance: 0.24, colors: ["#fff8c8", "#ffd35b", "#ffb247", "#ffffff"] },
     robKong: { count: [104, 136], speed: [3.1, 7.6], size: [3.2, 7.8], life: [820, 1280], ringChance: 0.22, colors: ["#ffe37c", "#ffbd4f", "#fff5cd"] },
     kongDrawWin: { count: [118, 140], speed: [3.2, 8.2], size: [3.4, 8.6], life: [880, 1400], ringChance: 0.26, colors: ["#fff5b7", "#78ffd0", "#ffd65f", "#ffffff"] },
+    shuffle: { count: [20, 32], speed: [0.8, 2.2], size: [1.8, 4.2], life: [520, 920], colors: ["#fff1b0", "#f5bf4f", "#80e8d7"] },
     tokenGain: { count: [28, 46], speed: [1.8, 5], size: [2.6, 6], life: [640, 1020], colors: ["#fff6b8", "#ffd14f", "#ffffff"] },
     tokenLoss: { count: [8, 14], speed: [1, 2.4], size: [1.6, 3.6], life: [380, 680], colors: ["#b7ecff", "#d8f2ff", "#ffffff"] }
   };
@@ -109,10 +111,11 @@
   function particleOrigin(type, context) {
     const { state, byId } = context;
     const ids = { discard: "sharedRiver", tokenGain: "resultToken", tokenLoss: "resultToken" };
-    const el = byId(state.effectOriginId || ids[type] || (highValueTypes.has(type) ? "resultOverlay" : "eventBurst")) || byId("sharedRiver");
+    const el = byId(highValueTypes.has(type) ? "table" : state.effectOriginId || ids[type] || (type === "shuffle" ? "shuffleStage" : "eventBurst")) || byId("sharedRiver");
     const rect = el?.getBoundingClientRect();
     if (!rect || rect.width === 0 || rect.height === 0) return { x: window.innerWidth / 2, y: window.innerHeight * 0.45 };
-    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const yRatio = highValueTypes.has(type) ? 0.46 : 0.5;
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height * yRatio };
   }
 
   const randomBetween = range => range[0] + Math.random() * (range[1] - range[0]);
