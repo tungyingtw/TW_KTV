@@ -308,6 +308,11 @@
     }
 
     .lobby-mode .utility-actions {
+      display: flex;
+    }
+
+    .lobby-mode #soundButton,
+    .lobby-mode #restartButton {
       display: none;
     }
 
@@ -2580,7 +2585,7 @@
         <button class="help-button" id="rulesHelpButton" type="button" aria-expanded="false" aria-controls="rulesHelpPanel">規則</button>
       </div>
       <div class="utility-actions">
-        <button class="secondary action-button" id="prevPageButton" type="button" aria-label="返回上一頁" title="返回上一頁">返回</button>
+        <button class="secondary action-button" id="prevPageButton" type="button" aria-label="返回小遊戲列表" title="返回小遊戲列表">遊戲列表</button>
         <button class="secondary action-button active" id="soundButton" type="button" aria-label="音效開啟" title="音效開啟">音效</button>
         <button class="secondary action-button" id="restartButton" type="button" aria-label="回到大廳" title="回到大廳">大廳</button>
       </div>
@@ -3353,10 +3358,6 @@
     }
 
     function goBackPage() {
-      if (window.history.length > 1) {
-        window.history.back();
-        return;
-      }
       window.location.href = "../";
     }
 
