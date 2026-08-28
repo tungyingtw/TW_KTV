@@ -254,10 +254,22 @@
     state.discardHistory.forEach((entry, index) => {
       const wrapper = document.createElement("span");
       wrapper.id = `river-entry-${index}`;
-      wrapper.className = `river-entry${index === state.latestDiscardIndex ? " latest" : ""}${index === state.discardAnimationIndex ? " entering" : ""}`;
+      wrapper.className = `river-entry${index >= state.discardHistory.length - 18 ? " river-recent" : ""}${index === state.latestDiscardIndex ? " latest" : ""}${index === state.discardAnimationIndex ? " entering" : ""}`;
       wrapper.appendChild(makeSmallTile(entry.tile));
       sharedRiverEl.appendChild(wrapper);
     });
+    byId("riverDetailButton").textContent = `牌河 ${state.discardHistory.length}`;
+  }
+
+  function renderRiverDetail(context) {
+    const { state, byId, makeSmallTile } = context;
+    const panel = byId("riverDetailPanel");
+    const body = byId("riverDetailBody");
+    panel.classList.toggle("active", !!state.riverDetailOpen);
+    panel.setAttribute("aria-hidden", String(!state.riverDetailOpen));
+    body.innerHTML = "";
+    if (!state.riverDetailOpen) return;
+    state.discardHistory.forEach(entry => body.appendChild(makeSmallTile(entry.tile)));
   }
 
   function makeMeldElement(meld, context) {
@@ -286,5 +298,5 @@
     return button;
   }
 
-  window.MahjongRenderView = { makeKongButton, makeMeldElement, renderChiOptions, renderComputers, renderHelpPanel, renderHudAndSetup, renderKongOptions, renderListeningHint, renderLog, renderMelds, renderPlayerHand, renderResult, renderRivers, renderSeatDetail };
+  window.MahjongRenderView = { makeKongButton, makeMeldElement, renderChiOptions, renderComputers, renderHelpPanel, renderHudAndSetup, renderKongOptions, renderListeningHint, renderLog, renderMelds, renderPlayerHand, renderResult, renderRiverDetail, renderRivers, renderSeatDetail };
 })();

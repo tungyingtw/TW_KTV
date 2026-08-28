@@ -121,6 +121,11 @@
     byId("seatDetailPanel").addEventListener("click", event => {
       if (event.target === byId("seatDetailPanel")) handlers.closeSeatDetail();
     });
+    byId("riverDetailButton").addEventListener("click", handlers.showRiverDetail);
+    byId("riverDetailClose").addEventListener("click", handlers.closeRiverDetail);
+    byId("riverDetailPanel").addEventListener("click", event => {
+      if (event.target === byId("riverDetailPanel")) handlers.closeRiverDetail();
+    });
     documentRef.addEventListener("click", event => {
       const trigger = event.target.closest("[data-seat-detail]");
       if (trigger) handlers.showSeatDetail(Number(trigger.dataset.seatDetail));
