@@ -192,13 +192,50 @@
       byId(`seat-${player}`).classList.toggle("active", state.running && state.current === player);
       meldsEl.classList.toggle("meld-crowded", state.melds[player].length >= 3);
       meldsEl.classList.toggle("meld-overflow", state.melds[player].length >= 5);
+      const summary = document.createElement("button");
+      summary.type = "button";
+      summary.className = "hand-summary";
+      summary.dataset.seatDetail = String(player);
+      summary.setAttribute("aria-label", `查看電腦${player}資訊`);
+      summary.innerHTML = `<span class="back-tile summary-back"></span><span class="hand-count">${state.hands[player].length}</span>`;
+      handEl.appendChild(summary);
       state.hands[player].forEach(() => {
         const tile = document.createElement("div");
         tile.className = "back-tile";
         handEl.appendChild(tile);
       });
       state.melds[player].forEach(meld => meldsEl.appendChild(makeMeldElement(meld, { flowerFlashIds, makeSmallTile })));
+      if (state.melds[player].length > 2) {
+        const more = document.createElement("button");
+        more.type = "button";
+        more.className = "meld-summary";
+        more.dataset.seatDetail = String(player);
+        more.textContent = `+${state.melds[player].length - 2}`;
+        meldsEl.appendChild(more);
+      }
     }
+  }
+
+  function renderSeatDetail(context) {
+    const { state, byId, makeSmallTile, players } = context;
+    const panel = byId("seatDetailPanel");
+    const body = byId("seatDetailBody");
+    const player = state.seatDetailPlayer;
+    const visible = Number.isInteger(player) && player > 0;
+    panel.classList.toggle("active", visible);
+    panel.setAttribute("aria-hidden", String(!visible));
+    if (!visible) {
+      body.innerHTML = "";
+      return;
+    }
+    byId("seatDetailTitle").textContent = `${players[player]}資訊`;
+    body.innerHTML = `<div class="seat-detail-count"><span class="back-tile summary-back"></span><strong>${state.hands[player].length}</strong><span>張暗牌</span></div>`;
+    const melds = document.createElement("div");
+    melds.className = "seat-detail-melds";
+    if (state.melds[player].length) {
+      state.melds[player].forEach(meld => melds.appendChild(makeMeldElement(meld, { flowerFlashIds: state.flowerFlashIds, makeSmallTile })));
+    }
+    body.appendChild(melds);
   }
 
   function renderRivers(context) {
@@ -249,5 +286,5 @@
     return button;
   }
 
-  window.MahjongRenderView = { makeKongButton, makeMeldElement, renderChiOptions, renderComputers, renderHelpPanel, renderHudAndSetup, renderKongOptions, renderListeningHint, renderLog, renderMelds, renderPlayerHand, renderResult, renderRivers };
+  window.MahjongRenderView = { makeKongButton, makeMeldElement, renderChiOptions, renderComputers, renderHelpPanel, renderHudAndSetup, renderKongOptions, renderListeningHint, renderLog, renderMelds, renderPlayerHand, renderResult, renderRivers, renderSeatDetail };
 })();
