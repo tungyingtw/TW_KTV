@@ -94,7 +94,13 @@
     if (state.result.animationDone) tokenEl.textContent = state.result.tokenText;
     else animateResultToken(state.result.tokenDelta, state.result.tokenText);
     byId("resultTokenPath").textContent = `本局前 ${state.result.tokenBefore} → 目前 ${state.result.tokenAfter}`;
-    byId("resultSummary").textContent = state.result.settlement;
+    const canContinue = state.tokens >= state.stake;
+    byId("resultSummary").textContent = canContinue ? state.result.settlement : `${state.result.settlement}；代幣不足，請回大廳調整底注或等明天每日配給。`;
+    const nextRoundButton = byId("nextRoundButton");
+    nextRoundButton.disabled = !canContinue;
+    nextRoundButton.textContent = canContinue ? "續玩下一局" : "代幣不足";
+    nextRoundButton.setAttribute("aria-label", canContinue ? "續玩下一局" : `代幣不足，至少需要 ${state.stake}`);
+    nextRoundButton.title = canContinue ? "續玩下一局" : `代幣不足，至少需要 ${state.stake}，請回大廳調整底注或等明天每日配給`;
     const handEl = byId("resultHand");
     handEl.innerHTML = "";
     state.result.handTiles.forEach(tile => handEl.appendChild(makeSmallTile(tile)));
