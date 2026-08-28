@@ -120,6 +120,7 @@
       nextDealer: state.dealer,
       nextRound: options.nextRound,
       animationDone: false,
+      visible: options.visible ?? true,
       message: options.message
     };
   }
@@ -143,6 +144,7 @@
       nextDealer: state.dealer,
       nextRound: options.nextRound,
       animationDone: false,
+      visible: true,
       message: options.message
     };
   }

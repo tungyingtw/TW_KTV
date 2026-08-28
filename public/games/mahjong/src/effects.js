@@ -1,5 +1,5 @@
 (function () {
-  const PARTICLE_LIMIT = 140;
+  const PARTICLE_LIMIT = 180;
   const EVENT_JUICE_TIERS = {
     discard: { tier: "low", label: "出牌", burst: false, safeMargin: 0, secondBurst: false },
     meld: { tier: "low", label: "副露", burst: false, safeMargin: 0, secondBurst: false },
@@ -17,17 +17,17 @@
   };
 
   const PARTICLE_SPECS = {
-    chi: { count: [10, 16], speed: [1.1, 2.6], size: [1.8, 3.6], life: [360, 560], colors: ["#7dffd0", "#ffe27a", "#fff7d8"] },
-    pong: { count: [26, 38], speed: [1.8, 4.8], size: [2.8, 5.8], life: [520, 860], colors: ["#fff0a8", "#ffc95a", "#ffffff"] },
-    kong: { count: [72, 96], speed: [3.1, 7.4], size: [3.8, 8.4], life: [760, 1180], ringChance: 0.16, colors: ["#fff2a9", "#ffc14d", "#f6a33c", "#ffffff"] },
-    flower: { count: [14, 22], speed: [1.2, 3], size: [2, 4.4], life: [420, 680], colors: ["#8fffd2", "#fff0a3", "#d9fff0"] },
-    win: { count: [72, 104], speed: [2.8, 6.8], size: [3, 7.2], life: [760, 1160], ringChance: 0.1, colors: ["#fff6bc", "#ffd65f", "#ffffff"] },
-    bigwin: { count: [112, 140], speed: [3.2, 8], size: [3.4, 8.4], life: [880, 1360], ringChance: 0.24, colors: ["#fff8c8", "#ffd35b", "#ffb247", "#ffffff"] },
-    robKong: { count: [104, 136], speed: [3.1, 7.6], size: [3.2, 7.8], life: [820, 1280], ringChance: 0.22, colors: ["#ffe37c", "#ffbd4f", "#fff5cd"] },
-    kongDrawWin: { count: [118, 140], speed: [3.2, 8.2], size: [3.4, 8.6], life: [880, 1400], ringChance: 0.26, colors: ["#fff5b7", "#78ffd0", "#ffd65f", "#ffffff"] },
-    shuffle: { count: [20, 32], speed: [0.8, 2.2], size: [1.8, 4.2], life: [520, 920], colors: ["#fff1b0", "#f5bf4f", "#80e8d7"] },
-    tokenGain: { count: [28, 46], speed: [1.8, 5], size: [2.6, 6], life: [640, 1020], colors: ["#fff6b8", "#ffd14f", "#ffffff"] },
-    tokenLoss: { count: [8, 14], speed: [1, 2.4], size: [1.6, 3.6], life: [380, 680], colors: ["#b7ecff", "#d8f2ff", "#ffffff"] }
+    chi: { count: [14, 22], speed: [1.1, 2.8], size: [2, 4.2], life: [420, 680], shapes: [["petal", 0.56], ["spark", 0.44]], colors: ["#7dffd0", "#ffe27a", "#fff7d8"] },
+    pong: { count: [34, 48], speed: [1.8, 5.2], size: [2.8, 6.4], life: [560, 900], shapes: [["ring", 0.22], ["spark", 0.58], ["shard", 0.2]], colors: ["#fff0a8", "#ffc95a", "#ffffff"] },
+    kong: { count: [84, 112], speed: [3.1, 7.6], size: [3.8, 8.8], life: [780, 1220], shapes: [["ring", 0.2], ["coin", 0.18], ["shard", 0.36], ["spark", 0.26]], colors: ["#fff2a9", "#ffc14d", "#f6a33c", "#ffffff"] },
+    flower: { count: [20, 30], speed: [1.2, 3.2], size: [2.2, 5.2], life: [520, 820], shapes: [["petal", 0.68], ["spark", 0.32]], colors: ["#8fffd2", "#fff0a3", "#d9fff0"] },
+    win: { count: [84, 118], speed: [2.8, 6.9], size: [3.2, 7.8], life: [780, 1180], shapes: [["ring", 0.14], ["coin", 0.18], ["shard", 0.22], ["spark", 0.46]], colors: ["#fff6bc", "#ffd65f", "#ffffff"] },
+    bigwin: { count: [130, 168], speed: [3.2, 8.2], size: [3.4, 9], life: [900, 1400], shapes: [["ring", 0.24], ["coin", 0.24], ["shard", 0.26], ["spark", 0.26]], colors: ["#fff8c8", "#ffd35b", "#ffb247", "#ffffff"] },
+    robKong: { count: [120, 156], speed: [3.1, 7.8], size: [3.2, 8.4], life: [840, 1320], shapes: [["ring", 0.26], ["shard", 0.34], ["coin", 0.14], ["spark", 0.26]], colors: ["#ffe37c", "#ffbd4f", "#fff5cd"] },
+    kongDrawWin: { count: [136, 176], speed: [3.2, 8.4], size: [3.4, 9.2], life: [900, 1440], shapes: [["ring", 0.24], ["petal", 0.22], ["coin", 0.2], ["shard", 0.18], ["spark", 0.16]], colors: ["#fff5b7", "#78ffd0", "#ffd65f", "#ffffff"] },
+    shuffle: { count: [24, 38], speed: [0.8, 2.3], size: [1.8, 4.6], life: [560, 940], shapes: [["spark", 0.72], ["petal", 0.28]], colors: ["#fff1b0", "#f5bf4f", "#80e8d7"] },
+    tokenGain: { count: [34, 54], speed: [1.8, 5.2], size: [3, 6.8], life: [660, 1060], shapes: [["coin", 0.62], ["spark", 0.38]], colors: ["#fff6b8", "#ffd14f", "#ffffff"] },
+    tokenLoss: { count: [8, 14], speed: [1, 2.4], size: [1.6, 3.6], life: [380, 680], shapes: [["mote", 0.74], ["spark", 0.26]], colors: ["#b7ecff", "#d8f2ff", "#ffffff"] }
   };
 
   const burstTypes = new Set(["chi", "pong", "kong", "flower", "win", "bigwin", "robKong", "kongDrawWin"]);
@@ -120,6 +120,15 @@
 
   const randomBetween = range => range[0] + Math.random() * (range[1] - range[0]);
   const randomInt = range => Math.floor(randomBetween([range[0], range[1] + 1]));
+  function pickShape(spec) {
+    const shapes = spec.shapes || [["spark", 1]];
+    let roll = Math.random();
+    for (const [shape, weight] of shapes) {
+      roll -= weight;
+      if (roll <= 0) return shape;
+    }
+    return shapes[shapes.length - 1][0];
+  }
 
   function addParticlesFromSpec(type, origin, state, scale = 1) {
     const spec = PARTICLE_SPECS[type];
@@ -135,7 +144,9 @@
         size: randomBetween(spec.size),
         life: randomBetween(spec.life),
         age: 0,
-        shape: Math.random() < (spec.ringChance || 0) ? "ring" : "spark",
+        turn: randomBetween([-0.08, 0.08]),
+        rotation: Math.random() * Math.PI * 2,
+        shape: pickShape(spec),
         color: spec.colors[Math.floor(Math.random() * spec.colors.length)]
       });
     }
@@ -176,16 +187,26 @@
       particle.vy *= 0.985;
       particle.x += particle.vx * delta / 16.67;
       particle.y += particle.vy * delta / 16.67;
+      particle.rotation += particle.turn * delta;
       const alpha = Math.max(0, 1 - particle.age / particle.life);
       ctx.globalAlpha = alpha;
       ctx.fillStyle = particle.color;
+      ctx.strokeStyle = particle.color;
       ctx.beginPath();
       const radius = particle.size * (0.55 + alpha * 0.75);
       ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
       if (particle.shape === "ring") {
         ctx.lineWidth = Math.max(1, radius * 0.34);
-        ctx.strokeStyle = particle.color;
         ctx.stroke();
+      } else if (particle.shape === "coin") {
+        drawCoin(ctx, particle, radius, alpha);
+      } else if (particle.shape === "petal") {
+        drawPetal(ctx, particle, radius);
+      } else if (particle.shape === "shard") {
+        drawShard(ctx, particle, radius);
+      } else if (particle.shape === "mote") {
+        ctx.globalAlpha = alpha * 0.55;
+        ctx.fill();
       } else {
         ctx.fill();
       }
@@ -198,6 +219,45 @@
       state.particleFrame = 0;
       drawParticles.lastTime = 0;
     }
+  }
+
+  function drawCoin(ctx, particle, radius, alpha) {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.scale(1, 0.62 + alpha * 0.22);
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 1.08, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha *= 0.65;
+    ctx.lineWidth = Math.max(1, radius * 0.24);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.78)";
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPetal(ctx, particle, radius) {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, radius * 0.72, radius * 1.55, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawShard(ctx, particle, radius) {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.beginPath();
+    ctx.moveTo(0, -radius * 1.7);
+    ctx.lineTo(radius * 0.62, radius * 0.25);
+    ctx.lineTo(0, radius * 1.2);
+    ctx.lineTo(-radius * 0.62, radius * 0.25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   window.MahjongEffects = { addParticlesFromSpec, drawParticles, emitParticles, eventJuiceTier, particleOrigin, prefersReducedMotion, setupLayer, shouldShowEventBurst, showDiscardShockwave, trigger };
