@@ -42,7 +42,6 @@
     }
 
     body.flash-win .table,
-    body.flash-meld .claim-panel,
     body.flash-meld .player-area > .melds:not(:empty),
     body.flash-chi .player-area > .melds:not(:empty),
     body.flash-pong .player-area > .melds:not(:empty),
@@ -69,7 +68,6 @@
     body.flash-robKong .table,
     body.flash-kongDrawWin .table,
     body.flash-bigwin .table { animation: tableKongShock 620ms ease-out 1; }
-    body.flash-meld .claim-panel { animation-name: claimPulse; }
     body.flash-meld .player-area > .melds:not(:empty) { animation-name: playerMeldSettle; }
     body.flash-chi .player-area > .melds:not(:empty),
     body.flash-pong .player-area > .melds:not(:empty),
@@ -1411,17 +1409,17 @@
     }
 
     .claim-panel.active .claim-benefit:not(:disabled) {
-      animation: benefitNudge 760ms ease-in-out 3;
+      animation: benefitGlow 980ms ease-in-out 2;
     }
 
     @keyframes claimPanelPop {
-      from { opacity: 0; transform: translate(-50%, 12px) scale(0.98); }
+      from { opacity: 0; transform: translate(-50%, 4px) scale(0.995); }
       to { opacity: 1; transform: translate(-50%, 0) scale(1); }
     }
 
-    @keyframes benefitNudge {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-2px); }
+    @keyframes benefitGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.14); box-shadow: 0 0 0 4px rgba(255, 207, 86, 0.16), 0 9px 22px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.42), inset 0 -4px 0 rgba(111, 61, 16, 0.22); }
     }
 
     @keyframes actionReady {
@@ -1692,7 +1690,7 @@
       display: none;
       position: absolute;
       right: 0;
-      bottom: calc(100% + 8px);
+      top: calc(100% + 8px);
       width: min(520px, calc(100vw - 32px));
       max-height: 138px;
       padding: 10px;
@@ -1702,6 +1700,7 @@
       background: linear-gradient(180deg, rgba(5, 40, 35, 0.96), rgba(2, 24, 22, 0.94));
       border: 1px solid rgba(255, 207, 86, 0.28);
       box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      z-index: 30;
     }
 
     .listen-panel.open .listen-details {
@@ -2595,7 +2594,7 @@
       .result-actions button { flex: 1 1 130px; }
       .listen-panel { right: 108px; top: 8px; gap: 6px; margin: 0; padding: 0; }
       .listen-toggle { min-height: 30px; padding: 5px 9px; }
-      .listen-details { right: 0; width: min(360px, calc(100vw - 28px)); max-height: 110px; }
+      .listen-details { right: 0; top: calc(100% + 8px); width: min(360px, calc(100vw - 28px)); max-height: 110px; }
       .listen-line { font-size: 11px; gap: 4px; }
       .hand { gap: 3px; min-height: calc(var(--tile-h) * 2 + 12px); }
       .tile { width: var(--tile-w); height: var(--tile-h); }
