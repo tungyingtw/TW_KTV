@@ -16,7 +16,6 @@
   };
 
   const PARTICLE_SPECS = {
-    discard: { count: [3, 5], speed: [0.8, 1.8], size: [1.4, 2.6], life: [220, 360], colors: ["#d9fff0", "#ffe7a3"] },
     chi: { count: [10, 16], speed: [1.1, 2.6], size: [1.8, 3.6], life: [360, 560], colors: ["#7dffd0", "#ffe27a", "#fff7d8"] },
     pong: { count: [26, 38], speed: [1.8, 4.8], size: [2.8, 5.8], life: [520, 860], colors: ["#fff0a8", "#ffc95a", "#ffffff"] },
     kong: { count: [56, 78], speed: [2.8, 6.8], size: [3.4, 7.6], life: [700, 1100], colors: ["#fff2a9", "#ffc14d", "#f6a33c"] },
@@ -45,6 +44,7 @@
     const { state, byId, scheduleAction } = context;
     const className = flashClass(type);
     state.effectOriginId = originId;
+    if (type === "discard") showDiscardShockwave({ state, byId });
     if (shouldShowEventBurst(type)) showEventBurst(type, { state, byId });
     emitParticles(type, { state, byId, scheduleAction });
     state.effectOriginId = "";
@@ -64,6 +64,17 @@
     document.body.style.setProperty("--juice-x", `${origin.x}px`);
     document.body.style.setProperty("--juice-y", `${origin.y}px`);
     burst.innerHTML = `<i></i><span>${eventJuiceTier(type).label || ""}</span>`;
+  }
+
+  function showDiscardShockwave(context) {
+    if (prefersReducedMotion()) return;
+    const origin = particleOrigin("discard", context);
+    const wave = document.createElement("span");
+    wave.className = "discard-shockwave";
+    wave.style.left = `${origin.x}px`;
+    wave.style.top = `${origin.y}px`;
+    document.body.appendChild(wave);
+    wave.addEventListener("animationend", () => wave.remove(), { once: true });
   }
 
   function clampEventBurstOrigin(type, origin) {
@@ -186,5 +197,5 @@
     }
   }
 
-  window.MahjongEffects = { addParticlesFromSpec, drawParticles, emitParticles, eventJuiceTier, particleOrigin, prefersReducedMotion, setupLayer, shouldShowEventBurst, trigger };
+  window.MahjongEffects = { addParticlesFromSpec, drawParticles, emitParticles, eventJuiceTier, particleOrigin, prefersReducedMotion, setupLayer, shouldShowEventBurst, showDiscardShockwave, trigger };
 })();
