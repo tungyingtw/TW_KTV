@@ -104,6 +104,11 @@
     byId("soundButton").addEventListener("click", handlers.toggleSound);
     byId("autoplayButton").addEventListener("click", handlers.toggleAutoplay);
     byId("listenButton").addEventListener("click", handlers.toggleListenHint);
+    byId("listenDetails").addEventListener("click", event => {
+      const choice = event.target.closest("[data-listen-index]");
+      if (choice) handlers.chooseListenLock(Number(choice.dataset.listenIndex));
+      if (event.target.closest("[data-listen-cancel]")) handlers.cancelListenLock();
+    });
     documentRef.querySelectorAll(".ruleset-button").forEach(button => button.addEventListener("click", () => handlers.setRuleset(button.dataset.ruleset)));
     documentRef.querySelectorAll(".stake-button").forEach(button => button.addEventListener("click", () => handlers.setStake(Number(button.dataset.stake))));
     documentRef.querySelectorAll(".target-button").forEach(button => button.addEventListener("click", () => handlers.setTargetGain(Number(button.dataset.target))));

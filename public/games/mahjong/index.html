@@ -1716,6 +1716,29 @@
       font-size: 12px;
     }
 
+    .listen-choice {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 7px 8px;
+      color: #fff3c5;
+      background: rgba(255, 235, 172, 0.08);
+      border: 1px solid rgba(231, 184, 92, 0.2);
+      text-align: left;
+    }
+
+    .listen-choice:hover,
+    .listen-choice:focus-visible {
+      background: rgba(255, 207, 86, 0.18);
+      box-shadow: 0 0 0 3px rgba(255, 207, 86, 0.12);
+    }
+
+    .listen-cancel {
+      min-height: 28px;
+      padding: 4px 9px;
+      color: #fff7d8;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     .listen-line strong {
       color: #ffe59b;
     }
@@ -2887,6 +2910,7 @@
       particleFrame: 0,
       effectOriginId: "",
       showListenHint: false,
+      listenLock: null,
       log: []
     };
 
@@ -3022,6 +3046,7 @@
       if (player === 0) sortPlayerHandForTurn();
       const win = MahjongTurnFlow.resolveDrawWin(state, MahjongRules, currentRuleset(), openMeldCount, player, flowers);
       if (win.status === "playerWinOption") {
+        if (state.listenLock) return finishWin(0, state.pendingSelfDrawMethod || win.method);
         byId("message").textContent = flowers ? "你補花後可自摸胡牌，也可以選擇繼續打牌。" : "你可以自摸胡牌，也可以選擇繼續打牌。";
         render();
         return;
@@ -3030,6 +3055,14 @@
       render();
 
       if (player === 0) {
+        if (state.listenLock) {
+          const drawn = state.hands[0].find(tile => tile.id === state.lastDrawnId);
+          state.selectedId = drawn?.id || state.hands[0][state.hands[0].length - 1]?.id || null;
+          byId("message").textContent = drawn ? `已聽牌，摸到 ${drawn.label}，自動打出繼續等。` : "已聽牌，自動摸打繼續等。";
+          render();
+          scheduleAction(() => { if (state.listenLock) discardSelected(); }, 320);
+          return;
+        }
         byId("message").textContent = flowers ? `你補花 ${flowers} 張，請選一張牌打出。` : "輪到你，請選一張牌打出。";
         return;
       }
@@ -3119,6 +3152,13 @@
 
     function handleDiscardClaims(discarder, tile, nextPlayer) {
       if (discarder !== 0 && MahjongRules.canWinWithTile(state.hands[0], tile, openMeldCount(0), currentRuleset().winningTileCount)) {
+        if (isListenLockedWait(tile)) {
+          state.pendingClaim = { kind: "discard", discarder, tile, nextPlayer, canWin: true, canPong: false, canKong: false, chiOptions: [] };
+          state.current = 0;
+          state.canPlayerWin = true;
+          finishWin(0, `自動胡 ${players[discarder]} 的 ${tile.label}`, discarder);
+          return true;
+        }
         return offerPlayerClaim(discarder, tile, nextPlayer, true);
       }
 
@@ -3133,8 +3173,12 @@
         return true;
       }
 
-      if (discarder !== 0 && offerPlayerClaim(discarder, tile, nextPlayer)) return true;
+      if (!state.listenLock && discarder !== 0 && offerPlayerClaim(discarder, tile, nextPlayer)) return true;
       return offerComputerClaim(discarder, tile, nextPlayer);
+    }
+
+    function isListenLockedWait(tile) {
+      return !!state.listenLock?.waitKeys?.includes(MahjongRules.tileKey(tile));
     }
 
     function continueComputerClaimAfterPlayerPass(claim) {
@@ -3518,6 +3562,26 @@
       MahjongRenderView.renderListeningHint(options, { state, byId, escapeHtml, makeSmallTile });
     }
 
+    function chooseListenLock(index) {
+      const options = MahjongAI.analyzeListening(state.hands[0], MahjongRules, aiOptions(0)).slice(0, 3);
+      const option = options[index];
+      if (!option || !state.running || state.current !== 0 || state.pendingClaim || state.result) return;
+      state.listenLock = { discardId: option.discard.id, discardLabel: option.discard.label, waitKeys: option.waits.map(MahjongRules.tileKey), waitLabels: option.waits.map(tile => tile.label), effective: option.effective };
+      state.selectedId = option.discard.id;
+      state.showListenHint = false;
+      byId("message").textContent = `聽牌鎖定：打 ${option.discard.label}，等 ${state.listenLock.waitLabels.join("、")}。`;
+      render();
+      scheduleAction(() => { if (state.listenLock?.discardId === option.discard.id) discardSelected(); }, 260);
+    }
+
+    function cancelListenLock() {
+      state.listenLock = null;
+      state.showListenHint = false;
+      state.selectedId = null;
+      byId("message").textContent = "已取消聽牌鎖定。";
+      render();
+    }
+
     function renderResult() {
       MahjongRenderView.renderResult({ state, byId, escapeHtml, makeSmallTile, players, animateResultToken });
     }
@@ -3604,6 +3668,8 @@
         beginShuffleSequence,
         claimPong,
         claimWin,
+        chooseListenLock,
+        cancelListenLock,
         closeRulesHelp: () => {
           state.helpOpen = false;
           render();
