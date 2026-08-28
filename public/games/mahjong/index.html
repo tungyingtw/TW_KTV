@@ -4477,6 +4477,13 @@
       MahjongRenderView.renderRiverDetail({ state, byId, makeSmallTile });
     }
 
+    function scrollRiverDetailToLatest() {
+      requestAnimationFrame(() => {
+        const body = byId("riverDetailBody");
+        body.scrollLeft = body.scrollWidth;
+      });
+    }
+
     function makeSmallTile(tile, animateFlower = false) {
       return renderSmallTile(tile, { animateFlower, isFlowerTile: isFlower });
     }
@@ -4536,6 +4543,7 @@
         showRiverDetail: () => {
           state.riverDetailOpen = true;
           render();
+          scrollRiverDetailToLatest();
         },
         showLobby,
         sortPlayerHand: () => {
