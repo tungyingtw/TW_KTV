@@ -117,6 +117,14 @@
     byId("rulesHelpPanel").addEventListener("click", event => {
       if (event.target === byId("rulesHelpPanel")) handlers.closeRulesHelp();
     });
+    byId("seatDetailClose").addEventListener("click", handlers.closeSeatDetail);
+    byId("seatDetailPanel").addEventListener("click", event => {
+      if (event.target === byId("seatDetailPanel")) handlers.closeSeatDetail();
+    });
+    documentRef.addEventListener("click", event => {
+      const trigger = event.target.closest("[data-seat-detail]");
+      if (trigger) handlers.showSeatDetail(Number(trigger.dataset.seatDetail));
+    });
     byId("sortButton").addEventListener("click", handlers.sortPlayerHand);
     windowRef.addEventListener("keydown", handlers.handleKeydown);
     windowRef.addEventListener("pointerdown", handlers.unlockAudio, { once: true });
