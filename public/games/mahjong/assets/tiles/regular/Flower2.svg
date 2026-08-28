@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs><linearGradient id="tile" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fffdf2"/><stop offset=".72" stop-color="#eee2c5"/><stop offset="1" stop-color="#c5b17e"/></linearGradient></defs>
+  <rect x="18" y="12" width="264" height="376" rx="26" fill="url(#tile)" stroke="#8d7a46" stroke-width="8"/>
+  <rect x="38" y="32" width="224" height="336" rx="18" fill="none" stroke="#ffffff" stroke-width="5" opacity=".6"/>
+  <text x="150" y="128" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="86" font-weight="900" fill="#1d783f">夏</text>
+  <circle cx="150" cy="204" r="48" fill="#f5c84c" stroke="#c98621" stroke-width="7"/>
+  <g stroke="#df553f" stroke-width="7" stroke-linecap="round"><path d="M150 135v28"/><path d="M150 245v28"/><path d="M81 204h28"/><path d="M191 204h28"/><path d="M101 155l20 20"/><path d="M199 155l-20 20"/><path d="M101 253l20-20"/><path d="M199 253l-20-20"/></g>
+  <text x="150" y="326" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="58" font-weight="900" fill="#b73732">二</text>
+</svg>

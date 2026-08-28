@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Mahjong table emblem">
+  <rect width="240" height="240" rx="28" fill="#0b4a3d"/>
+  <circle cx="120" cy="120" r="78" fill="none" stroke="#e7b85c" stroke-width="8"/>
+  <circle cx="120" cy="120" r="48" fill="none" stroke="#f7f1df" stroke-width="4" opacity=".72"/>
+  <g fill="#f7f1df" stroke="#b9aa86" stroke-width="2">
+    <rect x="104" y="34" width="32" height="46" rx="6"/>
+    <rect x="104" y="160" width="32" height="46" rx="6"/>
+    <rect x="34" y="104" width="46" height="32" rx="6"/>
+    <rect x="160" y="104" width="46" height="32" rx="6"/>
+  </g>
+  <g fill="#17211f" font-family="Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle">
+    <text x="120" y="66">東</text>
+    <text x="120" y="193">西</text>
+    <text x="57" y="128">南</text>
+    <text x="183" y="128">北</text>
+  </g>
+  <path d="M120 93l18 27-18 27-18-27z" fill="#e7b85c"/>
+</svg>

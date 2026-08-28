@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs><linearGradient id="tile" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fffdf2"/><stop offset=".72" stop-color="#eee2c5"/><stop offset="1" stop-color="#c5b17e"/></linearGradient></defs>
+  <rect x="18" y="12" width="264" height="376" rx="26" fill="url(#tile)" stroke="#8d7a46" stroke-width="8"/>
+  <rect x="38" y="32" width="224" height="336" rx="18" fill="none" stroke="#ffffff" stroke-width="5" opacity=".6"/>
+  <text x="150" y="128" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="86" font-weight="900" fill="#1d783f">菊</text>
+  <g fill="#e0b948" stroke="#9d7621" stroke-width="4"><ellipse cx="150" cy="163" rx="15" ry="35"/><ellipse cx="150" cy="239" rx="15" ry="35"/><ellipse cx="112" cy="201" rx="35" ry="15"/><ellipse cx="188" cy="201" rx="35" ry="15"/><ellipse cx="124" cy="175" rx="15" ry="31" transform="rotate(-45 124 175)"/><ellipse cx="176" cy="175" rx="15" ry="31" transform="rotate(45 176 175)"/><ellipse cx="124" cy="227" rx="15" ry="31" transform="rotate(45 124 227)"/><ellipse cx="176" cy="227" rx="15" ry="31" transform="rotate(-45 176 227)"/></g>
+  <circle cx="150" cy="201" r="19" fill="#b73732"/>
+  <text x="150" y="326" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="58" font-weight="900" fill="#b73732">四</text>
+</svg>

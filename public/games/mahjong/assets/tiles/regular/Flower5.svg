@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs><linearGradient id="tile" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fffdf2"/><stop offset=".72" stop-color="#eee2c5"/><stop offset="1" stop-color="#c5b17e"/></linearGradient></defs>
+  <rect x="18" y="12" width="264" height="376" rx="26" fill="url(#tile)" stroke="#8d7a46" stroke-width="8"/>
+  <rect x="38" y="32" width="224" height="336" rx="18" fill="none" stroke="#ffffff" stroke-width="5" opacity=".6"/>
+  <text x="150" y="128" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="86" font-weight="900" fill="#1d783f">梅</text>
+  <path d="M102 258 C128 226 147 198 176 154" fill="none" stroke="#7d4c29" stroke-width="11" stroke-linecap="round"/>
+  <g fill="#d94d77" stroke="#9d2346" stroke-width="4"><circle cx="121" cy="229" r="15"/><circle cx="150" cy="198" r="15"/><circle cx="176" cy="164" r="15"/><circle cx="189" cy="205" r="13"/><circle cx="108" cy="188" r="13"/></g>
+  <text x="150" y="326" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="58" font-weight="900" fill="#b73732">一</text>
+</svg>
