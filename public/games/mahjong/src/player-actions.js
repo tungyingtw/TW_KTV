@@ -111,7 +111,6 @@
     });
     documentRef.querySelectorAll(".ruleset-button").forEach(button => button.addEventListener("click", () => handlers.setRuleset(button.dataset.ruleset)));
     documentRef.querySelectorAll(".stake-button").forEach(button => button.addEventListener("click", () => handlers.setStake(Number(button.dataset.stake))));
-    documentRef.querySelectorAll(".target-button").forEach(button => button.addEventListener("click", () => handlers.setTargetGain(Number(button.dataset.target))));
     documentRef.querySelectorAll(".difficulty-button").forEach(button => button.addEventListener("click", () => handlers.setDifficulty(button.dataset.difficulty)));
     byId("rulesHelpButton").addEventListener("click", handlers.toggleRulesHelp);
     byId("rulesHelpClose").addEventListener("click", handlers.closeRulesHelp);

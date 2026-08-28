@@ -43,10 +43,9 @@
     state.tokens = winner === 0 ? state.tokens + change : Math.max(0, state.tokens - change);
     const actualDelta = state.tokens - before;
     const signed = actualDelta > 0 ? `+${actualDelta}` : actualDelta < 0 ? `-${Math.abs(actualDelta)}` : "不變";
-    const goalText = winner === 0 && state.tokens >= dailyTokens + state.targetGain ? "，已達成目標" : "";
     const brokeText = winner !== 0 && state.tokens < state.stake ? "，不足下局底注" : "";
     return {
-      headline: `代幣 ${signed}${goalText}${brokeText}`,
+      headline: `代幣 ${signed}${brokeText}`,
       summary: `${winner === 0 ? "本局贏得" : "本局扣除"} ${change} 代幣｜底注 ${state.stake} × ${scoring.totalTai} 台${state.bonusSticks ? ` + ${state.bonusSticks} 本場` : ""}`,
       totalTai: scoring.totalTai,
       breakdown: [
