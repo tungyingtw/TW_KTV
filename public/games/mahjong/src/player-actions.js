@@ -95,6 +95,7 @@
     byId("startButton").addEventListener("click", () => handlers.beginShuffleSequence(true));
     byId("nextRoundButton").addEventListener("click", () => handlers.beginShuffleSequence(false));
     byId("backToSetupButton").addEventListener("click", () => handlers.showLobby());
+    byId("prevPageButton").addEventListener("click", handlers.goBackPage);
     byId("restartButton").addEventListener("click", () => handlers.showLobby());
     byId("discardButton").addEventListener("click", handlers.discardSelected);
     byId("winButton").addEventListener("click", handlers.claimWin);
