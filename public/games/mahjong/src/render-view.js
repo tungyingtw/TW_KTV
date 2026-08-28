@@ -29,7 +29,6 @@
     [1, 2, 3].forEach(player => byId(`opponentName-${player}`).textContent = players[player]);
     document.querySelectorAll(".ruleset-button").forEach(button => button.classList.toggle("active", button.dataset.ruleset === state.ruleset));
     document.querySelectorAll(".stake-button").forEach(button => button.classList.toggle("active", Number(button.dataset.stake) === state.stake));
-    document.querySelectorAll(".target-button").forEach(button => button.classList.toggle("active", Number(button.dataset.target) === state.targetGain));
     document.querySelectorAll(".difficulty-button").forEach(button => button.classList.toggle("active", button.dataset.difficulty === state.difficulty));
     byId("autoplayButton").textContent = "代打";
     byId("autoplayButton").classList.toggle("active", state.autoplay);

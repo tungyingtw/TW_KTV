@@ -2826,7 +2826,7 @@
       }
 
       .setup-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 7px;
       }
 
@@ -3178,15 +3178,6 @@
               <div class="setup-hint">每局入場風險，胡牌與放槍都以此計算。</div>
             </div>
             <div class="setup-field">
-              <div class="setup-label">勝利目標</div>
-              <div class="option-row" aria-label="勝利目標">
-                <button class="option-button target-button" data-target="300" type="button">+300</button>
-                <button class="option-button target-button active" data-target="500" type="button">+500</button>
-                <button class="option-button target-button" data-target="1000" type="button">+1000</button>
-              </div>
-              <div class="setup-hint">代幣達標後可視為本日挑戰完成。</div>
-            </div>
-            <div class="setup-field">
               <div class="setup-label">電腦難度</div>
               <div class="option-row" aria-label="電腦難度">
                 <button class="option-button difficulty-button" data-difficulty="easy" type="button">簡單</button>
@@ -3365,7 +3356,6 @@
       record: { games: 0, wins: 0 },
       tokens: MahjongWallet.DAILY_TOKENS,
       stake: 100,
-      targetGain: 500,
       difficulty: "normal",
       ruleset: "tw16",
       dealer: 0,
@@ -4173,10 +4163,6 @@
         },
         setStake: stake => {
           state.stake = stake;
-          render();
-        },
-        setTargetGain: targetGain => {
-          state.targetGain = targetGain;
           render();
         },
         setupParticleLayer,
