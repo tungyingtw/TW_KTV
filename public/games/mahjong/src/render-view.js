@@ -205,12 +205,12 @@
         handEl.appendChild(tile);
       });
       state.melds[player].forEach(meld => meldsEl.appendChild(makeMeldElement(meld, { flowerFlashIds, makeSmallTile })));
-      if (state.melds[player].length > 2) {
+      if (state.melds[player].length) {
         const more = document.createElement("button");
         more.type = "button";
         more.className = "meld-summary";
         more.dataset.seatDetail = String(player);
-        more.textContent = `+${state.melds[player].length - 2}`;
+        more.textContent = `副露 ${state.melds[player].length}`;
         meldsEl.appendChild(more);
       }
     }
