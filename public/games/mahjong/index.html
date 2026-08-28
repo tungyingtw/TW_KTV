@@ -2413,14 +2413,14 @@
       }
 
       .game.lobby-mode {
-        grid-template-rows: 42px minmax(250px, 1fr);
+        grid-template-rows: 38px minmax(0, 1fr);
         overflow-y: auto;
       }
 
       .topbar {
         grid-template-columns: minmax(142px, 1fr) auto auto;
-        min-height: 42px;
-        padding: 4px 7px;
+        min-height: 38px;
+        padding: 3px 7px;
         gap: 6px;
       }
 
@@ -2644,18 +2644,21 @@
       }
 
       .claim-panel {
-        left: 7px;
-        right: 92px;
-        bottom: calc(var(--tile-h) + 12px);
+        position: fixed;
+        left: 8px;
+        right: 104px;
+        bottom: 58px;
         width: auto;
-        max-height: 86px;
+        max-height: 76px;
         padding: 6px;
         gap: 5px;
         justify-content: flex-start;
         overflow: auto;
+        z-index: 44;
       }
 
       .claim-panel.active {
+        animation: none;
         transform: translateY(0);
       }
 
@@ -2669,6 +2672,12 @@
         min-width: 82px;
         min-height: 38px;
         padding: 5px 6px;
+      }
+
+      .claim-action {
+        min-width: 54px;
+        min-height: 38px;
+        padding: 6px 11px;
       }
 
       .listen-panel {
@@ -2777,27 +2786,32 @@
 
       .lobby-mode .table {
         min-height: 0;
+        padding: 4px;
+        overflow: auto;
       }
 
       .lobby-mode .center {
-        gap: 8px;
-        place-content: center;
+        gap: 6px;
+        align-content: start;
+        justify-items: center;
         overflow: auto;
       }
 
       .lobby-mode .message {
         max-width: none;
-        font-size: 17px;
+        min-height: 20px;
+        padding: 0 8px;
+        font-size: 16px;
         line-height: 1.1;
         margin: 0 auto;
       }
 
       .setup-panel {
-        width: min(560px, calc(100vw - 26px));
-        max-height: calc(100dvh - 88px);
-        gap: 7px;
+        width: min(700px, calc(100vw - 18px));
+        max-height: calc(100dvh - 70px);
+        gap: 6px;
         margin: 0 auto;
-        padding: 10px 12px;
+        padding: 8px 10px;
         overflow: auto;
       }
 
@@ -2813,7 +2827,7 @@
 
       .setup-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px;
+        gap: 7px;
       }
 
       .setup-field {
@@ -2836,26 +2850,25 @@
       }
 
       .option-button {
-        min-height: 30px;
-        padding: 5px 9px;
-        font-size: 13px;
+        min-height: 28px;
+        padding: 4px 7px;
+        font-size: 12px;
       }
 
       .setup-actions {
-        align-items: center;
-        gap: 8px;
-        padding-top: 6px;
+        justify-content: flex-end;
+        gap: 6px;
+        padding-top: 4px;
       }
 
       .setup-status {
-        font-size: 11px;
-        line-height: 1.25;
+        display: none;
       }
 
       .start-button {
-        min-width: 104px;
-        min-height: 40px;
-        padding: 8px 13px;
+        min-width: 106px;
+        min-height: 38px;
+        padding: 7px 13px;
         font-size: 14px;
       }
     }
