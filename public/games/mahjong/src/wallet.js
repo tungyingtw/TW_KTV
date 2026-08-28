@@ -1,5 +1,5 @@
 (function () {
-  const DAILY_TOKENS = 1000;
+  const DAILY_TOKENS = 5000;
   const WALLET_KEY = "webMahjongWallet";
 
   function todayKey() {
