@@ -134,6 +134,14 @@
       animation: discardShockwave 520ms ease-out forwards;
     }
 
+    .discard-shockwave.compact {
+      width: 12px;
+      height: 12px;
+      border-width: 1px;
+      box-shadow: 0 0 10px rgba(255, 214, 111, 0.24);
+      animation-duration: 360ms;
+    }
+
     button {
       border: 0;
       border-radius: 8px;
@@ -3073,8 +3081,21 @@
         font-size: 15px;
       }
 
-      .particle-layer { opacity: 0.72; }
-      .event-burst { transform: translate(-50%, -50%) scale(0.72); }
+      .particle-layer { opacity: 0.48; }
+      .event-burst {
+        filter: saturate(0.92);
+        transform: translate(-50%, -50%) scale(0.62);
+      }
+
+      body.flash-chi .event-burst,
+      body.flash-pong .event-burst,
+      body.flash-flower .event-burst { animation-duration: 520ms; }
+
+      body.flash-kong .event-burst,
+      body.flash-win .event-burst,
+      body.flash-bigwin .event-burst,
+      body.flash-robKong .event-burst,
+      body.flash-kongDrawWin .event-burst { animation-duration: 720ms; }
 
       .lobby-mode .table {
         grid-template-columns: 1fr;

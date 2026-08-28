@@ -1,5 +1,7 @@
 (function () {
   const PARTICLE_LIMIT = 180;
+  const COMPACT_PARTICLE_LIMIT = 72;
+  const COMPACT_PARTICLE_SCALE = { chi: 0.48, pong: 0.44, kong: 0.36, flower: 0.46, win: 0.5, bigwin: 0.42, robKong: 0.42, kongDrawWin: 0.42, shuffle: 0.36, tokenGain: 0.48, tokenLoss: 0.38 };
   const EVENT_JUICE_TIERS = {
     discard: { tier: "low", label: "出牌", burst: false, safeMargin: 0, secondBurst: false },
     meld: { tier: "low", label: "副露", burst: false, safeMargin: 0, secondBurst: false },
@@ -72,7 +74,7 @@
     if (prefersReducedMotion()) return;
     const origin = particleOrigin("discard", context);
     const wave = document.createElement("span");
-    wave.className = "discard-shockwave";
+    wave.className = `discard-shockwave${isCompactViewport() ? " compact" : ""}`;
     wave.style.left = `${origin.x}px`;
     wave.style.top = `${origin.y}px`;
     document.body.appendChild(wave);
@@ -91,10 +93,22 @@
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
+  function isCompactViewport() {
+    return window.matchMedia("(max-width: 980px) and (max-height: 560px) and (orientation: landscape)").matches;
+  }
+
+  function particleScale(type, scale) {
+    return scale * (isCompactViewport() ? COMPACT_PARTICLE_SCALE[type] || 0.42 : 1);
+  }
+
+  function particleLimit() {
+    return isCompactViewport() ? COMPACT_PARTICLE_LIMIT : PARTICLE_LIMIT;
+  }
+
   function setupLayer(byId) {
     const canvas = byId("particleLayer");
     if (!canvas) return null;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, isCompactViewport() ? 1.25 : 2);
     const width = Math.max(1, Math.floor(window.innerWidth * dpr));
     const height = Math.max(1, Math.floor(window.innerHeight * dpr));
     if (canvas.width !== width || canvas.height !== height) {
@@ -133,7 +147,7 @@
   function addParticlesFromSpec(type, origin, state, scale = 1) {
     const spec = PARTICLE_SPECS[type];
     if (!spec) return;
-    for (let i = 0, count = Math.max(1, Math.round(randomInt(spec.count) * scale)); i < count; i += 1) {
+    for (let i = 0, count = Math.max(1, Math.round(randomInt(spec.count) * particleScale(type, scale))); i < count; i += 1) {
       const angle = Math.random() * Math.PI * 2;
       const speed = randomBetween(spec.speed);
       state.particles.push({
@@ -150,7 +164,7 @@
         color: spec.colors[Math.floor(Math.random() * spec.colors.length)]
       });
     }
-    state.particles = state.particles.slice(-PARTICLE_LIMIT);
+    state.particles = state.particles.slice(-particleLimit());
   }
 
   function emitParticles(type, context, origin = particleOrigin(type, context)) {
@@ -159,7 +173,7 @@
     if (!spec || prefersReducedMotion()) return;
     setupLayer(byId);
     addParticlesFromSpec(type, origin, state);
-    if (eventJuiceTier(type).secondBurst) {
+    if (eventJuiceTier(type).secondBurst && !isCompactViewport()) {
       scheduleAction(() => {
         if (prefersReducedMotion()) return;
         addParticlesFromSpec(type, origin, state, 0.42);
@@ -260,5 +274,5 @@
     ctx.restore();
   }
 
-  window.MahjongEffects = { addParticlesFromSpec, drawParticles, emitParticles, eventJuiceTier, particleOrigin, prefersReducedMotion, setupLayer, shouldShowEventBurst, showDiscardShockwave, trigger };
+  window.MahjongEffects = { addParticlesFromSpec, drawParticles, emitParticles, eventJuiceTier, isCompactViewport, particleOrigin, prefersReducedMotion, setupLayer, shouldShowEventBurst, showDiscardShockwave, trigger };
 })();
