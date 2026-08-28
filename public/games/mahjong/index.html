@@ -310,6 +310,10 @@
 
     .setup-panel.hidden { display: none; }
 
+    .lobby-mode .game {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
     .lobby-mode .player-area {
       display: none;
     }
@@ -2532,7 +2536,7 @@
         padding: 5px;
       }
 
-      .game.lobby-mode {
+      .lobby-mode .game {
         grid-template-rows: 38px minmax(0, 1fr);
         overflow-y: auto;
       }
