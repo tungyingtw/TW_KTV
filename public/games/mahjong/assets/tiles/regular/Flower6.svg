@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs><linearGradient id="tile" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fffdf2"/><stop offset=".72" stop-color="#eee2c5"/><stop offset="1" stop-color="#c5b17e"/></linearGradient></defs>
+  <rect x="18" y="12" width="264" height="376" rx="26" fill="url(#tile)" stroke="#8d7a46" stroke-width="8"/>
+  <rect x="38" y="32" width="224" height="336" rx="18" fill="none" stroke="#ffffff" stroke-width="5" opacity=".6"/>
+  <text x="150" y="128" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="86" font-weight="900" fill="#1d783f">蘭</text>
+  <path d="M150 268 C132 230 127 196 132 160 M150 268 C168 230 173 196 168 160" fill="none" stroke="#227d43" stroke-width="8" stroke-linecap="round"/>
+  <path d="M132 168 C82 176 82 224 129 225 M168 168 C218 176 218 224 171 225" fill="none" stroke="#33a765" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="150" cy="196" r="18" fill="#e5cf62" stroke="#a8752a" stroke-width="5"/>
+  <text x="150" y="326" text-anchor="middle" font-family="Microsoft JhengHei, serif" font-size="58" font-weight="900" fill="#b73732">二</text>
+</svg>
