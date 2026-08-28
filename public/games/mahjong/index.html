@@ -2631,6 +2631,12 @@
       .seat.left .side-seat-body { grid-template-columns: 34px minmax(0, 1fr); }
       .seat.right .side-seat-body { grid-template-columns: minmax(0, 1fr) 34px; }
 
+      .seat.left .side-seat-body,
+      .seat.right .side-seat-body {
+        align-items: start;
+        padding-top: 12px;
+      }
+
       .computer-hand {
         gap: 2px;
         max-height: 40px;
@@ -2678,9 +2684,10 @@
 
       .seat.left .computer-hand,
       .seat.right .computer-hand {
-        width: 34px;
+        width: auto;
         max-height: 100%;
         gap: 1px;
+        margin: 0;
       }
 
       .seat.left .hand-summary,
@@ -2719,7 +2726,7 @@
       }
 
       .meld-summary {
-        display: inline-flex;
+        display: none;
         align-items: center;
         justify-content: center;
         min-width: 50px;
@@ -2730,13 +2737,6 @@
         box-shadow: inset 0 0 0 1px rgba(255, 207, 86, 0.32);
         font-weight: 900;
         font-size: 12px;
-      }
-
-      .seat.left .meld-summary,
-      .seat.right .meld-summary {
-        min-width: 30px;
-        writing-mode: vertical-rl;
-        padding: 5px 3px;
       }
 
       .computer-melds .tile.small {
@@ -2777,7 +2777,7 @@
       .discard-label { display: none; }
 
       .shared-river {
-        --river-tile-w: clamp(20px, 2.55vw, 26px);
+        --river-tile-w: clamp(18px, 2.4vw, 24px);
         min-height: 96px;
         max-height: none;
         padding: 17px 4px 4px;
@@ -2786,8 +2786,8 @@
         justify-content: flex-start;
       }
 
-      .shared-river.river-dense { --river-tile-w: clamp(18px, 2.35vw, 23px); }
-      .shared-river.river-ultra { --river-tile-w: clamp(15px, 2.05vw, 19px); }
+      .shared-river.river-dense { --river-tile-w: clamp(16px, 2.1vw, 21px); }
+      .shared-river.river-ultra { --river-tile-w: clamp(14px, 1.85vw, 18px); }
 
       .player-area {
         grid-template-rows: 26px 30px minmax(0, 1fr);
