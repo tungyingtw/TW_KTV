@@ -1967,6 +1967,8 @@
       width: min(520px, calc(100vw - 24px));
       max-height: min(320px, calc(100dvh - 24px));
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       padding: 14px;
       border: 1px solid rgba(231, 184, 92, 0.46);
       border-radius: 10px;
@@ -2035,6 +2037,34 @@
       display: inline-flex;
       min-width: 24px;
       font-size: 12px;
+    }
+
+    .river-detail-button {
+      display: none;
+      position: absolute;
+      right: 6px;
+      top: 4px;
+      z-index: 2;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: #2a1903;
+      background: linear-gradient(180deg, #ffe391, #d99b2d);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.22);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .river-detail-body {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-content: flex-start;
+    }
+
+    .river-detail-body .tile.small {
+      width: clamp(24px, 4.3vw, 34px);
+      height: calc(clamp(24px, 4.3vw, 34px) * 1.28);
     }
 
     .claim-options {
@@ -2786,6 +2816,16 @@
         justify-content: flex-start;
       }
 
+      .river-detail-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .shared-river .river-entry:not(.river-recent) {
+        display: none;
+      }
+
       .shared-river.river-dense { --river-tile-w: clamp(15px, 1.95vw, 19px); }
       .shared-river.river-ultra { --river-tile-w: clamp(13px, 1.65vw, 16px); }
 
@@ -3430,7 +3470,7 @@
           <div class="shuffle-subtext">整理牌山與發牌順序</div>
         </div>
         <div class="discard-board">
-          <div class="discard-box"><div class="river shared-river" id="sharedRiver"></div></div>
+          <div class="discard-box"><button class="river-detail-button" id="riverDetailButton" type="button">牌河 0</button><div class="river shared-river" id="sharedRiver"></div></div>
         </div>
       </section>
     </section>
@@ -3529,6 +3569,15 @@
         <div class="seat-detail-body" id="seatDetailBody"></div>
       </div>
     </section>
+    <section class="seat-detail-panel" id="riverDetailPanel" aria-hidden="true">
+      <div class="seat-detail-card" role="dialog" aria-modal="false" aria-labelledby="riverDetailTitle">
+        <div class="seat-detail-head">
+          <h2 id="riverDetailTitle">完整牌河</h2>
+          <button class="secondary action-button" id="riverDetailClose" type="button" aria-label="關閉完整牌河">關閉</button>
+        </div>
+        <div class="river-detail-body" id="riverDetailBody"></div>
+      </div>
+    </section>
   </main>
   <canvas class="particle-layer" id="particleLayer" aria-hidden="true"></canvas>
   <div class="rotate-notice" aria-live="polite">
@@ -3607,6 +3656,7 @@
       showListenHint: false,
       listenLock: null,
       seatDetailPlayer: null,
+      riverDetailOpen: false,
       log: []
     };
 
@@ -4235,6 +4285,7 @@
       renderComputers();
       renderSeatDetail();
       renderRivers();
+      renderRiverDetail();
       renderResult();
       renderLog();
       scheduleAutoplay();
@@ -4363,6 +4414,10 @@
       MahjongRenderView.renderRivers({ state, byId, makeSmallTile });
     }
 
+    function renderRiverDetail() {
+      MahjongRenderView.renderRiverDetail({ state, byId, makeSmallTile });
+    }
+
     function makeSmallTile(tile, animateFlower = false) {
       return renderSmallTile(tile, { animateFlower, isFlowerTile: isFlower });
     }
@@ -4385,12 +4440,17 @@
           state.seatDetailPlayer = null;
           render();
         },
+        closeRiverDetail: () => {
+          state.riverDetailOpen = false;
+          render();
+        },
         discardSelected,
         goBackPage,
         handleKeydown: event => {
           if (event.key !== "Escape") return;
           if (state.helpOpen) state.helpOpen = false;
           else if (state.seatDetailPlayer !== null) state.seatDetailPlayer = null;
+          else if (state.riverDetailOpen) state.riverDetailOpen = false;
           else return;
           render();
         },
@@ -4412,6 +4472,10 @@
         showSeatDetail: player => {
           if (!Number.isInteger(player) || player < 1 || player > 3) return;
           state.seatDetailPlayer = player;
+          render();
+        },
+        showRiverDetail: () => {
+          state.riverDetailOpen = true;
           render();
         },
         showLobby,
