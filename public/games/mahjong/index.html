@@ -2412,6 +2412,11 @@
         padding: 5px;
       }
 
+      .game.lobby-mode {
+        grid-template-rows: 42px minmax(250px, 1fr);
+        overflow-y: auto;
+      }
+
       .topbar {
         grid-template-columns: minmax(142px, 1fr) auto auto;
         min-height: 42px;
@@ -2777,6 +2782,7 @@
       .lobby-mode .center {
         gap: 8px;
         place-content: center;
+        overflow: auto;
       }
 
       .lobby-mode .message {
@@ -2792,7 +2798,7 @@
         gap: 7px;
         margin: 0 auto;
         padding: 10px 12px;
-        overflow: visible;
+        overflow: auto;
       }
 
       .setup-title {
