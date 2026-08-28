@@ -53,7 +53,7 @@
     const details = byId("listenDetails");
     panel.classList.toggle("active", options.length > 0);
     panel.classList.toggle("open", state.showListenHint && options.length > 0);
-    byId("listenButton").textContent = state.showListenHint ? "收起聽牌" : `聽牌提示 ${options.length}`;
+    byId("listenButton").textContent = state.showListenHint ? "收起" : `可聽牌 ${options.length}`;
     details.innerHTML = "";
     if (!options.length) {
       state.showListenHint = false;
@@ -62,7 +62,7 @@
     options.forEach(option => {
       const line = document.createElement("div");
       line.className = "listen-line";
-      line.innerHTML = `<strong>打 ${escapeHtml(option.discard.label)}</strong><span>聽 ${option.effective} 張</span>`;
+      line.innerHTML = `<strong>打 ${escapeHtml(option.discard.label)}</strong><span>${option.effective} 張</span>`;
       option.waits.slice(0, 8).forEach(tile => line.appendChild(makeSmallTile(tile)));
       details.appendChild(line);
     });
