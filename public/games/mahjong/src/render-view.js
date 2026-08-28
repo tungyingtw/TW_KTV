@@ -38,7 +38,7 @@
     document.body.classList.toggle("lobby-mode", state.screen !== "playing");
     document.body.classList.toggle("title-mode", state.screen === "title");
     document.body.classList.toggle("shuffling-mode", state.screen === "shuffling");
-    document.body.classList.toggle("result-mode", !!state.result);
+    document.body.classList.toggle("result-mode", !!state.result && state.result.visible !== false);
     document.body.classList.toggle("awaiting-discard", state.running && state.current === 0 && !state.pendingClaim && !state.result && canDiscard);
   }
 
@@ -89,8 +89,9 @@
   function renderResult(context) {
     const { state, byId, escapeHtml, makeSmallTile, players, animateResultToken } = context;
     const overlay = byId("resultOverlay");
-    overlay.classList.toggle("active", !!state.result);
-    if (!state.result) return;
+    const visible = !!state.result && state.result.visible !== false;
+    overlay.classList.toggle("active", visible);
+    if (!visible) return;
     const cardEl = overlay.querySelector(".result-card");
     const outcomeClass = state.result.type === "draw" ? "draw" : state.result.winner === 0 ? "win" : "loss";
     cardEl.className = `result-card ${state.result.type === "draw" ? "draw-result" : state.result.winner === 0 ? "player-win" : "computer-win"}`;

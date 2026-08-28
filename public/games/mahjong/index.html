@@ -3404,12 +3404,18 @@
 
     function finishWin(player, method, discarder = null) {
       const result = MahjongRoundResult.finishWinRound(state, MahjongStateFlow, { player, method, discarder, players, compareTiles, settleTokens, advanceRound, roundLabel });
+      state.result.visible = false;
       byId("message").textContent = result.message;
       addLog(result.message);
       updateRecord(player);
       playSound(result.winEventType);
       render();
-      triggerJuice(result.winEventType, "resultOverlay");
+      triggerJuice(result.winEventType, "table");
+      scheduleAction(() => {
+        if (!state.result || state.running) return;
+        state.result.visible = true;
+        render();
+      }, prefersReducedMotion() ? 80 : 760);
     }
 
     function endRound(text) {
