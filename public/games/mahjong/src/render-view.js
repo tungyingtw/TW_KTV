@@ -197,7 +197,7 @@
       summary.className = "hand-summary";
       summary.dataset.seatDetail = String(player);
       summary.setAttribute("aria-label", `查看電腦${player}資訊`);
-      summary.innerHTML = `<span class="back-tile summary-back"></span><span class="hand-count">${state.hands[player].length}</span>`;
+      summary.innerHTML = `<span class="back-tile summary-back"></span><span class="hand-count">${state.hands[player].length}</span><span class="summary-action">查看</span>`;
       handEl.appendChild(summary);
       state.hands[player].forEach(() => {
         const tile = document.createElement("div");
@@ -210,7 +210,7 @@
         more.type = "button";
         more.className = "meld-summary";
         more.dataset.seatDetail = String(player);
-        more.textContent = `副露 ${state.melds[player].length}`;
+        more.textContent = `查看副露 ${state.melds[player].length}`;
         meldsEl.appendChild(more);
       }
     }
