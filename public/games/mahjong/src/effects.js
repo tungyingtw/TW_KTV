@@ -1,7 +1,5 @@
 (function () {
   const PARTICLE_LIMIT = 180;
-  const COMPACT_PARTICLE_LIMIT = 14;
-  const COMPACT_PARTICLE_SCALE = { chi: 0.5, pong: 0.28, kong: 0.12, flower: 0.42, win: 0.12, bigwin: 0.08, robKong: 0.08, kongDrawWin: 0.08, shuffle: 0.34, tokenGain: 0.24, tokenLoss: 0.18 };
   const EVENT_JUICE_TIERS = {
     discard: { tier: "low", label: "出牌", burst: false, safeMargin: 0, secondBurst: false },
     meld: { tier: "low", label: "副露", burst: false, safeMargin: 0, secondBurst: false },
@@ -97,18 +95,15 @@
     return window.matchMedia("(max-width: 980px) and (max-height: 560px) and (orientation: landscape)").matches;
   }
 
-  function particleScale(type, scale) {
-    return scale * (isCompactViewport() ? COMPACT_PARTICLE_SCALE[type] || 0.42 : 1);
-  }
-
-  function particleLimit() {
-    return isCompactViewport() ? COMPACT_PARTICLE_LIMIT : PARTICLE_LIMIT;
-  }
-
   function setupLayer(byId) {
     const canvas = byId("particleLayer");
     if (!canvas) return null;
-    const dpr = Math.min(window.devicePixelRatio || 1, isCompactViewport() ? 1.25 : 2);
+    if (isCompactViewport()) {
+      canvas.width = 1;
+      canvas.height = 1;
+      return null;
+    }
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const width = Math.max(1, Math.floor(window.innerWidth * dpr));
     const height = Math.max(1, Math.floor(window.innerHeight * dpr));
     if (canvas.width !== width || canvas.height !== height) {
@@ -146,8 +141,8 @@
 
   function addParticlesFromSpec(type, origin, state, scale = 1) {
     const spec = PARTICLE_SPECS[type];
-    if (!spec) return;
-    for (let i = 0, count = Math.max(1, Math.round(randomInt(spec.count) * particleScale(type, scale))); i < count; i += 1) {
+    if (!spec || isCompactViewport()) return;
+    for (let i = 0, count = Math.max(1, Math.round(randomInt(spec.count) * scale)); i < count; i += 1) {
       const angle = Math.random() * Math.PI * 2;
       const speed = randomBetween(spec.speed);
       state.particles.push({
@@ -164,13 +159,18 @@
         color: spec.colors[Math.floor(Math.random() * spec.colors.length)]
       });
     }
-    state.particles = state.particles.slice(-particleLimit());
+    state.particles = state.particles.slice(-PARTICLE_LIMIT);
   }
 
   function emitParticles(type, context, origin = particleOrigin(type, context)) {
     const { state, byId, scheduleAction } = context;
     const spec = PARTICLE_SPECS[type];
     if (!spec || prefersReducedMotion()) return;
+    if (isCompactViewport()) {
+      state.particles = [];
+      state.particleFrame = 0;
+      return;
+    }
     setupLayer(byId);
     addParticlesFromSpec(type, origin, state);
     if (eventJuiceTier(type).secondBurst && !isCompactViewport()) {
