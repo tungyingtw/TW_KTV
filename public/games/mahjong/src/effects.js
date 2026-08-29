@@ -46,6 +46,12 @@
     const { state, byId, scheduleAction } = context;
     const className = flashClass(type);
     state.effectOriginId = originId;
+    if (state.lowPowerEffects) {
+      state.effectOriginId = "";
+      state.particles = [];
+      state.particleFrame = 0;
+      return;
+    }
     if (type === "discard") showDiscardShockwave({ state, byId });
     if (shouldShowEventBurst(type)) showEventBurst(type, { state, byId });
     emitParticles(type, { state, byId, scheduleAction });
@@ -69,7 +75,7 @@
   }
 
   function showDiscardShockwave(context) {
-    if (prefersReducedMotion()) return;
+    if (context.state.lowPowerEffects || prefersReducedMotion()) return;
     const origin = particleOrigin("discard", context);
     const wave = document.createElement("span");
     wave.className = `discard-shockwave${isCompactViewport() ? " compact" : ""}`;
@@ -141,7 +147,7 @@
 
   function addParticlesFromSpec(type, origin, state, scale = 1) {
     const spec = PARTICLE_SPECS[type];
-    if (!spec || isCompactViewport()) return;
+    if (!spec || state.lowPowerEffects || isCompactViewport()) return;
     for (let i = 0, count = Math.max(1, Math.round(randomInt(spec.count) * scale)); i < count; i += 1) {
       const angle = Math.random() * Math.PI * 2;
       const speed = randomBetween(spec.speed);
@@ -165,7 +171,7 @@
   function emitParticles(type, context, origin = particleOrigin(type, context)) {
     const { state, byId, scheduleAction } = context;
     const spec = PARTICLE_SPECS[type];
-    if (!spec || prefersReducedMotion()) return;
+    if (!spec || state.lowPowerEffects || prefersReducedMotion()) return;
     if (isCompactViewport()) {
       state.particles = [];
       state.particleFrame = 0;
