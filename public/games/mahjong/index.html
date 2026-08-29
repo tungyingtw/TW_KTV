@@ -91,6 +91,35 @@
     body.flash-discard .shared-river { animation-name: riverPulse; }
     body.flash-message .message { animation-name: messageGlow; }
 
+    body.low-power-effects .event-burst,
+    body.low-power-effects .discard-shockwave,
+    body.low-power-effects .particle-layer {
+      display: none !important;
+      animation: none !important;
+    }
+
+    body.low-power-effects.flash-win .table,
+    body.low-power-effects.flash-chi .table,
+    body.low-power-effects.flash-pong .table,
+    body.low-power-effects.flash-kong .table,
+    body.low-power-effects.flash-robKong .table,
+    body.low-power-effects.flash-kongDrawWin .table,
+    body.low-power-effects.flash-bigwin .table,
+    body.low-power-effects.flash-discard .shared-river,
+    body.low-power-effects.flash-message .message,
+    body.low-power-effects.flash-win .result-card,
+    body.low-power-effects .player-area > .melds:not(:empty) {
+      animation: none !important;
+    }
+
+    body.low-power-effects.flash-win::after,
+    body.low-power-effects.flash-bigwin::after,
+    body.low-power-effects.flash-robKong::after,
+    body.low-power-effects.flash-kongDrawWin::after {
+      content: none !important;
+      animation: none !important;
+    }
+
     body.flash-win .result-card {
       animation: resultCelebrate 680ms ease-out both;
     }
@@ -335,6 +364,7 @@
     }
 
     .lobby-mode #soundButton,
+    .lobby-mode #effectsButton,
     .lobby-mode #restartButton {
       display: none;
     }
@@ -3458,6 +3488,7 @@
       <div class="utility-actions">
         <button class="secondary action-button" id="prevPageButton" type="button" aria-label="返回小遊戲列表" title="返回小遊戲列表">遊戲列表</button>
         <button class="secondary action-button active" id="soundButton" type="button" aria-label="音效開啟" title="音效開啟">音效</button>
+        <button class="secondary action-button" id="effectsButton" type="button" aria-label="省電模式關閉" title="省電模式關閉">全效</button>
         <button class="secondary action-button" id="restartButton" type="button" aria-label="回到大廳" title="回到大廳">大廳</button>
       </div>
       <div class="metrics">
@@ -3702,6 +3733,8 @@
       autoplayQueued: false,
       debugMode: true,
       soundEnabled: true,
+      lowPowerEffects: false,
+      lowPowerEffectsAuto: false,
       audioUnlocked: false,
       audioContext: null,
       audioBuffers: {},
@@ -3735,8 +3768,10 @@
 
     const { byId, escapeHtml, makeTileImage, tileImageSrc } = MahjongRender;
     const renderSmallTile = MahjongRender.makeSmallTile;
+    const EFFECTS_PREF_KEY = "webMahjongLowPowerEffects";
     loadRecord();
     loadWallet();
+    loadEffectsPreference();
 
     function makeWall() {
       return MahjongTileWall.makeWall();
@@ -4267,6 +4302,30 @@
       MahjongWallet.save(state);
     }
 
+    function detectLowPowerDevice() {
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const memory = Number(navigator.deviceMemory) || 0;
+      const cores = Number(navigator.hardwareConcurrency) || 0;
+      return MahjongEffects.isCompactViewport() && (!!connection?.saveData || (memory > 0 && memory <= 4) || (cores > 0 && cores <= 4));
+    }
+
+    function loadEffectsPreference() {
+      try {
+        const saved = localStorage.getItem(EFFECTS_PREF_KEY);
+        if (saved === "on" || saved === "off") {
+          state.lowPowerEffects = saved === "on";
+          state.lowPowerEffectsAuto = false;
+          return;
+        }
+      } catch (error) {}
+      state.lowPowerEffects = detectLowPowerDevice();
+      state.lowPowerEffectsAuto = state.lowPowerEffects;
+    }
+
+    function saveEffectsPreference() {
+      try { localStorage.setItem(EFFECTS_PREF_KEY, state.lowPowerEffects ? "on" : "off"); } catch (error) {}
+    }
+
     function goBackPage() {
       window.location.href = "../";
     }
@@ -4286,6 +4345,16 @@
       byId("soundButton").classList.toggle("active", state.soundEnabled);
       byId("soundButton").setAttribute("aria-label", `音效${state.soundEnabled ? "開啟" : "關閉"}`);
       byId("soundButton").title = `音效${state.soundEnabled ? "開啟" : "關閉"}`;
+      playSound("toggle");
+    }
+
+    function toggleLowPowerEffects() {
+      state.lowPowerEffects = !state.lowPowerEffects;
+      state.lowPowerEffectsAuto = false;
+      state.particles = [];
+      state.particleFrame = 0;
+      saveEffectsPreference();
+      renderEffectsButton();
       playSound("toggle");
     }
 
@@ -4341,6 +4410,7 @@
     }
 
     function render() {
+      renderEffectsButton();
       renderHudAndSetup();
       renderHelpPanel();
       byId("playerCount").textContent = `${state.hands[0].length} 張`;
@@ -4362,6 +4432,15 @@
       renderResult();
       renderLog();
       scheduleAutoplay();
+    }
+
+    function renderEffectsButton() {
+      document.body.classList.toggle("low-power-effects", state.lowPowerEffects);
+      const button = byId("effectsButton");
+      button.textContent = state.lowPowerEffects ? "省電" : "全效";
+      button.classList.toggle("active", state.lowPowerEffects);
+      button.setAttribute("aria-label", `省電模式${state.lowPowerEffects ? "開啟" : "關閉"}${state.lowPowerEffectsAuto ? "，已自動啟用" : ""}`);
+      button.title = `省電模式${state.lowPowerEffects ? "開啟" : "關閉"}${state.lowPowerEffectsAuto ? "，已自動啟用" : ""}`;
     }
 
     function renderHudAndSetup() {
@@ -4573,6 +4652,7 @@
           state.helpOpen = !state.helpOpen;
           render();
         },
+        toggleLowPowerEffects,
         toggleSound,
         unlockAudio: () => {
           state.audioUnlocked = true;
