@@ -2872,10 +2872,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        right: 7px;
-        top: auto;
-        bottom: 7px;
-        z-index: 7;
+        position: static;
         width: 32px;
         min-width: 32px;
         min-height: 32px;
@@ -3559,7 +3556,7 @@
           <div class="shuffle-subtext">整理牌山與發牌順序</div>
         </div>
         <div class="discard-board">
-          <div class="discard-box"><button class="river-detail-button" id="riverDetailButton" type="button">牌河 0</button><div class="river shared-river" id="sharedRiver"></div></div>
+          <div class="discard-box"><div class="river shared-river" id="sharedRiver"></div></div>
         </div>
       </section>
     </section>
@@ -3572,6 +3569,7 @@
         </div>
         <div class="actions">
           <button class="secondary action-button" id="sortButton" type="button" aria-label="整理手牌" title="整理手牌">整理</button>
+          <button class="secondary action-button river-detail-button" id="riverDetailButton" type="button">牌河 0</button>
           <button class="secondary action-button" id="autoplayButton" type="button" aria-label="電腦代打關閉" title="電腦代打關閉">代打</button>
         </div>
       </div>
