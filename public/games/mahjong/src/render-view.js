@@ -258,7 +258,7 @@
       wrapper.appendChild(makeSmallTile(entry.tile));
       sharedRiverEl.appendChild(wrapper);
     });
-    byId("riverDetailButton").textContent = "牌河";
+    byId("riverDetailButton").textContent = "場中牌河";
     byId("riverDetailButton").setAttribute("aria-label", `查看完整牌河，共 ${state.discardHistory.length} 張`);
   }
 
