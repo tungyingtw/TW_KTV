@@ -259,6 +259,7 @@
       sharedRiverEl.appendChild(wrapper);
     });
     byId("riverDetailButton").textContent = `牌河 ${state.discardHistory.length}`;
+    byId("riverDetailButton").setAttribute("aria-label", `查看完整牌河，共 ${state.discardHistory.length} 張`);
   }
 
   function renderRiverDetail(context) {
