@@ -3488,7 +3488,7 @@
       <div class="utility-actions">
         <button class="secondary action-button" id="prevPageButton" type="button" aria-label="返回小遊戲列表" title="返回小遊戲列表">遊戲列表</button>
         <button class="secondary action-button active" id="soundButton" type="button" aria-label="音效開啟" title="音效開啟">音效</button>
-        <button class="secondary action-button" id="effectsButton" type="button" aria-label="省電模式關閉" title="省電模式關閉">全效</button>
+        <button class="secondary action-button" id="effectsButton" type="button" aria-label="省電模式關閉" title="省電模式關閉">省電</button>
         <button class="secondary action-button" id="restartButton" type="button" aria-label="回到大廳" title="回到大廳">大廳</button>
       </div>
       <div class="metrics">
@@ -4437,7 +4437,7 @@
     function renderEffectsButton() {
       document.body.classList.toggle("low-power-effects", state.lowPowerEffects);
       const button = byId("effectsButton");
-      button.textContent = state.lowPowerEffects ? "省電" : "全效";
+      button.textContent = "省電";
       button.classList.toggle("active", state.lowPowerEffects);
       button.setAttribute("aria-label", `省電模式${state.lowPowerEffects ? "開啟" : "關閉"}${state.lowPowerEffectsAuto ? "，已自動啟用" : ""}`);
       button.title = `省電模式${state.lowPowerEffects ? "開啟" : "關閉"}${state.lowPowerEffectsAuto ? "，已自動啟用" : ""}`;
