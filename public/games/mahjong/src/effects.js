@@ -1,7 +1,7 @@
 (function () {
   const PARTICLE_LIMIT = 180;
-  const COMPACT_PARTICLE_LIMIT = 72;
-  const COMPACT_PARTICLE_SCALE = { chi: 0.48, pong: 0.44, kong: 0.36, flower: 0.46, win: 0.5, bigwin: 0.42, robKong: 0.42, kongDrawWin: 0.42, shuffle: 0.36, tokenGain: 0.48, tokenLoss: 0.38 };
+  const COMPACT_PARTICLE_LIMIT = 14;
+  const COMPACT_PARTICLE_SCALE = { chi: 0.5, pong: 0.28, kong: 0.12, flower: 0.42, win: 0.12, bigwin: 0.08, robKong: 0.08, kongDrawWin: 0.08, shuffle: 0.34, tokenGain: 0.24, tokenLoss: 0.18 };
   const EVENT_JUICE_TIERS = {
     discard: { tier: "low", label: "出牌", burst: false, safeMargin: 0, secondBurst: false },
     meld: { tier: "low", label: "副露", burst: false, safeMargin: 0, secondBurst: false },
