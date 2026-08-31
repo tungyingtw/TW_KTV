@@ -3569,7 +3569,7 @@
         <span class="status" id="phaseText">準備開局</span>
         <div class="ruleset-toggle" aria-label="規則模式">
           <button class="ruleset-button active" data-ruleset="tw16" type="button">台灣 16</button>
-          <button class="ruleset-button" data-ruleset="simple13" type="button">簡化 13</button>
+          <button class="ruleset-button" data-ruleset="simple13" type="button">13 張練習</button>
         </div>
         <button class="help-button" id="rulesHelpButton" type="button" aria-expanded="false" aria-controls="rulesHelpPanel">規則</button>
       </div>
@@ -3728,8 +3728,12 @@
     <section class="help-drawer" id="rulesHelpPanel" aria-hidden="true">
       <div class="help-card" role="dialog" aria-modal="false" aria-labelledby="rulesHelpTitle">
         <div class="help-head">
-          <h2 id="rulesHelpTitle">目前規則</h2>
+          <h2 id="rulesHelpTitle">休閒台灣規則</h2>
           <button class="secondary action-button" id="rulesHelpClose" type="button" aria-label="關閉規則說明">關閉</button>
+        </div>
+        <div class="help-section">
+          <h3>玩法</h3>
+          <p>本遊戲以休閒台灣 16 張為主玩法。台灣 16 張以 5 組面子加 1 對胡牌；13 張練習以 4 組面子加 1 對胡牌。</p>
         </div>
         <div class="help-section">
           <h3>代幣</h3>
@@ -3737,12 +3741,14 @@
         </div>
         <div class="help-section">
           <h3>結算</h3>
-          <p>代幣以底注乘上台數計算，本場會額外加成。畫面只顯示玩家本局賺或扣多少。</p>
+          <p>代幣以底注乘上台數計算，本場會額外加成。畫面採玩家視角，只顯示玩家本局賺或扣多少，不建立四家分帳。</p>
         </div>
         <div class="help-section">
           <h3>操作</h3>
           <ul>
             <li>輪到你時先選一張牌，再按打出選牌。</li>
+            <li>花牌會自動補花，不會留在手牌裡。</li>
+            <li>吃只能吃上家；碰、槓、胡可反應其他家打出的牌。</li>
             <li>可吃、碰、槓、胡時會在手牌上方出現反應選項。</li>
             <li>每次輪到你會自動整理手牌，剛摸到的牌會留在最右側。</li>
           </ul>

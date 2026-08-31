@@ -2,7 +2,7 @@
   const WINDS = ["東", "南", "西", "北"];
   const RULESETS = {
     tw16: { label: "台灣 16 張", baseHandSize: 16, winningTileCount: 17 },
-    simple13: { label: "簡化 13 張", baseHandSize: 13, winningTileCount: 14 }
+    simple13: { label: "13 張練習", baseHandSize: 13, winningTileCount: 14 }
   };
 
   function currentRuleset(state) {
