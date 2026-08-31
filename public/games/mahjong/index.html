@@ -1209,7 +1209,35 @@
     .river-entry {
       position: relative;
       display: inline-grid;
-      padding-top: 0;
+      padding-top: 10px;
+    }
+
+    .river-owner {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      z-index: 2;
+      max-width: calc(var(--river-tile-w) + 18px);
+      padding: 0 4px;
+      border-radius: 999px;
+      color: #fff4cb;
+      background: rgba(5, 34, 30, 0.78);
+      border: 1px solid rgba(255, 222, 150, 0.28);
+      box-shadow: 0 3px 7px rgba(0, 0, 0, 0.24);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .river-owner.self {
+      color: #231803;
+      background: linear-gradient(180deg, #ffe493, #d99b2d);
+      border-color: rgba(255, 242, 183, 0.7);
     }
 
     .river-entry.entering .tile {
@@ -2962,6 +2990,14 @@
         display: none;
       }
 
+      .shared-river .river-entry {
+        padding-top: 0;
+      }
+
+      .river-owner {
+        display: none;
+      }
+
       .shared-river.river-dense { --river-tile-w: clamp(15px, 1.95vw, 19px); }
       .shared-river.river-ultra { --river-tile-w: clamp(13px, 1.65vw, 16px); }
 
@@ -4655,7 +4691,7 @@
     }
 
     function renderRivers() {
-      MahjongRenderView.renderRivers({ state, byId, makeSmallTile });
+      MahjongRenderView.renderRivers({ state, byId, makeSmallTile, players });
     }
 
     function renderRiverDetail() {

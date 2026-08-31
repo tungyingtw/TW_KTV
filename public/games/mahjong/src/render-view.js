@@ -241,7 +241,7 @@
   }
 
   function renderRivers(context) {
-    const { state, byId, makeSmallTile } = context;
+    const { state, byId, makeSmallTile, players } = context;
     for (let player = 0; player < 4; player += 1) {
       const riverEl = byId(`river-${player}`);
       if (!riverEl) continue;
@@ -255,9 +255,14 @@
     sharedRiverEl.classList.toggle("river-ultra", state.discardHistory.length > 88);
     state.discardHistory.forEach((entry, index) => {
       const wrapper = document.createElement("span");
+      const owner = document.createElement("span");
+      const sourceName = players[entry.player] || `玩家 ${entry.player + 1}`;
       wrapper.id = `river-entry-${index}`;
       wrapper.className = `river-entry${index >= state.discardHistory.length - 18 ? " river-recent" : ""}${index === state.latestDiscardIndex ? " latest" : ""}${index === state.discardAnimationIndex ? " entering" : ""}`;
+      owner.className = `river-owner${entry.player === 0 ? " self" : ""}`;
+      owner.textContent = sourceName;
       wrapper.appendChild(makeSmallTile(entry.tile));
+      wrapper.appendChild(owner);
       sharedRiverEl.appendChild(wrapper);
     });
     byId("riverDetailButton").textContent = "場中牌河";
