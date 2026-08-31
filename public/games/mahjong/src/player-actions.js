@@ -103,6 +103,7 @@
     byId("passButton").addEventListener("click", handlers.passClaim);
     byId("soundButton").addEventListener("click", handlers.toggleSound);
     byId("effectsButton").addEventListener("click", handlers.toggleLowPowerEffects);
+    byId("fullscreenButton").addEventListener("click", handlers.toggleFullscreen);
     byId("autoplayButton").addEventListener("click", handlers.toggleAutoplay);
     byId("listenButton").addEventListener("click", handlers.toggleListenHint);
     byId("listenDetails").addEventListener("click", event => {

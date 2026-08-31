@@ -3489,6 +3489,7 @@
         <button class="secondary action-button" id="prevPageButton" type="button" aria-label="返回小遊戲列表" title="返回小遊戲列表">遊戲列表</button>
         <button class="secondary action-button active" id="soundButton" type="button" aria-label="音效開啟" title="音效開啟">音效</button>
         <button class="secondary action-button" id="effectsButton" type="button" aria-label="省電模式關閉" title="省電模式關閉">省電</button>
+        <button class="secondary action-button" id="fullscreenButton" type="button" aria-label="展開全螢幕" title="展開全螢幕">展開</button>
         <button class="secondary action-button" id="restartButton" type="button" aria-label="回到大廳" title="回到大廳">大廳</button>
       </div>
       <div class="metrics">
@@ -3735,6 +3736,7 @@
       soundEnabled: true,
       lowPowerEffects: false,
       lowPowerEffectsAuto: false,
+      fullscreenActive: false,
       audioUnlocked: false,
       audioContext: null,
       audioBuffers: {},
@@ -4358,6 +4360,40 @@
       playSound("toggle");
     }
 
+    function fullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement || null;
+    }
+
+    function requestFullscreen() {
+      const target = document.documentElement;
+      const request = target.requestFullscreen || target.webkitRequestFullscreen;
+      if (!request) return Promise.reject(new Error("fullscreen unsupported"));
+      return request.call(target);
+    }
+
+    function exitFullscreen() {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (!exit) return Promise.resolve();
+      return exit.call(document);
+    }
+
+    function updateFullscreenState() {
+      state.fullscreenActive = !!fullscreenElement();
+      renderFullscreenButton();
+    }
+
+    async function toggleFullscreen() {
+      try {
+        if (fullscreenElement()) await exitFullscreen();
+        else await requestFullscreen();
+        updateFullscreenState();
+        playSound("toggle");
+      } catch (error) {
+        byId("message").textContent = "此瀏覽器無法直接展開全螢幕，可嘗試旋轉橫向或加入主畫面。";
+        renderFullscreenButton();
+      }
+    }
+
     function toggleAutoplay() {
       MahjongPlayerActions.toggleAutoplay(state);
       playSound("toggle");
@@ -4411,6 +4447,7 @@
 
     function render() {
       renderEffectsButton();
+      renderFullscreenButton();
       renderHudAndSetup();
       renderHelpPanel();
       byId("playerCount").textContent = `${state.hands[0].length} 張`;
@@ -4441,6 +4478,14 @@
       button.classList.toggle("active", state.lowPowerEffects);
       button.setAttribute("aria-label", `省電模式${state.lowPowerEffects ? "開啟" : "關閉"}${state.lowPowerEffectsAuto ? "，已自動啟用" : ""}`);
       button.title = `省電模式${state.lowPowerEffects ? "開啟" : "關閉"}${state.lowPowerEffectsAuto ? "，已自動啟用" : ""}`;
+    }
+
+    function renderFullscreenButton() {
+      const button = byId("fullscreenButton");
+      button.textContent = state.fullscreenActive ? "還原" : "展開";
+      button.classList.toggle("active", state.fullscreenActive);
+      button.setAttribute("aria-label", state.fullscreenActive ? "還原一般畫面" : "展開全螢幕");
+      button.title = state.fullscreenActive ? "還原一般畫面" : "展開全螢幕";
     }
 
     function renderHudAndSetup() {
@@ -4653,6 +4698,7 @@
           render();
         },
         toggleLowPowerEffects,
+        toggleFullscreen,
         toggleSound,
         unlockAudio: () => {
           state.audioUnlocked = true;
@@ -4661,6 +4707,8 @@
     });
 
     setupParticleLayer();
+    document.addEventListener("fullscreenchange", updateFullscreenState);
+    document.addEventListener("webkitfullscreenchange", updateFullscreenState);
     showLobby();
   </script>
 
