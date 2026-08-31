@@ -22,6 +22,12 @@
   }
 
   function applyPlayerDiscardClaim(state, claim) {
+    if (!state.activeDiscard) {
+      state.discardToken = (state.discardToken || 0) + 1;
+      state.activeDiscard = { runId: state.runId, token: state.discardToken, player: claim.discarder, tileId: claim.tile.id, historyIndex: state.latestDiscardIndex };
+    }
+    claim.runId = state.activeDiscard.runId;
+    claim.discardToken = state.activeDiscard.token;
     state.pendingClaim = claim;
     state.current = 0;
     state.canPlayerWin = claim.canWin;

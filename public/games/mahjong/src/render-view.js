@@ -151,7 +151,8 @@
     const { state, byId, compareTiles, makeSmallTile, onClaimChi } = context;
     const optionsEl = byId("chiOptions");
     optionsEl.innerHTML = "";
-    const options = state.pendingClaim?.chiOptions || [];
+    const claim = state.pendingClaim;
+    const options = claim?.chiOptions || [];
     options.forEach((option, index) => {
       const button = document.createElement("button");
       button.type = "button";
@@ -160,26 +161,29 @@
       label.className = "meld-label";
       label.textContent = "吃";
       button.appendChild(label);
-      [...option, state.pendingClaim.tile].sort(compareTiles).forEach(tile => button.appendChild(makeSmallTile(tile)));
-      button.addEventListener("click", () => onClaimChi(index));
+      [...option, claim.tile].sort(compareTiles).forEach(tile => button.appendChild(makeSmallTile(tile)));
+      button.addEventListener("click", () => onClaimChi({ index, runId: claim.runId, discardToken: claim.discardToken, tileId: claim.tile.id }));
       optionsEl.appendChild(button);
     });
   }
 
   function renderKongOptions(context) {
-    const { state, byId, rules, makeKongButton, onClaimExposedKong, onClaimConcealedKong, onClaimAddedKong } = context;
+    const { state, byId, rules, canPlayerKongNow, makeKongButton, onClaimExposedKong, onClaimConcealedKong, onClaimAddedKong } = context;
     const optionsEl = byId("kongOptions");
+    const runId = state.runId;
     optionsEl.innerHTML = "";
-    if (state.pendingClaim?.canKong) {
-      optionsEl.appendChild(makeKongButton("明槓", [state.pendingClaim.tile], onClaimExposedKong));
+    const claim = state.pendingClaim;
+    if (claim?.canKong && state.wall.length) {
+      optionsEl.appendChild(makeKongButton("明槓", [claim.tile], () => onClaimExposedKong({ runId, discardToken: claim.discardToken, tileId: claim.tile.id })));
       return;
     }
-    if (!state.running || state.current !== 0 || state.pendingClaim) return;
+    const canSelfKong = canPlayerKongNow ? canPlayerKongNow(state) : state.running && state.current === 0 && !state.pendingClaim && state.wall.length && state.hands[0].length % 3 === 2;
+    if (!canSelfKong) return;
     rules.getConcealedKongOptions(state.hands[0]).forEach(option => {
-      optionsEl.appendChild(makeKongButton("暗槓", option, () => onClaimConcealedKong(option)));
+      optionsEl.appendChild(makeKongButton("暗槓", option, () => onClaimConcealedKong({ tiles: option, runId })));
     });
     rules.getAddedKongOptions(state.hands[0], state.melds[0]).forEach(option => {
-      optionsEl.appendChild(makeKongButton("補槓", option.tiles, () => onClaimAddedKong(option)));
+      optionsEl.appendChild(makeKongButton("補槓", option.tiles, () => onClaimAddedKong({ ...option, runId })));
     });
   }
 

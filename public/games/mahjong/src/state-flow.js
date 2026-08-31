@@ -11,6 +11,15 @@
     return hand.length >= 2 && hand.length % 3 === 2;
   }
 
+  function expectedConcealedHandSize(state, player, winningTileCount) {
+    const meldCount = (state.melds[player] || []).filter(meld => meld.type !== "補花").length;
+    return winningTileCount - meldCount * 3;
+  }
+
+  function hasExpectedDiscardHand(state, player, winningTileCount) {
+    return (state.hands[player] || []).length === expectedConcealedHandSize(state, player, winningTileCount);
+  }
+
   function nextPlayer(player) {
     return (player + 1) % 4;
   }
@@ -36,6 +45,8 @@
     state.discardHistory.push({ player, tile });
     state.latestDiscardIndex = state.discardHistory.length - 1;
     state.discardAnimationIndex = state.latestDiscardIndex;
+    state.discardToken = (state.discardToken || 0) + 1;
+    state.activeDiscard = { runId: state.runId, token: state.discardToken, player, tileId: tile.id, historyIndex: state.latestDiscardIndex };
     return tile;
   }
 
@@ -54,6 +65,10 @@
     state.canPlayerWin = false;
     state.pendingSelfDrawMethod = "";
     state.pendingSelfDrawEvent = "";
+  }
+
+  function clearActiveDiscard(state) {
+    state.activeDiscard = null;
   }
 
   function clearMeldTurnState(state, player, options = {}) {
@@ -92,6 +107,7 @@
     state.rivers[discarder].pop();
     const index = state.discardHistory.findLastIndex(entry => entry.player === discarder && entry.tile.id === tile.id);
     if (index >= 0) state.discardHistory.splice(index, 1);
+    if (state.activeDiscard?.player === discarder && state.activeDiscard.tileId === tile.id) state.activeDiscard = null;
   }
 
   function cloneTile(tile) {
@@ -166,6 +182,7 @@
     state.lastDrawnId = null;
     state.canPlayerWin = false;
     state.pendingClaim = null;
+    state.activeDiscard = null;
     state.pendingSelfDrawMethod = "";
     state.pendingSelfDrawEvent = "";
     state.result = null;
@@ -177,5 +194,5 @@
     if (options.clearStrategyLog) state.strategyLog = [];
   }
 
-  window.MahjongStateFlow = { addMeld, canContinueComputerMeldDiscard, canDiscardNow, clearClaimReaction, clearMeldTurnState, clearPlayerDiscardState, createDrawResult, createWinResult, discardFromHand, drawFromWall, nextPlayer, removeClaimedDiscard, replaceMeld, resetTableState, scheduleAction, takeMatchingTiles, takeTilesById };
+  window.MahjongStateFlow = { addMeld, canContinueComputerMeldDiscard, canDiscardNow, clearActiveDiscard, clearClaimReaction, clearMeldTurnState, clearPlayerDiscardState, createDrawResult, createWinResult, discardFromHand, drawFromWall, expectedConcealedHandSize, hasExpectedDiscardHand, nextPlayer, removeClaimedDiscard, replaceMeld, resetTableState, scheduleAction, takeMatchingTiles, takeTilesById };
 })();

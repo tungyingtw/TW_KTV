@@ -3735,6 +3735,7 @@
         <div class="help-section">
           <h3>玩法</h3>
           <p>本遊戲以休閒台灣 16 張為主玩法。台灣 16 張以 5 組面子加 1 對胡牌；13 張練習以 4 組面子加 1 對胡牌。</p>
+          <p>胡優先於碰／槓，碰／槓優先於吃；吃只能吃上家。可胡時玩家先選胡或過，過後再依電腦索引裁定單一贏家。</p>
         </div>
         <div class="help-section">
           <h3>代幣</h3>
@@ -3742,7 +3743,9 @@
         </div>
         <div class="help-section">
           <h3>結算</h3>
-          <p>代幣依每筆收付的底注與台數計算；放槍由放槍者付款，自摸由其餘三家付款。莊家參與的收付另加莊家與本場，畫面只變更玩家代幣。</p>
+          <p>每筆金額為底注倍率 ×（台型＋莊家收付＋本場）；不是另收底錢再逐台加價。放槍由放槍者付款，自摸由其餘三家付款。</p>
+          <p>莊家參與的該筆收付加 1 台與每本場 1 台，不採連 N 拉 N。電腦互胡不扣玩家代幣；餘額不足時只扣剩餘代幣。</p>
+          <p>七搶一為基本胡 1＋特殊 8 台，由第八花持有者付款；八仙為基本胡 1＋特殊 16 台，由其餘三家付款。兩者仍依付款關係加莊家與本場。</p>
         </div>
         <div class="help-section">
           <h3>操作</h3>
@@ -3752,6 +3755,9 @@
             <li>吃只能吃上家；碰、槓、胡可反應其他家打出的牌。</li>
             <li>可吃、碰、槓、胡時會在手牌上方出現反應選項。</li>
             <li>每次輪到你會自動整理手牌，剛摸到的牌會留在最右側。</li>
+            <li>牌山沒有保留尾墩；最後摸牌仍可自摸或打出，最後棄牌只可胡或過。</li>
+            <li>一般補花後自摸不另算槓上開花；槓後補牌自摸才算槓上開花。</li>
+            <li>座位門風與正花固定，圈風依局數更新。本遊戲不含過水、振聽或多家同胡。</li>
           </ul>
         </div>
         <div class="help-section">
@@ -4032,6 +4038,7 @@
       addStrategyLog(`${players[player]}估值後打出 ${tile.label}，分數 ${Math.round(decision.score)}${MahjongVisibilityAnalysis.formatAttackSummary(decision)}${MahjongVisibilityAnalysis.formatDefenseSummary(tile, { ...options, attackMode: decision.attackMode }, MahjongRules)}。`);
       discardTile(player, tile.id);
       if (handleDiscardClaims(player, tile, MahjongStateFlow.nextPlayer(player))) return;
+      MahjongStateFlow.clearActiveDiscard(state);
       scheduleAction(() => beginTurn(MahjongStateFlow.nextPlayer(player)), 450);
     }
 
@@ -4079,6 +4086,7 @@
       discardTile(0, tileId);
       const lastTile = state.rivers[0][state.rivers[0].length - 1];
       if (handleDiscardClaims(0, lastTile, 1)) return;
+      MahjongStateFlow.clearActiveDiscard(state);
       scheduleAction(() => beginTurn(1), 450);
     }
 
@@ -4104,6 +4112,7 @@
     }
 
     function handleDiscardClaims(discarder, tile, nextPlayer) {
+      const finalDiscard = state.wall.length === 0;
       if (discarder !== 0 && MahjongRules.canWinWithTile(state.hands[0], tile, openMeldCount(0), currentRuleset().winningTileCount)) {
         if (isListenLockedWait(tile)) {
           state.pendingClaim = { kind: "discard", discarder, tile, nextPlayer, canWin: true, canPong: false, canKong: false, chiOptions: [] };
@@ -4112,7 +4121,7 @@
           finishWin(0, `自動胡 ${players[discarder]} 的 ${tile.label}`, discarder);
           return true;
         }
-        return offerPlayerClaim(discarder, tile, nextPlayer, true);
+        return offerPlayerClaim(discarder, tile, nextPlayer, true, finalDiscard ? null : chooseComputerClaim(discarder, tile), finalDiscard);
       }
 
       const computerWinners = MahjongReactionFlow.findComputerWinners(state, MahjongRules, currentRuleset(), openMeldCount, discarder, tile);
@@ -4126,8 +4135,16 @@
         return true;
       }
 
-      if (!state.listenLock && discarder !== 0 && offerPlayerClaim(discarder, tile, nextPlayer)) return true;
-      return offerComputerClaim(discarder, tile, nextPlayer);
+      if (finalDiscard) return endRound("牌山摸完，流局。"), true;
+
+      const computerClaim = chooseComputerClaim(discarder, tile);
+      const playerClaim = !state.listenLock && discarder !== 0
+        ? MahjongReactionFlow.createPlayerDiscardClaim(state, MahjongRules, currentRuleset(), openMeldCount, discarder, tile, nextPlayer)
+        : null;
+      if (playerClaim?.canPong || playerClaim?.canKong) return offerPlayerClaim(discarder, tile, nextPlayer, false, computerClaim, false, playerClaim);
+      if (computerClaim?.type === "kong" || computerClaim?.type === "pong") return applyComputerClaim(computerClaim, discarder, tile);
+      if (playerClaim) return offerPlayerClaim(discarder, tile, nextPlayer, false, computerClaim, false, playerClaim);
+      return computerClaim ? applyComputerClaim(computerClaim, discarder, tile) : false;
     }
 
     function isListenLockedWait(tile) {
@@ -4145,12 +4162,17 @@
         finishWin(winner, `胡 ${players[claim.discarder]} 的 ${claim.tile.label}`, claim.discarder);
         return true;
       }
-      return offerComputerClaim(claim.discarder, claim.tile, claim.nextPlayer);
+      if (claim.finalDiscard) return false;
+      state.current = claim.discarder;
+      return claim.computerClaim ? applyComputerClaim(claim.computerClaim, claim.discarder, claim.tile) : false;
     }
 
-    function offerPlayerClaim(discarder, tile, nextPlayer, winOnly = false) {
-      const claim = MahjongReactionFlow.createPlayerDiscardClaim(state, MahjongRules, currentRuleset(), openMeldCount, discarder, tile, nextPlayer, winOnly);
+    function offerPlayerClaim(discarder, tile, nextPlayer, winOnly = false, computerClaim = null, finalDiscard = false, preparedClaim = null) {
+      const claim = preparedClaim || MahjongReactionFlow.createPlayerDiscardClaim(state, MahjongRules, currentRuleset(), openMeldCount, discarder, tile, nextPlayer, winOnly);
       if (!claim) return false;
+      claim.kind = "discard";
+      claim.computerClaim = computerClaim;
+      claim.finalDiscard = finalDiscard;
       MahjongReactionFlow.applyPlayerDiscardClaim(state, claim);
       const actions = MahjongReactionFlow.claimActionText(claim);
       byId("message").textContent = `電腦打出 ${tile.label}，你可以${actions}。`;
@@ -4159,8 +4181,11 @@
       return true;
     }
 
-    function offerComputerClaim(discarder, tile, nextPlayer) {
-      const claim = MahjongComputerActions.chooseDiscardClaim(state, MahjongRules, MahjongAI, state.difficulty, aiOptions, discarder, tile);
+    function chooseComputerClaim(discarder, tile) {
+      return MahjongComputerActions.chooseDiscardClaim(state, MahjongRules, MahjongAI, state.difficulty, aiOptions, discarder, tile);
+    }
+
+    function applyComputerClaim(claim, discarder, tile) {
       if (!claim) return false;
       if (claim.type === "kong") claimComputerExposedKong(claim.player, discarder, tile);
       if (claim.type === "pong") claimComputerPong(claim.player, discarder, tile);
@@ -4169,7 +4194,7 @@
     }
 
     function claimComputerPong(player, discarder, tile) {
-      MahjongComputerActions.applyComputerPong(state, MahjongStateFlow, MahjongRules, player, discarder, tile);
+      if (!MahjongComputerActions.applyComputerPong(state, MahjongStateFlow, MahjongRules, player, discarder, tile)) return;
       addStrategyLog(`${players[player]}碰 ${tile.label}。`);
       byId("message").textContent = `${players[player]}碰 ${tile.label}，準備打牌。`;
       playSound("pong");
@@ -4179,7 +4204,7 @@
     }
 
     function claimComputerExposedKong(player, discarder, tile) {
-      MahjongComputerActions.applyComputerExposedKong(state, MahjongStateFlow, MahjongRules, player, discarder, tile);
+      if (!MahjongComputerActions.applyComputerExposedKong(state, MahjongStateFlow, MahjongRules, player, discarder, tile)) return;
       addStrategyLog(`${players[player]}明槓 ${tile.label}。`);
       byId("message").textContent = `${players[player]}明槓 ${tile.label}，準備補牌。`;
       playSound("kong");
@@ -4189,7 +4214,7 @@
     }
 
     function claimComputerChi(player, discarder, tile, option) {
-      MahjongComputerActions.applyComputerChi(state, MahjongStateFlow, player, discarder, tile, option, compareTiles);
+      if (!MahjongComputerActions.applyComputerChi(state, MahjongStateFlow, player, discarder, tile, option, compareTiles)) return;
       addStrategyLog(`${players[player]}吃 ${tile.label}。`);
       byId("message").textContent = `${players[player]}吃 ${tile.label}，準備打牌。`;
       playSound("chi");
@@ -4199,9 +4224,11 @@
     }
 
     function tryComputerConcealedKong(player) {
+      if (!MahjongComputerActions.canComputerKongNow(state, MahjongStateFlow, player)) return false;
       const option = MahjongComputerActions.chooseConcealedKong(state, MahjongRules, MahjongAI, state.difficulty, aiOptions, player);
       if (!option) return false;
-      MahjongComputerActions.applyComputerConcealedKong(state, MahjongStateFlow, player, option);
+      const claimed = MahjongComputerActions.applyComputerConcealedKong(state, MahjongStateFlow, player, option);
+      if (!claimed) return false;
       addStrategyLog(`${players[player]}暗槓 ${option[0].label}。`);
       byId("message").textContent = `${players[player]}暗槓，準備補牌。`;
       playSound("kong");
@@ -4212,10 +4239,13 @@
     }
 
     function tryComputerAddedKong(player) {
+      if (!MahjongComputerActions.canComputerKongNow(state, MahjongStateFlow, player)) return false;
       const option = MahjongComputerActions.chooseAddedKong(state, MahjongRules, MahjongAI, state.difficulty, aiOptions, player);
       if (!option) return false;
-      if (offerPlayerRobKong(player, option)) return true;
-      completeComputerAddedKong(player, option);
+      const valid = MahjongComputerActions.validateComputerAddedKong(state, MahjongStateFlow, player, option);
+      if (!valid) return false;
+      if (offerPlayerRobKong(player, valid)) return true;
+      completeComputerAddedKong(player, valid);
       return true;
     }
 
@@ -4233,12 +4263,14 @@
     }
 
     function completeComputerAddedKong(player, option) {
-      if (!state.running) return;
-      const robber = findComputerRobKongWinner(player, option.tile);
-      if (robber !== null) return robAddedKong(robber, player, option.tile);
-      MahjongComputerActions.applyComputerAddedKong(state, MahjongStateFlow, player, option);
-      addStrategyLog(`${players[player]}補槓 ${option.tile.label}。`);
-      byId("message").textContent = `${players[player]}補槓 ${option.tile.label}，準備補牌。`;
+      const valid = MahjongComputerActions.validateComputerAddedKong(state, MahjongStateFlow, player, option);
+      if (!valid) return;
+      const robber = findComputerRobKongWinner(player, valid.tile);
+      if (robber !== null) return robAddedKong(robber, player, valid.tile);
+      const claimed = MahjongComputerActions.applyComputerAddedKong(state, MahjongStateFlow, player, valid);
+      if (!claimed) return;
+      addStrategyLog(`${players[player]}補槓 ${claimed.tile.label}。`);
+      byId("message").textContent = `${players[player]}補槓 ${claimed.tile.label}，準備補牌。`;
       playSound("kong");
       triggerJuice("kong", meldOriginId(player));
       render();
@@ -4252,6 +4284,7 @@
       const { tile } = turn;
       discardTile(player, tile.id);
       if (handleDiscardClaims(player, tile, MahjongStateFlow.nextPlayer(player))) return;
+      MahjongStateFlow.clearActiveDiscard(state);
       scheduleAction(() => beginTurn(MahjongStateFlow.nextPlayer(player)), 450);
     }
 
@@ -4274,8 +4307,8 @@
       render();
     }
 
-    function claimExposedKong() {
-      const claim = MahjongPlayerActions.claimExposedKong(state, MahjongStateFlow, MahjongRules);
+    function claimExposedKong(candidate) {
+      const claim = MahjongPlayerActions.claimExposedKong(state, MahjongStateFlow, MahjongRules, candidate);
       if (!claim) return;
       addLog(`玩家明槓 ${claim.tile.label}。`);
       playSound("kong");
@@ -4291,10 +4324,11 @@
     }
 
     function claimAddedKong(option) {
-      if (!state.running || state.current !== 0 || state.pendingClaim) return;
-      const robber = findRobKongWinner(0, option.tile);
+      const valid = MahjongPlayerActions.validateAddedKong(state, MahjongStateFlow, option);
+      if (!valid) return;
+      const robber = findRobKongWinner(0, valid.tile);
       if (robber !== null) {
-        robAddedKong(robber, 0, option.tile);
+        robAddedKong(robber, 0, valid.tile);
         return;
       }
       const claimed = MahjongPlayerActions.claimAddedKong(state, MahjongStateFlow, option);
@@ -4338,8 +4372,8 @@
       render();
     }
 
-    function claimChi(index) {
-      const claim = MahjongPlayerActions.claimChi(state, MahjongStateFlow, index, compareTiles, sortPlayerHandForTurn);
+    function claimChi(candidate) {
+      const claim = MahjongPlayerActions.claimChi(state, MahjongStateFlow, candidate, compareTiles, sortPlayerHandForTurn);
       if (!claim) return;
       addLog(`玩家吃 ${claim.tile.label}，請打出一張牌。`);
       playSound("chi");
@@ -4355,10 +4389,13 @@
       playSound("pass");
       render();
       if (claim.kind === "robKong") {
+        state.current = claim.kongPlayer;
         scheduleAction(() => completeComputerAddedKong(claim.kongPlayer, claim.kongOption), 260);
         return;
       }
       if (continueComputerClaimAfterPlayerPass(claim)) return;
+      if (claim.finalDiscard) return endRound("牌山摸完，流局。");
+      MahjongStateFlow.clearActiveDiscard(state);
       scheduleAction(() => beginTurn(claim.nextPlayer), 350);
     }
 
@@ -4695,7 +4732,7 @@
     }
 
     function renderKongOptions() {
-      MahjongRenderView.renderKongOptions({ state, byId, rules: MahjongRules, makeKongButton, onClaimExposedKong: claimExposedKong, onClaimConcealedKong: claimConcealedKong, onClaimAddedKong: claimAddedKong });
+      MahjongRenderView.renderKongOptions({ state, byId, rules: MahjongRules, canPlayerKongNow: candidate => MahjongPlayerActions.canPlayerKongNow(candidate, MahjongStateFlow), makeKongButton, onClaimExposedKong: claimExposedKong, onClaimConcealedKong: claimConcealedKong, onClaimAddedKong: claimAddedKong });
     }
 
     function makeKongButton(labelText, tiles, onClick) {

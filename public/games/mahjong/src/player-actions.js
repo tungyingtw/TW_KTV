@@ -37,7 +37,7 @@
 
   function claimPong(state, stateFlow, rules, sortHand) {
     const claim = state.pendingClaim;
-    if (!state.running || !claim?.canPong) return null;
+    if (!claim?.canPong || !canUseDiscardClaim(state, stateFlow, claim) || !hasMatchingTiles(state.hands[0], claim.tile, 2, rules.tileKey)) return null;
     const matching = stateFlow.takeMatchingTiles(state, 0, claim.tile, 2, rules.tileKey);
     stateFlow.removeClaimedDiscard(state, claim.discarder, claim.tile);
     stateFlow.addMeld(state, 0, "碰", [...matching, claim.tile]);
@@ -45,9 +45,9 @@
     return claim;
   }
 
-  function claimExposedKong(state, stateFlow, rules) {
+  function claimExposedKong(state, stateFlow, rules, candidate) {
     const claim = state.pendingClaim;
-    if (!state.running || !claim?.canKong) return null;
+    if (!claim?.canKong || !isCurrentClaimCandidate(state, claim, candidate) || !canUseDiscardClaim(state, stateFlow, claim) || !hasMatchingTiles(state.hands[0], claim.tile, 3, rules.tileKey)) return null;
     const matching = stateFlow.takeMatchingTiles(state, 0, claim.tile, 3, rules.tileKey);
     stateFlow.removeClaimedDiscard(state, claim.discarder, claim.tile);
     stateFlow.addMeld(state, 0, "明槓", [...matching, claim.tile]);
@@ -56,25 +56,27 @@
   }
 
   function claimConcealedKong(state, stateFlow, option) {
-    if (!state.running || state.current !== 0 || state.pendingClaim) return null;
-    stateFlow.takeTilesById(state, 0, option);
-    stateFlow.addMeld(state, 0, "暗槓", option);
+    const tiles = candidateTiles(state, option);
+    if (!canPlayerKongNow(state, stateFlow) || !tiles || !isConcealedKongOption(state.hands[0], tiles)) return null;
+    stateFlow.takeTilesById(state, 0, tiles);
+    stateFlow.addMeld(state, 0, "暗槓", tiles);
     stateFlow.clearMeldTurnState(state, 0, { clearPending: false });
-    return option;
+    return tiles;
   }
 
   function claimAddedKong(state, stateFlow, option) {
-    if (!state.running || state.current !== 0 || state.pendingClaim) return null;
-    stateFlow.takeTilesById(state, 0, [option.tile]);
-    stateFlow.replaceMeld(state, 0, option.meldIndex, "補槓", option.tiles);
+    const valid = validateAddedKong(state, stateFlow, option);
+    if (!valid) return null;
+    stateFlow.takeTilesById(state, 0, [valid.tile]);
+    stateFlow.replaceMeld(state, 0, valid.meldIndex, "補槓", valid.tiles);
     stateFlow.clearMeldTurnState(state, 0, { clearPending: false });
-    return option;
+    return valid;
   }
 
-  function claimChi(state, stateFlow, index, compareTiles, sortHand) {
+  function claimChi(state, stateFlow, candidate, compareTiles, sortHand) {
     const claim = state.pendingClaim;
-    const option = claim?.chiOptions[index];
-    if (!state.running || !option) return null;
+    const option = claim?.chiOptions[candidate?.index];
+    if (!isCurrentClaimCandidate(state, claim, candidate) || !canUseDiscardClaim(state, stateFlow, claim) || !option || !hasLiveTiles(state.hands[0], option)) return null;
     stateFlow.takeTilesById(state, 0, option);
     stateFlow.removeClaimedDiscard(state, claim.discarder, claim.tile);
     stateFlow.addMeld(state, 0, "吃", [...option, claim.tile].sort(compareTiles));
@@ -89,6 +91,56 @@
     }
     stateFlow.clearMeldTurnState(state, 0);
     sortHand();
+  }
+
+  function canPlayerKongNow(state, stateFlow) {
+    return !!(state.running && state.current === 0 && !state.pendingClaim && state.wall.length && stateFlow.hasExpectedDiscardHand(state, 0, winningTileCount(state)));
+  }
+
+  function validateAddedKong(state, stateFlow, option) {
+    if (!canPlayerKongNow(state, stateFlow) || !isCurrentCandidate(state, option) || !Number.isInteger(option?.meldIndex)) return null;
+    const meld = state.melds[0][option.meldIndex];
+    const tile = state.hands[0].find(item => item.id === option.tile?.id);
+    if (meld?.type !== "碰" || meld.tiles.length !== 3 || !tile) return null;
+    const key = `${tile.suit}:${tile.rank}`;
+    if (!meld.tiles.every(item => `${item.suit}:${item.rank}` === key)) return null;
+    return { meldIndex: option.meldIndex, tile, tiles: [...meld.tiles, tile] };
+  }
+
+  function canUseDiscardClaim(state, stateFlow, claim) {
+    const active = state.activeDiscard;
+    return !!(state.running && state.wall.length && claim?.kind === "discard" && state.pendingClaim === claim && state.current === 0 && claim.runId === state.runId && claim.discardToken === active?.token && active?.runId === state.runId && active.player === claim.discarder && active.tileId === claim.tile.id && state.rivers[claim.discarder]?.at(-1)?.id === claim.tile.id && !stateFlow.hasExpectedDiscardHand(state, 0, winningTileCount(state)));
+  }
+
+  function isCurrentClaimCandidate(state, claim, candidate) {
+    return !!(candidate && claim && candidate.runId === state.runId && candidate.discardToken === claim.discardToken && candidate.tileId === claim.tile.id);
+  }
+
+  function candidateTiles(state, candidate) {
+    return isCurrentCandidate(state, candidate) ? candidate.tiles : null;
+  }
+
+  function isCurrentCandidate(state, candidate) {
+    return !!(candidate && candidate.runId === state.runId);
+  }
+
+  function winningTileCount(state) {
+    return state.ruleset === "simple13" ? 14 : 17;
+  }
+
+  function hasMatchingTiles(hand, target, amount, tileKey) {
+    return hand.filter(tile => tileKey(tile) === tileKey(target)).length >= amount;
+  }
+
+  function hasLiveTiles(hand, tiles) {
+    const ids = tiles?.map(tile => tile.id) || [];
+    return ids.length === new Set(ids).size && ids.length > 0 && ids.every(id => hand.some(tile => tile.id === id));
+  }
+
+  function isConcealedKongOption(hand, option) {
+    if (!hasLiveTiles(hand, option) || option.length !== 4) return false;
+    const key = `${option[0].suit}:${option[0].rank}`;
+    return option.every(tile => `${tile.suit}:${tile.rank}` === key);
   }
 
   function bindControls({ byId, documentRef, windowRef, handlers }) {
@@ -138,5 +190,5 @@
     windowRef.addEventListener("resize", handlers.setupParticleLayer);
   }
 
-  window.MahjongPlayerActions = { bindControls, chooseAutoplayDiscard, claimAddedKong, claimChi, claimConcealedKong, claimExposedKong, claimPong, prepareDiscard, sortHandForTurn, toggleAutoplay, toggleSelectedTile };
+  window.MahjongPlayerActions = { bindControls, canPlayerKongNow, chooseAutoplayDiscard, claimAddedKong, claimChi, claimConcealedKong, claimExposedKong, claimPong, prepareDiscard, sortHandForTurn, toggleAutoplay, toggleSelectedTile, validateAddedKong };
 })();
