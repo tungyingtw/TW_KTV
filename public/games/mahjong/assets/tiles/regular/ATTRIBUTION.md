@@ -22,7 +22,7 @@ Runtime tile files:
 - Pin1.webp through Pin9.webp
 - Sou1.webp through Sou9.webp
 
-These WebP files are 300x400 runtime exports converted from the original SVG source files. The original SVG files are kept locally outside the upload set for editing and future re-export.
+These WebP files are 200x267 runtime exports converted from the original SVG source files. The original SVG files are kept locally outside the upload set for editing and future re-export.
 
 Original downloaded source files:
 
