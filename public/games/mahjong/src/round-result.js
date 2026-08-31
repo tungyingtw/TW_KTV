@@ -1,6 +1,6 @@
 (function () {
   function finishWinRound(state, stateFlow, options) {
-    const { player, method, discarder = null, players, compareTiles, settleTokens, advanceRound, roundLabel } = options;
+    const { player, method, discarder = null, event, specialWin = null, players, compareTiles, settleTokens, advanceRound, roundLabel } = options;
     state.running = false;
     state.current = player;
     state.canPlayerWin = player === 0;
@@ -12,7 +12,7 @@
     state.pendingClaim = null;
     state.pendingSelfDrawMethod = "";
     const handText = [...winningTiles].sort(compareTiles).map(tile => tile.label).join(" ");
-    const tokenSettlement = settleTokens(player, discarder, winningTiles, method, claimedWinTile);
+    const tokenSettlement = settleTokens(player, discarder, winningTiles, method, claimedWinTile, event, specialWin);
     const roundResult = advanceRound(player);
     const message = `${players[player]}${method}胡牌！${handText}。${tokenSettlement.summary}。${tokenSettlement.headline}。${roundResult}，下一局${players[state.dealer]}坐莊。`;
     state.result = stateFlow.createWinResult(state, { winner: player, method, winningTiles, settlement: tokenSettlement.summary, tokenText: tokenSettlement.headline, tokenBefore, tokenAfter: state.tokens, totalTai: tokenSettlement.totalTai, tokenBreakdown: tokenSettlement.breakdown, roundResult, nextRound: roundLabel(), message });

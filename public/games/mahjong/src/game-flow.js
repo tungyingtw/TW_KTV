@@ -72,6 +72,7 @@
     if (!rules.isWinningHand(state.hands[0], openMeldCount(0), ruleset.winningTileCount)) return false;
     state.canPlayerWin = true;
     state.pendingSelfDrawMethod = `${type}後自摸`;
+    state.pendingSelfDrawEvent = "kongDraw";
     return true;
   }
 
