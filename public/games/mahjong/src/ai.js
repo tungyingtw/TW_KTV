@@ -100,9 +100,9 @@
     const imagePrefix = { character: "Man", dot: "Pin", bamboo: "Sou" };
     const tiles = suits.flatMap(suit => Array.from({ length: 9 }, (_, index) => {
       const rank = index + 1;
-      return { suit, rank, id: `wait:${suit}:${rank}`, order: tileSortKey(`${suit}:${rank}`), label: `${rank}${labels[suit]}`, image: `${imagePrefix[suit]}${rank}.svg` };
+      return { suit, rank, id: `wait:${suit}:${rank}`, order: tileSortKey(`${suit}:${rank}`), label: `${rank}${labels[suit]}`, image: `${imagePrefix[suit]}${rank}.webp` };
     }));
-    const honorImages = { wind: ["Ton.svg", "Nan.svg", "Shaa.svg", "Pei.svg"], "dragon-red": ["Chun.svg"], "dragon-green": ["Hatsu.svg"], "dragon-white": ["Haku.svg"] };
+    const honorImages = { wind: ["Ton.webp", "Nan.webp", "Shaa.webp", "Pei.webp"], "dragon-red": ["Chun.webp"], "dragon-green": ["Hatsu.webp"], "dragon-white": ["Haku.webp"] };
     ["wind", "dragon-red", "dragon-green", "dragon-white"].forEach(suit => {
       const maxRank = suit === "wind" ? 4 : 1;
       for (let rank = 1; rank <= maxRank; rank += 1) tiles.push({ suit, rank, id: `wait:${suit}:${rank}`, order: tileSortKey(`${suit}:${rank}`), label: Array.isArray(labels[suit]) ? labels[suit][rank - 1] : labels[suit], image: honorImages[suit][rank - 1] });
