@@ -36,6 +36,7 @@ scripts/*
 !scripts/buildCatalogBin.js
 !scripts/checkBrandMasking.js
 !scripts/checkMobileFirstLoadQa.js
+!scripts/optimizeMahjongRelease.js
 !scripts/seedVisitRegionStats.js
 
 # Internal Data & Raw JSON Catalogs (Strict Isolation)
