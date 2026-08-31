@@ -15,6 +15,8 @@
     byId("tokenText").textContent = `玩家代幣 ${state.tokens}`;
     byId("turnText").textContent = state.result ? state.result.title : state.screen === "shuffling" ? "準備發牌" : state.running ? `輪 ${players[state.current]}` : "等待開始";
     byId("roundText").textContent = `${rulesetLabel.replace(" 張", "")}｜${roundText}`;
+    byId("wallRemainText").textContent = state.running ? `牌山 ${state.wall.length}` : "牌山 0";
+    byId("wallRemainText").classList.toggle("is-low", state.running && state.wall.length <= 16);
     byId("setupPanel").classList.toggle("hidden", state.running || !!state.result);
     byId("setupSummary").textContent = `目前代幣 ${state.tokens}`;
     const canStart = state.tokens >= state.stake;

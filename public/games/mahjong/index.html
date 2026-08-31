@@ -1133,6 +1133,7 @@
     }
 
     .discard-box {
+      position: relative;
       display: grid;
       grid-template-rows: minmax(0, 1fr);
       height: 100%;
@@ -1142,6 +1143,30 @@
       background: linear-gradient(180deg, rgba(0, 0, 0, 0.045), rgba(0, 0, 0, 0.1));
       border: 1px solid rgba(255, 222, 150, 0.055);
       min-width: 0;
+    }
+
+    .wall-remain {
+      position: absolute;
+      top: 7px;
+      right: 9px;
+      z-index: 2;
+      min-height: 22px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: rgba(255, 247, 219, 0.88);
+      background: rgba(2, 26, 24, 0.58);
+      border: 1px solid rgba(255, 218, 133, 0.16);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 18px;
+      pointer-events: none;
+    }
+
+    .wall-remain.is-low {
+      color: #2a1903;
+      background: linear-gradient(180deg, #ffe391, #d99b2d);
+      border-color: rgba(255, 238, 176, 0.58);
+      box-shadow: 0 0 16px rgba(255, 207, 86, 0.22);
     }
 
     .shared-river {
@@ -3596,7 +3621,7 @@
           <div class="shuffle-subtext">整理牌山與發牌順序</div>
         </div>
         <div class="discard-board">
-          <div class="discard-box"><div class="river shared-river" id="sharedRiver"></div></div>
+          <div class="discard-box"><span class="wall-remain" id="wallRemainText">牌山 0</span><div class="river shared-river" id="sharedRiver"></div></div>
         </div>
       </section>
     </section>
