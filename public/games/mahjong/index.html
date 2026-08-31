@@ -3071,21 +3071,26 @@
 
       .claim-panel {
         position: fixed;
-        left: 8px;
-        right: 104px;
+        left: 50%;
+        right: auto;
         bottom: 58px;
-        width: auto;
+        width: fit-content;
+        max-width: min(620px, calc(100vw - 128px));
         max-height: 76px;
         padding: 6px;
         gap: 5px;
-        justify-content: flex-start;
-        overflow: auto;
+        flex-wrap: nowrap;
+        justify-content: center;
+        overflow-x: auto;
+        overflow-y: hidden;
         z-index: 44;
+        transform: translateX(-50%);
+        -webkit-overflow-scrolling: touch;
       }
 
       .claim-panel.active {
         animation: none;
-        transform: translateY(0);
+        transform: translateX(-50%);
       }
 
       #winButton:not(:disabled) {
