@@ -24,7 +24,7 @@
     { id: "kongDraw", label: "槓上開花", tai: 2, test: context => context.event === "kongDraw" },
     { id: "robKong", label: "搶槓", tai: 1, test: context => context.event === "robKong" },
     { id: "lastSelfDraw", label: "海底撈月", tai: 1, test: context => context.wallEmpty && context.isSelfDraw },
-    { id: "lastDiscardWin", label: "河底撈魚", tai: 1, test: context => context.wallEmpty && !context.isSelfDraw }
+    { id: "lastDiscardWin", label: "河底撈魚", tai: 1, test: context => context.wallEmpty && context.event === "discard" }
   ];
 
   function openMeldCount(state, player) {
