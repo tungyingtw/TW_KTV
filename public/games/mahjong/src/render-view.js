@@ -263,7 +263,7 @@
   }
 
   function renderRiverDetail(context) {
-    const { state, byId, makeSmallTile } = context;
+    const { state, byId, makeSmallTile, players } = context;
     const panel = byId("riverDetailPanel");
     const body = byId("riverDetailBody");
     panel.classList.toggle("active", !!state.riverDetailOpen);
@@ -271,9 +271,19 @@
     body.innerHTML = "";
     if (!state.riverDetailOpen) return;
     state.discardHistory.forEach((entry, index) => {
+      const item = document.createElement("span");
       const tileEl = makeSmallTile(entry.tile);
+      const source = document.createElement("span");
+      const sourceName = players[entry.player] || `玩家 ${entry.player + 1}`;
+      item.className = `river-detail-entry${index === state.discardHistory.length - 1 ? " latest" : ""}`;
+      item.setAttribute("aria-label", `第 ${index + 1} 張，${sourceName}打出 ${entry.tile.label}`);
+      item.title = `${sourceName}打出 ${entry.tile.label}`;
       if (index === state.discardHistory.length - 1) tileEl.classList.add("latest");
-      body.appendChild(tileEl);
+      source.className = "river-detail-source";
+      source.textContent = sourceName;
+      item.appendChild(tileEl);
+      item.appendChild(source);
+      body.appendChild(item);
     });
   }
 
