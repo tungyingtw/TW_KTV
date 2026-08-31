@@ -45,6 +45,7 @@
     state.canPlayerWin = false;
     state.pendingClaim = null;
     state.pendingSelfDrawMethod = "";
+    state.pendingSelfDrawEvent = "";
     state.showListenHint = false;
   }
 
@@ -52,6 +53,7 @@
     state.pendingClaim = null;
     state.canPlayerWin = false;
     state.pendingSelfDrawMethod = "";
+    state.pendingSelfDrawEvent = "";
   }
 
   function clearMeldTurnState(state, player, options = {}) {
@@ -101,9 +103,10 @@
   }
 
   function createWinResult(state, options) {
+    const tokenDelta = options.tokenAfter - options.tokenBefore;
     return {
       type: "win",
-      title: options.winner === 0 ? options.totalTai >= 6 ? "大胡進帳" : "本局勝利" : "本局扣代幣",
+      title: tokenDelta > 0 ? options.totalTai >= 6 ? "大胡進帳" : "本局勝利" : tokenDelta < 0 ? "本局扣代幣" : "本局結算",
       winner: options.winner,
       method: options.method,
       handTiles: options.winningTiles.map(cloneTile),
@@ -111,7 +114,7 @@
       stake: state.stake,
       settlement: options.settlement,
       tokenText: options.tokenText,
-      tokenDelta: options.tokenAfter - options.tokenBefore,
+      tokenDelta,
       tokenBefore: options.tokenBefore,
       tokenAfter: options.tokenAfter,
       totalTai: options.totalTai,
@@ -164,6 +167,7 @@
     state.canPlayerWin = false;
     state.pendingClaim = null;
     state.pendingSelfDrawMethod = "";
+    state.pendingSelfDrawEvent = "";
     state.result = null;
     state.showListenHint = false;
     state.listenLock = null;

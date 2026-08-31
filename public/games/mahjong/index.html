@@ -2362,7 +2362,8 @@
     }
 
     .result-outcome.loss,
-    .result-outcome.draw {
+    .result-outcome.draw,
+    .result-outcome.neutral {
       background: linear-gradient(180deg, #dceee7, #6a988a);
       color: #082c29;
     }
@@ -3642,7 +3643,7 @@
             </div>
           </div>
           <div class="setup-actions">
-            <span class="meta-note setup-status" id="scorePreview"><span class="setup-status-line setup-status-main">本局預估：胡牌 +100 / 他家胡牌 -100</span><span class="setup-status-line">戰績 0 勝 / 0 局</span></span>
+            <span class="meta-note setup-status" id="scorePreview"><span class="setup-status-line setup-status-main">依台型結算；他家互胡代幣不變</span><span class="setup-status-line">戰績 0 勝 / 0 局</span></span>
             <button class="primary start-button" id="startButton" type="button">開始遊戲</button>
           </div>
         </div>
@@ -3737,11 +3738,11 @@
         </div>
         <div class="help-section">
           <h3>代幣</h3>
-          <p>每日進場代幣由系統配給。本局胡牌賺代幣，其他家胡牌扣代幣，扣到不足底注時需等隔天重置。</p>
+          <p>每日進場代幣由系統配給。玩家胡牌會收代幣；自摸或放槍牽涉玩家時才會改變代幣，扣到不足底注時需等隔天重置。</p>
         </div>
         <div class="help-section">
           <h3>結算</h3>
-          <p>代幣以底注乘上台數計算，本場會額外加成。畫面採玩家視角，只顯示玩家本局賺或扣多少，不建立四家分帳。</p>
+          <p>代幣依每筆收付的底注與台數計算；放槍由放槍者付款，自摸由其餘三家付款。莊家參與的收付另加莊家與本場，畫面只變更玩家代幣。</p>
         </div>
         <div class="help-section">
           <h3>操作</h3>
@@ -3755,7 +3756,7 @@
         </div>
         <div class="help-section">
           <h3>已實作台型</h3>
-          <p>基本胡、自摸、莊家、門風刻、圈風刻、三元刻、花牌、正花、花槓、七搶一、八仙過海、門清、門清自摸、平胡、全求人、三暗刻、碰碰胡、小三元、大三元、字一色、混一色、清一色、槓牌、槓上開花、搶槓、海底撈月、河底撈魚。</p>
+          <p>基本胡、自摸、莊家收付、門風刻、圈風刻、三元刻、花牌、正花、花槓、七搶一、八仙過海、門清、門清自摸、平胡、全求人、三暗刻、碰碰胡、小三元、大三元、字一色、混一色、清一色、槓牌、槓上開花、搶槓、海底撈月、河底撈魚。</p>
           <p>常見高牌型採固定休閒台數：碰碰胡 4 台、混一色 4 台、清一色 8 台、小三元 4 台、大三元 8 台、字一色 16 台。</p>
         </div>
       </div>
@@ -3963,7 +3964,7 @@
     }
 
     function resolveFlowers(player, sourceText = "補花") {
-      const { flowerCount, newFlowerIds } = MahjongFlowerFlow.resolveFlowers(state, player, isFlower);
+      const { flowerCount, newFlowerIds, needsReplacement } = MahjongFlowerFlow.resolveFlowers(state, player, isFlower);
       if (!flowerCount) return 0;
       state.flowerFlashIds = newFlowerIds;
       addLog(`${players[player]}${sourceText} ${flowerCount} 張。`);
@@ -3973,15 +3974,16 @@
         state.flowerFlashIds = state.flowerFlashIds.filter(id => !newFlowerIds.includes(id));
         render();
       }, 760);
-      tryFlowerSpecialWin(player);
+      if (tryFlowerSpecialWin()) return flowerCount;
+      if (needsReplacement) endRound("補花後牌山摸完，流局。");
       return flowerCount;
     }
 
-    function tryFlowerSpecialWin(player) {
-      const method = MahjongFlowerFlow.specialWinMethod(state, MahjongScoring, player);
-      if (!method) return false;
-      byId("message").textContent = `${players[player]}${method}。`;
-      finishWin(player, method, null);
+    function tryFlowerSpecialWin() {
+      const special = MahjongFlowerFlow.specialWinMethod(state, MahjongScoring);
+      if (!special) return false;
+      byId("message").textContent = `${players[special.winner]}${special.method}。`;
+      finishWin(special.winner, special.method, special.discarder, "flowerSpecial", special);
       return true;
     }
 
@@ -3997,12 +3999,12 @@
       if (player === 0) sortPlayerHandForTurn();
       const win = MahjongTurnFlow.resolveDrawWin(state, MahjongRules, currentRuleset(), openMeldCount, player, flowers);
       if (win.status === "playerWinOption") {
-        if (state.listenLock) return finishWin(0, state.pendingSelfDrawMethod || win.method);
+        if (state.listenLock) return finishWin(0, state.pendingSelfDrawMethod || win.method, null, state.pendingSelfDrawEvent || win.event);
         byId("message").textContent = flowers ? "你補花後可自摸胡牌，也可以選擇繼續打牌。" : "你可以自摸胡牌，也可以選擇繼續打牌。";
         render();
         return;
       }
-      if (win.status === "computerWin") return finishWin(player, win.method);
+      if (win.status === "computerWin") return finishWin(player, win.method, null, win.event);
       render();
 
       if (player === 0) {
@@ -4084,10 +4086,10 @@
       if (!state.running) return;
       if (state.pendingClaim?.canWin) {
         const claim = state.pendingClaim;
-        finishWin(0, MahjongGameFlow.claimWinMethod(claim, players), claim.discarder);
+        finishWin(0, MahjongGameFlow.claimWinMethod(claim, players), claim.discarder, claim.kind === "robKong" ? "robKong" : "discard");
         return;
       }
-      if (state.current === 0 && MahjongRules.isWinningHand(state.hands[0], openMeldCount(0), currentRuleset().winningTileCount)) finishWin(0, state.pendingSelfDrawMethod || "自摸");
+      if (state.current === 0 && MahjongRules.isWinningHand(state.hands[0], openMeldCount(0), currentRuleset().winningTileCount)) finishWin(0, state.pendingSelfDrawMethod || "自摸", null, state.pendingSelfDrawEvent || "selfDraw");
     }
 
     function discardTile(player, tileId) {
@@ -4232,6 +4234,8 @@
 
     function completeComputerAddedKong(player, option) {
       if (!state.running) return;
+      const robber = findComputerRobKongWinner(player, option.tile);
+      if (robber !== null) return robAddedKong(robber, player, option.tile);
       MahjongComputerActions.applyComputerAddedKong(state, MahjongStateFlow, player, option);
       addStrategyLog(`${players[player]}補槓 ${option.tile.label}。`);
       byId("message").textContent = `${players[player]}補槓 ${option.tile.label}，準備補牌。`;
@@ -4256,7 +4260,7 @@
       addStrategyLog(`${players[player]}${type}後補牌。`);
       resolveFlowers(player, `${type}後補花`);
       if (state.result) return;
-      if (MahjongComputerActions.canComputerWinAfterKong(state, MahjongRules, currentRuleset(), openMeldCount, player)) return finishWin(player, `${type}後自摸`);
+      if (MahjongComputerActions.canComputerWinAfterKong(state, MahjongRules, currentRuleset(), openMeldCount, player)) return finishWin(player, `${type}後自摸`, null, "kongDraw");
       scheduleAction(() => discardAfterComputerMeld(player), 450);
     }
 
@@ -4304,11 +4308,15 @@
       return MahjongReactionFlow.findRobKongWinner(state, MahjongRules, currentRuleset(), openMeldCount, players, kongPlayer, tile);
     }
 
+    function findComputerRobKongWinner(kongPlayer, tile) {
+      return [1, 2, 3].find(player => player !== kongPlayer && MahjongRules.canWinWithTile(state.hands[player], tile, openMeldCount(player), currentRuleset().winningTileCount)) ?? null;
+    }
+
     function robAddedKong(winner, kongPlayer, tile) {
       MahjongGameFlow.robAddedKongState(state, winner, kongPlayer, tile);
       addLog(`${players[winner]}搶槓胡 ${players[kongPlayer]} 的 ${tile.label}。`);
       byId("message").textContent = `${players[winner]}搶槓胡 ${tile.label}。`;
-      finishWin(winner, `搶槓胡 ${players[kongPlayer]} 的 ${tile.label}`, kongPlayer);
+      finishWin(winner, `搶槓胡 ${players[kongPlayer]} 的 ${tile.label}`, kongPlayer, "robKong");
     }
 
     function removeLastDiscardFromHistory(player, tile) {
@@ -4354,8 +4362,8 @@
       scheduleAction(() => beginTurn(claim.nextPlayer), 350);
     }
 
-    function finishWin(player, method, discarder = null) {
-      const result = MahjongRoundResult.finishWinRound(state, MahjongStateFlow, { player, method, discarder, players, compareTiles, settleTokens, advanceRound, roundLabel });
+    function finishWin(player, method, discarder = null, event = discarder === null ? "selfDraw" : "discard", specialWin = null) {
+      const result = MahjongRoundResult.finishWinRound(state, MahjongStateFlow, { player, method, discarder, event, specialWin, players, compareTiles, settleTokens, advanceRound, roundLabel });
       state.result.visible = false;
       byId("message").textContent = result.message;
       addLog(result.message);
@@ -4377,8 +4385,8 @@
       render();
     }
 
-    function settleTokens(winner, discarder, winningTiles, method, winningTile = null) {
-      const result = MahjongScoring.settleTokens(state, MahjongRules, currentRuleset(), MahjongWallet.DAILY_TOKENS, winner, discarder, winningTiles, method, winningTile);
+    function settleTokens(winner, discarder, winningTiles, method, winningTile = null, event, specialWin) {
+      const result = MahjongScoring.settleTokens(state, MahjongRules, currentRuleset(), MahjongWallet.DAILY_TOKENS, winner, discarder, winningTiles, method, winningTile, event, specialWin);
       saveWallet();
       return result;
     }

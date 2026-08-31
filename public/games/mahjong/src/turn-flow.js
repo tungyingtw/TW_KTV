@@ -12,10 +12,11 @@
   function resolveDrawWin(state, rules, ruleset, openMeldCount, player, flowers) {
     if (!rules.isWinningHand(state.hands[player], openMeldCount(player), ruleset.winningTileCount)) return { status: "continue" };
     const method = flowers ? "補花後自摸" : "自摸";
-    if (player !== 0) return { status: "computerWin", method };
+    if (player !== 0) return { status: "computerWin", method, event: "selfDraw" };
     state.canPlayerWin = true;
     state.pendingSelfDrawMethod = method;
-    return { status: "playerWinOption", method };
+    state.pendingSelfDrawEvent = "selfDraw";
+    return { status: "playerWinOption", method, event: "selfDraw" };
   }
 
   window.MahjongTurnFlow = { resolveDrawWin, startDrawTurn };

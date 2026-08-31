@@ -23,7 +23,7 @@
     const startButton = byId("startButton");
     const scorePreview = byId("scorePreview");
     scorePreview.classList.toggle("is-warning", !canStart);
-    scorePreview.innerHTML = `<span class="setup-status-line ${canStart ? "setup-status-main" : "setup-status-warning"}">${canStart ? `本局預估：胡牌 +${state.stake} / 他家胡牌 -${state.stake}` : `代幣不足：需要 ${state.stake}，目前 ${state.tokens}`}</span><span class="setup-status-line">戰績 ${state.record.wins} 勝 / ${state.record.games} 局</span>`;
+    scorePreview.innerHTML = `<span class="setup-status-line ${canStart ? "setup-status-main" : "setup-status-warning"}">${canStart ? "依台型結算；他家互胡代幣不變" : `代幣不足：需要 ${state.stake}，目前 ${state.tokens}`}</span><span class="setup-status-line">戰績 ${state.record.wins} 勝 / ${state.record.games} 局</span>`;
     startButton.disabled = !canStart;
     startButton.textContent = canStart ? "開始遊戲" : "代幣不足";
     startButton.setAttribute("aria-label", canStart ? "開始遊戲" : `代幣不足，至少需要 ${state.stake}`);
@@ -94,14 +94,14 @@
     overlay.classList.toggle("active", visible);
     if (!visible) return;
     const cardEl = overlay.querySelector(".result-card");
-    const outcomeClass = state.result.type === "draw" ? "draw" : state.result.winner === 0 ? "win" : "loss";
-    cardEl.className = `result-card ${state.result.type === "draw" ? "draw-result" : state.result.winner === 0 ? "player-win" : "computer-win"}`;
+    const outcomeClass = state.result.type === "draw" ? "draw" : state.result.tokenDelta > 0 ? "win" : state.result.tokenDelta < 0 ? "loss" : "neutral";
+    cardEl.className = `result-card ${state.result.type === "draw" || outcomeClass === "neutral" ? "draw-result" : outcomeClass === "win" ? "player-win" : "computer-win"}`;
     byId("resultTitle").textContent = state.result.title;
     byId("resultMeta").innerHTML = [state.result.method, `底注 ${state.result.stake}`, state.result.roundResult, `下局 ${players[state.result.nextDealer]}`].filter(Boolean)
       .map(text => `<span class="result-chip">${escapeHtml(text)}</span>`)
       .join("");
     byId("resultOutcome").className = `result-outcome ${outcomeClass}`;
-    byId("resultOutcome").textContent = outcomeClass === "draw" ? "流局" : outcomeClass === "win" ? "勝利" : "惜敗";
+    byId("resultOutcome").textContent = outcomeClass === "draw" ? "流局" : outcomeClass === "win" ? "勝利" : outcomeClass === "loss" ? "惜敗" : "結算";
     const tokenEl = byId("resultToken");
     tokenEl.className = state.result.tokenDelta > 0 ? "token-gain" : state.result.tokenDelta < 0 ? "token-loss" : "token-even";
     if (state.result.animationDone) tokenEl.textContent = state.result.tokenText;
