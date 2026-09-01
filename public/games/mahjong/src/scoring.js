@@ -47,7 +47,8 @@
     const paymentBreakdown = playerPayments.map(payment => ({
       label: winner === 0 ? "本局收款" : "本局付款",
       value: `${winner === 0 ? "+" : "-"}${payment.amount}`,
-      note: paymentNote(payment)
+      note: paymentNote(payment),
+      payment: { payer: payment.payer, recipient: winner }
     }));
     return {
       headline: actualDelta ? `代幣 ${signed}${brokeText}` : "代幣不變",
