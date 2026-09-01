@@ -87,6 +87,11 @@
     state.melds[0].forEach(meld => meldsEl.appendChild(makeMeldElement(meld, { flowerFlashIds, makeSmallTile })));
   }
 
+  function paymentLabel(item, players) {
+    if (!item.payment) return item.label;
+    return item.payment.recipient === 0 ? `向${players[item.payment.payer]}收款` : `支付給${players[item.payment.recipient]}`;
+  }
+
   function renderResult(context) {
     const { state, byId, escapeHtml, makeSmallTile, players, animateResultToken } = context;
     const overlay = byId("resultOverlay");
@@ -122,10 +127,11 @@
     scoresEl.innerHTML = "";
     state.result.tokenBreakdown.forEach((item, index) => {
       const card = document.createElement("div");
+      const label = paymentLabel(item, players);
       const numericTai = Number.parseInt(item.value, 10) || 0;
       card.className = `result-score${numericTai >= 2 ? " bonus-score" : ""}${item.label === "本局計算" ? " calc-score" : ""}${item.label === "實際變化" ? " player" : ""}`;
       card.style.setProperty("--settle-index", index);
-      card.innerHTML = `<span class="result-seat">${escapeHtml(item.label)}</span><strong class="result-score-value">${escapeHtml(item.value)}</strong><span class="score-delta ${String(item.value).startsWith("-") ? "negative" : "positive"}">${escapeHtml(item.note || "代幣倍率")}</span>`;
+      card.innerHTML = `<span class="result-seat">${escapeHtml(label)}</span><strong class="result-score-value">${escapeHtml(item.value)}</strong><span class="score-delta ${String(item.value).startsWith("-") ? "negative" : "positive"}">${escapeHtml(item.note || "代幣倍率")}</span>`;
       scoresEl.appendChild(card);
     });
   }
@@ -324,5 +330,5 @@
     return button;
   }
 
-  window.MahjongRenderView = { makeKongButton, makeMeldElement, renderChiOptions, renderComputers, renderHelpPanel, renderHudAndSetup, renderKongOptions, renderListeningHint, renderLog, renderMelds, renderPlayerHand, renderResult, renderRiverDetail, renderRivers, renderSeatDetail };
+  window.MahjongRenderView = { makeKongButton, makeMeldElement, paymentLabel, renderChiOptions, renderComputers, renderHelpPanel, renderHudAndSetup, renderKongOptions, renderListeningHint, renderLog, renderMelds, renderPlayerHand, renderResult, renderRiverDetail, renderRivers, renderSeatDetail };
 })();

@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 
-const sandbox = { window: {} };
-["rules", "scoring", "flower-flow"].forEach(name => vm.runInNewContext(fs.readFileSync(new URL(`../../public/games/mahjong/src/${name}.js`, import.meta.url), "utf8"), sandbox));
-const { MahjongRules: rules, MahjongScoring: scoring, MahjongFlowerFlow: flowers } = sandbox.window;
+const sandbox = { window: {}, document: {} };
+["rules", "scoring", "flower-flow", "render-view"].forEach(name => vm.runInNewContext(fs.readFileSync(new URL(`../../public/games/mahjong/src/${name}.js`, import.meta.url), "utf8"), sandbox));
+const { MahjongRules: rules, MahjongScoring: scoring, MahjongFlowerFlow: flowers, MahjongRenderView: render } = sandbox.window;
 const ruleset = { winningTileCount: 17 };
 const tile = (suit, rank, copy = 0) => ({ suit, rank, id: `${suit}-${rank}-${copy}`, label: `${suit}:${rank}` });
 const hand = [
@@ -50,6 +50,28 @@ assert.equal(short.result.actualDelta, -100, "不足時只扣實際可扣代幣"
 assert.match(short.result.summary, /扣除 100 代幣/, "摘要顯示實扣金額");
 assert.match(short.result.summary, /應付 400/, "摘要保留應付金額");
 
+const paymentItems = result => JSON.parse(JSON.stringify(result.breakdown.filter(item => item.payment).map(item => ({ value: item.value, payment: item.payment }))));
+const names = ["玩家", "東", "南", "西"];
+const selfDraw = settle({ winner: 0, discarder: null, dealer: 0 });
+assert.deepEqual(paymentItems(selfDraw.result), [
+  { value: "+700", payment: { payer: 1, recipient: 0 } },
+  { value: "+700", payment: { payer: 2, recipient: 0 } },
+  { value: "+700", payment: { payer: 3, recipient: 0 } }
+], "玩家自摸保留三筆付款方與既有金額");
+assert.equal(selfDraw.result.actualDelta, 2100, "玩家自摸總額維持既有公式");
+assert.deepEqual(JSON.parse(JSON.stringify(selfDraw.result.breakdown.filter(item => item.payment).map(item => render.paymentLabel(item, names)))), ["向東收款", "向南收款", "向西收款"]);
+
+const ron = settle({ winner: 0, discarder: 3, dealer: 3 });
+assert.deepEqual(paymentItems(ron.result), [{ value: "+700", payment: { payer: 3, recipient: 0 } }], "玩家放槍收款保留實際付款方");
+assert.equal(ron.result.actualDelta, 700, "玩家放槍收款維持既有公式");
+assert.equal(render.paymentLabel(ron.result.breakdown.find(item => item.payment), names), "向西收款");
+
+const playerPays = settle({ winner: 1, discarder: 0, dealer: 3 });
+assert.deepEqual(paymentItems(playerPays.result), [{ value: "-400", payment: { payer: 0, recipient: 1 } }], "玩家付款保留實際收款方");
+assert.equal(playerPays.result.actualDelta, -400, "玩家付款維持既有公式");
+assert.equal(render.paymentLabel(playerPays.result.breakdown.find(item => item.payment), names), "支付給東");
+assert.equal(paymentItems(settle({ winner: 1, discarder: 2, dealer: 3 }).result).length, 0, "電腦互胡不建立玩家交易卡片");
+
 const ambiguous = [
   ...[1, 1, 1, 2, 2, 2, 3, 3, 3].map((rank, index) => tile("character", rank, index + 90)),
   ...[4, 5, 6].map((rank, index) => tile("dot", rank, index + 100)),
@@ -69,4 +91,4 @@ assert.equal(flowers.specialWinMethod(flowerState, scoring).discarder, 1, "七�
 const flowerScore = scoring.evaluateTokenScoring(flowerState, rules, ruleset, 0, 1, hand, "七搶一", hand.at(-1), "flowerSpecial", { type: "sevenFlowers" });
 assert.equal(flowerScore.items.map(item => item.label).join("、"), "基本胡、七搶一", "花胡不疊一般台型");
 
-console.log("mahjong scoring settlement ok: 14 cases");
+console.log("mahjong scoring settlement and payment breakdown ok");
