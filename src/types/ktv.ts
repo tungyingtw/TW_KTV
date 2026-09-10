@@ -108,6 +108,5 @@ export interface FilterOptions {
   onlyOfficialMv: boolean;
   onlyGuidedVocal: boolean;
   onlyNicheSongs: boolean; // 僅看冷門/獨立私房對照歌曲
-  viewMode: 'matrix' | 'cards';
   sortBy: 'length' | 'stroke' | 'title';
 }
