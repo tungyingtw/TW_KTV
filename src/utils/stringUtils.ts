@@ -3,7 +3,7 @@
  */
 export function stripPunctuation(str: string): string {
   if (!str) return '';
-  return str.replace(/[^\w\u4e00-\u9fa5]/g, '').toLowerCase();
+  return str.normalize('NFKC').replace(/[^\p{L}\p{M}\p{N}]/gu, '').toLowerCase();
 }
 
 /**
@@ -11,7 +11,7 @@ export function stripPunctuation(str: string): string {
  */
 export function normalizeText(str: string): string {
   if (!str) return '';
-  let normalized = str.trim().toLowerCase();
+  const normalized = stripPunctuation(str);
   
   // 常見搜尋關鍵字繁簡對照表 (Simp -> Trad)
   const simpMap: Record<string, string> = {
@@ -22,11 +22,7 @@ export function normalizeText(str: string): string {
     '难': '難', '过': '過', '还': '還', '动': '動', '飞': '飛',
   };
 
-  let result = '';
-  for (const char of normalized) {
-    result += simpMap[char] || char;
-  }
-  return result;
+  return normalized.replace(/[爱国听欢风梦亲头话远让离时长声乐书门见对难过还动飞]/g, char => simpMap[char]);
 }
 
 /**

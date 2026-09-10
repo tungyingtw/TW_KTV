@@ -1,3 +1,5 @@
+import { runReviewMutation, serialMiddleware } from './reviewMutation.js';
+import { validateReportInput, observationFrom, brandChanges, publicCorrection, sameBrandState, intendedBrandState } from './reportEvidence.js';
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -73,6 +75,9 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '2mb' }));
+const serializeEvidenceWrite = serialMiddleware();
+app.use(['/api/admin', '/api/report'], (req, res, next) => ['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method) ? serializeEvidenceWrite(req, res, next) : next());
+
 
 // 告訴搜尋引擎爬蟲：此伺服器為後端 API，請集中索引 https://tyfunlab.com/ 正式網站
 app.use((req, res, next) => {
@@ -1821,9 +1826,7 @@ async function saveReportsStore(data) {
     }
   }
 
-  try { saveReports(storeData); } catch (err) {
-    console.warn('[Reports] Local JSON backup write failed:', err.message);
-  }
+  saveReports(storeData);
   invalidateAdminDerivedCaches();
 }
 
@@ -2067,7 +2070,7 @@ function compactReviewActions(data) {
   if (actions.length <= REVIEW_ACTIONS_ACTIVE_LIMIT) return { active: actions, archived: [] };
 
   const sorted = [...actions].sort((a, b) => String(b.reviewedAt || '').localeCompare(String(a.reviewedAt || '')));
-  const activeIds = new Set(sorted.slice(0, REVIEW_ACTIONS_ACTIVE_LIMIT).map(action => String(action.id || '')));
+  const activeIds = new Set([...sorted.slice(0, REVIEW_ACTIONS_ACTIVE_LIMIT), ...actions.filter(a => a.status === 'processing' || a.publication?.visible)].map(action => String(action.id || '')));
   return {
     active: actions.filter(action => activeIds.has(String(action.id || ''))),
     archived: actions.filter(action => !activeIds.has(String(action.id || ''))),
@@ -2175,10 +2178,7 @@ async function syncReviewActionsHandledState(actions) {
 }
 
 async function saveReviewActionsStore(data) {
-  const state = await syncReviewActionsHandledState(data);
-  try { await compactHandledVoteSignalsStore(data); } catch (err) {
-    console.warn('[Votes] Handled signal compaction failed:', err.message);
-  }
+  const state = await loadReviewActionsHandledStateStore();
   const { active, archived } = compactReviewActions(data);
   let storeData = Array.isArray(data) ? data : [];
   if (archived.length) {
@@ -2204,6 +2204,8 @@ async function saveReviewActionsStore(data) {
       try { saveReviewActions(storeData); } catch (err) {
         console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
       }
+      await syncReviewActionsHandledState(data);
+      try { await compactHandledVoteSignalsStore(data); } catch (err) { console.warn('[Votes] Handled signal compaction failed:', err.message); }
       invalidateAdminDerivedCaches();
       return;
     } catch (err) {
@@ -2214,9 +2216,9 @@ async function saveReviewActionsStore(data) {
     }
   }
 
-  try { saveReviewActions(storeData); } catch (err) {
-    console.warn('[ReviewActions] Local JSON backup write failed:', err.message);
-  }
+  saveReviewActions(storeData);
+  await syncReviewActionsHandledState(data);
+  try { await compactHandledVoteSignalsStore(data); } catch (err) { console.warn('[Votes] Handled signal compaction failed:', err.message); }
   invalidateAdminDerivedCaches();
 }
 
@@ -2248,9 +2250,7 @@ async function saveCatalogOverridesStore(data) {
     }
   }
 
-  try { saveCatalogOverrides(data); } catch (err) {
-    console.warn('[CatalogOverrides] Local JSON write failed:', err.message);
-  }
+  saveCatalogOverrides(data);
 }
 
 async function loadArtistAliasesOverridesStore() {
@@ -3325,26 +3325,6 @@ function sanitizeSongSnapshot(snapshot, fallback = {}) {
   };
 }
 
-function buildReportSongSnapshot(report) {
-  const fromSnapshot = sanitizeSongSnapshot(report.songSnapshot, report);
-  if (fromSnapshot) return fromSnapshot;
-  if (!report.songId || !report.songTitle) return null;
-  return {
-    id: sanitizeText(report.songId),
-    title: sanitizeText(report.songTitle),
-    artist: sanitizeText(report.artist) || '未填寫',
-    lyricist: sanitizeText(report.lyricist) || undefined,
-    composer: sanitizeText(report.composer) || undefined,
-    language: sanitizeText(report.lang) || '??',
-    zhuyin: '',
-    pinyin: '',
-    releaseYear: undefined,
-    lyricsSnippet: sanitizeText(report.lyricsSnippet) || undefined,
-    youtubeUrl: sanitizeText(report.youtubeUrl) || undefined,
-    brands: {},
-  };
-}
-
 async function persistCatalogMutation(song) {
   if (!SKIP_STATIC_CATALOG && songsDatabase.length > 0) await saveCatalog(songsDatabase);
   await saveCatalogOverrideSong(song);
@@ -3513,6 +3493,8 @@ async function createBrandFromReportRecord({ reportId, body = {} }) {
   }
 
   const store = await loadBrandSettingsStore();
+  const prior = Object.values(store.brands || {}).find(brand => brand.sourceReportId === String(reportId));
+  if (prior) return { brand: prior, report };
   if (store.brands && store.brands[finalId]) {
     const err = new Error('Brand ID already exists: ' + finalId);
     err.statusCode = 400;
@@ -3556,7 +3538,10 @@ async function createBrandFromReportRecord({ reportId, body = {} }) {
 // ─────────────────────────────────────────────
 // 公開 API：使用者回報與缺歌建議
 // ─────────────────────────────────────────────
+
 app.post('/api/report', async (req, res) => {
+  const validationError = validateReportInput(req.body);
+  if (validationError) return res.status(400).json({ error: validationError });
   const {
     songId,
     songTitle,
@@ -3583,7 +3568,7 @@ app.post('/api/report', async (req, res) => {
   const validTypes = ['no_song', 'has_song', 'missing_song', 'suggest_song', 'suggest_new_brand', 'wrong_info', 'other'];
   if (!validTypes.includes(issueType)) return res.status(400).json({ error: '無效的 issueType' });
 
-  if (issueType !== 'suggest_new_brand' && !(issueType === 'suggest_song' && isUnknownReportBrandId(brandId))) {
+  if (issueType !== 'suggest_new_brand' && !(['suggest_song', 'other'].includes(issueType) && isUnknownReportBrandId(brandId))) {
     const isBrandActive = await brandExists(brandId, { activeOnly: true });
     if (!isBrandActive) {
       return res.status(400).json({ error: `無效或已停用的品牌 ID: "${brandId}"` });
@@ -3603,7 +3588,7 @@ app.post('/api/report', async (req, res) => {
   const cleanSystemType = sanitizeText(systemType);
   const cleanStoreLocations = sanitizeText(storeLocations);
   const cleanHelperNickname = sanitizeText(helperNickname).slice(0, 24);
-  const cleanNote = sanitizeText(note).slice(0, 500);
+  const cleanNote = sanitizeText(note).slice(0, 1000);
   const cleanLyricsSnippet = sanitizeText(lyricsSnippet).slice(0, 500);
   const cleanYoutubeUrl = sanitizeText(youtubeUrl).slice(0, 500);
   const cleanGuidedVocalStatus = ['guided', 'none', 'unknown'].includes(String(guidedVocalStatus)) ? String(guidedVocalStatus) : 'unknown';
@@ -3629,6 +3614,7 @@ app.post('/api/report', async (req, res) => {
     storeLocations: cleanStoreLocations,
     helperNickname: cleanHelperNickname || undefined,
     note: cleanNote,
+    ...observationFrom({ ...req.body, storeName: sanitizeText(req.body.storeName) }),
     songSnapshot: cleanSongSnapshot || undefined,
     timestamp: new Date().toISOString(),
     ip: clientIp,
@@ -4336,99 +4322,62 @@ app.get('/api/admin/reports', requirePermission('reports.view'), async (req, res
 // ── 更新回報狀態 ──
 app.patch('/api/admin/report/:reportId', requirePermission('reports.review'), async (req, res) => {
   const { reportId } = req.params;
-  const { status, adminNote } = req.body;
-  const validStatus = ['pending', 'reviewed', 'resolved', 'rejected'];
-  if (!validStatus.includes(status)) return res.status(400).json({ error: '無效的 status' });
-
-  const reports = await loadReportsStore();
-  const idx = reports.findIndex(r => r.id === reportId);
-  if (idx === -1) return res.status(404).json({ error: '找不到此回報' });
-
-  const report = reports[idx];
-  report.status = status;
-  report.adminNote = adminNote || '';
-  report.reviewedAt = new Date().toISOString();
-  if (status !== 'pending') delete report.helperNickname;
-
-  if (status === 'resolved') {
-    try {
-      if ((report.issueType === 'missing_song' || report.issueType === 'suggest_song') && report.songTitle) {
-        if (isUnknownReportBrandId(report.brandId)) {
-          return res.status(400).json({ error: '此新歌建議尚未指定正式 KTV 廠牌，請先在歌曲編輯器選擇正確廠牌後再結案。' });
-        }
-        const normTitle = normalizeString(report.songTitle);
-        const normArtist = normalizeString(report.artist);
-        let existingSong = songsDatabase.find(s => normalizeString(s.title) === normTitle && normalizeString(s.artist) === normArtist);
-
-        if (!existingSong) {
-          const autoSongId = `admin_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-          existingSong = {
-            id: autoSongId,
-            title: report.songTitle.trim(),
-            artist: report.artist.trim() || '未填寫',
-            lyricist: report.lyricist || undefined,
-            composer: report.composer || undefined,
-            language: report.lang || '國語',
-            zhuyin: '',
-            pinyin: '',
-            releaseYear: undefined,
-            lyricsSnippet: report.lyricsSnippet || undefined,
-            youtubeUrl: report.youtubeUrl || undefined,
-            brands: {
-              [report.brandId]: {
-                available: true,
-                audioType: reportGuidedVocalStatusToAudioType(report),
-                mvType: reportMvTypeToCatalogMvType(report),
-              }
-            },
-          };
-          songsDatabase.push(existingSong);
-        } else {
-          if (!existingSong.brands) existingSong.brands = {};
-          existingSong.brands[report.brandId] = {
-            available: true,
-            audioType: reportGuidedVocalStatusToAudioType(report) || existingSong.brands[report.brandId]?.audioType,
-            mvType: reportMvTypeToCatalogMvType(report) || existingSong.brands[report.brandId]?.mvType,
-          };
-        }
-        await persistCatalogMutation(existingSong);
-      } else if (report.songId) {
-        const sIdx = songsDatabase.findIndex(s => s.id === report.songId);
-        const targetSong = sIdx !== -1 ? songsDatabase[sIdx] : buildReportSongSnapshot(report);
-        if (targetSong) {
-          if (!targetSong.brands) targetSong.brands = {};
-          if (report.issueType === 'no_song') {
-            targetSong.brands[report.brandId] = {
-              ...targetSong.brands[report.brandId],
-              available: false,
-              note: '管理員審核更正為未收錄',
-            };
-          } else if (report.issueType === 'has_song') {
-            targetSong.brands[report.brandId] = {
-              ...targetSong.brands[report.brandId],
-              available: true,
-              note: '管理員審核更正為有收錄',
-            };
-          }
-          if (sIdx !== -1) songsDatabase[sIdx] = targetSong;
-          else songsDatabase.push(targetSong);
-          await persistCatalogMutation(targetSong);
-        }
-      }
-    } catch (err) {
-      console.error('[Admin Report Approval Error]', err);
-      return res.status(503).json({ error: '審核修正無法持久化儲存，請稍後再試' });
-    }
-  }
-
+  const { status, adminNote = '' } = req.body || {};
+  if (!['pending','reviewed','resolved','rejected'].includes(status) || typeof adminNote !== 'string' || adminNote.length > 1000) return res.status(400).json({ error: '狀態或原因格式不正確' });
   try {
-    await saveReportsStore(reports);
-  } catch (err) {
-    console.error('[Admin Reports] Persistent save failed:', err);
-    return res.status(503).json({ error: '回報狀態暫時無法持久化儲存，請稍後再試' });
-  }
-  logAdminAction('UPDATE_REPORT_STATUS', { reportId, status, adminNote }, req);
-  res.json({ success: true, report: reports[idx] });
+    const reports = await loadReportsStore();
+    const report = reports.find(r => r.id === reportId);
+    if (!report) return res.status(404).json({ error: '找不到回報' });
+    const previous = (await loadReviewActionsStore()).find(a => a.reviewItemId === 'report:' + reportId);
+    if (['pending','reviewed'].includes(status)) {
+      if (previous) return res.status(409).json({ error: '此回報已有處理紀錄；請完成原操作，不要重設歷史狀態' });
+      return res.json({ success: true, report: await markReportReviewed(reportId, status, adminNote) });
+    }
+    if (status === 'rejected' && adminNote.trim().length < 4) return res.status(400).json({ error: '駁回原因至少需要 4 個字' });
+    let target = null;
+    if (status === 'resolved' && ['suggest_song','missing_song'].includes(report.issueType)) {
+      if (isUnknownReportBrandId(report.brandId)) return res.status(400).json({ error: '請先在歌曲編輯器確認正式平台，再結案；未知平台不會自動當成已收錄。' });
+      const overrides = await loadCatalogOverridesStore();
+      const candidates = [...new Map([...songsDatabase, ...Object.values(overrides.songs || {})].map(song => [song.id, song])).values()].filter(song => !(overrides.deletedIds || []).includes(song.id) && song.title === report.songTitle && song.artist === report.artist && song.language === (report.lang || '國語'));
+      if (candidates.length > 1) return res.status(409).json({ error: '有多筆同名版本，請先人工確認歌曲，不會自動合併' });
+      target = candidates[0] || await getAdminSongById('report_song_' + reportId) || { id: 'report_song_' + reportId, title: report.songTitle, artist: report.artist, language: report.lang || '國語', lyricist: sanitizeText(report.lyricist) || undefined, composer: sanitizeText(report.composer) || undefined, lyricsSnippet: sanitizeText(report.lyricsSnippet) || undefined, youtubeUrl: sanitizeText(report.youtubeUrl) || undefined, brands: {} };
+    } else if (status === 'resolved' && ['has_song','no_song'].includes(report.issueType)) target = await getAdminSongById(report.songId);
+    if (status === 'resolved' && ['has_song','no_song'].includes(report.issueType) && !target) return res.status(404).json({ error: '找不到歌曲，請先確認歌曲再結案' });
+    if (target && !(await brandExists(report.brandId, { activeOnly: false }))) return res.status(400).json({ error: '找不到指定平台，請先確認平台再結案' });
+    const beforeBrand = target?.brands?.[report.brandId] || null;
+    const proposedSong = target ? structuredClone(target) : null;
+    if (proposedSong) {
+      proposedSong.brands ||= {};
+      proposedSong.brands[report.brandId] = { ...beforeBrand, available: report.issueType !== 'no_song' };
+      if (report.issueType === 'no_song') { delete proposedSong.brands[report.brandId].audioType; delete proposedSong.brands[report.brandId].mvType; }
+      if (['suggest_song','missing_song'].includes(report.issueType)) {
+        const audio = reportGuidedVocalStatusToAudioType(report), mv = reportMvTypeToCatalogMvType(report);
+        if (audio) proposedSong.brands[report.brandId].audioType = audio;
+        if (mv) proposedSong.brands[report.brandId].mvType = mv;
+      }
+    }
+    const snapshot = await buildReviewItemSnapshotFromId('report:' + reportId);
+    if (target) snapshot.songId = target.id;
+    const intent = createReviewActionRecord({ reviewItemId: 'report:' + reportId, sourceType: 'report', sourceId: reportId, itemType: snapshot.itemType, status: 'processing', action: status === 'rejected' ? 'reject' : 'approve_report', reason: adminNote || '管理者確認回報內容後結案', snapshot, req, now: new Date().toISOString() });
+    Object.assign(intent, { schemaVersion: 1, targetStatus: status === 'rejected' ? 'rejected' : 'adopted', beforeBrand, proposedSong, observation: observationFrom(report), publication: { visible: false } });
+    const record = await runReviewMutation({ record: intent, load: loadReviewActionsStore, save: saveReviewActionsStore,
+      apply: async saved => {
+        if (!saved.proposedSong) return {};
+        const song = saved.proposedSong;
+        const current = await getAdminSongById(song.id);
+        if (current && !sameBrandState(current.brands?.[saved.snapshot.brandId], saved.beforeBrand) && !sameBrandState(current.brands?.[saved.snapshot.brandId], song.brands[saved.snapshot.brandId])) throw Object.assign(new Error('歌曲已有其他修正，請人工確認未完成紀錄'), { statusCode: 409 });
+        const merged = { ...(current || song), brands: { ...(current?.brands || song.brands), [saved.snapshot.brandId]: song.brands[saved.snapshot.brandId] } };
+        await saveCatalogOverrideSong(merged);
+        const index = songsDatabase.findIndex(row => row.id === song.id);
+        if (index < 0) songsDatabase.push(merged); else songsDatabase[index] = merged;
+        return { songId: song.id, brandId: saved.snapshot.brandId, before: saved.beforeBrand, after: merged.brands[saved.snapshot.brandId] };
+      }, finish: async saved => {
+        await markReportReviewed(reportId, saved.targetStatus === 'rejected' ? 'rejected' : 'resolved', saved.reason);
+        saved.changes = saved.updated?.after ? brandChanges(saved.beforeBrand, saved.updated.after) : [];
+      }
+    });
+    res.json({ success: true, reviewAction: record });
+  } catch (err) { res.status(err.statusCode || 503).json({ error: '回報處理尚未完成：' + err.message + '；請重試原操作。' }); }
 });
 
 // ── 後台管理 API：設定 / 自訂累積訪客計數器 (高風險操作：理由必填) ──
@@ -4522,7 +4471,8 @@ async function buildReviewQueueItems({ canViewReports, canViewVotes }) {
           helperNickname: report.helperNickname || '',
         },
         priority: itemType === 'suggest_new_brand' ? 95 : (itemType === 'suggest_song' ? 90 : 70),
-        createdAt: report.timestamp,
+        observation: observationFrom(report),
+      createdAt: report.timestamp,
         updatedAt: report.reviewedAt || report.timestamp,
       });
     }
@@ -4920,7 +4870,7 @@ async function markReportReviewed(reportId, status, adminNote = '') {
 }
 
 async function buildReviewItemSnapshotFromId(reviewItemId, fallback = {}) {
-  if (fallback && fallback.id === reviewItemId && (fallback.songTitle || fallback.signalSummary || fallback.currentValue !== undefined)) return fallback;
+
   if (reviewItemId.startsWith('report:')) {
     const reportId = reviewItemId.slice('report:'.length);
     const reports = await loadReportsStore();
@@ -4947,6 +4897,7 @@ async function buildReviewItemSnapshotFromId(reviewItemId, fallback = {}) {
         shortName: report.shortName || '',
         helperNickname: report.helperNickname || '',
       },
+      observation: observationFrom(report),
       createdAt: report.timestamp,
       updatedAt: report.reviewedAt || report.timestamp,
     };
@@ -4998,14 +4949,15 @@ app.post('/api/admin/review-queue/:reviewItemId/resolve', requireSession, async 
 
   const actions = await loadReviewActionsStore();
   const existing = actions.find(a => String(a.reviewItemId) === String(reviewItemId) && (a.status === 'adopted' || a.status === 'rejected'));
-  if (existing) return res.status(409).json({ error: '此項目已被處理', action: existing });
+
 
   const snapshot = await buildReviewItemSnapshotFromId(reviewItemId, requestSnapshot);
+  if (reviewItemId.startsWith('report:') && !snapshot.songId) return res.status(404).json({ error: '找不到原始回報' });
   const sourceType = snapshot.sourceType || payload.sourceType || '';
   const sourceId = snapshot.sourceId || payload.sourceId || '';
   const itemType = snapshot.itemType || payload.itemType || '';
-  const songId = payload.songId || snapshot.songId;
-  const brandId = payload.brandId || snapshot.brandId;
+  const songId = snapshot.songId || payload.songId;
+  const brandId = snapshot.brandId || payload.brandId;
   const now = new Date().toISOString();
 
   const allowedByAction = {
@@ -5022,77 +4974,65 @@ app.post('/api/admin/review-queue/:reviewItemId/resolve', requireSession, async 
   const required = cleanDecision === 'reject' ? allowedByAction.reject : (allowedByAction[cleanAction] || []);
   if (!required.length) return res.status(400).json({ error: 'Invalid action' });
   if (!hasAnyPermission(permissions, required)) return res.status(403).json({ error: '缺少審核處理權限' });
+  if (existing) return res.json({ success: true, alreadyHandled: true, reviewAction: existing });
 
-  const updated = {};
   try {
-    if (cleanDecision === 'reject') {
-      if (sourceType === 'report' && sourceId) {
-        updated.report = await markReportReviewed(sourceId, 'rejected', cleanReason);
-      }
-    } else if (cleanAction === 'set_available' || cleanAction === 'set_unavailable') {
-      const result = await updateSongBrandStatus({
-        songId,
-        brandId,
-        available: cleanAction === 'set_available',
-        note: payload.note || cleanReason,
-      });
-      updated.songId = result.song.id;
-      updated.brandId = brandId;
-      updated.after = result.after;
-      if (sourceType === 'report' && sourceId) updated.report = await markReportReviewed(sourceId, 'resolved', cleanReason);
-    } else if (cleanAction === 'set_guided_vocal' || cleanAction === 'set_backing_track') {
-      const audioType = cleanAction === 'set_guided_vocal' ? 'guided_vocal' : 'backing_track';
-      const result = await updateSongBrandStatus({
-        songId,
-        brandId,
-        available: true,
-        audioType,
-        note: payload.note || cleanReason,
-      });
-      updated.songId = result.song.id;
-      updated.brandId = brandId;
-      updated.after = result.after;
-    } else if (cleanAction === 'set_official_mv' || cleanAction === 'set_reedited_mv') {
-      const mvType = cleanAction === 'set_official_mv' ? 'official_mv' : 'reedited_mv';
-      const result = await updateSongBrandMvType({
-        songId,
-        brandId,
-        mvType,
-        note: payload.note || cleanReason,
-      });
-      updated.songId = result.song.id;
-      updated.brandId = brandId;
-      updated.after = result.after;
-    } else if (cleanAction === 'create_brand') {
-      const reportId = sourceType === 'report' ? sourceId : payload.reportId;
-      const result = await createBrandFromReportRecord({ reportId, body: payload.brand || payload });
-      updated.brandIdCreated = result.brand.id;
-      updated.brand = result.brand;
-      updated.report = result.report;
-    } else if (cleanAction === 'resolve_report') {
-      updated.report = await markReportReviewed(sourceId || payload.reportId, 'resolved', cleanReason);
-    }
-
-    const record = createReviewActionRecord({
-      reviewItemId,
-      sourceType,
-      sourceId,
-      itemType,
-      status: cleanDecision === 'reject' ? 'rejected' : 'adopted',
-      action: cleanDecision === 'reject' ? 'reject' : cleanAction,
-      reason: cleanReason,
-      snapshot,
-      req,
-      now,
+    const beforeSong = songId ? await getAdminSongById(songId) : null;
+    const intent = createReviewActionRecord({ reviewItemId, sourceType, sourceId, itemType, status: 'processing', action: cleanDecision === 'reject' ? 'reject' : cleanAction, reason: cleanReason, snapshot, req, now });
+    Object.assign(intent, { schemaVersion: 1, targetStatus: cleanDecision === 'reject' ? 'rejected' : 'adopted', observation: snapshot.observation || observationFrom(), beforeBrand: structuredClone(beforeSong?.brands?.[brandId] || null), requestedPayload: payload, publication: { visible: false } });
+    const record = await runReviewMutation({
+      record: intent, load: loadReviewActionsStore, save: saveReviewActionsStore,
+      apply: async saved => {
+        const updated = {};
+        const verb = saved.action;
+        const targetSongId = saved.snapshot.songId || songId;
+        const targetBrandId = saved.snapshot.brandId || brandId;
+        if (verb.startsWith('set_')) {
+          const current = await getAdminSongById(targetSongId);
+          if (!current) throw Object.assign(new Error('找不到歌曲，請先新增歌曲再審核'), { statusCode: 404 });
+          const expected = intendedBrandState(saved.beforeBrand, verb);
+          if (!sameBrandState(current.brands?.[targetBrandId], saved.beforeBrand) && !sameBrandState(current.brands?.[targetBrandId], expected)) throw Object.assign(new Error('歌曲已有其他修正，請人工確認未完成紀錄'), { statusCode: 409 });
+          let result;
+          if (verb === 'set_official_mv' || verb === 'set_reedited_mv') result = await updateSongBrandMvType({ songId: targetSongId, brandId: targetBrandId, mvType: verb === 'set_official_mv' ? 'official_mv' : 'reedited_mv', note: saved.reason });
+          else result = await updateSongBrandStatus({ songId: targetSongId, brandId: targetBrandId, available: verb !== 'set_unavailable', ...(verb === 'set_guided_vocal' || verb === 'set_backing_track' ? { audioType: verb === 'set_guided_vocal' ? 'guided_vocal' : 'backing_track' } : {}), note: saved.reason });
+          Object.assign(updated, { songId: result.song.id, brandId: targetBrandId, before: saved.beforeBrand, after: result.after });
+        } else if (verb === 'create_brand') {
+          const result = await createBrandFromReportRecord({ reportId: saved.sourceId, body: saved.requestedPayload?.brand || saved.requestedPayload || {} });
+          Object.assign(updated, { brandIdCreated: result.brand.id, brand: result.brand });
+        }
+        return updated;
+      },
+      finish: async saved => {
+        if (saved.sourceType === 'report' && saved.sourceId) await markReportReviewed(saved.sourceId, saved.targetStatus === 'rejected' ? 'rejected' : 'resolved', saved.reason);
+        saved.changes = saved.updated?.after ? brandChanges(saved.beforeBrand, saved.updated.after) : [];
+      },
     });
-    actions.push(record);
-    await saveReviewActionsStore(actions);
-    logAdminAction('RESOLVE_REVIEW_QUEUE_ITEM', { ...record, updated }, req);
-    res.json({ success: true, reviewItemId, decision: cleanDecision, action: record.action, reviewAction: record, updated });
+    logAdminAction('RESOLVE_REVIEW_QUEUE_ITEM', record, req);
+    res.json({ success: true, reviewItemId, reviewAction: record, updated: record.updated || {} });
   } catch (err) {
     console.error('[Admin Review Resolve Error]', err);
-    res.status(err.statusCode || 503).json({ error: err.message || '審核處理失敗' });
+    res.status(err.statusCode || 503).json({ error: '審核尚未完成：' + err.message + '。請重試相同操作以完成紀錄。' });
   }
+});
+
+app.get('/api/corrections', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const songId = String(req.query.songId || '').slice(0, 160);
+    const records = (await loadReviewActionsStore()).map(publicCorrection).filter(Boolean).filter(r => !songId || r.songId === songId).sort((a,b) => String(b.reviewedAt).localeCompare(String(a.reviewedAt))).slice(0,20);
+    res.json({ corrections: records });
+  } catch { res.status(503).json({ error: '修正紀錄暫時無法載入' }); }
+});
+
+app.patch('/api/admin/review-actions/:actionId/publication', requirePermission('reports.review'), async (req, res) => {
+  if (typeof req.body?.visible !== 'boolean') return res.status(400).json({ error: '公開設定格式不正確' });
+  const actions = await loadReviewActionsStore();
+  const action = actions.find(a => a.id === req.params.actionId);
+  if (!action) return res.status(404).json({ error: '找不到紀錄' });
+  const proposed = { ...action, publication: { visible: true } };
+  if (req.body.visible && !publicCorrection(proposed)) return res.status(400).json({ error: '此紀錄沒有可公開的已核對欄位差異' });
+  action.publication = { visible: req.body.visible, reviewedAt: new Date().toISOString(), reviewerId: req.admin.id };
+  try { await saveReviewActionsStore(actions); res.json({ success: true }); } catch { res.status(503).json({ error: '公開設定儲存失敗，請重新載入確認' }); }
 });
 
 app.get('/api/admin/review-actions', requireSession, async (req, res) => {
@@ -5118,6 +5058,7 @@ app.post('/api/admin/review-queue/:reviewItemId/adopt', requireSession, async (r
   const { reviewItemId } = req.params;
   const { sourceType, sourceId, itemType, action, reason = '', snapshot = {} } = req.body || {};
   const actions = await loadReviewActionsStore();
+  if (actions.some(a => a.reviewItemId === reviewItemId)) return res.status(409).json({ error: '此項目已有處理紀錄，請沿用原操作' });
   const now = new Date().toISOString();
   const record = {
     id: `rva_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -5151,6 +5092,7 @@ app.post('/api/admin/review-queue/:reviewItemId/reject', requireSession, async (
   if (cleanReason.length < 4) return res.status(400).json({ error: '請填寫至少 4 字的駁回原因' });
 
   const actions = await loadReviewActionsStore();
+  if (actions.some(a => a.reviewItemId === reviewItemId)) return res.status(409).json({ error: '此項目已有處理紀錄，請沿用原操作' });
   const now = new Date().toISOString();
   const record = {
     id: `rvr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,

@@ -1,3 +1,4 @@
+import { PublicCorrections } from './PublicCorrections';
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Song, SongVotes, BrandId, VoteData } from '../types/ktv';
 import { useBrands } from '../hooks/useBrands';
@@ -400,6 +401,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
               })}
             </div>
 
+            <PublicCorrections key={song.id} songId={song.id} />
             <div className="song-detail-report-row" style={{ marginTop: '24px', borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingTop: '16px' }}>
               <button
                 onClick={() => setShowReport(true)}

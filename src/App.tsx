@@ -24,7 +24,9 @@ import { fetchBrands } from './data/brands';
 import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
-import { stripPunctuation, normalizeText } from './utils/stringUtils';
+import { normalizeText } from './utils/stringUtils';
+import { getSearchRank } from './utils/searchRanking';
+import { relaxFilters } from './utils/filterUtils';
 import { expandFrontendQuery } from './utils/artistAliases';
 import { isBrandAvailable } from './utils/brandAvailability';
 import { getMeaningfulLyricsSnippet } from './utils/songReference';
@@ -419,19 +421,20 @@ export function App() {
     if (!isCatalogDisplayReady) return [];
     let result = allSongs;
     const rawQuery = debouncedSearchQuery.trim();
+    const searchRanks = new Map<Song, number>();
 
     if (rawQuery) {
-      const cleanQuery = stripPunctuation(rawQuery);
-      const normalizedQuery = normalizeText(rawQuery);
+      const cleanQuery = normalizeText(rawQuery);
+      const normalizedQuery = cleanQuery;
       const { matchedArtists, expandedTerms } = expandFrontendQuery(rawQuery);
 
       const substringMatches = allSongs.filter(s => {
-        const cleanTitle = stripPunctuation(s.title);
-        const cleanArtist = stripPunctuation(s.artist);
+        const cleanTitle = normalizeText(s.title);
+        const cleanArtist = normalizeText(s.artist);
         const lyricist = getMeaningfulLyricist(s);
         const composer = getMeaningfulComposer(s);
         const lyricsSnippet = getMeaningfulLyricsSnippet(s);
-        const cleanLyrics = stripPunctuation(lyricsSnippet);
+        const cleanLyrics = normalizeText(lyricsSnippet);
         const zhuyin = getSearchablePhonetic(s.zhuyin).toLowerCase();
         const pinyin = getSearchablePhonetic(s.pinyin).toLowerCase();
 
@@ -445,14 +448,9 @@ export function App() {
           (lyricsSnippet && lyricsSnippet.includes(rawQuery)) ||
           (cleanQuery && cleanTitle.includes(cleanQuery)) ||
           (cleanQuery && cleanArtist.includes(cleanQuery)) ||
-          (cleanQuery && stripPunctuation(lyricist).includes(cleanQuery)) ||
-          (cleanQuery && stripPunctuation(composer).includes(cleanQuery)) ||
+          (cleanQuery && normalizeText(lyricist).includes(cleanQuery)) ||
+          (cleanQuery && normalizeText(composer).includes(cleanQuery)) ||
           (cleanQuery && cleanLyrics.includes(cleanQuery)) ||
-          (normalizedQuery && normalizeText(s.title).includes(normalizedQuery)) ||
-          (normalizedQuery && normalizeText(s.artist).includes(normalizedQuery)) ||
-          (normalizedQuery && lyricist && normalizeText(lyricist).includes(normalizedQuery)) ||
-          (normalizedQuery && composer && normalizeText(composer).includes(normalizedQuery)) ||
-          (normalizedQuery && lyricsSnippet && normalizeText(lyricsSnippet).includes(normalizedQuery)) ||
           (zhuyin && zhuyin.includes(rawQuery.toLowerCase())) ||
           (pinyin && pinyin.includes(rawQuery.toLowerCase())) ||
           expandedTerms.some(term => (
@@ -463,17 +461,12 @@ export function App() {
       });
 
       if (substringMatches.length > 0) {
-        // 別名或關鍵字精確相符排序置頂 (Rank-1 Artist Matching)
-        result = [...substringMatches].sort((a, b) => {
-          const isAArtistMatch = matchedArtists.has(a.artist);
-          const isBArtistMatch = matchedArtists.has(b.artist);
-          if (isAArtistMatch && !isBArtistMatch) return -1;
-          if (!isAArtistMatch && isBArtistMatch) return 1;
-          return 0;
-        });
+        result = substringMatches;
+        result.forEach(song => searchRanks.set(song, getSearchRank(song, normalizedQuery, matchedArtists)));
       } else {
         const fuzzyResults = getFuseIndex().search(rawQuery);
         result = fuzzyResults.map(res => res.item);
+        result.forEach((song, index) => searchRanks.set(song, index));
       }
     }
 
@@ -562,8 +555,10 @@ export function App() {
       result = result.filter(song => song.isNiche);
     }
 
-    // 7. Sorting: 預設【字數 ➔ 注音/筆劃 (短至長)】
+    // 有查詢時先依命中程度排序，同級或未搜尋時沿用字數／筆劃排序。
     return [...result].sort((a, b) => {
+      const relevance = (searchRanks.get(a) ?? 0) - (searchRanks.get(b) ?? 0);
+      if (relevance) return relevance;
       if (filters.sortBy === 'length') {
         const lenA = a.title.trim().length;
         const lenB = b.title.trim().length;
@@ -694,7 +689,8 @@ export function App() {
 
   // Favorite Songs list objects
   const favoriteSongObjects = useMemo(() => {
-    return allSongs.filter(s => favorites.includes(s.id));
+    const ids = new Set(favorites);
+    return allSongs.filter(s => ids.has(s.id));
   }, [favorites, allSongs]);
 
   const dismissCollabNotice = () => {
@@ -1099,22 +1095,13 @@ export function App() {
               <button
                 className="btn-secondary"
                 onClick={() => {
-                  setFilters(prev => ({
-                    ...prev,
-                    searchQuery: '',
-                    selectedBrand: 'all',
-                    selectedBrands: [],
-                    selectedLanguages: [],
-                    selectedTitleLength: 'all',
-                    onlyOfficialMv: false,
-                    onlyGuidedVocal: false,
-                    onlyNicheSongs: false,
-                  }));
+                  setFilters(prev => relaxFilters(prev));
                   setDisplayedCount(40);
                 }}
               >
-                清除篩選
+                放寬篩選（保留查詢）
               </button>
+              <button className="btn-secondary" onClick={() => { setFilters(prev => relaxFilters(prev, true)); setDisplayedCount(40); }}>清除全部</button>
               <button className="btn-primary" onClick={() => setIsSuggestModalOpen(true)}>
                 回報歌曲線索
               </button>
@@ -1169,6 +1156,9 @@ export function App() {
         isOpen={isFavoritesOpen}
         onClose={() => setIsFavoritesOpen(false)}
         favoriteSongs={favoriteSongObjects}
+        favoriteIds={favorites}
+        isLoadingCatalog={isLoadingCatalog}
+        onSelectSong={(song) => { setIsFavoritesOpen(false); setSelectedSongDetail(song); }}
         onToggleFavorite={handleToggleFavorite}
       />
 

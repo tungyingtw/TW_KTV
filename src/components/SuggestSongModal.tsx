@@ -1,3 +1,6 @@
+import { ObservationFields } from './ObservationFields';
+import { emptyObservation } from '../types/observation';
+import { ReportReceipt } from './ReportReceipt';
 import React, { useState } from 'react';
 import { X, PlusCircle, Send, CheckCircle2, Music2, Building2 } from 'lucide-react';
 import type { BrandId } from '../types/ktv';
@@ -32,7 +35,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [lyricist, setLyricist] = useState('');
   const [composer, setComposer] = useState('');
   const [language, setLanguage] = useState('國語');
-  const [brandId, setBrandId] = useState<BrandId>('cashbox');
+  const [brandId, setBrandId] = useState<BrandId>(UNKNOWN_BRAND_ID);
   const [suggestedSongBrandName, setSuggestedSongBrandName] = useState('');
   const [mvStatus, setMvStatus] = useState<'unknown' | 'official' | 'karaoke'>('unknown');
   const [guidedVocalStatus, setGuidedVocalStatus] = useState<'unknown' | 'guided' | 'none'>('unknown');
@@ -49,6 +52,9 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [observation, setObservation] = useState(emptyObservation);
+  const [reportId, setReportId] = useState('');
+  const submittingRef = React.useRef(false);
 
   const handleSubmit = async () => {
     setError('');
@@ -59,6 +65,8 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         return;
       }
 
+      if (submittingRef.current) return;
+      submittingRef.current = true;
       setIsSubmitting(true);
       const res = await submitSuggestSong({
         title: title.trim(),
@@ -73,12 +81,14 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
         lyricsSnippet: lyricsSnippet.trim(),
         youtubeUrl: youtubeUrl.trim(),
         helperNickname: helperNickname.trim(),
+        ...observation,
       });
+      submittingRef.current = false;
       setIsSubmitting(false);
 
       if (res.success) {
         setSubmitted(true);
-        setTimeout(onClose, 2500);
+        setReportId(res.reportId || '');
       } else {
         setError(res.error || '送出失敗，請稍後再試');
       }
@@ -90,18 +100,22 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
       return;
     }
 
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     const res = await submitSuggestBrand({
       brandName: brandName.trim(),
       shortName: brandName.trim().substring(0, 4),
       note: brandNote.trim(),
       helperNickname: helperNickname.trim(),
+      ...observation,
     });
+    submittingRef.current = false;
     setIsSubmitting(false);
 
     if (res.success) {
       setSubmitted(true);
-      setTimeout(onClose, 2500);
+      setReportId(res.reportId || '');
     } else {
       setError(res.error || '送出失敗，請稍後再試');
     }
@@ -172,6 +186,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '10px', fontSize: '0.92rem', lineHeight: 1.6 }}>
               已收到建議，我們會核對資料；採納後將更新網站。
             </div>
+            {reportId && <ReportReceipt reportId={reportId} />}
           </div>
         ) : (
           <>
@@ -467,6 +482,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
               />
             </div>
 
+            {activeTab === 'song' && <ObservationFields value={observation} onChange={setObservation} />}
             {error && (
               <div style={{
                 background: 'rgba(248,113,113,0.12)',

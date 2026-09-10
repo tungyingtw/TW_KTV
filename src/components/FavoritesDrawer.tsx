@@ -1,4 +1,7 @@
 import React from 'react';
+import { SongbookSummary } from './SongbookSummary';
+import { summarizeSongbook, songbookStatus } from '../utils/songbookSummary';
+import './SongbookSummary.css';
 import type { Song } from '../types/ktv';
 import { useBrands } from '../hooks/useBrands';
 import { X, Heart, Trash2, Mic2, CheckCircle2 } from 'lucide-react';
@@ -8,6 +11,9 @@ interface FavoritesDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   favoriteSongs: Song[];
+  favoriteIds: string[];
+  isLoadingCatalog: boolean;
+  onSelectSong: (song: Song) => void;
   onToggleFavorite: (songId: string) => void;
 }
 
@@ -15,9 +21,15 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
   isOpen,
   onClose,
   favoriteSongs,
+  favoriteIds,
+  isLoadingCatalog,
+  onSelectSong,
   onToggleFavorite,
 }) => {
   const brandList = useBrands();
+  const summary = React.useMemo(() => summarizeSongbook(favoriteIds, favoriteSongs, brandList), [favoriteIds, favoriteSongs, brandList]);
+  const [selectedPlatform, setSelectedPlatform] = React.useState('');
+  const platform = summary.platforms.find(row => row.brand.id === selectedPlatform);
   React.useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -48,6 +60,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
       <div 
         onClick={e => e.stopPropagation()}
         className="glass-panel animate-fade-in drawer-content favorites-drawer-content"
+        role="dialog" aria-modal="true" aria-label="我的歌本"
         style={{
           width: '100%',
           maxWidth: '480px',
@@ -70,7 +83,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Heart size={20} fill="var(--accent-pink)" color="currentColor" />
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              我的歌本 ({favoriteSongs.length})
+              我的歌本 ({summary.songs.length})
             </h3>
           </div>
           <button
@@ -94,6 +107,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
           </button>
         </div>
 
+        {!isLoadingCatalog && summary.missingIds.length > 0 && <p role="status" style={{ fontSize: '0.84rem', lineHeight: 1.6, marginBottom: 12 }}>有 {summary.missingIds.length} 個收藏目前未在歌庫中找到，可能尚未載入或資料已異動；收藏仍保留，不計入以下首數。</p>}
         {/* Favorite Songs List */}
         {favoriteSongs.length === 0 ? (
           <div style={{
@@ -106,7 +120,7 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
             textAlign: 'center',
           }}>
             <Mic2 size={36} opacity={0.4} style={{ marginBottom: '12px' }} />
-            <p style={{ fontWeight: 600, fontSize: '1rem' }}>歌本目前沒有歌曲</p>
+            <p style={{ fontWeight: 600, fontSize: '1rem' }}>{isLoadingCatalog && favoriteIds.length ? '正在讀取歌本歌曲…' : summary.missingIds.length ? '目前沒有可顯示的收藏歌曲' : '歌本目前沒有歌曲'}</p>
             <p style={{ fontSize: '0.88rem', marginTop: '6px', color: 'var(--text-secondary)' }}>
               點歌曲旁的愛心，加入想唱的歌。
             </p>
@@ -115,11 +129,14 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
             </p>
           </div>
         ) : (
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {!isLoadingCatalog && <SongbookSummary summary={summary} selectedPlatform={platform?.brand.id || ''} onSelectPlatform={setSelectedPlatform} />}
+            <h4>{platform ? platform.brand.shortName + '：逐首確認' : '歌本歌曲'}</h4>
+            {platform && <button type="button" className="btn-secondary" onClick={() => setSelectedPlatform('')}>取消平台選擇</button>}
             <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0 0 2px' }}>
               歌本只保存在此瀏覽器，不會跨裝置同步；清除網站資料後會移除。
             </p>
-            {favoriteSongs.map(song => (
+            {summary.songs.map(song => (
               <div 
                 key={song.id}
                 style={{
@@ -130,8 +147,9 @@ export const FavoritesDrawer: React.FC<FavoritesDrawerProps> = ({
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                  <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{song.title}</h4>
+                  <div style={{ minWidth: 0 }}>
+                    <button type="button" className="songbook-song-title" aria-label={'查看 ' + song.title + '／' + song.artist + ' 的歌曲詳情'} onClick={() => onSelectSong(song)}>{song.title}</button>
+                    {platform && <p style={{ fontSize: '0.84rem', margin: '6px 0' }}>{songbookStatus(song, platform.brand.id)}</p>}
                     <p style={{ fontSize: '0.8rem', color: 'var(--accent-pink)', fontWeight: 600 }}>{song.artist}</p>
                   </div>
                   <button
