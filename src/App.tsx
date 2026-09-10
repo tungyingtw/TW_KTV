@@ -8,7 +8,6 @@ import { MobileNavbar } from './components/mobile/MobileNavbar';
 import { MobileSearchBar } from './components/mobile/MobileSearchBar';
 import { MobileBrandTabScroll } from './components/mobile/MobileBrandTabScroll';
 import { MatrixView } from './components/MatrixView';
-import { CardView } from './components/CardView';
 import { SongDetailModal } from './components/SongDetailModal';
 import { ReportModal } from './components/ReportModal';
 import { SuggestSongModal } from './components/SuggestSongModal';
@@ -97,15 +96,6 @@ export function App() {
 
   // Filter Options State (Default: length = 字數 > 注音/筆劃)
   const [filters, setFilters] = useState<FilterOptions>(() => {
-    let initialViewMode: 'matrix' | 'cards' = 'matrix';
-    try {
-      const savedMode = localStorage.getItem('ktv_view_mode');
-      const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= 768;
-      if (!isMobileViewport && (savedMode === 'matrix' || savedMode === 'cards')) {
-        initialViewMode = savedMode;
-      }
-    } catch {}
-
     return {
       searchQuery: '',
       selectedBrand: 'all',
@@ -116,7 +106,6 @@ export function App() {
       onlyOfficialMv: false,
       onlyGuidedVocal: false,
       onlyNicheSongs: false,
-      viewMode: initialViewMode,
       sortBy: 'length',
     };
   });
@@ -756,16 +745,12 @@ export function App() {
       {/* Navbar */}
       {isMobile ? (
         <MobileNavbar
-          filters={filters}
-          setFilters={setFilters}
           favoriteCount={favorites.length}
           onOpenFavorites={() => setIsFavoritesOpen(true)}
           onOpenSuggestSong={handleOpenSuggestSong}
         />
       ) : (
         <Navbar
-          filters={filters}
-          setFilters={setFilters}
           favoriteCount={favorites.length}
           onOpenFavorites={() => setIsFavoritesOpen(true)}
           onOpenSuggestSong={() => setIsSuggestModalOpen(true)}
@@ -1135,7 +1120,7 @@ export function App() {
               </button>
             </div>
           </div>
-        ) : filters.viewMode === 'matrix' ? (
+        ) : (
           <MatrixView
             songs={paginatedSongs}
             selectedBrand={filters.selectedBrand}
@@ -1144,17 +1129,6 @@ export function App() {
             onToggleFavorite={handleToggleFavorite}
             onSelectSongDetail={(song) => setSelectedSongDetail(song)}
             compact={isMobile}
-            brandSongCounts={brandSongCounts}
-            songVotes={visibleSongVotes}
-          />
-        ) : (
-          <CardView
-            songs={paginatedSongs}
-            selectedBrand={filters.selectedBrand}
-            selectedBrands={filters.selectedBrands}
-            favorites={favorites}
-            onToggleFavorite={handleToggleFavorite}
-            onSelectSongDetail={(song) => setSelectedSongDetail(song)}
             brandSongCounts={brandSongCounts}
             songVotes={visibleSongVotes}
           />

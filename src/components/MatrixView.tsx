@@ -231,7 +231,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                     </td>
 
                     <td style={{ padding: '9px 8px', overflow: 'hidden' }}>
-                      <div className="song-title-text" style={{
+                      <button type="button" aria-label={`查看 ${song.title}／${song.artist} 的歌曲詳情`} onClick={e => { e.stopPropagation(); onSelectSongDetail(song); }} className="song-title-text" style={{
+                        background: 'none', border: 0, padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
                         color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)',
                         fontWeight: 800,
                         fontSize: '0.92rem',
@@ -240,7 +241,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         whiteSpace: 'nowrap',
                       }}>
                         {song.title}
-                      </div>
+                      </button>
                       <div style={{
                         color: 'var(--text-muted, #94a3b8)',
                         fontSize: '0.76rem',
@@ -421,7 +422,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   {/* Song Title & Artist */}
                   <td style={{ padding: '9px 14px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     <div className="song-title-text" style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.96rem', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                      <span style={{ color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{song.title}</span>
+                      <button type="button" aria-label={`查看 ${song.title}／${song.artist} 的歌曲詳情`} onClick={e => { e.stopPropagation(); onSelectSongDetail(song); }} style={{ background: 'none', border: 0, padding: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit', color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{song.title}</button>
                     </div>
                     <div className="song-meta-text" style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span className="song-artist-text" style={{ fontWeight: 600, color: 'var(--text-secondary, #cbd5e1)' }}>{song.artist}</span>

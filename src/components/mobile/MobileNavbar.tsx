@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Gamepad2, Mic2, Table2, LayoutGrid, Heart, PlusCircle } from 'lucide-react';
-import type { FilterOptions } from '../../types/ktv';
+import { Gamepad2, Mic2, Heart, PlusCircle } from 'lucide-react';
 import { formatCompactZhNumber } from '../../utils/stringUtils';
 import { getKtvVisitorId } from '../../services/apiService';
 
 interface MobileNavbarProps {
-  filters: FilterOptions;
-  setFilters: React.Dispatch<React.SetStateAction<FilterOptions>>;
   favoriteCount: number;
   onOpenFavorites: () => void;
   onOpenSuggestSong?: () => void;
 }
 
 export const MobileNavbar: React.FC<MobileNavbarProps> = ({
-  filters,
-  setFilters,
   favoriteCount,
   onOpenFavorites,
   onOpenSuggestSong,
@@ -179,29 +174,6 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
             </button>
           </div>
 
-          {/* Mode Switcher */}
-          <div className="nav-view-switcher is-mobile">
-            <button
-              onClick={() => {
-                try { localStorage.setItem('ktv_view_mode', 'matrix'); } catch {}
-                setFilters(prev => ({ ...prev, viewMode: 'matrix' }));
-              }}
-              className={filters.viewMode === 'matrix' ? 'is-active' : ''}
-              title="列表模式 (各 KTV 廠牌一覽)"
-            >
-              <Table2 size={16} />
-            </button>
-            <button
-              onClick={() => {
-                try { localStorage.setItem('ktv_view_mode', 'cards'); } catch {}
-                setFilters(prev => ({ ...prev, viewMode: 'cards' }));
-              }}
-              className={filters.viewMode === 'cards' ? 'is-active' : ''}
-              title="小卡模式 (經典單首卡片)"
-            >
-              <LayoutGrid size={16} />
-            </button>
-          </div>
         </div>
       </div>
     </header>
