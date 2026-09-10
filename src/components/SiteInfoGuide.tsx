@@ -8,7 +8,7 @@ const guideLinks = [
   { href: './ktv-song-search-guide.html', label: 'KTV 查詢指南', desc: '收錄、導唱與 MV 類型怎麼看' },
   { href: './before-ktv-song-checklist.html', label: '歌單準備清單', desc: '去 KTV 前先整理想唱歌曲' },
   { href: './ktv-song-not-found.html', label: '找不到歌怎麼辦', desc: '查不到歌曲時的常見原因與做法' },
-  { href: './data-source.html', label: '資料來源', desc: '公開資訊、使用者回報與人工確認' },
+  { href: './data-source.html', label: '資料來源', desc: '既有資料、歌友回報與人工整理' },
   { href: './community-verification.html', label: '社群回報', desc: '收錄、導唱與 MV 類型回報說明' },
   { href: './ktv-guided-vocal.html', label: '導唱功能說明', desc: '有導唱、無導唱與純伴奏差異' },
   { href: './original-mv-vs-karaoke-video.html', label: 'MV 類型說明', desc: '原版 MV、伴唱帶類型與其他畫面分類' },
@@ -19,7 +19,7 @@ const guideLinks = [
 const faqItems = [
   {
     question: 'TYFunLab 的查詢結果可以直接當現場依據嗎？',
-    answer: '不行。本站整理公開資訊、歌友回報與人工確認線索，適合歡唱前準備歌單；實際是否能點唱，仍以門市包廂內點歌系統為準。',
+    answer: '不行。本站整理既有資料、歌友回報與可確認的線索，適合歡唱前準備歌單；實際是否能點唱，仍以門市包廂內點歌系統為準。',
   },
   {
     question: '同一首歌為什麼不同平台結果不同？',
@@ -115,7 +115,7 @@ export const SiteInfoGuide: React.FC = () => {
               <div className="site-info-guide-panel">
                 <div>
                   <h3>本站資料從哪裡來？</h3>
-                  <p>本站整理公開可查資料、歌友投票與人工確認線索，目標是協助歡唱前快速比對，不宣稱代表任何 KTV 品牌或伴唱系統。</p>
+                  <p>本站以既有資料為起點，透過歌友回報、投票與人工整理持續補充，目標是協助歡唱前快速比對，不宣稱代表任何 KTV 品牌或伴唱系統。</p>
                 </div>
                 <div>
                   <h3>為什麼需要回報？</h3>

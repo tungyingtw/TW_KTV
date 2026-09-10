@@ -241,7 +241,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
             <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4>關於 TYFunLab</h4>
               <p>想知道一首歌在哪些 KTV 有收錄？你可以用歌名或歌手搜尋，比對收錄、導唱與 MV 資訊，再把想唱的歌加入「我的歌本」。</p>
-              <p>網站資料由既有歌冊資料與歌友回報整理而來，尚未逐筆向所有平台及門市確認。發現與現場不同時，歡迎提供線索。</p>
+              <p>網站以站方整理的既有資料為起點，透過歌友回報持續補充，尚未逐筆向所有平台及門市確認。發現與現場不同時，歡迎提供線索。</p>
               <a href="/about.html">閱讀完整網站介紹</a>
             </div>
           )}
