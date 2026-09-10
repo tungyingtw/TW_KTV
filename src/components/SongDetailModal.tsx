@@ -6,7 +6,7 @@ import { BrandVoteBarV2 } from './BrandVoteBarV2';
 import { ReportModal } from './ReportModal';
 import { fetchSongVotes } from '../services/communityService';
 import { getLanguageStyle } from '../utils/languageStyle';
-import { isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
+import { getAvailabilityLabel, isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
 import { getMeaningfulComposer, getMeaningfulLyricist } from '../utils/songCredits';
 
@@ -307,7 +307,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary, #cbd5e1)', lineHeight: 1.6 }}>
-                歡唱提示：可在包廂點歌時利用伴唱機升降調按鍵調整 Key（男唱女歌建議降 3-4 調、女唱男歌建議升 3-4 調），搭配導唱或伴奏找到最適合自己的音域。
+                歡唱提示：依自己的舒適音域逐步升降調，先試唱再調整，搭配導唱或伴奏找到適合自己的音域。
               </p>
             </div>
 
@@ -381,7 +381,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: 700, color: b.color, fontSize: '0.9rem' }}>{b.shortName}</span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>未收錄</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>{getAvailabilityLabel(status, brandVote)}</span>
                       </div>
                       <BrandVoteBarV2 songId={song.id} brandId={b.id} initialVote={brandVote} />
                     </div>

@@ -19,6 +19,11 @@ export function isStatusAvailableWithCommunity(status?: BrandSongStatus, vote?: 
   return isBrandAvailable(status) || hasCommunityAvailability(vote);
 }
 
+export function getAvailabilityLabel(status?: BrandSongStatus, vote?: VoteData): string {
+  if (isStatusAvailableWithCommunity(status, vote)) return '有收錄';
+  return hasPositiveConsensus(vote?.deny, vote?.confirm) ? '回報偏向未收錄' : '尚未確認';
+}
+
 export function shouldShowGuidedVocal(status?: BrandSongStatus, vote?: VoteData): boolean {
   return status?.audioType === 'guided_vocal' || hasCommunityGuidedVocal(vote);
 }

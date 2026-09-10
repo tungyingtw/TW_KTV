@@ -14,6 +14,7 @@
   <link rel="canonical" href="https://tyfunlab.com/ktv-song-not-found.html" />
   <link rel="stylesheet" href="legal-pages.css" />
   <style>
+    *, *::before, *::after { box-sizing: border-box; }
     main { max-width: 860px; }
     .answer, .note { color: #dbeafe; background: rgba(56,189,248,0.08); padding: 12px 15px; border-radius: 8px; border-left: 3px solid #38bdf8; margin: 18px 0; }
     .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
@@ -66,6 +67,16 @@
     <nav class="breadcrumb" aria-label="麵包屑"><a href="https://tyfunlab.com/">首頁</a> &rsaquo; KTV 找不到歌</nav>
     <h1>KTV 找不到歌怎麼辦？常見原因與查詢建議</h1>
     <p class="answer">如果查不到歌曲，先縮短歌名，再改用歌手搜尋；外語歌曲可嘗試原文名稱、中文譯名或歌手名稱。新歌、冷門歌或現場剛更新的歌曲，可能尚未整理進 TYFunLab 資料，建議仍以現場點歌系統為準。</p>
+
+    <h2 id="encoding-case">實例三：避開日文異常字元，找回漏掉的候選</h2>
+    <p>2026/09/10 在本站本機預覽，以全部廠牌、語種、字數且未勾導唱／MV 篩選重現下列結果。這是在本站漏查的排查例子，不是門市未收錄的證據。</p>
+    <ol>
+      <li>輸入「誉める」：找到〈晴天を誉めるなら夕暮れを待て〉，歌手欄為恰克與飛鳥。</li>
+      <li>改輸入「めるなら」：除了上一筆，還找到同歌手、標題以「晴天を」開頭的另一筆。第二筆原始標題在「を」後含私用字元 U+E14A，部分裝置會顯示方框；另有「タ暮れ」與第一筆「夕暮れ」的差異。</li>
+      <li>保留兩筆候選的完整標題與平台標示，改用歌手補查。不要因字形相似就認定兩筆一定可合併，或將其中一筆的平台資料複製給另一筆。</li>
+    </ol>
+    <p>本次只確認不同字元會影響本站搜尋，尚未取得能判定兩筆音源與平台版本相同的原始來源。資料先保留，待核對來源後再修正；更新後筆數也可能改變。</p>
+    <p>提供回報時附上：原本輸入字串、改用的字串、查詢日期、兩筆歌名與歌手，以及可公開的來源連結。若問題發生在門市，再加上平台、門市、觀察日期與現場版本；請遮蔽照片中的人臉、帳號及其他個資。</p>
 
     <h2>平台尚未收錄</h2>
     <p>不同 KTV 平台的曲庫可能不同步。有些歌曲可能只在部分平台出現，或還沒有被整理成可查資料。</p>
