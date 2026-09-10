@@ -1,3 +1,6 @@
+import { ObservationFields } from './ObservationFields';
+import { emptyObservation } from '../types/observation';
+import { ReportReceipt } from './ReportReceipt';
 import React, { useState } from 'react';
 import { X, AlertTriangle, Send, CheckCircle2 } from 'lucide-react';
 import type { Song, BrandId, IssueType } from '../types/ktv';
@@ -26,6 +29,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [observation, setObservation] = useState(emptyObservation);
+  const [reportId, setReportId] = useState('');
+  const submittingRef = React.useRef(false);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,25 +51,29 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
     }
 
     setError('');
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     const result = await submitReport({
       songId: song.id,
       songTitle: song.title,
       artist: song.artist,
-      brandId: (selectedBrand || 'cashbox') as BrandId,
+      brandId: (selectedBrand || '__unknown_brand__') as BrandId,
       issueType: issueType as IssueType,
       note,
       helperNickname: helperNickname.trim(),
+      ...observation,
       songSnapshot: song,
     });
 
+    submittingRef.current = false;
     setIsSubmitting(false);
     if (result.success) {
       setSubmitted(true);
-      setTimeout(onClose, 2000);
+      setReportId(result.reportId || '');
     } else {
-      setError('送出失敗，請稍後再試');
+      setError(result.error || '送出失敗，請稍後再試');
     }
   };
 
@@ -83,7 +93,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
         className="app-modal-content report-modal-content"
         onClick={e => e.stopPropagation()}
         style={{
-          width: '100%', maxWidth: '480px',
+          width: '100%', maxWidth: '480px', maxHeight: '90dvh', overflowY: 'auto',
           background: 'var(--bg-card, #1e293b)',
           color: 'var(--text-primary, #ffffff)',
           border: '1px solid var(--border-color, rgba(248, 113, 113, 0.3))',
@@ -114,6 +124,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
               已收到你的回報，我們會核對後處理。網站資料不會立即更新。
             </div>
+            {reportId && <ReportReceipt reportId={reportId} />}
           </div>
         ) : (
           <>
@@ -189,6 +200,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
               </div>
             )}
 
+            <ObservationFields value={observation} onChange={setObservation} />
             <div style={{ marginBottom: '18px' }}>
               <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
                 補充說明

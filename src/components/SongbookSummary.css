@@ -1,0 +1,9 @@
+.songbook-summary p { font-size: .84rem; line-height: 1.6; color: var(--text-secondary); margin: 8px 0; }
+.songbook-platforms { display: grid; gap: 6px; max-height: 220px; overflow-y: auto; margin: 12px 0; }
+.songbook-platform { text-align: left; width: 100%; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; cursor: pointer; }
+.songbook-platform > span { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; font-size: .85rem; }
+.songbook-platform small { display: block; margin-top: 5px; color: var(--text-secondary); }
+.songbook-platform[aria-pressed="true"] { border-color: var(--accent-pink); box-shadow: inset 3px 0 var(--accent-pink); }
+.songbook-platform:focus-visible { outline: 2px solid var(--accent-pink); outline-offset: -2px; }
+.songbook-summary textarea { width: 100%; box-sizing: border-box; color: var(--text-primary); background: var(--bg-card); }
+.songbook-song-title { display: block; text-align: left; color: var(--text-primary); background: none; border: none; padding: 0; font: inherit; font-weight: 700; cursor: pointer; overflow-wrap: anywhere; }

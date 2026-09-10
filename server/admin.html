@@ -2365,6 +2365,7 @@ async function loadReports() {
               ${r.composer ? `作曲: <b>${r.composer}</b>` : ''}
             </div>
           ` : ''}
+          ${r.observedOn || r.storeName || r.observationType ? `<div class="sub">觀察：${escapeHtml(r.observedOn || '未提供日期')}／${escapeHtml(r.storeName || '未提供門市')}／${escapeHtml(observationTypeLabel(r.observationType))}</div>` : ''}
           ${r.lyricsSnippet ? `<div class="sub" style="margin-top:4px;color:#cbd5e1">歌詞片段：${r.lyricsSnippet}</div>` : ''}
           ${r.youtubeUrl ? `<div class="sub" style="margin-top:4px;color:#60a5fa">參考連結：${r.youtubeUrl}</div>` : ''}
           ${r.note ? `<div class="sub" style="margin-top:4px;color:#94a3b8">備註：${r.note}</div>` : ''}
@@ -2430,7 +2431,9 @@ async function openSongEditorFromReport(reportId) {
 }
 
 async function updateReport(id, status) {
-  const res = await apiFetch(`/api/admin/report/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  const adminNote = status === 'rejected' ? prompt('請填寫駁回原因（至少 4 字）') : '';
+  if (status === 'rejected' && (!adminNote || adminNote.trim().length < 4)) return;
+  const res = await apiFetch(`/api/admin/report/${id}`, { method: 'PATCH', body: JSON.stringify({ status, adminNote }) });
   const data = await res.json().catch(() => ({ error: '伺服器回應格式不正確' }));
   if (!res.ok || data.error) {
     showToast(data.error || '回報狀態更新失敗', 'error');
@@ -3312,6 +3315,7 @@ async function loadReports() {
               ${r.composer ? `作曲: <b>${escapeHtml(r.composer)}</b>` : ''}
             </div>
           ` : ''}
+          ${r.observedOn || r.storeName || r.observationType ? `<div class="sub">觀察：${escapeHtml(r.observedOn || '未提供日期')}／${escapeHtml(r.storeName || '未提供門市')}／${escapeHtml(observationTypeLabel(r.observationType))}</div>` : ''}
           ${r.lyricsSnippet ? `<div class="sub" style="margin-top:4px;color:#cbd5e1">歌詞片段：${escapeHtml(r.lyricsSnippet)}</div>` : ''}
           ${r.youtubeUrl ? `<div class="sub" style="margin-top:4px;color:#60a5fa">參考連結：${escapeHtml(r.youtubeUrl)}</div>` : ''}
           ${r.note ? `<div class="sub" style="margin-top:4px;color:#94a3b8">備註：${escapeHtml(r.note)}</div>` : ''}
@@ -3573,6 +3577,31 @@ async function adoptMvFromReviewQueue(itemId, mvType) {
   markReviewQueueItemHandled(item.id, 'adopted');
 }
 
+async function setCorrectionPublication(actionId, visible) {
+  try {
+    if (visible && !confirm('只公開欄位差異、觀察日期與資訊取得方式；不公開門市、回報原文或管理者。請確認已核對這些資訊。')) return;
+    const res = await apiFetch('/api/admin/review-actions/' + encodeURIComponent(actionId) + '/publication', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visible }) });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || '儲存失敗', 'error'); return; }
+    showToast(visible ? '已公開修正摘要' : '已撤下修正摘要', 'success');
+    await loadReviewActions('adopted');
+  } catch { showToast('連線中斷，請重新整理確認公開狀態後再試。', 'error'); }
+}
+
+const observationTypeLabel = value => ({ direct: '親自確認', hearsay: '他人轉述', unknown: '未提供' }[value] || '未提供');
+const correctionValueLabel = value => value === true ? '有收錄線索' : value === false ? '未收錄' : ({ guided_vocal: '有導唱', backing_track: '純伴奏', official_mv: '原版 MV 線索', reedited_mv: '伴唱帶類型' }[value] || '未確認');
+const correctionSummary = changes => changes.map(c => ({ available: '收錄', audioType: '導唱', mvType: 'MV' }[c.field] || '資料') + '：' + correctionValueLabel(c.before) + ' → ' + correctionValueLabel(c.after)).join('；');
+const pendingReviewActions = new Map();
+async function resumeReviewAction(id) {
+  try {
+    const action = pendingReviewActions.get(id); if (!action) return;
+    const isReport = action.action === 'approve_report';
+    const url = isReport ? '/api/admin/report/' + encodeURIComponent(action.sourceId) : '/api/admin/review-queue/' + encodeURIComponent(action.reviewItemId) + '/resolve';
+    const body = isReport ? { status: action.targetStatus === 'rejected' ? 'rejected' : 'resolved', adminNote: action.reason } : { decision: action.targetStatus === 'rejected' ? 'reject' : 'adopt', action: action.action, reason: action.reason, payload: action.requestedPayload || {} };
+    const res = await apiFetch(url, { method: isReport ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json(); showToast(res.ok ? '原操作已完成' : data.error || '恢復失敗', res.ok ? 'success' : 'error'); await loadReviewActions('adopted');
+  } catch { showToast('連線中斷，請重新整理，再重試原操作。', 'error'); }
+}
 async function loadReviewActions(status) {
   const list = document.getElementById(`review-${status}-list`);
   if (!list) return;
@@ -3585,7 +3614,8 @@ async function loadReviewActions(status) {
     return;
   }
 
-  const actions = data.actions || [];
+  let actions = data.actions || [];
+  if (status === 'adopted') { const pendingRes = await apiFetch('/api/admin/review-actions?status=processing'); if (pendingRes.ok) { const pending = (await pendingRes.json()).actions || []; pending.forEach(action => pendingReviewActions.set(action.id, action)); actions = [...pending, ...actions]; } }
   if (!actions.length) {
     list.innerHTML = `<div class="empty">目前沒有${status === 'adopted' ? '已採納' : '已駁回'}紀錄</div>`;
     return;
@@ -3598,16 +3628,20 @@ async function loadReviewActions(status) {
         <div class="card-row">
           <div class="card-meta">
             <div class="title" style="font-size:1.02rem;color:#f8fafc">
-              <span class="badge ${status === 'adopted' ? 'badge-resolved' : 'badge-rejected'}">${status === 'adopted' ? '已採納' : '已駁回'}</span>
+              <span class="badge ${status === 'adopted' ? 'badge-resolved' : 'badge-rejected'}">${action.status === 'processing' ? '尚未完成' : status === 'adopted' ? '已採納' : '已駁回'}</span>
               ${escapeHtml(reviewQueueTypeLabel(action.itemType || item.itemType))}
               ${item.songTitle ? ` - 《${escapeHtml(item.songTitle)}》` : ''}
             </div>
             <div class="sub">來源：${escapeHtml(action.sourceType)} / ${escapeHtml(action.sourceId)} &nbsp;|&nbsp; 管理者：${escapeHtml(action.adminName)}</div>
             <div class="sub" style="margin-top:4px;color:#cbd5e1">動作：${escapeHtml(action.action || '')}</div>
+            ${action.changes?.length ? `<div class="sub">欄位差異：${escapeHtml(correctionSummary(action.changes))}</div>` : ''}
+            ${action.observation ? `<div class="sub">觀察日期：${escapeHtml(action.observation.observedOn || '未提供')}｜門市：${escapeHtml(action.observation.storeName || '未提供')}｜取得方式：${escapeHtml(observationTypeLabel(action.observation.observationType))}</div>` : ''}
             ${action.reason ? `<div class="sub" style="margin-top:4px;color:#94a3b8">原因：${escapeHtml(action.reason)}</div>` : ''}
             <div class="sub" style="margin-top:4px;font-size:0.75rem;color:#64748b">${escapeHtml(action.reviewedAt?.slice(0,16).replace('T',' '))}</div>
           </div>
           <div class="card-actions">
+            ${action.status === 'processing' ? `<button class="btn btn-ghost" onclick="resumeReviewAction(${jsArg(action.id)})">重試原操作</button>` : ''}
+            ${action.schemaVersion === 1 && action.status === 'adopted' && action.changes?.length ? `<button class="btn btn-ghost" onclick="setCorrectionPublication(${jsArg(action.id)}, ${!action.publication?.visible})">${action.publication?.visible ? '撤下公開摘要' : '確認並公開摘要'}</button>` : ''}
             ${action.sourceType ? `<button class="btn btn-ghost" onclick="openReviewActionSource(${jsArg(action.sourceType)}, ${jsArg(action.itemType || item.itemType)}, ${jsArg(action.sourceId)}, ${jsArg(status)})">查看來源</button>` : ''}
           </div>
         </div>

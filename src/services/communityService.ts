@@ -34,6 +34,9 @@ export interface ReportPayload {
   storeLocations?: string;
   songSnapshot?: Song;
   helperNickname?: string;
+  observedOn?: string;
+  storeName?: string;
+  observationType?: 'direct' | 'hearsay' | 'unknown';
 }
 
 export async function submitReport(payload: ReportPayload): Promise<{ success: boolean; reportId?: string; error?: string }> {
@@ -43,8 +46,9 @@ export async function submitReport(payload: ReportPayload): Promise<{ success: b
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { success: false, error: res.status === 429 ? '送出次數較多，請稍後再試；已填內容會保留。' : data.error || '回報送出失敗，請稍後再試。' };
+    return data;
   } catch (err) {
     console.warn('[CommunityService] submitReport failed:', err);
     return { success: false, error: '回報送出失敗，請稍後再試。' };
@@ -64,12 +68,15 @@ export async function submitSuggestSong(payload: {
   lyricsSnippet?: string;
   youtubeUrl?: string;
   helperNickname?: string;
+  observedOn?: string;
+  storeName?: string;
+  observationType?: 'direct' | 'hearsay' | 'unknown';
 }): Promise<{ success: boolean; reportId?: string; error?: string }> {
   return submitReport({
     songId: 'suggest_new_song',
     songTitle: payload.title,
     artist: payload.artist,
-    brandId: payload.brandId || 'cashbox',
+    brandId: payload.brandId || '__unknown_brand__',
     issueType: 'suggest_song',
     brandName: payload.brandName,
     lang: payload.language,
@@ -80,7 +87,10 @@ export async function submitSuggestSong(payload: {
     lyricsSnippet: payload.lyricsSnippet,
     youtubeUrl: payload.youtubeUrl,
     helperNickname: payload.helperNickname,
-    note: `[新歌建議] 語種:${payload.language} | MV:${payload.mvStatus || 'unknown'} | 導唱:${payload.guidedVocalStatus || 'unknown'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`,
+    observedOn: payload.observedOn,
+    storeName: payload.storeName,
+    observationType: payload.observationType,
+    note: `[新歌建議] 語種:${payload.language} | MV:${payload.mvStatus || 'unknown'} | 導唱:${payload.guidedVocalStatus || 'unknown'} | 辨識提示:${payload.lyricsSnippet || ''} | URL:${payload.youtubeUrl || ''}`.slice(0, 1000),
   });
 }
 
@@ -91,6 +101,9 @@ export async function submitSuggestBrand(payload: {
   storeLocations?: string;
   note?: string;
   helperNickname?: string;
+  observedOn?: string;
+  storeName?: string;
+  observationType?: 'direct' | 'hearsay' | 'unknown';
 }): Promise<{ success: boolean; reportId?: string; error?: string }> {
   return submitReport({
     songId: 'suggest_new_brand',
@@ -103,6 +116,9 @@ export async function submitSuggestBrand(payload: {
     systemType: payload.systemType,
     storeLocations: payload.storeLocations,
     helperNickname: payload.helperNickname,
+    observedOn: payload.observedOn,
+    storeName: payload.storeName,
+    observationType: payload.observationType,
     note: `[新廠牌建議] 系統:${payload.systemType || ''} | 據點:${payload.storeLocations || ''} | 備註:${payload.note || ''}`,
   });
 }
@@ -215,4 +231,14 @@ export async function fetchSongsVotes(songIds: string[]): Promise<Record<string,
     console.warn('[CommunityService] fetchSongsVotes failed:', err);
     return {};
   }
+}
+
+export interface PublicCorrection {
+  id: string; songId: string; brandId: string; reviewedAt: string; observedOn: string | null; observationType: string;
+  changes: { field: string; before: string | boolean | null; after: string | boolean | null }[];
+}
+export async function fetchPublicCorrections(songId: string, signal?: AbortSignal): Promise<PublicCorrection[]> {
+  const response = await fetch(`${API_BASE}/api/corrections?songId=${encodeURIComponent(songId)}`, { signal, cache: 'no-store' });
+  if (!response.ok) throw new Error('修正紀錄暫時無法載入');
+  return (await response.json()).corrections || [];
 }
