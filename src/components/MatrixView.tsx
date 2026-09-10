@@ -7,7 +7,7 @@ import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { ResultLegend } from './ResultLegend';
 import { getLanguageStyle } from '../utils/languageStyle';
-import { isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
+import { getAvailabilityLabel, isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
 import { getYoutubeReferenceUrl } from '../utils/songReference';
 
 interface MatrixViewProps {
@@ -68,7 +68,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
     if (isSingleBrand && currentBrandInfo) {
       const status = song.brands[currentBrandInfo.id];
       if (!isStatusAvailableWithCommunity(status, votes[currentBrandInfo.id])) {
-        return { label: '未收錄', color: 'var(--text-muted, #94a3b8)' };
+        return { label: getAvailabilityLabel(status, votes[currentBrandInfo.id]), color: 'var(--text-muted, #94a3b8)' };
       }
 
       return { label: '有收錄', color: currentBrandInfo.color };
@@ -479,7 +479,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                             fontSize: '0.85rem',
                           }}
                         >
-                          —
+                          <span title={getAvailabilityLabel(status, brandVote)} aria-label={getAvailabilityLabel(status, brandVote)}>{getAvailabilityLabel(status, brandVote) === '尚未確認' ? '—' : getAvailabilityLabel(status, brandVote)}</span>
                         </td>
                       );
                     }

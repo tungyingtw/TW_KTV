@@ -12,7 +12,7 @@ interface ReportModalProps {
 
 const ISSUE_OPTIONS: { value: IssueType; label: string }[] = [
   { value: 'no_song',    label: '實際上沒有這首歌（系統誤標為收錄）' },
-  { value: 'has_song',   label: '實際上有這首歌（系統誤標為未收錄）' },
+  { value: 'has_song',   label: '現場有這首歌（補充收錄線索）' },
   { value: 'wrong_info', label: '歌名、歌手或收錄狀態有誤' },
   { value: 'other',      label: '其他問題' },
 ];
@@ -203,7 +203,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 value={note}
                 onChange={e => setNote(e.target.value)}
                 maxLength={300}
-                placeholder="例如：某門市查得到但標示未收錄，或現場畫面不是原版 MV..."
+                placeholder="例如：某門市查得到但本站尚未確認，或現場畫面不是原版 MV..."
                 rows={3}
                 style={{
                   width: '100%',

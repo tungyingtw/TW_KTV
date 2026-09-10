@@ -8,7 +8,7 @@ import { ReportModal } from './ReportModal';
 import { AdBannerSlot } from './AdBannerSlot';
 import { ResultLegend } from './ResultLegend';
 import { getLanguageStyle } from '../utils/languageStyle';
-import { isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
+import { getAvailabilityLabel, isStatusAvailableWithCommunity, shouldShowGuidedVocal, shouldShowOfficialMv } from '../utils/communityVoteStatus';
 import { getMeaningfulLyricsSnippet, getYoutubeReferenceUrl } from '../utils/songReference';
 
 interface CardViewProps {
@@ -29,7 +29,7 @@ function getMvLabel(status?: BrandSongStatus, vote?: VoteData): string {
 }
 
 function getPlatformStatusLabel(status?: BrandSongStatus, vote?: VoteData): string {
-  if (!isStatusAvailableWithCommunity(status, vote)) return '未收錄';
+  if (!isStatusAvailableWithCommunity(status, vote)) return getAvailabilityLabel(status, vote);
   const labels = ['有收錄'];
   const mvLabel = getMvLabel(status, vote);
   if (shouldShowGuidedVocal(status, vote)) labels.push('導唱');
@@ -462,7 +462,7 @@ export const CardView: React.FC<CardViewProps> = ({
                           }}
                         >
                           <span style={{ color: b.color, fontWeight: 600 }}>{b.shortName}</span>
-                          <span>未收錄</span>
+                          <span>{getAvailabilityLabel(status, brandVote)}</span>
                         </div>
                       );
                     }
