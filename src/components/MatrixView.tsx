@@ -116,11 +116,11 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted, #94a3b8)', marginTop: '8px', maxWidth: '560px', margin: '8px auto 20px', lineHeight: 1.6 }}>
             {isSingleBrand ? (
               <>
-                目前尚無【{currentBrandInfo?.shortName}】的已確認收錄資料。<br />
-                可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供現場線索協助補充。
+                目前沒有符合條件的【{currentBrandInfo?.shortName}】收錄資料。<br />
+                試著縮短歌名、改查歌手或清除篩選。若現場找得到，歡迎提供建議。
               </>
             ) : (
-              '目前沒有找到相符歌曲。可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供建議作為後續整理參考。'
+              '找不到相符歌曲。試著縮短歌名、改查歌手或清除篩選；仍找不到時，可以提供建議。'
             )}
           </p>
 
@@ -344,7 +344,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
               borderBottom: '2px solid var(--border-color, rgba(255, 255, 255, 0.1))',
               color: 'var(--text-secondary, #cbd5e1)',
             }}>
-              <th style={{ padding: '9px 10px', width: '54px', textAlign: 'center', whiteSpace: 'nowrap' }}>最愛</th>
+              <th style={{ padding: '9px 10px', width: '54px', textAlign: 'center', whiteSpace: 'nowrap' }}>歌本</th>
               <th style={{ padding: '9px 14px', width: isSingleBrand ? '35%' : (isFewBrands ? '32%' : '300px') }}>歌名 / 歌手</th>
               <th style={{ padding: '9px 10px', width: '68px', textAlign: 'center' }}>語種</th>
 
@@ -369,7 +369,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                 );
               })}
 
-              <th style={{ padding: '9px 10px', textAlign: 'center', width: '70px' }}>預覽</th>
+              <th style={{ padding: '9px 10px', textAlign: 'center', width: '70px' }}>版本參考</th>
             </tr>
           </thead>
           <tbody>
@@ -422,19 +422,6 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                   <td style={{ padding: '9px 14px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     <div className="song-title-text" style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '0.96rem', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                       <span style={{ color: isSelected ? 'var(--accent-pink, #ec4899)' : 'var(--text-primary, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{song.title}</span>
-                      {song.isNiche && (
-                        <span className="status-label" style={{
-                          fontSize: '0.68rem',
-                          padding: '1px 6px',
-                          borderRadius: '4px',
-                          background: 'rgba(168, 85, 247, 0.15)',
-                          color: '#c084fc',
-                          border: '1px solid rgba(168, 85, 247, 0.3)',
-                          fontWeight: 700,
-                        }}>
-                          獨家
-                        </span>
-                      )}
                     </div>
                     <div className="song-meta-text" style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span className="song-artist-text" style={{ fontWeight: 600, color: 'var(--text-secondary, #cbd5e1)' }}>{song.artist}</span>
@@ -610,7 +597,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
                         className="btn-secondary"
                         onClick={(e) => e.stopPropagation()}
                         style={{ padding: '6px 10px', borderRadius: '8px', color: '#f87171' }}
-                        title="線上 MV 預覽"
+                        title="到 YouTube 搜尋"
                       >
                         <Video size={16} />
                       </a>

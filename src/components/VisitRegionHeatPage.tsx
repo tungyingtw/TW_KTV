@@ -18,7 +18,7 @@ export function VisitRegionHeatPage() {
         <div className="visit-region-page-title">
           <span><Activity size={16} /> 台灣 KTV 歌友到訪紀錄</span>
           <h1>歌友熱度分布</h1>
-          <p>看看目前歌友都從哪些縣市加入，也可以修正自己的記錄位置。</p>
+          <p>查看累積到訪的地區分布。地區由網路位置粗略推估，並非 GPS 定位；你可以更正統計中的地區。</p>
         </div>
       </header>
       <section className="visit-region-modal visit-region-page-card">

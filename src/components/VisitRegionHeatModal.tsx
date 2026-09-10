@@ -164,21 +164,21 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
 
       setStats(result.stats);
       setConfirmedRegionId(result.city_code);
-      setActionMessage(result.corrected ? '已更新你的所在城市' : result.created || result.counted ? '已加入你的所在城市' : '你的所在城市已是這裡');
+      setActionMessage(result.corrected ? '已更新統計中的地區' : result.created || result.counted ? '已記錄你的地區' : '目前已記錄為此地區');
       if (nextPulses.length) {
         setRegionPulses(nextPulses);
         if (pulseTimeoutRef.current) window.clearTimeout(pulseTimeoutRef.current);
         pulseTimeoutRef.current = window.setTimeout(() => setRegionPulses([]), 1200);
       }
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : '暫時無法更新所在城市');
+      setActionMessage(err instanceof Error ? err.message : '暫時無法更新地區');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const joinActionDisabled = isSubmitting || selectedRegion?.id === confirmedRegionId;
-  const joinActionLabel = isSubmitting ? '更新中...' : selectedRegion?.id === confirmedRegionId ? '已在這裡' : '我在這裡';
+  const joinActionLabel = isSubmitting ? '更新中...' : selectedRegion?.id === confirmedRegionId ? '已記錄此地區' : '設為我的地區';
 
   return (
     <>
@@ -187,6 +187,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
           <div>
             <span><Activity size={15} /> 台灣 KTV 歌友</span>
             <h2 id="visit-region-modal-title">歌友熱度分布</h2>
+            <p>累積到訪的地區分布，並非即時位置。網路位置推估可能不準確，你可以更正統計中的地區。</p>
           </div>
           {onClose && (
             <button type="button" onClick={onClose} aria-label="關閉歌友熱度分布">

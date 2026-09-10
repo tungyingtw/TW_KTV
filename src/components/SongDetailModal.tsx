@@ -262,54 +262,10 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   justifyContent: 'space-between',
                 }}
               >
-                <span>歌曲導引：可前往公開影音平台參考歌曲版本資訊</span>
+                <span>想確認歌曲版本？可到 YouTube 搜尋。</span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--accent-blue, #38bdf8)', fontWeight: 600 }}>版本參考</span>
               </div>
             )}
-
-            {/* 歡唱建議與技巧提示 */}
-            <div
-              className="song-detail-info-box"
-              style={{
-                background: 'var(--bg-glass, rgba(255, 255, 255, 0.03))',
-                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.06))',
-                borderRadius: 'var(--radius-md, 14px)',
-                padding: '14px 16px',
-                margin: '12px 0 16px 0',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: 'var(--accent-pink, #ec4899)',
-                    background: 'rgba(236, 72, 153, 0.12)',
-                    border: '1px solid rgba(236, 72, 153, 0.25)',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  歡唱熱播
-                </span>
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: 'var(--accent-amber, #f59e0b)',
-                    background: 'rgba(245, 158, 11, 0.12)',
-                    border: '1px solid rgba(245, 158, 11, 0.25)',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  經典歌單
-                </span>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary, #cbd5e1)', lineHeight: 1.6 }}>
-                歡唱提示：依自己的舒適音域逐步升降調，先試唱再調整，搭配導唱或伴奏找到適合自己的音域。
-              </p>
-            </div>
 
             {/* YouTube Link Banner */}
             {getYoutubeReferenceUrl(song) && (
@@ -335,7 +291,7 @@ export const SongDetailModal: React.FC<SongDetailModalProps> = ({
                   transition: 'all 0.2s ease',
                 }}
               >
-                <Video size={18} /> 前往 YouTube 參考公開影音版本
+                <Video size={18} /> 到 YouTube 搜尋這首歌
               </a>
             )}
 

@@ -338,14 +338,14 @@ export function App() {
     }
   }, [catalogLoadError, displayProgress, isCatalogReady, targetProgress]);
 
-  const catalogLoadTitle = catalogLoadError ? '歌庫資料需要重新載入' : apiHealthStatus === 'waking' ? '資料服務喚醒中' : '歌庫資料準備中';
+  const catalogLoadTitle = catalogLoadError ? '歌庫資料需要重新載入' : apiHealthStatus === 'waking' ? '正在連線' : '歌庫資料準備中';
   const catalogLoadMessage = catalogLoadError || (() => {
     if (showCatalogRetryHint) return '資料仍在整理中。如果剛剛切換分頁、鎖屏或網路不穩，可以重新載入歌庫。';
     if (displayProgress >= 100) return '歌庫資料已準備完成，正在整理畫面。';
-    if (catalogLoadStage === 'checking-cache') return '正在確認本機快取，若曾經載入過會更快完成。';
+    if (catalogLoadStage === 'checking-cache') return '正在讀取已儲存的歌曲資料。';
     if (catalogLoadStage === 'downloading-catalog') return '正在下載歌曲資料，完成後會自動套用你的搜尋。';
-    if (catalogLoadStage === 'decoding-catalog') return '正在整理歌曲索引，讓歌名、歌手與導唱資訊可以正確查詢。';
-    if (catalogLoadStage === 'syncing-overrides') return '正在套用最新回報與資料修正。';
+    if (catalogLoadStage === 'decoding-catalog') return '正在整理歌曲資料，即將完成。';
+    if (catalogLoadStage === 'syncing-overrides') return '正在更新歌曲資訊。';
     if (apiHealthStatus === 'waking') return '正在連線資料服務，完成後會自動顯示結果。';
     if (apiHealthStatus === 'unavailable') return '資料服務暫時未連線，會先載入可用歌庫。';
     return '正在整理歌曲收錄、導唱與 MV 標示。';
@@ -356,7 +356,7 @@ export function App() {
   const shouldShowCatalogRetry = showCatalogRetryHint || Boolean(catalogLoadError);
   const shouldShowCatalogSyncNotice = isCatalogDisplayReady && (catalogOverrideSyncStatus === 'unavailable' || apiHealthStatus === 'unavailable');
   const catalogSyncNoticeMessage = catalogOverrideSyncStatus === 'unavailable'
-    ? '目前可正常搜尋本機歌庫，最新回報與資料修正稍後會再同步。'
+    ? '最新資料暫時無法同步，仍可搜尋已載入的歌曲。'
     : '資料服務暫時未連線，查詢仍會使用目前可用的歌庫資料。';
 
   useEffect(() => {
@@ -657,7 +657,7 @@ export function App() {
   const handleMobileSearchComplete = () => {
     if (!isMobile) return;
     if (!isCatalogDisplayReady) {
-      showToast(apiHealthStatus === 'waking' ? '資料服務喚醒中，稍候自動顯示' : '歌庫準備中，請稍候');
+      showToast(apiHealthStatus === 'waking' ? '正在連線，稍候自動顯示' : '歌庫準備中，請稍候');
       return;
     }
     const settleDelay = isSearching ? 360 : 120;
@@ -684,7 +684,7 @@ export function App() {
   };
 
   const showCatalogBusyToast = () => {
-    showToast(apiHealthStatus === 'waking' ? '資料服務喚醒中，稍候自動顯示' : '歌庫準備中，請稍候');
+    showToast(apiHealthStatus === 'waking' ? '正在連線，稍候自動顯示' : '歌庫準備中，請稍候');
   };
 
   const handleOpenMobileFilters = () => {
@@ -726,12 +726,12 @@ export function App() {
     },
     {
       question: 'KTV 導唱是什麼？',
-      answer: '導唱是伴唱系統可能提供的跟唱輔助功能。本站只整理資料是否顯示可能提供導唱。',
+      answer: '導唱是可以跟著唱的示範聲音，不一定是歌手本人。是否能開啟，請看現場點歌系統。',
       href: './ktv-guided-vocal.html',
     },
     {
       question: '有 MV 標示代表就是原版 MV 嗎？',
-      answer: '不是。MV 類型只是用來區分現場畫面可能接近原版 MV、伴唱帶或其他版本。',
+      answer: 'MV 標籤提供原版 MV 的線索，不保證每家門市播放相同版本；可點歌曲詳情查看回報。',
       href: './original-mv-vs-karaoke-video.html',
     },
     {
@@ -1008,7 +1008,7 @@ export function App() {
             {isMobile && (filters.searchQuery.trim() || showLongLoadHint || shouldShowCatalogRetry) && (
               <div className="loading-guidance" aria-live="polite">
                 {filters.searchQuery.trim() && <span>{pendingSearchHint}</span>}
-                {showLongLoadHint && <span>第一次載入完整歌庫可能較久，完成後下次會優先使用本機快取。</span>}
+                {showLongLoadHint && <span>第一次載入可能較久；此瀏覽器會保存歌曲資料，方便下次使用。</span>}
                 {shouldShowCatalogRetry && <span>重新載入只會更新歌庫資料，不會清空你目前輸入的搜尋條件。</span>}
               </div>
             )}

@@ -103,7 +103,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
           marginBottom: '20px',
         }}>
           <h3 style={{ fontSize: '1.08rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            進階條件過濾與排序
+            篩選與排序
           </h3>
           <button
             onClick={onClose}
@@ -192,7 +192,7 @@ export const BottomSheetFilter: React.FC<BottomSheetFilterProps> = ({
         {/* Quality Toggles */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
-            影片與音訊品質
+            MV 與導唱
           </label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label className={`bottom-sheet-toggle quality-toggle-row is-mv ${filters.onlyOfficialMv ? 'is-selected' : ''}`} style={{

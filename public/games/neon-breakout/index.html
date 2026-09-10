@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>霓虹星際反彈 (Neon Breakout)</title>
-  <meta name="description" content="霓虹星際反彈是 TYFunLab 附加小遊戲，結合打磚塊、太空射擊、道具與 Boss 關卡的單人 Canvas 遊戲。">
+  <meta name="description" content="霓虹星際反彈是 TYFunLab 附加小遊戲，結合打磚塊、太空射擊、道具與 Boss 關卡的單人遊戲。">
   <meta name="robots" content="noindex, follow">
   <link rel="canonical" href="https://tyfunlab.com/games/neon-breakout/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -252,10 +252,10 @@
 
   <div id="game-wrapper">
     <div id="hud">
-      <div class="hud-box"><span class="hud-label">SCORE</span><span id="score-val" class="hud-val">0</span></div>
-      <div class="hud-box"><span class="hud-label">COMBO</span><span id="combo-val" class="hud-val">x1</span></div>
-      <div class="hud-box"><span class="hud-label">LEVEL</span><span id="level-val" class="hud-val">1</span></div>
-      <div class="hud-box"><span class="hud-label">LIVES</span><span id="lives-val" class="hud-val">3</span></div>
+      <div class="hud-box"><span class="hud-label">分數</span><span id="score-val" class="hud-val">0</span></div>
+      <div class="hud-box"><span class="hud-label">連擊</span><span id="combo-val" class="hud-val">x1</span></div>
+      <div class="hud-box"><span class="hud-label">關卡</span><span id="level-val" class="hud-val">1</span></div>
+      <div class="hud-box"><span class="hud-label">生命</span><span id="lives-val" class="hud-val">3</span></div>
     </div>
 
     <div id="canvas-container">
@@ -273,11 +273,11 @@
       <p id="overlay-desc">
         [經典打磚塊戰役]<br>
         控制反彈戰艇，擊碎所有霓虹晶體！<br>
-        [手機] 滑動控制 / [PC] A D 或 滑鼠<br>
+        手機：滑動控制／電腦：A、D 鍵或滑鼠<br>
         [鍵盤] 空白鍵 發球 / 暫停
       </p>
       <div id="score-panel" class="score-panel hidden"></div>
-      <button id="start-btn" class="btn">START GAME</button>
+      <button id="start-btn" class="btn">開始遊戲</button>
     </div>
   </div>
 
@@ -585,7 +585,7 @@
       const btnEl   = document.getElementById('start-btn');
       const panel   = document.getElementById('score-panel');
 
-      titleEl.innerText = `STAGE ${level} CLEAR`;
+      titleEl.innerText = `第 ${level} 關通過`;
 
       const nextMsg = (level === 1)
         ? 'ENEMY DETECTED! 敵艦接近！準備迎戰！'
@@ -595,7 +595,7 @@
       panel.classList.remove('hidden');
       panel.innerText = `累計得分  ${score}`;
 
-      btnEl.innerText = `START LEVEL ${level + 1}`;
+      btnEl.innerText = `開始第 ${level + 1} 關`;
       document.getElementById('overlay').classList.remove('hidden');
     }
 
@@ -658,12 +658,12 @@
 
       if (lives <= 0) {
         gameState = 'GAMEOVER';
-        document.getElementById('overlay-title').innerText = 'GAME OVER';
-        document.getElementById('overlay-desc').innerText  = `關卡 Level ${level}`;
+        document.getElementById('overlay-title').innerText = '遊戲結束';
+        document.getElementById('overlay-desc').innerText  = `第 ${level} 關`;
         const panel = document.getElementById('score-panel');
         panel.classList.remove('hidden');
         panel.innerText = `最終得分  ${score}`;
-        document.getElementById('start-btn').innerText = 'RESTART';
+        document.getElementById('start-btn').innerText = '再玩一次';
         document.getElementById('overlay').classList.remove('hidden');
       }
     }

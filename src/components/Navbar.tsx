@@ -129,7 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <div 
               className="navbar-stat-text"
-              title="全台歌友實時線上查詢中"
+              title="估計目前在線使用人數"
             >
               <span className="navbar-live-dot" />
               <strong>{onlineCount.toLocaleString()}</strong>
@@ -142,13 +142,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               className={`visit-region-trigger navbar-stat-link ${isStatsError ? 'is-error' : ''}`}
               title={
                 isStatsError
-                  ? '全站累積查詢人數暫時無法連線同步'
+                  ? '暫時無法讀取到訪統計'
                   : !isStatsPersistent
-                    ? `全台歌友累積查詢數 ${totalVisitsFullText} 人 (本機模式)`
-                    : `全台歌友累積查詢與使用人數 ${totalVisitsFullText} 人 (12小時去重與 Redis 全站同步)`
+                    ? `累積到訪 ${totalVisitsFullText} 人次（暫時計數）`
+                    : `累積到訪 ${totalVisitsFullText} 人次；短時間重複造訪不重複計入`
               }
             >
-              <span>{isStatsLoading ? '累積同步中' : isStatsError ? '累積未同步' : isStatsPersistent ? '累積查詢' : '本機統計'}</span>
+              <span>{isStatsLoading ? '累積同步中' : isStatsError ? '累積未同步' : isStatsPersistent ? '累積到訪' : '暫時計數'}</span>
               {!isStatsLoading && !isStatsError && <strong>{totalVisitsCompactText}</strong>}
             </button>
           </div>
