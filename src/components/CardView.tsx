@@ -128,11 +128,11 @@ export const CardView: React.FC<CardViewProps> = ({
           <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '8px', maxWidth: '560px', margin: '8px auto 20px', lineHeight: 1.6 }}>
             {isSingleBrand ? (
               <>
-                目前尚無【{currentBrandInfo?.shortName}】的已確認收錄資料。<br />
-                可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供現場線索協助補充。
+                目前沒有符合條件的【{currentBrandInfo?.shortName}】收錄資料。<br />
+                試著縮短歌名、改查歌手或清除篩選。若現場找得到，歡迎提供建議。
               </>
             ) : (
-              '目前沒有找到相符歌曲。可以改用歌手、部分歌名、別名或較短關鍵字再查一次；本站目前不支援用歌詞片段查詢。若你確認現場有收錄，歡迎提供建議作為後續整理參考。'
+              '找不到相符歌曲。試著縮短歌名、改查歌手或清除篩選；仍找不到時，可以提供建議。'
             )}
           </p>
 

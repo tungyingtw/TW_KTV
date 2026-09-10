@@ -39,16 +39,16 @@ const getVoteState = (voteData: VoteData): VoteState => {
 };
 
 const stateConfig: Record<VoteState, { label: string; hint: string; tooltip: string; icon: React.ReactNode }> = {
-  ok: { label: '一致度高', hint: '可唱', tooltip: '多數歌友回報可唱，且結果一致度高', icon: <Check size={15} /> },
-  leanOk: { label: '偏向可唱', hint: '尚未穩定', tooltip: '目前偏向可唱，但回報比例尚未穩定', icon: <HelpCircle size={15} /> },
+  ok: { label: '多為有收錄', hint: '以現場為準', tooltip: '目前回報多為有收錄，請以現場點歌系統為準', icon: <Check size={15} /> },
+  leanOk: { label: '有收錄回報', hint: '仍待確認', tooltip: '已有收錄回報，仍需要更多現場資訊', icon: <HelpCircle size={15} /> },
   disputed: { label: '回報分歧', hint: '需現場確認', tooltip: '正反回報接近，建議以現場狀況為準', icon: <AlertCircle size={15} /> },
-  empty: { label: '資料不足', hint: '需要第一筆回報', tooltip: '尚無歌友回報，需要第一筆現場資料', icon: <HelpCircle size={15} /> },
-  negative: { label: '反向一致', hint: '多數回報未收錄', tooltip: '多數歌友回報未收錄或無導唱', icon: <X size={15} /> },
+  empty: { label: '暫無回報資料', hint: '歡迎補充', tooltip: '目前沒有可顯示的收錄回報資料', icon: <HelpCircle size={15} /> },
+  negative: { label: '偏向未收錄', hint: '以現場為準', tooltip: '目前收錄回報偏向未收錄，仍需現場確認', icon: <X size={15} /> },
 };
 
 const confidenceLabel: Record<VoteConfidence, string> = {
   neutral: '',
-  verified: '歌友確認收錄',
+  verified: '回報偏向有收錄',
   disputed: '歌友回報不一致',
   uncertain: '資料仍待確認',
 };
@@ -91,7 +91,7 @@ const MetricRow: React.FC<{
       </div>
       <div className="brand-vote-scale">
         <span>{positiveLabel}</span>
-        <div className="brand-vote-split" aria-label={total > 0 ? `${label} ${pct}%` : `${label} 尚無回報`}>
+        <div className="brand-vote-split" aria-label={total > 0 ? `${label} ${pct}%` : `${label} 暫無資料`}>
           {total > 0 ? (
             <>
               <i className="is-positive" style={{ width: `${pct}%` }} />
@@ -267,7 +267,7 @@ export const BrandVoteBarV2: React.FC<BrandVoteBarProps> = ({ songId, brandId, i
   const state = useMemo(() => getVoteState(voteData), [voteData]);
   const stateInfo = stateConfig[state];
   const actionLabel = songTotal + guideTotal + mvTotal === 0
-    ? '提供第一筆回報'
+    ? '提供現場回報'
     : userVote || userGuideVote || userMvVote
       ? '查看票數・修改回報'
       : state === 'disputed'
@@ -300,10 +300,11 @@ export const BrandVoteBarV2: React.FC<BrandVoteBarProps> = ({ songId, brandId, i
 
       {showBreakdown && (
         <div className="brand-vote-breakdown">
+          <p>依現場情況選擇；再次點選可取消。不確定的項目請略過。</p>
           <div className="brand-vote-detail-lines">
-            <div><strong>收錄</strong><span>{songTotal > 0 ? `${voteData.confirm} 有 / ${voteData.deny} 無` : '尚無回報'}</span></div>
-            <div><strong>導唱</strong><span>{guideTotal > 0 ? `${guidedCount} 有 / ${noGuidedCount} 無` : '尚無回報'}</span></div>
-            {ENABLE_MV_VOTE && <div><strong>MV</strong><span>{mvTotal > 0 ? `${officialMvCount} 原版 / ${editedMvCount} 伴唱` : '尚無回報'}</span></div>}
+            <div><strong>收錄</strong><span>{songTotal > 0 ? `${voteData.confirm} 有 / ${voteData.deny} 無` : '暫無資料'}</span></div>
+            <div><strong>導唱</strong><span>{guideTotal > 0 ? `${guidedCount} 有 / ${noGuidedCount} 無` : '暫無資料'}</span></div>
+            {ENABLE_MV_VOTE && <div><strong>MV</strong><span>{mvTotal > 0 ? `${officialMvCount} 原版 / ${editedMvCount} 伴唱` : '暫無資料'}</span></div>}
           </div>
           <div className="brand-vote-actions">
             <button type="button" className={`brand-vote-action is-positive ${userVote === 'confirm' ? 'is-selected' : ''}`} disabled={isVoting} onClick={e => { e.stopPropagation(); handleVote('confirm'); }} aria-pressed={userVote === 'confirm'}><span>有收錄</span>{voteData.confirm > 0 && <em>{voteData.confirm}</em>}</button>

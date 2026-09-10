@@ -282,7 +282,7 @@ export function TaiwanHeatMap({
                   onMouseMove={(event) => setPointer({ x: event.clientX, y: event.clientY, region })}
                   tabIndex={0}
                   role="button"
-                  aria-label={`${regionLabels[region.id] || region.name}，${formatCount(visits)} 人`}
+                  aria-label={`${regionLabels[region.id] || region.name}，${formatCount(visits)} 人次`}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') onSelectRegion(region.id);
                   }}
@@ -299,7 +299,7 @@ export function TaiwanHeatMap({
                 onMouseMove={(event) => setPointer({ x: event.clientX, y: event.clientY, region: selectedRegion })}
                 tabIndex={0}
                 role="button"
-                aria-label={`${regionLabels[selectedRegion.id] || selectedRegion.name}，${formatCount(visitCounts[selectedRegion.id] || 0)} 人`}
+                aria-label={`${regionLabels[selectedRegion.id] || selectedRegion.name}，${formatCount(visitCounts[selectedRegion.id] || 0)} 人次`}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') onSelectRegion(selectedRegion.id);
                 }}
@@ -320,7 +320,7 @@ export function TaiwanHeatMap({
               <g className="taiwan-demo-user-marker" transform={`translate(${userRegionAnchor.x} ${userRegionAnchor.y})`} aria-hidden="true">
                 <circle r="17" />
                 <circle r="6" />
-                <text y="-24">你在這裡</text>
+                <text y="-24">記錄的地區</text>
               </g>
             )}
           </g>
@@ -328,7 +328,7 @@ export function TaiwanHeatMap({
         {pointer && (
           <div className="taiwan-demo-tooltip" style={{ left: pointer.x + 14, top: pointer.y + 14 }}>
             <strong>{regionLabels[pointer.region.id] || pointer.region.name}</strong>
-            <span>{formatCount(visitCounts[pointer.region.id] || 0)} 人</span>
+            <span>{formatCount(visitCounts[pointer.region.id] || 0)} 人次</span>
           </div>
         )}
         {selectedRegion && showJoinAction && (
@@ -348,7 +348,7 @@ export function TaiwanHeatMap({
               disabled={joinActionDisabled ?? selectedRegion.id === userRegionId}
               onClick={onJoinSelectedRegion}
             >
-              {joinActionLabel || (selectedRegion.id === userRegionId ? '已在這裡' : '我在這裡')}
+              {joinActionLabel || (selectedRegion.id === userRegionId ? '已記錄此地區' : '設為我的地區')}
             </button>
             {actionMessage && <em>{actionMessage}</em>}
           </div>

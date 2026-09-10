@@ -86,7 +86,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
     }
 
     if (!brandName.trim()) {
-      setError('請填寫 KTV 廠牌或門市體系名稱');
+      setError('請填寫 KTV 品牌或門市名稱');
       return;
     }
 
@@ -167,10 +167,10 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
           <div style={{ textAlign: 'center', padding: '30px 10px' }}>
             <CheckCircle2 size={56} color="#4ade80" style={{ margin: '0 auto 14px' }} />
             <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary, #fff)' }}>
-              {activeTab === 'song' ? '已收到您的歌曲建議' : '已收到您的 KTV 廠牌建議'}
+              {activeTab === 'song' ? '已收到您的歌曲建議' : '已收到您的 KTV 品牌建議'}
             </div>
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '10px', fontSize: '0.92rem', lineHeight: 1.6 }}>
-              感謝提供資料。我們會完成資料確認後，再更新至網站可查詢內容。
+              已收到建議，我們會核對資料；採納後將更新網站。
             </div>
           </div>
         ) : (
@@ -191,10 +191,10 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
               </div>
               <div>
                 <div style={{ fontWeight: 800, color: 'var(--text-primary, #fff)', fontSize: '1.15rem' }}>
-                  提供歌曲或廠牌線索
+                  提供歌曲或 KTV 建議
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #94a3b8)', marginTop: '2px' }}>
-                  找不到歌曲或發現新的 KTV 廠牌時，可以在這裡補充資訊。
+                  找不到歌曲或發現新的 KTV 品牌時，可以在這裡補充資訊。
                 </div>
               </div>
             </div>
@@ -250,7 +250,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   transition: 'all 0.2s ease',
                 }}
               >
-                <Building2 size={16} /> KTV 廠牌
+                <Building2 size={16} /> KTV 品牌
               </button>
             </div>
 
@@ -287,7 +287,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '5px', fontWeight: 600 }}>
-                      對應 KTV 廠牌
+                      對應 KTV 品牌
                     </label>
                     <select
                       value={brandId}
@@ -300,7 +300,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                         </option>
                       ))}
                       <option value={UNKNOWN_BRAND_ID} style={{ background: 'var(--bg-card, #1e293b)' }}>
-                        找不到 / 不確定廠牌
+                        找不到 / 不確定 KTV
                       </option>
                     </select>
                   </div>
@@ -308,7 +308,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
 
                 {brandId === UNKNOWN_BRAND_ID && (
                   <div>
-                    <label style={smallLabelStyle()}>看到的 KTV 廠牌或線索</label>
+                    <label style={smallLabelStyle()}>看到的 KTV 品牌或線索</label>
                     <input
                       type="text"
                       value={suggestedSongBrandName}
@@ -410,20 +410,20 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                   color: 'var(--text-primary, #e0f2fe)',
                   lineHeight: 1.5,
                 }}>
-                  發現未收錄的連鎖 KTV、獨立歡唱門市或伴唱系統時，提供名稱與補充線索即可，簡稱與細節會由管理者採納時整理。
+                  如果清單中找不到某家 KTV，請提供名稱與參考資訊，方便我們確認。
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#38bdf8', marginBottom: '5px', fontWeight: 700 }}>
-                      KTV 廠牌 / 門市體系名稱 <span style={{ color: '#f87171' }}>*</span>
+                      KTV 品牌或門市名稱 <span style={{ color: '#f87171' }}>*</span>
                     </label>
                     <input type="text" value={brandName} onChange={event => setBrandName(event.target.value)} placeholder="例：晴空歡唱連鎖 KTV" style={inputStyle('rgba(56, 189, 248, 0.35)')} />
                   </div>
 
                   <div style={{ display: 'none' }}>
                     <label style={{ display: 'block', fontSize: '0.83rem', color: '#f472b6', marginBottom: '5px', fontWeight: 700 }}>
-                      顯示簡稱
+                      常用簡稱
                     </label>
                     <input type="text" value={shortName} onChange={event => setShortName(event.target.value)} placeholder="例：晴空" style={inputStyle()} />
                   </div>
@@ -462,7 +462,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
                 value={helperNickname}
                 onChange={event => setHelperNickname(event.target.value)}
                 maxLength={24}
-                placeholder="方便管理者辨識協助者，處理完成後會清除"
+                placeholder="讓我們知道如何稱呼你（可不填）"
                 style={{ ...inputStyle(), fontSize: '0.85rem' }}
               />
             </div>
@@ -505,7 +505,7 @@ export const SuggestSongModal: React.FC<SuggestSongModalProps> = ({ onClose, def
               }}
             >
               <Send size={16} />
-              {isSubmitting ? '送出中...' : (activeTab === 'song' ? '送出歌曲建議' : '送出 KTV 廠牌建議')}
+              {isSubmitting ? '送出中...' : (activeTab === 'song' ? '送出歌曲建議' : '送出 KTV 品牌建議')}
             </button>
           </>
         )}

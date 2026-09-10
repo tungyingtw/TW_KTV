@@ -80,10 +80,10 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         >
           <div className="legal-modal-heading">
             <h3 id="legal-notice-title" style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary, #ffffff)' }}>
-              關於本站與法律條款 (Terms & Privacy Policy)
+              關於本站與使用說明
             </h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary, #94a3b8)' }}>
-              Taiwan KTV Song Catalog — Legal Notices & Compliance Policy
+              了解網站用途、資料處理方式與聯絡管道。
             </p>
           </div>
           <button
@@ -139,7 +139,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            <ShieldCheck size={16} /> 隱私權政策 (Privacy)
+            <ShieldCheck size={16} /> 隱私權政策
           </button>
 
           <button
@@ -160,7 +160,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            <FileText size={16} /> 免責聲明與條款 (Terms)
+            <FileText size={16} /> 免責聲明與條款
           </button>
 
           <button
@@ -181,7 +181,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            <Info size={16} /> 關於本站 (About)
+            <Info size={16} /> 關於本站
           </button>
 
           <button
@@ -202,7 +202,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            <Mail size={16} /> 聯絡我們 (Contact)
+            <Mail size={16} /> 聯絡我們
           </button>
         </div>
 
@@ -221,170 +221,36 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
         >
           {activeTab === 'privacy' && (
             <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 4px 0', fontSize: '1.1rem' }}>
-                隱私權保護政策 (Privacy Policy)
-              </h4>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', margin: '0 0 12px 0' }}>
-                Last Updated: July 2026 | Effective for all global users & web crawlers
-              </p>
-
-              <h5 style={{ color: '#38bdf8', margin: '8px 0 4px 0' }}>1. 資料收集與個人資訊保護 (Information Collection)</h5>
-              <p>
-                本網站非常重視您的隱私權。我們不強制使用者進行帳號註冊，亦不收集任何個人身份辨識資料（如姓名、身分證字號、真實住址等）。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #38bdf8' }}>
-                <b>English Summary:</b> We highly respect your privacy. This website does not require mandatory account registration and does not collect personally identifiable information (PII).
-              </div>
-
-              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>2. Cookies、本機快取與廣告技術 (Cookies, Local Storage & Ads)</h5>
-              <p>
-                為了提供秒開與快取搜尋體驗，本網站會使用 HTML5 LocalStorage 與 IndexedDB 在您的本機瀏覽器中儲存歌曲快取與「我的最愛」歌單。本網站配合 Google AdSense 聯播網廣告；Google 與第三方廣告技術供應商可能會使用 Cookie、網路信標、IP 位址或其他識別碼，依使用者造訪本網站與其他網站或應用程式的情形提供、衡量及改善廣告服務。
-              </p>
-              <p>
-                關於 Google 如何使用合作夥伴網站或應用程式中的資料，請參閱 <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8' }}>Google 合作夥伴網站資料使用說明</a>。使用者亦可透過 Google 廣告設定或瀏覽器設定管理個人化廣告、Cookie 與追蹤偏好。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #38bdf8' }}>
-                <b>English Summary:</b> We use HTML5 LocalStorage and IndexedDB for local caching and song catalog indexing. Google and third-party ad technology providers may use cookies, web beacons, IP addresses, or other identifiers to serve, measure, and improve ads.
-              </div>
-
-              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>3. 訪客統計與資料用途 (Analytics & Data Use)</h5>
-              <p>
-                本網站使用自建伺服器端匿名訪客統計（以裝置 UUID 識別，不關聯個人身份），以了解網站使用人數。統計資料僅用於網站營運優化，不作為個人身份辨識用途。
-              </p>
-
-              <h5 style={{ color: '#38bdf8', margin: '12px 0 4px 0' }}>4. 外部連結與第三方宣告 (Third-Party Links)</h5>
-              <p>
-                本網站包含導向第三方公開平台（如 YouTube 官方頻道）之超連結。第三方網站擁有獨立之隱私權政策，本網站不承擔外部網站之連帶責任。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #38bdf8' }}>
-                <b>English Summary:</b> Our service contains links to third-party sites (e.g., YouTube official channels). These external platforms operate under separate privacy policies, and we assume no liability for third-party practices.
-              </div>
+              <h4>隱私權摘要</h4>
+              <p>查歌不需要註冊。使用本站時，我們仍會處理 IP 位址、訪客識別碼，以及你送出的回報、投票或聯絡資料。</p>
+              <p>歌本、偏好與部分使用紀錄保存在此瀏覽器。清除網站資料不會自動刪除伺服器上的回報、統計或備份，也不會撤回投票。</p>
+              <p>啟用地區推估時，IP 會送至地區查詢服務。Google 與第三方廣告服務也可能使用 Cookie 等資料；完整政策提供資料保存、廣告偏好與刪除請求的說明。</p>
+              <a href="/privacy.html">閱讀完整隱私權政策</a>
             </div>
           )}
-
           {activeTab === 'terms' && (
             <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 4px 0', fontSize: '1.1rem' }}>
-                免責聲明與服務條款 (Terms of Service & Legal Disclaimer)
-              </h4>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', margin: '0 0 12px 0' }}>
-                Non-Official Independent Reference Platform Compliance Policy
-              </p>
-
-              <h5 style={{ color: '#f59e0b', margin: '8px 0 4px 0' }}>1. 第三方非官方獨立平台聲明 (Independent Platform Statement)</h5>
-              <p>
-                本網站為<strong>民間社群獨立開發維護之歌曲索引與查詢參考平台</strong>，不是任何 KTV 伴唱業者或伴唱機品牌的官方網站、營利附屬機構或代表窗口。本網站提及的品牌與名稱僅作為使用者辨識收錄平台與現場查詢情境之參考。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
-                <b>English Summary:</b> This platform is an independent, non-official community song catalog reference index. It is not affiliated with, endorsed by, or commercially connected to any commercial karaoke brand or hardware manufacturer.
-              </div>
-
-              <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>2. 商標權與品牌宣告 (Trademarks & Copyrights)</h5>
-              <p>
-                本網站提及之所有公司名稱、KTV 門市品牌、伴唱機廠牌名稱及商標標誌，其財產權與商標權均<strong>完全歸屬於原註冊公司及權利人所有</strong>。本網站僅出於資訊查詢、便於民眾個人歌唱檢索之參考目的進行載錄，且一律實施圓圈遮蔽 (`○`) 保護。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
-                <b>English Summary:</b> All product names, logos, and registered trademarks displayed belong strictly to their respective corporate owners. Brand names are masked for trademark protection under fair use.
-              </div>
-
-              <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>3. 音樂影音與著作權聲明 (Audio/Video Copyright Compliance)</h5>
-              <p>
-                本網站<strong>不儲存、上傳、託管或散佈 MP3、MP4 音訊、影片檔案或影音資源</strong>。網站內展示之 MV 參考連結，均導向第三方公開影音平台之標準嵌入或超連結；相關內容權利歸各權利人、創作者及原發布平台所有。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
-                <b>English Summary:</b> We do NOT host, store, stream, or distribute copyrighted MP3/MP4 audio or video files. All media previews utilize standard embeds or hyperlinks directly to third-party public platforms (e.g., YouTube official channels).
-              </div>
-
-              <h5 style={{ color: '#f59e0b', margin: '12px 0 4px 0' }}>4. 門市數據精準度與現場機器免責 (On-Site Accuracy Disclaimer)</h5>
-              <p>
-                本網站之門市收錄狀態為使用者回報、公開目錄與人工整理之參考資料，列表標籤可能參考歌友「有」多於「沒有」的投票結果，僅供社群歡唱前之輔助查詢。因各類 KTV 門市伴唱機器之維護狀況及更新進度不一，<strong>現場實際點唱與收錄狀況請一律以各門市點歌系統機器為準</strong>。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
-                <b>English Summary:</b> Store song availability data is crowdsourced for informational purposes. Actual song availability is subject to physical karaoke machine systems on site.
-              </div>
+              <h4>使用本站前，請先了解</h4>
+              <p>TYFunLab 是民間查歌工具，與 KTV 業者沒有官方關係。查詢結果供行前參考，能否點播、是否有導唱及播放畫面，請以現場點歌系統為準。</p>
+              <p>YouTube 連結會開啟外部搜尋結果，不代表影片已經本站核實或取得授權。本站不提供歌曲或影片下載。</p>
+              <p>回報時請提供你實際看到的情況，不要填入他人個資或未經允許公開的內容。</p>
+              <a href="/terms.html">閱讀完整服務條款</a>
             </div>
           )}
-
           {activeTab === 'about' && (
             <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
-                關於「TYFunLab 台灣KTV歌曲查詢」 (About This Site)
-              </h4>
-              <p>
-                「TYFunLab 台灣KTV歌曲查詢」整理多家 KTV 平台的歌曲收錄、導唱與 MV 類型參考，協助歌友在出發前先準備歌單，也能在現場快速比對可能的收錄狀態。
-              </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-glass, rgba(255,255,255,0.03))', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
-                <b>English Summary:</b> Taiwan KTV Song Catalog is a community-maintained reference directory helping users cross-check song availability, guided vocals, and MV type references across karaoke venue systems.
-              </div>
-
-              <h5 style={{ color: '#10b981', margin: '8px 0 4px 0' }}>核心特色 (Key Features)</h5>
-              <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
-                <li><strong>跨廠牌門市查詢</strong>：整理多家連鎖門市與伴唱系統之歌曲收錄狀態。</li>
-                <li><strong>MV 類型與導唱標示</strong>：協助整理歌曲是否可能提供原版 MV、伴唱帶類型或現場導唱功能參考，並納入歌友投票方向。</li>
-                <li><strong>使用者回報與人工確認</strong>：提供現場歌友參與歌曲收錄、導唱與 MV 類型回報。</li>
-              </ul>
+              <h4>關於 TYFunLab</h4>
+              <p>想知道一首歌在哪些 KTV 有收錄？你可以用歌名或歌手搜尋，比對收錄、導唱與 MV 資訊，再把想唱的歌加入「我的歌本」。</p>
+              <p>網站資料由既有歌冊資料與歌友回報整理而來，尚未逐筆向所有平台及門市確認。發現與現場不同時，歡迎提供線索。</p>
+              <a href="/about.html">閱讀完整網站介紹</a>
             </div>
           )}
-
           {activeTab === 'contact' && (
             <div className="legal-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ color: 'var(--text-primary, #f8fafc)', margin: '0 0 8px 0', fontSize: '1.1rem' }}>
-                聯絡我們 (Contact Us)
-              </h4>
-              <p>
-                感謝您使用「TYFunLab 台灣KTV歌曲查詢」！若您有任何意見建議、資料修正、合作提案或著作權聯繫，歡迎透過下方公用信箱與我們聯繫：
-              </p>
-
-              <div
-                style={{
-                  background: 'var(--bg-glass, rgba(15, 23, 42, 0.6))',
-                  border: '1px solid var(--border-color, rgba(56, 189, 248, 0.25))',
-                  borderRadius: '12px',
-                  padding: '16px 20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                }}
-              >
-                <div
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '10px',
-                    background: 'rgba(56, 189, 248, 0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#38bdf8',
-                  }}
-                >
-                  <Mail size={20} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)' }}>
-                    公用聯絡信箱 (Public Contact Email)
-                  </div>
-                  <a
-                    href="mailto:tyfunlab@gmail.com"
-                    style={{
-                      fontSize: '1.05rem',
-                      fontWeight: 700,
-                      color: '#38bdf8',
-                      textDecoration: 'none',
-                      overflowWrap: 'anywhere',
-                    }}
-                  >
-                    tyfunlab@gmail.com
-                  </a>
-                </div>
-              </div>
-
-              <h5 style={{ color: '#38bdf8', margin: '8px 0 4px 0' }}>主要服務與聯繫範疇 (Service Scope)</h5>
-              <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
-                <li><strong>品牌合作與廣告贊助 (Sponsorship & Ads)</strong>：歡迎相關歡唱品牌與活動贊助洽詢。</li>
-                <li><strong>歌曲收錄與資料修正 (Data Correction)</strong>：現場點唱資料異動聯繫。</li>
-                <li><strong>權益與技術交流 (Copyright & Tech Inquiry)</strong>：著作權通知與技術反饋。</li>
-              </ul>
+              <h4>聯絡我們</h4>
+              <p>歌曲資料不符，請使用歌曲詳情中的「回報現場差異」；找不到歌曲或 KTV，請使用「提供建議」。</p>
+              <p>其他問題、權利通知或個人資料請求，請寄信至 tyfunlab@gmail.com，附上相關頁面及問題說明。此信箱非即時客服，請勿寄送密碼或不必要的個人資料。</p>
+              <a href="/contact.html">閱讀完整聯絡說明</a>
             </div>
           )}
         </div>
@@ -413,7 +279,7 @@ export const LegalNoticeModal: React.FC<LegalNoticeModalProps> = ({
               boxShadow: '0 2px 8px rgba(56, 189, 248, 0.25)',
             }}
           >
-            我已了解 (Understood)
+            關閉
           </button>
         </div>
       </div>

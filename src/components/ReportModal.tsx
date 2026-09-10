@@ -11,7 +11,7 @@ interface ReportModalProps {
 }
 
 const ISSUE_OPTIONS: { value: IssueType; label: string }[] = [
-  { value: 'no_song',    label: '實際上沒有這首歌（系統誤標為收錄）' },
+  { value: 'no_song',    label: '現場找不到這首歌' },
   { value: 'has_song',   label: '現場有這首歌（補充收錄線索）' },
   { value: 'wrong_info', label: '歌名、歌手或收錄狀態有誤' },
   { value: 'other',      label: '其他問題' },
@@ -112,7 +112,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             <CheckCircle2 size={52} color="#4ade80" style={{ margin: '0 auto 12px' }} />
             <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary, #fff)' }}>回報已送出</div>
             <div style={{ color: 'var(--text-secondary, #94a3b8)', marginTop: '8px', fontSize: '0.88rem' }}>
-              已收到你的回報。投票會先成為列表判讀參考，主資料仍會依一致性與可驗證性後續整理。
+              已收到你的回報，我們會核對後處理。網站資料不會立即更新。
             </div>
           </div>
         ) : (
@@ -131,7 +131,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
 
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '8px', fontWeight: 600 }}>
-                異常類型 <span style={{ color: '#f87171' }}>*</span>
+                回報類型 <span style={{ color: '#f87171' }}>*</span>
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {ISSUE_OPTIONS.map(opt => (
@@ -163,7 +163,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
             {issueType !== 'other' && (
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '6px', fontWeight: 600 }}>
-                  相關 KTV 廠牌 <span style={{ color: '#f87171' }}>*</span>
+                  KTV 平台 <span style={{ color: '#f87171' }}>*</span>
                 </label>
                 <select
                   value={selectedBrand}
@@ -179,7 +179,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                     cursor: 'pointer',
                   }}
                 >
-                  <option value="" style={{ background: 'var(--bg-card, #1e293b)' }}>請選擇廠牌</option>
+                  <option value="" style={{ background: 'var(--bg-card, #1e293b)' }}>請選擇 KTV 平台</option>
                   {brandList.map(b => (
                     <option key={b.id} value={b.id} style={{ background: 'var(--bg-card, #1e293b)' }}>
                       {b.name}
@@ -194,10 +194,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 補充說明
               </label>
               <p style={{ margin: '0 0 0.45rem', color: 'var(--text-secondary, #94a3b8)', fontSize: '0.82rem', lineHeight: 1.55 }}>
-                請盡量提供歌名、歌手、KTV 平台或門市線索、現場看到的是有收錄或未收錄、是否有導唱，以及 MV 類型是原版 MV、伴唱帶、Live、剪輯或不確定。
+                請描述門市、日期及看到的差異，例如找不到歌曲、沒有導唱或 MV 不同。不確定的項目可以略過。
               </p>
               <p style={{ margin: '0 0 0.55rem', color: 'var(--text-muted, #94a3b8)', fontSize: '0.78rem', lineHeight: 1.55 }}>
-                回報內容會作為後續人工整理參考，不代表立即更新。請勿提供個資、內部資料，或不適合公開的截圖、音訊與影片檔；若資料互相衝突，後續需人工確認。
+                我們會核對回報後再整理資料。請勿填入他人個資或未經允許公開的內容。
               </p>
               <textarea
                 value={note}
@@ -229,7 +229,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ song, onClose, default
                 value={helperNickname}
                 onChange={e => setHelperNickname(e.target.value)}
                 maxLength={24}
-                placeholder="方便管理者辨識協助者，處理完成後會清除"
+                placeholder="讓我們知道如何稱呼你（可不填）"
                 style={{
                   width: '100%',
                   background: 'var(--bg-glass, rgba(255,255,255,0.04))',

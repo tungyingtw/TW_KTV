@@ -81,13 +81,13 @@ export function VisitStatsPanel({
             <span><BarChart3 size={16} /> 近 10 日到訪</span>
             {dailyDateRange && <small>{dailyDateRange}</small>}
           </div>
-          <strong>今日 {formatCount(todayCount)} 人</strong>
+          <strong>今日 {formatCount(todayCount)} 人次</strong>
         </div>
         {isDailyStatsLoading && <p className="taiwan-demo-daily-empty">每日統計讀取中...</p>}
         {!isDailyStatsLoading && dailyStatsError && <p className="taiwan-demo-daily-empty">{dailyStatsError}</p>}
         {!isDailyStatsLoading && !dailyStatsError && (
           <>
-            <div className="taiwan-demo-daily-bars" aria-label="近 10 日每日到訪人數">
+            <div className="taiwan-demo-daily-bars" aria-label="近 10 日每日到訪人次">
               {dailyStats.map((item, index) => {
                 const height = item.count ? Math.max(12, Math.round((item.count / maxDailyCount) * 100)) : 4;
                 const isToday = index === dailyStats.length - 1;
@@ -95,8 +95,8 @@ export function VisitStatsPanel({
                   <div
                     key={item.date}
                     className={`taiwan-demo-daily-bar ${isToday ? 'is-today' : ''} ${item.count === 0 ? 'is-zero' : ''}`}
-                    title={`${formatShortDate(item.date)}：${formatCount(item.count)} 人`}
-                    aria-label={`${formatShortDate(item.date)}，${formatCount(item.count)} 人`}
+                    title={`${formatShortDate(item.date)}：${formatCount(item.count)} 人次`}
+                    aria-label={`${formatShortDate(item.date)}，${formatCount(item.count)} 人次`}
                   >
                     <i style={{ height: `${height}%` }} />
                     <span>{isToday ? '今' : formatDayLabel(item.date)}</span>
@@ -111,9 +111,9 @@ export function VisitStatsPanel({
 
       {showUserRegion && (
         <div className="taiwan-demo-user-region">
-          <span>目前記錄位置</span>
+          <span>記錄的地區</span>
           <strong>{userRegionName}</strong>
-          <p>如果不在這裡，點選你的縣市後按「我在這裡」。</p>
+          <p>若地區不正確，點選縣市後按「設為我的地區」。</p>
         </div>
       )}
 
@@ -121,7 +121,7 @@ export function VisitStatsPanel({
         <div className="taiwan-demo-selected-icon"><MapPinned size={24} /></div>
         <span>目前選取</span>
         <h2>{selectedRegion ? regionLabels[selectedRegion.id] || selectedRegion.name : '全台總覽'}</h2>
-        <p>{selectedRegion ? `${formatCount(selectedVisits)} 人，約佔全站 ${selectedPercent}%。` : '點擊任一縣市可聚焦查看；點地圖空白處回到全台總覽。'}</p>
+        <p>{selectedRegion ? `${formatCount(selectedVisits)} 人次，約佔全站 ${selectedPercent}%。` : '點擊任一縣市可聚焦查看；點地圖空白處回到全台總覽。'}</p>
         {selectedRegion && showJoinAction && (
           <button
             type="button"
@@ -129,7 +129,7 @@ export function VisitStatsPanel({
             disabled={joinActionDisabled ?? selectedRegion.id === userRegionId}
             onClick={onJoinSelectedRegion}
           >
-            {joinActionLabel || (selectedRegion.id === userRegionId ? '已在這裡' : '我在這裡')}
+            {joinActionLabel || (selectedRegion.id === userRegionId ? '已記錄此地區' : '設為我的地區')}
           </button>
         )}
         {actionMessage && <p className="taiwan-demo-action-message">{actionMessage}</p>}
