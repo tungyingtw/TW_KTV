@@ -1,11 +1,10 @@
 import type { Song } from '../types/ktv';
+import { decodeCatalogPayload } from '../utils/catalogCodec';
 
 const DB_NAME = 'KtvCatalogDB';
 const STORE_NAME = 'catalog_store';
 const KEY_NAME = 'full_catalog_v28';
 
-const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
-const MAGIC_HEADER = [0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]; // "TWKTVBIN"
 const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost:3001' : 'https://tw-ktv.onrender.com');
 
@@ -83,6 +82,7 @@ export type CatalogOverrideSyncStatus = 'synced' | 'unavailable';
 export interface FetchFullCatalogOptions {
   forceRefresh?: boolean;
   onOverrideSync?: (status: CatalogOverrideSyncStatus) => void;
+  onCatalogUpdate?: (catalog: Song[]) => void;
 }
 
 async function parseVisitRegionApiResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
@@ -225,12 +225,35 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小時快取效期 (避免重複�
 
 export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options: FetchFullCatalogOptions = {}): Promise<Song[]> {
   onProgress?.(5, 'checking-cache');
+  const overridesRequest = fetchCatalogOverrides();
+  let readyOverrides: CatalogOverrides | undefined;
+  void overridesRequest.then(overrides => { readyOverrides = overrides; });
+  const finish = async (catalog: Song[]): Promise<Song[]> => {
+    const cachedOverrides = readCachedOverrides();
+    // Callers without an update handler retain the fully synchronized behavior.
+    if (!options.onCatalogUpdate) readyOverrides = await overridesRequest;
+    if (readyOverrides) {
+      options.onOverrideSync?.(readyOverrides.ok ? 'synced' : 'unavailable');
+      return applyCatalogOverrides(catalog, readyOverrides.ok ? readyOverrides : readCachedOverrides());
+    }
+    // Start after the initial catalog has reached the caller to prevent stale overwrite races.
+    window.setTimeout(() => {
+      void overridesRequest.then(overrides => {
+        if (overrides.ok && (overrides.songs.length || overrides.deletedIds.length || cachedOverrides.songs.length || cachedOverrides.deletedIds.length)) {
+          options.onCatalogUpdate?.(applyCatalogOverrides(catalog, overrides));
+        }
+        options.onOverrideSync?.(overrides.ok ? 'synced' : 'unavailable');
+      });
+    }, 0);
+    return applyCatalogOverrides(catalog, cachedOverrides);
+  };
 
   // 1. 優先從本機 IndexedDB 快取讀取 (秒級 <50ms 載入)
   const cached = options.forceRefresh ? null : await getCachedCatalog();
   if (cached && cached.length > 0) {
     onProgress?.(96, 'syncing-overrides');
-    const lastFetch = localStorage.getItem(TIME_KEY);
+    let lastFetch: string | null = null;
+    try { lastFetch = localStorage.getItem(TIME_KEY); } catch {}
     const now = Date.now();
     const isExpired = !lastFetch || (now - parseInt(lastFetch, 10) > CACHE_TTL_MS);
 
@@ -243,7 +266,7 @@ export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options
         }
       });
     }
-    const merged = await mergeCatalogOverrides(cached, options.onOverrideSync);
+    const merged = await finish(cached);
     onProgress?.(100, 'ready');
     return merged;
   }
@@ -255,7 +278,7 @@ export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options
     setCachedCatalog(fresh);
     try { localStorage.setItem(TIME_KEY, String(Date.now())); } catch {}
     onProgress?.(96, 'syncing-overrides');
-    const merged = await mergeCatalogOverrides(fresh, options.onOverrideSync);
+    const merged = await finish(fresh);
     onProgress?.(100, 'ready');
     return merged;
   }
@@ -264,13 +287,18 @@ export async function fetchFullCatalog(onProgress?: CatalogLoadProgress, options
   throw new Error('正式歌庫載入失敗');
 }
 
-async function mergeCatalogOverrides(catalog: Song[], onOverrideSync?: (status: CatalogOverrideSyncStatus) => void): Promise<Song[]> {
-  const overrides = await fetchCatalogOverrides();
-  if (!overrides.ok) {
-    onOverrideSync?.('unavailable');
-    return catalog;
-  }
-  onOverrideSync?.('synced');
+type CatalogOverrides = { songs: Song[]; deletedIds: string[]; ok: boolean };
+const OVERRIDES_CACHE_KEY = 'catalog_overrides_v1';
+
+function readCachedOverrides(): CatalogOverrides {
+  try {
+    const data = JSON.parse(localStorage.getItem(OVERRIDES_CACHE_KEY) || 'null');
+    if (Array.isArray(data?.songs) && Array.isArray(data?.deletedIds)) return { ...data, ok: true };
+  } catch {}
+  return { songs: [], deletedIds: [], ok: false };
+}
+
+function applyCatalogOverrides(catalog: Song[], overrides: CatalogOverrides): Song[] {
   if (!overrides.songs.length && !overrides.deletedIds.length) return catalog;
 
   const deletedIds = new Set(overrides.deletedIds);
@@ -283,19 +311,25 @@ async function mergeCatalogOverrides(catalog: Song[], onOverrideSync?: (status: 
   return Array.from(byId.values());
 }
 
-async function fetchCatalogOverrides(): Promise<{ songs: Song[]; deletedIds: string[]; ok: boolean }> {
+async function fetchCatalogOverrides(): Promise<CatalogOverrides> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 12000);
   try {
-    const response = await fetch(`${API_BASE}/api/catalog-overrides?t=${Date.now()}`);
+    const response = await fetch(`${API_BASE}/api/catalog-overrides?t=${Date.now()}`, { signal: controller.signal });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    return {
+    const overrides = {
       songs: Array.isArray(data.songs) ? data.songs : [],
       deletedIds: Array.isArray(data.deletedIds) ? data.deletedIds : [],
       ok: true,
     };
+    try { localStorage.setItem(OVERRIDES_CACHE_KEY, JSON.stringify(overrides)); } catch {}
+    return overrides;
   } catch (err) {
     console.warn('[API Service] 讀取歌庫覆寫資料失敗，僅使用靜態歌庫:', err);
     return { songs: [], deletedIds: [], ok: false };
+  } finally {
+    window.clearTimeout(timer);
   }
 }
 
@@ -319,42 +353,21 @@ async function fetchFreshCatalog(onProgress?: CatalogLoadProgress): Promise<Song
   return null;
 }
 
-function decodeCatalogBytesSync(catalogBytes: Uint8Array): Song[] | null {
-  let isHeaderMatch = true;
-  for (let i = 0; i < MAGIC_HEADER.length; i++) {
-    if (catalogBytes[i] !== MAGIC_HEADER[i]) {
-      isHeaderMatch = false;
-      break;
-    }
-  }
-
-  const payloadOffset = isHeaderMatch ? MAGIC_HEADER.length : 0;
-  const payloadLength = catalogBytes.length - payloadOffset;
-  const decodedBytes = new Uint8Array(payloadLength);
-
-  for (let i = 0; i < payloadLength; i++) {
-    decodedBytes[i] = catalogBytes[payloadOffset + i] ^ XOR_KEY[i % XOR_KEY.length];
-  }
-
-  const catalogData = JSON.parse(new TextDecoder('utf-8').decode(decodedBytes));
-  return Array.isArray(catalogData) && catalogData.length > 0 ? catalogData : null;
-}
-
 async function decodeCatalogBytes(catalogBytes: Uint8Array): Promise<Song[] | null> {
-  if (typeof Worker === 'undefined') return decodeCatalogBytesSync(catalogBytes);
+  if (typeof Worker === 'undefined') return decodeCatalogPayload(catalogBytes);
 
   return new Promise((resolve) => {
     let worker: Worker;
     try {
       worker = new Worker(new URL('../workers/catalogDecodeWorker.ts', import.meta.url), { type: 'module' });
     } catch {
-      resolve(decodeCatalogBytesSync(catalogBytes));
+      resolve(decodeCatalogPayload(catalogBytes));
       return;
     }
 
     const timer = window.setTimeout(() => {
       worker.terminate();
-      resolve(decodeCatalogBytesSync(catalogBytes));
+      resolve(decodeCatalogPayload(catalogBytes));
     }, 30000);
 
     worker.onmessage = (event: MessageEvent<{ ok: boolean; catalog?: Song[] | null; error?: string }>) => {
@@ -363,14 +376,14 @@ async function decodeCatalogBytes(catalogBytes: Uint8Array): Promise<Song[] | nu
       if (event.data.ok) resolve(event.data.catalog || null);
       else {
         console.warn('[API Service] Worker 解碼歌庫失敗，改用主執行緒備援:', event.data.error);
-        resolve(decodeCatalogBytesSync(catalogBytes));
+        resolve(decodeCatalogPayload(catalogBytes));
       }
     };
 
     worker.onerror = () => {
       window.clearTimeout(timer);
       worker.terminate();
-      resolve(decodeCatalogBytesSync(catalogBytes));
+      resolve(decodeCatalogPayload(catalogBytes));
     };
 
     const transferBytes = catalogBytes.slice();
@@ -383,6 +396,19 @@ async function fetchChunkedCatalog(baseUrl: string, onProgress?: CatalogLoadProg
     const manifestResponse = await fetch(`${baseUrl}songs_catalog.manifest.json`, { cache: 'no-cache' });
     if (!manifestResponse.ok) return null;
     const manifest = await manifestResponse.json();
+    if (manifest.compact?.format === 'twktv-gzip-xor-v1' && typeof DecompressionStream !== 'undefined') {
+      try {
+        const compact = manifest.compact;
+        const bytes = await fetchSingleCatalog(`${baseUrl}${compact.file}?v=${encodeURIComponent(compact.sha256)}`, onProgress);
+        if (!bytes || bytes.length !== compact.bytes) throw new Error('Compact catalog length mismatch');
+        const digest = await crypto.subtle.digest('SHA-256', bytes.slice().buffer);
+        const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+        if (hash !== compact.sha256) throw new Error('Compact catalog checksum mismatch');
+        return bytes;
+      } catch (err) {
+        console.warn('[Catalog] 壓縮歌庫下載失敗，改用原始分片:', err);
+      }
+    }
     const chunks = Array.isArray(manifest.chunks) ? manifest.chunks : [];
     const totalBytes = Number(manifest.totalBytes) || chunks.reduce((sum: number, chunk: { bytes?: number }) => sum + (Number(chunk.bytes) || 0), 0);
     if (!chunks.length || totalBytes <= 0) return null;
@@ -394,12 +420,14 @@ async function fetchChunkedCatalog(baseUrl: string, onProgress?: CatalogLoadProg
       const response = await fetch(`${baseUrl}${chunk.file}?v=${version}`);
       if (!response.ok) throw new Error(`chunk ${chunk.file} HTTP ${response.status}`);
       const bytes = new Uint8Array(await response.arrayBuffer());
+      if (bytes.length !== chunk.bytes) throw new Error(`chunk ${chunk.file} length mismatch`);
       output.set(bytes, loadedBytes);
       loadedBytes += bytes.length;
       const pct = Math.min(92, Math.round(10 + (loadedBytes / totalBytes) * 82));
       onProgress?.(pct, 'downloading-catalog');
     }
-    return loadedBytes === totalBytes ? output : output.slice(0, loadedBytes);
+    if (loadedBytes !== totalBytes) throw new Error('Catalog length mismatch');
+    return output;
   } catch (err) {
     console.warn('[API Service] 分片歌庫載入失敗，改用單檔備援:', err);
     return null;

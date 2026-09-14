@@ -60,6 +60,16 @@ function shouldShowCollabNotice(notice: SiteNoticeResponse): boolean {
   return true;
 }
 
+function sanitizeCatalog(catalog: Song[]): Song[] {
+  return (catalog || []).filter(s => {
+    const t = s.title || '';
+    const snippet = getMeaningfulLyricsSnippet(s);
+    if (/\bVol\.\d+|\bVOL\.\d+|\bvol\.\d+|\bNo\.\d+/i.test(t)) return false;
+    if (snippet.includes('10 大 KTV 歌號對照') || (snippet.includes('包廂歡唱') && snippet.includes('歌號'))) return false;
+    return true;
+  });
+}
+
 export function App() {
   const isMobile = useIsMobile();
   const brandList = useBrands();
@@ -218,18 +228,18 @@ export function App() {
       setTargetProgress(Math.min(96, pct));
     }, {
       forceRefresh,
+      onCatalogUpdate: catalog => {
+        if (catalogLoadRequestIdRef.current !== requestId) return;
+        const sanitized = sanitizeCatalog(catalog);
+        setAllSongs(sanitized);
+        setSelectedSongDetail(current => current ? sanitized.find(song => song.id === current.id) || null : null);
+      },
       onOverrideSync: status => {
         if (catalogLoadRequestIdRef.current === requestId) setCatalogOverrideSyncStatus(status);
       },
     }).then(catalog => {
       if (catalogLoadRequestIdRef.current !== requestId) return;
-      const sanitized = (catalog || []).filter(s => {
-        const t = s.title || '';
-        const snippet = getMeaningfulLyricsSnippet(s);
-        if (/\bVol\.\d+|\bVOL\.\d+|\bvol\.\d+|\bNo\.\d+/i.test(t)) return false;
-        if (snippet.includes('10 大 KTV 歌號對照') || (snippet.includes('包廂歡唱') && snippet.includes('歌號'))) return false;
-        return true;
-      });
+      const sanitized = sanitizeCatalog(catalog);
       if (!sanitized.length) throw new Error('empty catalog');
       setAllSongs(sanitized);
       setIsCatalogReady(true);
@@ -300,6 +310,7 @@ export function App() {
   // 平滑進度條插值器 (即使本地端極速連線，也能順暢呈現 0% -> 100% 填滿過程)
   useEffect(() => {
     let animationFrame: number;
+    if (!isLoadingCatalog) return;
     const updateProgress = () => {
       setDisplayProgress(prev => {
         if (prev < targetProgress) {
@@ -315,19 +326,16 @@ export function App() {
     };
     animationFrame = requestAnimationFrame(updateProgress);
     return () => cancelAnimationFrame(animationFrame);
-  }, [targetProgress]);
+  }, [targetProgress, isLoadingCatalog]);
 
-  // 100% 達成且資料狀態確定後再切換，避免 loading 與列表之間出現空白空檔
+  // Show usable data immediately; decorative progress must not gate results.
   useEffect(() => {
-    if (displayProgress >= 100 && targetProgress >= 100 && (isCatalogReady || catalogLoadError)) {
-      setIsFadingOut(true);
-      const timer = setTimeout(() => {
-        setIsFadingOut(false);
-        setIsLoadingCatalog(false);
-      }, 360);
-      return () => clearTimeout(timer);
+    if (isCatalogReady || catalogLoadError) {
+      setDisplayProgress(100);
+      setIsFadingOut(false);
+      setIsLoadingCatalog(false);
     }
-  }, [catalogLoadError, displayProgress, isCatalogReady, targetProgress]);
+  }, [catalogLoadError, isCatalogReady]);
 
   const catalogLoadTitle = catalogLoadError ? '歌庫資料需要重新載入' : apiHealthStatus === 'waking' ? '正在連線' : '歌庫資料準備中';
   const catalogLoadMessage = catalogLoadError || (() => {
@@ -345,8 +353,10 @@ export function App() {
     ? `載入完成後會自動搜尋「${filters.searchQuery.trim()}」。`
     : '你可以先輸入歌名或歌手，資料完成後會自動套用。';
   const shouldShowCatalogRetry = showCatalogRetryHint || Boolean(catalogLoadError);
-  const shouldShowCatalogSyncNotice = isCatalogDisplayReady && (catalogOverrideSyncStatus === 'unavailable' || apiHealthStatus === 'unavailable');
-  const catalogSyncNoticeMessage = catalogOverrideSyncStatus === 'unavailable'
+  const shouldShowCatalogSyncNotice = isCatalogDisplayReady && (catalogOverrideSyncStatus !== 'synced' || apiHealthStatus === 'unavailable');
+  const catalogSyncNoticeMessage = catalogOverrideSyncStatus === 'checking'
+    ? '歌庫已就緒，可以開始查歌；最新歌曲修正正在背景同步。'
+    : catalogOverrideSyncStatus === 'unavailable'
     ? '最新資料暫時無法同步，仍可搜尋已載入的歌曲。'
     : '資料服務暫時未連線，查詢仍會使用目前可用的歌庫資料。';
 

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,6 +17,31 @@ const chunkedCatalogThresholdBytes = 8 * 1024 * 1024;
 
 const MAGIC_HEADER = Buffer.from([0x54, 0x57, 0x4B, 0x54, 0x56, 0x42, 0x49, 0x4E]); // "TWKTVBIN"
 const XOR_KEY = [0x9E, 0x4F, 0xC3, 0x8A, 0x27, 0x1B, 0x6D, 0xE5];
+
+// Keep legacy assets for older clients; new clients download the compact payload.
+function writeCompactCatalog(dirPath, legacyBytes) {
+  const json = Buffer.from(legacyBytes.subarray(MAGIC_HEADER.length));
+  for (let i = 0; i < json.length; i++) json[i] ^= XOR_KEY[i % XOR_KEY.length];
+  JSON.parse(json.toString('utf8')); // Fail the build instead of publishing a corrupt catalog.
+  const compressed = gzipSync(json, { level: 9 });
+  for (let i = 0; i < compressed.length; i++) compressed[i] ^= XOR_KEY[i % XOR_KEY.length];
+  const output = Buffer.concat([Buffer.from('TWKTVGZ1'), compressed]);
+  const manifestPath = path.join(dirPath, 'songs_catalog.manifest.json');
+  const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : createBaseManifest(legacyBytes, 'single', [{ file: 'songs_catalog.bin', bytes: legacyBytes.length }]);
+  const file = 'songs_catalog.compact.bin';
+  fs.writeFileSync(path.join(dirPath, file), output);
+  manifest.compact = { file, bytes: output.length, sha256: getSha256(output), format: 'twktv-gzip-xor-v1' };
+  writeCatalogManifest(dirPath, manifest);
+  console.log(`⚡ [Catalog] ${legacyBytes.length} → ${output.length} bytes (${(100 - output.length / legacyBytes.length * 100).toFixed(1)}% smaller)`);
+}
+
+function compactExistingCatalog(dirPath) {
+  const manifestPath = path.join(dirPath, 'songs_catalog.manifest.json');
+  const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null;
+  const bytes = manifest?.chunks?.length ? Buffer.concat(manifest.chunks.map(chunk => fs.readFileSync(path.join(dirPath, chunk.file)))) : fs.readFileSync(path.join(dirPath, 'songs_catalog.bin'));
+  if (manifest?.sha256 && getSha256(bytes) !== manifest.sha256) throw new Error('Catalog checksum mismatch');
+  writeCompactCatalog(dirPath, bytes);
+}
 
 function removeGeneratedCatalogFiles(dirPath) {
   if (!fs.existsSync(dirPath)) return;
@@ -127,10 +153,12 @@ export function generateBinCatalog() {
 
   if (!sourceJsonPath) {
     if (fs.existsSync(binPath) && fs.statSync(binPath).size > 1000) {
+      compactExistingCatalog(path.dirname(binPath));
       console.log('⚡ [Build Catalog Bin] songs_catalog.bin 已是最新，無需重新打包。');
       return;
     }
     if (hasValidChunkedCatalog(path.dirname(binPath))) {
+      compactExistingCatalog(path.dirname(binPath));
       console.log('⚡ [Build Catalog Bin] songs_catalog 分片已存在，無需重新打包。');
       return;
     }
@@ -184,8 +212,11 @@ export function generateBinCatalog() {
     try {
       if (outputBuffer.length > chunkedCatalogThresholdBytes) writeChunkedCatalog(outputBuffer, path.dirname(distBinPath));
       else writeSingleCatalog(outputBuffer, path.dirname(distBinPath));
+      writeCompactCatalog(path.dirname(distBinPath), outputBuffer);
     } catch {}
   }
+
+  writeCompactCatalog(path.dirname(binPath), outputBuffer);
 
   // 移除 public/ 下之明文 JSON，確保對外部署輸出完全無明文曝露
   if (fs.existsSync(jsonPublicPath)) {

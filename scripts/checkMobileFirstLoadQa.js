@@ -32,6 +32,12 @@ const css = read('src/index.css');
 const apiService = read('src/services/apiService.ts');
 const manifestPath = path.join(root, 'public', 'songs_catalog.manifest.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+assert(manifest.compact?.format === 'twktv-gzip-xor-v1', 'catalog manifest 提供壓縮歌庫');
+if (manifest.compact) {
+  const compactPath = path.join(root, 'public', manifest.compact.file);
+  assert(fs.existsSync(compactPath), '壓縮歌庫檔案存在');
+  if (fs.existsSync(compactPath)) assert(fs.statSync(compactPath).size === manifest.compact.bytes, '壓縮歌庫大小與 manifest 一致');
+}
 
 assert(manifest.mode === 'chunked', 'catalog manifest 使用 chunked 模式');
 assert(Array.isArray(manifest.chunks) && manifest.chunks.length > 1, 'catalog manifest 至少有兩個分片');

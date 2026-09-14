@@ -8,6 +8,7 @@
     "build": "node scripts/checkBrandMasking.js && node scripts/buildCatalogBin.js && tsc -b && vite build && node scripts/optimizeMahjongRelease.js",
     "lint": "oxlint",
     "qa:mobile-first-load": "node scripts/checkMobileFirstLoadQa.js",
+    "test:catalog": "node --import tsx --test tests/catalog-loading.test.ts",
     "preview": "vite preview",
     "server": "tsx server/index.js",
     "share": "npx localtunnel --port 5173"

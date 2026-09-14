@@ -16,5 +16,11 @@
       "bytes": 7775596,
       "sha256": "8f3e20d048355216ac13007b3dccc54023cb52959ac870f3a13503a9398ecff1"
     }
-  ]
+  ],
+  "compact": {
+    "file": "songs_catalog.compact.bin",
+    "bytes": 2528145,
+    "sha256": "2de8f4cd986cd07f269cdaf6ebaa6e5a7ddeee381b2e6a19c7367d6f9bc4ec29",
+    "format": "twktv-gzip-xor-v1"
+  }
 }
