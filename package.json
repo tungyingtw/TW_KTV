@@ -10,6 +10,7 @@
     "qa:mobile-first-load": "node scripts/checkMobileFirstLoadQa.js",
     "test:catalog": "node --import tsx --test tests/catalog-loading.test.ts",
     "test:search": "node --import tsx --test tests/catalog-search.test.ts",
+    "test:visits": "tsx --tsconfig tsconfig.app.json --test tests/visit-stats.test.ts",
     "preview": "vite preview",
     "server": "tsx server/index.js",
     "share": "npx localtunnel --port 5173"

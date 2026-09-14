@@ -118,15 +118,15 @@ export async function checkApiHealth(timeoutMs = 10000): Promise<{ ok: boolean; 
   }
 }
 
-export async function fetchVisitRegionStats(): Promise<VisitRegionStatsResponse> {
+export async function fetchVisitRegionStats(signal?: AbortSignal): Promise<VisitRegionStatsResponse> {
   const params = new URLSearchParams({ t: String(Date.now()), vid: getKtvVisitorId() });
-  const response = await fetch(`${API_BASE}/api/visit-region-stats?${params.toString()}`, { cache: 'no-store' });
+  const response = await fetch(`${API_BASE}/api/visit-region-stats?${params.toString()}`, { signal, cache: 'no-store' });
   return parseVisitRegionApiResponse<VisitRegionStatsResponse>(response, '到訪紀錄暫時無法讀取');
 }
 
-export async function fetchDailyVisitStats(days = 10): Promise<DailyVisitStatsResponse> {
+export async function fetchDailyVisitStats(days = 10, signal?: AbortSignal): Promise<DailyVisitStatsResponse> {
   const params = new URLSearchParams({ days: String(days), t: String(Date.now()) });
-  const response = await fetch(`${API_BASE}/api/stats/daily?${params.toString()}`, { cache: 'no-store' });
+  const response = await fetch(`${API_BASE}/api/stats/daily?${params.toString()}`, { signal, cache: 'no-store' });
   return parseVisitRegionApiResponse<DailyVisitStatsResponse>(response, '每日到訪統計暫時無法讀取');
 }
 

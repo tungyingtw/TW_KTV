@@ -23,6 +23,7 @@ type VisitStatsPanelProps = {
   todayCount?: number;
   isDailyStatsLoading?: boolean;
   dailyStatsError?: string;
+  onRetryDailyStats?: () => void;
 };
 
 function formatCount(value: number) {
@@ -60,6 +61,7 @@ export function VisitStatsPanel({
   todayCount = 0,
   isDailyStatsLoading = false,
   dailyStatsError = '',
+  onRetryDailyStats,
 }: VisitStatsPanelProps) {
   const userRegionName = regionLabels[userRegionId] || '未選擇';
   const maxDailyCount = Math.max(1, ...dailyStats.map((item) => item.count));
@@ -72,7 +74,7 @@ export function VisitStatsPanel({
       <div className="taiwan-demo-stat">
         <UsersRound size={22} />
         <span>累積歌友到訪</span>
-        <strong>{formatCount(totalVisits)}</strong>
+        <strong>{formatCount(totalVisits)}<small> 人次</small></strong>
       </div>
 
       <div className="taiwan-demo-daily-trend">
@@ -81,12 +83,14 @@ export function VisitStatsPanel({
             <span><BarChart3 size={16} /> 近 10 日到訪</span>
             {dailyDateRange && <small>{dailyDateRange}</small>}
           </div>
-          <strong>今日 {formatCount(todayCount)} 人次</strong>
+          <strong>{isDailyStatsLoading ? '今日讀取中…' : dailyStatsError ? '今日暫無資料' : `今日 ${formatCount(todayCount)} 人次`}</strong>
         </div>
         {isDailyStatsLoading && <p className="taiwan-demo-daily-empty">每日統計讀取中...</p>}
-        {!isDailyStatsLoading && dailyStatsError && <p className="taiwan-demo-daily-empty">{dailyStatsError}</p>}
+        {!isDailyStatsLoading && dailyStatsError && <div role="alert" className="taiwan-demo-daily-empty">{dailyStatsError} {onRetryDailyStats && <button type="button" className="btn-secondary" onClick={onRetryDailyStats}>重試</button>}</div>}
         {!isDailyStatsLoading && !dailyStatsError && (
           <>
+            <p className="taiwan-demo-daily-note">以 UTC 分日，台灣時間每日 08:00 換日。</p>
+            {dailyStats.length === 0 && <p className="taiwan-demo-daily-empty">尚無每日統計資料</p>}
             <div className="taiwan-demo-daily-bars" aria-label="近 10 日每日到訪人次">
               {dailyStats.map((item, index) => {
                 const height = item.count ? Math.max(12, Math.round((item.count / maxDailyCount) * 100)) : 4;
@@ -100,7 +104,7 @@ export function VisitStatsPanel({
                   >
                     <i style={{ height: `${height}%` }} />
                     <span>{isToday ? '今' : formatDayLabel(item.date)}</span>
-                    <em>{formatCount(item.count)}</em>
+                    <em>{item.count >= 1000 ? `${(item.count / 1000).toFixed(1)}千` : formatCount(item.count)}</em>
                   </div>
                 );
               })}
@@ -132,15 +136,16 @@ export function VisitStatsPanel({
             {joinActionLabel || (selectedRegion.id === userRegionId ? '已記錄此地區' : '設為我的地區')}
           </button>
         )}
-        {actionMessage && <p className="taiwan-demo-action-message">{actionMessage}</p>}
+        {actionMessage && <p role="status" className="taiwan-demo-action-message">{actionMessage}</p>}
       </div>
 
       <div className="taiwan-demo-ranking">
         <div className="taiwan-demo-ranking-title"><TrendingUp size={18} /> 熱門地區 Top 8</div>
-        {sortedRegions.slice(0, 8).map((region, index) => {
+        {!sortedRegions.some(region => (visitCounts[region.id] || 0) > 0) && <p className="taiwan-demo-daily-empty">尚無縣市到訪紀錄</p>}
+        {sortedRegions.filter(region => (visitCounts[region.id] || 0) > 0).slice(0, 8).map((region, index) => {
           const visits = visitCounts[region.id] || 0;
           return (
-            <button key={region.id} type="button" onClick={() => onSelectRegion(region.id)} className={region.id === selectedRegion?.id ? 'is-active' : ''}>
+            <button key={region.id} type="button" onClick={() => onSelectRegion(region.id)} aria-pressed={region.id === selectedRegion?.id} className={region.id === selectedRegion?.id ? 'is-active' : ''}>
               <span>{index + 1}</span>
               <strong>{regionLabels[region.id] || region.name}</strong>
               <em>{formatCount(visits)}</em>
@@ -149,7 +154,7 @@ export function VisitStatsPanel({
         })}
         {otherRegions.map((region) => (
           <div key={region.city_code} className="taiwan-demo-ranking-extra">
-            <span>境外</span>
+            <span>其他</span>
             <strong>{region.city_name}</strong>
             <em>{formatCount(region.total_count)}</em>
           </div>

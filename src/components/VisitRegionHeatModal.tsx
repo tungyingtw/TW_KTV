@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, X } from 'lucide-react';
 import { correctVisitRegion, fetchDailyVisitStats, fetchVisitRegionStats, type DailyVisitStatsResponse, type VisitRegionStatsResponse } from '../services/apiService';
 import { TaiwanHeatMap, type RegionPath, type RegionPulse } from './TaiwanHeatMap';
+import './VisitRegionHeat.css';
 import { VisitStatsPanel } from './VisitStatsPanel';
 
 type VisitRegionHeatModalProps = {
@@ -58,8 +59,9 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
   const [regionPulses, setRegionPulses] = useState<RegionPulse[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionMessage, setActionMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDailyStatsLoading, setIsDailyStatsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [isDailyStatsLoading, setIsDailyStatsLoading] = useState(true);
   const [dailyStats, setDailyStats] = useState<DailyVisitStatsResponse | null>(null);
   const [dailyStatsError, setDailyStatsError] = useState('');
   const [error, setError] = useState('');
@@ -67,6 +69,8 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
 
   useEffect(() => {
     let isMounted = true;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 20000);
     setIsLoading(true);
     setIsDailyStatsLoading(true);
     setError('');
@@ -74,7 +78,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
     setDailyStatsError('');
     setActionMessage('');
 
-    fetchDailyVisitStats(10)
+    fetchDailyVisitStats(10, controller.signal)
       .then((nextDailyStats) => {
         if (!isMounted) return;
         setDailyStats(nextDailyStats);
@@ -88,20 +92,22 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
       });
 
     Promise.all([
-      fetch('/MapSVG/TaiwanMap.svg').then((response) => {
+      fetch('/MapSVG/TaiwanMap.svg', { signal: controller.signal }).then((response) => {
         if (!response.ok) throw new Error('地圖讀取失敗');
         return response.text();
       }),
-      fetchVisitRegionStats(),
+      fetchVisitRegionStats(controller.signal),
     ])
       .then(([svgText, nextStats]) => {
         if (!isMounted) return;
-        setRegions(parseTaiwanMapSvg(svgText));
+        const paths = parseTaiwanMapSvg(svgText);
+        if (!paths.length) throw new Error('地圖內容無效');
+        setRegions(paths);
         setStats(nextStats);
         setConfirmedRegionId(nextStats.user_region_code || '');
       })
       .catch(() => {
-        if (isMounted) setError('熱度暫時無法讀取');
+        if (isMounted) setError('熱度暫時無法讀取，請稍後重試');
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -109,8 +115,10 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
 
     return () => {
       isMounted = false;
+      controller.abort();
+      window.clearTimeout(timeout);
     };
-  }, []);
+  }, [reloadKey]);
 
   useEffect(() => {
     if (!onClose) return;
@@ -127,7 +135,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
 
   const regionLabels = useMemo(() => {
     const labels = { ...FALLBACK_REGION_LABELS };
-    for (const region of stats?.regions || []) labels[region.city_code] = region.city_name;
+    for (const region of stats?.regions || []) if (region.city_name) labels[region.city_code] = region.city_name;
     return labels;
   }, [stats]);
 
@@ -137,11 +145,12 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
     return counts;
   }, [stats]);
 
-  const maxVisits = useMemo(() => Math.max(1, ...Object.values(visitCounts)), [visitCounts]);
+  const maxVisits = useMemo(() => Math.max(1, ...regions.map(region => visitCounts[region.id] || 0)), [visitCounts, regions]);
   const totalVisits = stats?.total_count || 0;
   const mapRegionIds = useMemo(() => new Set(regions.map((region) => region.id)), [regions]);
   const sortedRegions = useMemo(() => [...regions].sort((a, b) => (visitCounts[b.id] || 0) - (visitCounts[a.id] || 0)), [regions, visitCounts]);
   const otherRegions = useMemo(() => (stats?.regions || []).filter((region) => !mapRegionIds.has(region.city_code) && region.total_count > 0), [mapRegionIds, stats]);
+  const selectRegion = (id: string | null) => { setSelectedId(id); setActionMessage(''); };
   const selectedRegion = selectedId ? regions.find((region) => region.id === selectedId) : undefined;
   const selectedVisits = selectedRegion ? visitCounts[selectedRegion.id] || 0 : 0;
   const selectedPercent = totalVisits && selectedVisits ? ((selectedVisits / totalVisits) * 100).toFixed(1) : '0.0';
@@ -152,7 +161,8 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
     setActionMessage('');
 
     try {
-      const result = await correctVisitRegion(selectedRegion.id);
+      const targetRegion = selectedRegion;
+      const result = await correctVisitRegion(targetRegion.id);
       const nextPulses: RegionPulse[] = [];
       const pulseId = Date.now();
       if (result.corrected && result.from_city_code && result.from_city_code !== result.city_code) {
@@ -164,7 +174,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
 
       setStats(result.stats);
       setConfirmedRegionId(result.city_code);
-      setActionMessage(result.corrected ? '已更新統計中的地區' : result.created || result.counted ? '已記錄你的地區' : '目前已記錄為此地區');
+      setActionMessage(`${regionLabels[result.city_code] || result.city_code}：${result.corrected ? '已更新統計中的地區' : result.created || result.counted ? '已記錄你的地區' : '目前已記錄為此地區'}`);
       if (nextPulses.length) {
         setRegionPulses(nextPulses);
         if (pulseTimeoutRef.current) window.clearTimeout(pulseTimeoutRef.current);
@@ -197,10 +207,14 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
         </header>
       )}
 
-      {isLoading && <div className="visit-region-modal-state">熱度讀取中...</div>}
-      {!isLoading && error && <div className="visit-region-modal-state is-error">{error}</div>}
+      {isLoading && <div role="status" className="visit-region-modal-state">熱度讀取中，首次連線可能需要稍候…</div>}
+      {!isLoading && error && <div role="alert" className="visit-region-modal-state is-error">{error}<button type="button" className="btn-secondary" onClick={() => setReloadKey(k => k + 1)}>重新讀取</button></div>}
       {!isLoading && !error && (
         <div className="visit-region-modal-grid">
+          <div className="visit-region-summary">
+            <span>累積到訪分布 · 非即時位置</span>
+            <button type="button" className="btn-secondary" disabled={isSubmitting} onClick={() => setReloadKey(k => k + 1)}>更新統計</button>
+          </div>
           <TaiwanHeatMap
             regions={regions}
             selectedRegion={selectedRegion}
@@ -210,7 +224,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
             maxVisits={maxVisits}
             regionLabels={regionLabels}
             regionPulses={regionPulses}
-            onSelectRegion={setSelectedId}
+            onSelectRegion={selectRegion}
             onJoinSelectedRegion={handleJoinSelectedRegion}
             showJoinAction
             joinActionDisabled={joinActionDisabled}
@@ -227,7 +241,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
             otherRegions={otherRegions}
             visitCounts={visitCounts}
             regionLabels={regionLabels}
-            onSelectRegion={setSelectedId}
+            onSelectRegion={selectRegion}
             onJoinSelectedRegion={handleJoinSelectedRegion}
             showUserRegion={Boolean(confirmedRegionId)}
             showJoinAction
@@ -238,6 +252,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
             todayCount={dailyStats?.today_count || 0}
             isDailyStatsLoading={isDailyStatsLoading}
             dailyStatsError={dailyStatsError}
+            onRetryDailyStats={() => setReloadKey(k => k + 1)}
           />
         </div>
       )}

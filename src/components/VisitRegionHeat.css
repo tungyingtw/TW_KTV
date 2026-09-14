@@ -1,0 +1,39 @@
+/* Scoped heat-page layout: keep the map usable without burying the totals on phones. */
+.visit-region-summary { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text-secondary); font-size: .85rem; }
+.visit-region-summary button, .visit-region-modal-state button { min-height: 40px; }
+.visit-region-modal-state.is-error { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.visit-region-picker { display: flex; align-items: center; gap: 12px; margin: 20px 0 8px; color: var(--text-secondary); font-size: .85rem; }
+.visit-region-picker select { flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
+.visit-region-map-hint { color: var(--text-muted); font-size: .8rem; line-height: 1.6; }
+.visit-region-modal-grid .taiwan-demo-map-tools { position: static; display: inline-flex; margin-top: 14px; }
+.visit-region-modal-grid .taiwan-demo-map-tools button { width: 40px; height: 40px; }
+.visit-region-modal-grid .taiwan-demo-legend { position: static; margin-top: 10px; width: fit-content; }
+.visit-region-modal-grid .taiwan-demo-map-panel { min-height: 0; align-self: start; }
+.visit-region-modal-grid .taiwan-demo-map-wrap { min-height: 0; padding: 0; overflow: hidden; touch-action: pan-y pinch-zoom; }
+.visit-region-modal-grid .taiwan-demo-map-wrap.has-action { padding-bottom: 130px; }
+.visit-region-modal-grid .taiwan-demo-map { width: 100%; max-height: 500px; }
+.visit-region-modal-grid .taiwan-demo-stat strong small { font-size: .85rem; font-weight: 500; color: var(--text-secondary); }
+.visit-region-modal-grid .taiwan-demo-daily-bars { height: 132px; grid-template-columns: repeat(10, minmax(22px, 1fr)); padding-bottom: 8px; }
+.visit-region-modal-grid .taiwan-demo-daily-bar em { font-size: .72rem; }
+.visit-region-modal-grid .taiwan-demo-daily-note { margin: 10px 0; line-height: 1.6; font-size: .75rem; }
+.visit-region-modal-grid .taiwan-demo-ranking button { min-height: 44px; }
+.visit-region-modal-grid .taiwan-demo-map path:focus-visible { outline: none; stroke: var(--text-primary); stroke-width: 3px; }
+@media (max-width: 760px) {
+  .visit-region-modal-grid .taiwan-demo-side { display: contents; }
+  .visit-region-summary { grid-row: 1; }
+  .visit-region-modal-grid .taiwan-demo-stat { grid-row: 2; }
+  .visit-region-modal-grid .taiwan-demo-daily-trend { grid-row: 3; }
+  .visit-region-modal-grid .taiwan-demo-map-panel { grid-row: 4; }
+  .visit-region-modal-grid .taiwan-demo-selected { grid-row: 5; }
+  .visit-region-modal-grid .taiwan-demo-user-region { grid-row: 6; }
+  .visit-region-modal-grid .taiwan-demo-ranking { grid-row: 7; }
+  .visit-region-modal-grid .taiwan-demo-panel-head { flex-direction: row; align-items: center; }
+  .visit-region-modal-grid .taiwan-demo-map { max-height: 360px; }
+  .visit-region-summary { font-size: .75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .visit-region-modal-grid .taiwan-demo-map, .visit-region-modal-grid .taiwan-demo-map path, .visit-region-modal-grid .taiwan-demo-user-marker circle { animation: none !important; transition: none !important; }
+}
+
+.visit-region-modal-grid .taiwan-demo-legend { display: inline-flex; vertical-align: middle; margin-left: 12px; }
+.visit-region-modal-grid .taiwan-demo-daily-bar em { font-size: .65rem; }

@@ -47,9 +47,9 @@ type TaiwanHeatMapProps = {
 };
 
 const FULL_TAIWAN_VIEW_BOX = '0 0 1000 1000';
-const DEFAULT_MAP_SCALE = 1.04;
-const DEFAULT_MAP_OFFSET_X = -32;
-const DEFAULT_MAP_OFFSET_Y = 10;
+const DEFAULT_MAP_SCALE = 1;
+const DEFAULT_MAP_OFFSET_X = 0;
+const DEFAULT_MAP_OFFSET_Y = 0;
 const MAP_OFFSET_X_LIMIT = 260;
 const MAP_OFFSET_Y_LIMIT = 160;
 
@@ -155,6 +155,8 @@ export function TaiwanHeatMap({
   };
 
   const resetMapView = () => {
+    onSelectRegion(null);
+    setPointer(null);
     applyMapTransform({
       scale: DEFAULT_MAP_SCALE,
       offsetX: DEFAULT_MAP_OFFSET_X,
@@ -168,15 +170,15 @@ export function TaiwanHeatMap({
   };
 
   const handleMapPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0 && event.pointerType === 'mouse') return;
+    if (!event.isPrimary || (event.button !== 0 && event.pointerType === 'mouse')) return;
     mapWrapRef.current?.setPointerCapture(event.pointerId);
     mapWrapRef.current?.classList.add('is-dragging');
     dragStateRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      startOffsetX: mapOffsetX,
-      startOffsetY: mapOffsetY,
+      startOffsetX: mapTransformRef.current.offsetX,
+      startOffsetY: mapTransformRef.current.offsetY,
       candidateRegionId: getRegionIdFromTarget(event.target),
       didDrag: false,
     };
@@ -228,12 +230,19 @@ export function TaiwanHeatMap({
         <div className="taiwan-demo-live"><Activity size={15} /> 歌友分布</div>
       </div>
 
+      <label className="visit-region-picker">查看縣市
+        <select value={selectedId || ''} onChange={event => onSelectRegion(event.target.value || null)}>
+          <option value="">全台總覽</option>
+          {regions.map(region => <option key={region.id} value={region.id}>{regionLabels[region.id] || region.name}</option>)}
+        </select>
+      </label>
+      <p className="visit-region-map-hint">點選縣市查看人次；手機可上下滑動頁面、左右拖曳地圖。</p>
       <div className="taiwan-demo-map-tools" aria-label="地圖檢視控制">
-        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.min(mapOffsetX + 42, MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} aria-label="地圖向右移"><ChevronLeft size={16} /></button>
+        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.max(mapOffsetX - 42, -MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} aria-label="地圖向左移"><ChevronLeft size={16} /></button>
         <button type="button" onClick={() => applyMapTransform({ scale: Math.max(0.92, Number((mapScale - 0.1).toFixed(2))), offsetX: mapOffsetX, offsetY: mapOffsetY })} aria-label="縮小地圖"><Minus size={16} /></button>
         <button type="button" onClick={resetMapView} aria-label="重設地圖視角"><RotateCcw size={16} /></button>
         <button type="button" onClick={() => applyMapTransform({ scale: Math.min(1.82, Number((mapScale + 0.1).toFixed(2))), offsetX: mapOffsetX, offsetY: mapOffsetY })} aria-label="放大地圖"><Plus size={16} /></button>
-        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.max(mapOffsetX - 42, -MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} aria-label="地圖向左移"><ChevronRight size={16} /></button>
+        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.min(mapOffsetX + 42, MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} aria-label="地圖向右移"><ChevronRight size={16} /></button>
       </div>
       <div className="taiwan-demo-legend" aria-label="顏色分布說明">
         <span>少</span>
@@ -243,12 +252,13 @@ export function TaiwanHeatMap({
 
       <div
         ref={mapWrapRef}
-        className="taiwan-demo-map-wrap"
+        className={`taiwan-demo-map-wrap${selectedRegion && showJoinAction ? ' has-action' : ''}`}
         onPointerDown={handleMapPointerDown}
         onPointerMove={handleMapPointerMove}
         onPointerUp={handleMapPointerUp}
         onPointerCancel={() => {
           dragStateRef.current = null;
+          applyMapTransform(mapTransformRef.current);
           setPointer(null);
           mapWrapRef.current?.classList.remove('is-dragging');
         }}
@@ -259,7 +269,7 @@ export function TaiwanHeatMap({
           className={selectedRegion ? 'taiwan-demo-map has-selection' : 'taiwan-demo-map'}
           style={{ transform: `translate3d(${mapOffsetX}px, ${mapOffsetY}px, 0) scale(${mapScale})` }}
           viewBox={FULL_TAIWAN_VIEW_BOX}
-          role="img"
+          role="group"
           aria-label="台灣縣市歌友熱度分布"
         >
           <defs>
@@ -284,7 +294,7 @@ export function TaiwanHeatMap({
                   role="button"
                   aria-label={`${regionLabels[region.id] || region.name}，${formatCount(visits)} 人次`}
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') onSelectRegion(region.id);
+                    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectRegion(region.id); }
                   }}
                 />
               );
@@ -301,7 +311,7 @@ export function TaiwanHeatMap({
                 role="button"
                 aria-label={`${regionLabels[selectedRegion.id] || selectedRegion.name}，${formatCount(visitCounts[selectedRegion.id] || 0)} 人次`}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') onSelectRegion(selectedRegion.id);
+                  if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectRegion(selectedRegion.id); }
                 }}
               />
             )}
@@ -326,7 +336,7 @@ export function TaiwanHeatMap({
           </g>
         </svg>
         {pointer && (
-          <div className="taiwan-demo-tooltip" style={{ left: pointer.x + 14, top: pointer.y + 14 }}>
+          <div className="taiwan-demo-tooltip" style={{ left: Math.max(8, Math.min(pointer.x + 14, window.innerWidth - 170)), top: Math.max(8, Math.min(pointer.y + 14, window.innerHeight - 85)) }}>
             <strong>{regionLabels[pointer.region.id] || pointer.region.name}</strong>
             <span>{formatCount(visitCounts[pointer.region.id] || 0)} 人次</span>
           </div>
