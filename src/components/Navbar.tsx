@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Gamepad2, Mic2, Heart, PlusCircle } from 'lucide-react';
-import { formatCompactZhNumber } from '../utils/stringUtils';
 import { getKtvVisitorId } from '../services/apiService';
 
 interface NavbarProps {
@@ -48,7 +47,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isStatsPersistent, setIsStatsPersistent] = useState<boolean>(true);
   const totalVisitsValue = totalVisits ?? 1;
   const totalVisitsFullText = totalVisitsValue.toLocaleString();
-  const totalVisitsCompactText = formatCompactZhNumber(totalVisitsValue);
 
   useEffect(() => {
     let isMounted = true;
@@ -144,7 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }
             >
               <span>{isStatsLoading ? '累積同步中' : isStatsError ? '累積未同步' : isStatsPersistent ? '累積到訪' : '暫時計數'}</span>
-              {!isStatsLoading && !isStatsError && <strong>{totalVisitsCompactText}</strong>}
+              {!isStatsLoading && !isStatsError && <strong>{totalVisitsFullText}</strong>}
             </button>
           </div>
         </div>

@@ -10,6 +10,14 @@ const API_BASE = import.meta.env.VITE_API_URL || (isLocalEnv ? 'http://localhost
 
 export type VisitRegionCode = string;
 
+export async function fetchTotalVisitStats(signal?: AbortSignal): Promise<{ totalVisits: number; persistent: boolean }> {
+  const response = await fetch(`${API_BASE}/api/stats/total?t=${Date.now()}`, { signal, cache: 'no-store' });
+  if (!response.ok) throw new Error('累積到訪暫時無法讀取');
+  const data = await response.json();
+  if (!Number.isSafeInteger(data.totalVisits) || data.totalVisits < 0) throw new Error('累積到訪資料無效');
+  return { totalVisits: data.totalVisits, persistent: data.persistent !== false };
+}
+
 export interface VisitRegionStat {
   city_code: VisitRegionCode;
   city_name: string;

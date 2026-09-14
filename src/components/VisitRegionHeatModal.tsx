@@ -4,6 +4,7 @@ import { correctVisitRegion, fetchDailyVisitStats, fetchVisitRegionStats, type D
 import { TaiwanHeatMap, type RegionPath, type RegionPulse } from './TaiwanHeatMap';
 import './VisitRegionHeat.css';
 import { VisitStatsPanel } from './VisitStatsPanel';
+import { useTotalVisits } from '../hooks/useTotalVisits';
 
 type VisitRegionHeatModalProps = {
   isOpen: boolean;
@@ -61,6 +62,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
   const [actionMessage, setActionMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
+  const siteVisits = useTotalVisits(reloadKey);
   const [isDailyStatsLoading, setIsDailyStatsLoading] = useState(true);
   const [dailyStats, setDailyStats] = useState<DailyVisitStatsResponse | null>(null);
   const [dailyStatsError, setDailyStatsError] = useState('');
@@ -233,6 +235,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
           />
           <VisitStatsPanel
             totalVisits={totalVisits}
+            siteVisits={siteVisits}
             userRegionId={confirmedRegionId}
             selectedRegion={selectedRegion}
             selectedVisits={selectedVisits}
