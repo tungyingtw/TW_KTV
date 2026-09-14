@@ -77,8 +77,7 @@ export function VisitStatsPanel({
         <UsersRound size={22} />
         <span>{siteVisits ? (siteVisits.persistent ? '累積到訪' : '暫時計數') : '已記錄地區人次'}</span>
         <strong>{siteVisits ? (siteVisits.total === null ? (siteVisits.error ? '暫時無法讀取' : '讀取中…') : <>{formatCount(siteVisits.total)}<small> 人次</small></>) : <>{formatCount(totalVisits)}<small> 人次</small></>}</strong>
-        {siteVisits && <p className="taiwan-demo-daily-note">{siteVisits.error ? '更新失敗，已顯示的數字為上次資料。' : '與主頁相同統計來源，更新時間可能略有差異。'}</p>}
-        {siteVisits && <p className="taiwan-demo-daily-note">已記錄地區：{formatCount(totalVisits)} 人次。地圖與比例依地區紀錄計算，與全站累積統計範圍不同。</p>}
+        {siteVisits?.error && siteVisits.total !== null && <p role="status" className="taiwan-demo-daily-note">暫未更新</p>}
       </div>
 
       <div className="taiwan-demo-daily-trend">
@@ -129,7 +128,7 @@ export function VisitStatsPanel({
         <div className="taiwan-demo-selected-icon"><MapPinned size={24} /></div>
         <span>目前選取</span>
         <h2>{selectedRegion ? regionLabels[selectedRegion.id] || selectedRegion.name : '全台總覽'}</h2>
-        <p>{selectedRegion ? `${formatCount(selectedVisits)} 人次，約佔已記錄地區人次 ${selectedPercent}%。` : '點擊任一縣市可聚焦查看；點地圖空白處回到全台總覽。'}</p>
+        <p>{selectedRegion ? `${formatCount(selectedVisits)} 人次，占地區紀錄 ${selectedPercent}%。` : '點擊任一縣市可聚焦查看；點地圖空白處回到全台總覽。'}</p>
         {selectedRegion && showJoinAction && (
           <button
             type="button"

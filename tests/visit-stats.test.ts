@@ -9,8 +9,8 @@ test('site visits and regional records remain distinct, including unavailable to
   const base = { totalVisits: 80, userRegionId: '', selectedRegion: { id: 'TWTPE', name: '台北市', d: 'M0 0' }, selectedVisits: 40, selectedPercent: '50.0', sortedRegions: [], visitCounts: {}, regionLabels: {}, onSelectRegion: () => {}, onJoinSelectedRegion: () => {} };
   const html = renderToStaticMarkup(createElement(VisitStatsPanel, { ...base, siteVisits: { total: 12345, persistent: true, error: false } }));
   assert.ok(html.includes('12,345'));
-  assert.ok(html.includes('已記錄地區：80'));
-  assert.ok(html.includes('約佔已記錄地區人次 50.0%'));
+  assert.ok(!html.includes('已記錄地區：80'));
+  assert.ok(html.includes('占地區紀錄 50.0%'));
   const unavailable = renderToStaticMarkup(createElement(VisitStatsPanel, { ...base, siteVisits: { total: null, persistent: true, error: true } }));
   assert.ok(unavailable.includes('<strong>暫時無法讀取</strong>'));
   assert.ok(!unavailable.includes('<strong>80'));
