@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import Fuse from 'fuse.js';
-import type { Song, FilterOptions, BrandId, Language, SongVotes } from './types/ktv';
+import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { useCatalogSearch } from './hooks/useCatalogSearch';
+import { loadPreferences, savePreferences } from './utils/searchPreferences';
+import type { Song, FilterOptions, SongVotes } from './types/ktv';
 import { Navbar } from './components/Navbar';
 import { SearchBar } from './components/SearchBar';
 import { BrandTabScroll } from './components/BrandTabScroll';
@@ -8,14 +9,8 @@ import { MobileNavbar } from './components/mobile/MobileNavbar';
 import { MobileSearchBar } from './components/mobile/MobileSearchBar';
 import { MobileBrandTabScroll } from './components/mobile/MobileBrandTabScroll';
 import { MatrixView } from './components/MatrixView';
-import { SongDetailModal } from './components/SongDetailModal';
-import { ReportModal } from './components/ReportModal';
-import { SuggestSongModal } from './components/SuggestSongModal';
 import { AdBannerSlot } from './components/AdBannerSlot';
-import { BottomSheetFilter } from './components/BottomSheetFilter';
-import { FavoritesDrawer } from './components/FavoritesDrawer';
 import { ToastNotification } from './components/ToastNotification';
-import { LegalNoticeModal } from './components/LegalNoticeModal';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
 import { checkApiHealth, fetchFullCatalog, fetchSiteNotice } from './services/apiService';
 import type { CatalogLoadStage, CatalogOverrideSyncStatus, SiteNoticeResponse } from './services/apiService';
@@ -24,19 +19,17 @@ import { fetchBrands } from './data/brands';
 import { useBrands } from './hooks/useBrands';
 import { useDebounce } from './hooks/useDebounce';
 import { useIsMobile } from './hooks/useIsMobile';
-import { normalizeText } from './utils/stringUtils';
-import { getSearchRank } from './utils/searchRanking';
 import { relaxFilters } from './utils/filterUtils';
-import { expandFrontendQuery } from './utils/artistAliases';
 import { isBrandAvailable } from './utils/brandAvailability';
 import { getMeaningfulLyricsSnippet } from './utils/songReference';
-import { getMeaningfulComposer, getMeaningfulLyricist } from './utils/songCredits';
-import { Sparkles, Music, ChevronDown, Mail, X, RefreshCw } from 'lucide-react';
+import { Sparkles, Music, Mail, X, RefreshCw } from 'lucide-react';
 
-function getSearchablePhonetic(value?: string): string {
-  const normalized = (value || '').trim();
-  return normalized && normalized.toUpperCase() !== 'AUTO' ? normalized : '';
-}
+const SongDetailModal = lazy(() => import('./components/SongDetailModal').then(m => ({ default: m.SongDetailModal })));
+const ReportModal = lazy(() => import('./components/ReportModal').then(m => ({ default: m.ReportModal })));
+const SuggestSongModal = lazy(() => import('./components/SuggestSongModal').then(m => ({ default: m.SuggestSongModal })));
+const BottomSheetFilter = lazy(() => import('./components/BottomSheetFilter').then(m => ({ default: m.BottomSheetFilter })));
+const FavoritesDrawer = lazy(() => import('./components/FavoritesDrawer').then(m => ({ default: m.FavoritesDrawer })));
+const LegalNoticeModal = lazy(() => import('./components/LegalNoticeModal').then(m => ({ default: m.LegalNoticeModal })));
 
 const COLLAB_NOTICE_DISMISSED_UNTIL_KEY = 'tw_ktv_collab_notice_dismissed_until';
 const COLLAB_NOTICE_DISMISSED_STATE_KEY = 'tw_ktv_collab_notice_dismissed_v2';
@@ -74,15 +67,11 @@ export function App() {
   const isMobile = useIsMobile();
   const brandList = useBrands();
   const resultsRegionRef = useRef<HTMLElement>(null);
-  const fuseIndexRef = useRef<{ songs: Song[]; fuse: Fuse<Song> } | null>(null);
   const wasCatalogDisplayReadyRef = useRef(false);
   const catalogLoadRequestIdRef = useRef(0);
   const catalogLoadStartedAtRef = useRef(0);
   const catalogLoadTimersRef = useRef<number[]>([]);
-  const latestSearchStateRef = useRef({
-    query: '',
-    resultCount: 0,
-  });
+
 
   // Main Catalog State
   const [allSongs, setAllSongs] = useState<Song[]>([]);
@@ -108,7 +97,7 @@ export function App() {
 
   // Filter Options State (Default: length = 字數 > 注音/筆劃)
   const [filters, setFilters] = useState<FilterOptions>(() => {
-    return {
+    return loadPreferences({
       searchQuery: '',
       selectedBrand: 'all',
       selectedBrands: [],
@@ -119,8 +108,10 @@ export function App() {
       onlyGuidedVocal: false,
       onlyNicheSongs: false,
       sortBy: 'length',
-    };
+    });
   });
+
+  useEffect(() => { savePreferences(filters); }, [filters]);
 
   const [mobileSearchDraft, setMobileSearchDraft] = useState('');
 
@@ -150,7 +141,7 @@ export function App() {
   const [showCollabNotice, setShowCollabNotice] = useState<boolean>(() => shouldShowCollabNotice(DEFAULT_COLLAB_NOTICE));
   const [visibleSongVotes, setVisibleSongVotes] = useState<Record<string, SongVotes>>({});
 
-  // Pagination / Load More limit state (Default display: 40)
+  // Keep each page and its vote request bounded to 40 songs.
   const [displayedCount, setDisplayedCount] = useState<number>(40);
 
   useEffect(() => {
@@ -383,30 +374,6 @@ export function App() {
     localStorage.setItem('ktv_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  const getFuseIndex = useCallback(() => {
-    if (fuseIndexRef.current?.songs === allSongs) return fuseIndexRef.current.fuse;
-    const fuse = new Fuse(allSongs, {
-      keys: [
-        { name: 'title', weight: 0.35 },
-        { name: 'artist', weight: 0.3 },
-        { name: 'lyricsSnippet', weight: 0.25 },
-      ],
-      threshold: 0.48,
-      distance: 120,
-      minMatchCharLength: 1,
-      ignoreLocation: true,
-      useExtendedSearch: true,
-      getFn: (song, path) => {
-        if (path === 'lyricsSnippet') return getMeaningfulLyricsSnippet(song as Song);
-        if (path === 'lyricist') return getMeaningfulLyricist(song as Song);
-        if (path === 'composer') return getMeaningfulComposer(song as Song);
-        return Fuse.config.getFn(song, path);
-      },
-    });
-    fuseIndexRef.current = { songs: allSongs, fuse };
-    return fuse;
-  }, [allSongs]);
-
   // Dynamic brand song count auditing
   const brandSongCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -426,182 +393,14 @@ export function App() {
     return counts;
   }, [allSongs, brandList, isCatalogDisplayReady]);
 
-  // Main Multi-Dimensional Filter Logic
-  const filteredSongs = useMemo(() => {
-    if (!isCatalogDisplayReady) return [];
-    let result = allSongs;
-    const rawQuery = debouncedSearchQuery.trim();
-    const searchRanks = new Map<Song, number>();
+  const searchFilters = useMemo(() => ({ searchQuery: debouncedSearchQuery, selectedBrand: filters.selectedBrand, selectedBrands: filters.selectedBrands, brandFilterMode: filters.brandFilterMode, selectedLanguages: filters.selectedLanguages, selectedTitleLength: filters.selectedTitleLength, onlyOfficialMv: filters.onlyOfficialMv, onlyGuidedVocal: filters.onlyGuidedVocal, onlyNicheSongs: filters.onlyNicheSongs, sortBy: filters.sortBy }), [debouncedSearchQuery, filters.selectedBrand, filters.selectedBrands, filters.brandFilterMode, filters.selectedLanguages, filters.selectedTitleLength, filters.onlyOfficialMv, filters.onlyGuidedVocal, filters.onlyNicheSongs, filters.sortBy]);
+  const { songs: filteredSongs, pending: searchPending } = useCatalogSearch(allSongs, searchFilters, isCatalogDisplayReady);
 
-    if (rawQuery) {
-      const cleanQuery = normalizeText(rawQuery);
-      const normalizedQuery = cleanQuery;
-      const { matchedArtists, expandedTerms } = expandFrontendQuery(rawQuery);
-
-      const substringMatches = allSongs.filter(s => {
-        const cleanTitle = normalizeText(s.title);
-        const cleanArtist = normalizeText(s.artist);
-        const lyricist = getMeaningfulLyricist(s);
-        const composer = getMeaningfulComposer(s);
-        const lyricsSnippet = getMeaningfulLyricsSnippet(s);
-        const cleanLyrics = normalizeText(lyricsSnippet);
-        const zhuyin = getSearchablePhonetic(s.zhuyin).toLowerCase();
-        const pinyin = getSearchablePhonetic(s.pinyin).toLowerCase();
-
-        if (matchedArtists.has(s.artist)) return true;
-
-        return (
-          s.title.includes(rawQuery) || 
-          s.artist.includes(rawQuery) || 
-          (lyricist && lyricist.includes(rawQuery)) ||
-          (composer && composer.includes(rawQuery)) ||
-          (lyricsSnippet && lyricsSnippet.includes(rawQuery)) ||
-          (cleanQuery && cleanTitle.includes(cleanQuery)) ||
-          (cleanQuery && cleanArtist.includes(cleanQuery)) ||
-          (cleanQuery && normalizeText(lyricist).includes(cleanQuery)) ||
-          (cleanQuery && normalizeText(composer).includes(cleanQuery)) ||
-          (cleanQuery && cleanLyrics.includes(cleanQuery)) ||
-          (zhuyin && zhuyin.includes(rawQuery.toLowerCase())) ||
-          (pinyin && pinyin.includes(rawQuery.toLowerCase())) ||
-          expandedTerms.some(term => (
-            s.title.toLowerCase().includes(term) ||
-            s.artist.toLowerCase().includes(term)
-          ))
-        );
-      });
-
-      if (substringMatches.length > 0) {
-        result = substringMatches;
-        result.forEach(song => searchRanks.set(song, getSearchRank(song, normalizedQuery, matchedArtists)));
-      } else {
-        const fuzzyResults = getFuseIndex().search(rawQuery);
-        result = fuzzyResults.map(res => res.item);
-        result.forEach((song, index) => searchRanks.set(song, index));
-      }
-    }
-
-    // 2. Selected Brand Filter
-    // 2. Brand Filter (支持廠牌複選比對！OR / AND 雙模式)
-    if (filters.selectedBrands && filters.selectedBrands.length > 0) {
-      result = result.filter(song => {
-        if (filters.brandFilterMode === 'all_of_them') {
-          return filters.selectedBrands.every(bId => isBrandAvailable(song.brands?.[bId]));
-        } else {
-          return filters.selectedBrands.some(bId => isBrandAvailable(song.brands?.[bId]));
-        }
-      });
-    } else if (filters.selectedBrand !== 'all') {
-      result = result.filter(song => {
-        const brandStatus = song.brands[filters.selectedBrand as BrandId];
-        return isBrandAvailable(brandStatus);
-      });
-    }
-
-    // 3. Language Filter
-    if (filters.selectedLanguages.length > 0) {
-      const normalizeLanguage = (songLang: string): Language | string => {
-        const languageMap: Record<string, Language> = {
-          國: '國語',
-          台: '台語',
-          粵: '粵語',
-          英: '英語',
-          日: '日語',
-          韓: '韓語',
-          客: '客語',
-          兒: '兒歌',
-          山: '原住民語',
-          藏: '藏語',
-        };
-        return languageMap[songLang] || songLang;
-      };
-
-      const isLanguageMatch = (songLang: string, selectedLangs: Language[]) => {
-        if (selectedLangs.length === 0) return true;
-        const normalizedSongLang = normalizeLanguage(songLang);
-        return selectedLangs.some(sel => {
-          return normalizedSongLang === sel;
-        });
-      };
-      result = result.filter(song => isLanguageMatch(song.language, filters.selectedLanguages));
-    }
-
-    // 4. Character Count Filter
-    if (filters.selectedTitleLength !== 'all') {
-      result = result.filter(song => {
-        const titleLen = song.title.trim().length;
-        if (filters.selectedTitleLength === '1') return titleLen === 1;
-        if (filters.selectedTitleLength === '2') return titleLen === 2;
-        if (filters.selectedTitleLength === '3') return titleLen === 3;
-        if (filters.selectedTitleLength === '4') return titleLen === 4;
-        if (filters.selectedTitleLength === '5') return titleLen === 5;
-        if (filters.selectedTitleLength === '6') return titleLen === 6;
-        if (filters.selectedTitleLength === '7+') return titleLen >= 7;
-        return true;
-      });
-    }
-
-    // 5. Official MV Filter
-    if (filters.onlyOfficialMv) {
-      result = result.filter(song => {
-        if (filters.selectedBrand !== 'all') {
-          return song.brands[filters.selectedBrand as BrandId]?.mvType === 'official_mv';
-        }
-        return Object.values(song.brands).some(b => isBrandAvailable(b) && b.mvType === 'official_mv');
-      });
-    }
-
-    // 6. Guided Vocal Filter
-    if (filters.onlyGuidedVocal) {
-      result = result.filter(song => {
-        if (filters.selectedBrand !== 'all') {
-          return song.brands[filters.selectedBrand as BrandId]?.audioType === 'guided_vocal';
-        }
-        return Object.values(song.brands).some(b => isBrandAvailable(b) && b.audioType === 'guided_vocal');
-      });
-    }
-
-    // 6.5 Niche Songs Filter
-    if (filters.onlyNicheSongs) {
-      result = result.filter(song => song.isNiche);
-    }
-
-    // 有查詢時先依命中程度排序，同級或未搜尋時沿用字數／筆劃排序。
-    return [...result].sort((a, b) => {
-      const relevance = (searchRanks.get(a) ?? 0) - (searchRanks.get(b) ?? 0);
-      if (relevance) return relevance;
-      if (filters.sortBy === 'length') {
-        const lenA = a.title.trim().length;
-        const lenB = b.title.trim().length;
-        if (lenA !== lenB) {
-          return lenA - lenB;
-        }
-        return a.title.localeCompare(b.title, 'zh-Hant-u-co-stroke');
-      } else if (filters.sortBy === 'stroke') {
-        return a.title.localeCompare(b.title, 'zh-Hant-u-co-stroke');
-      } else {
-        return a.title.localeCompare(b.title, 'zh-Hant');
-      }
-    });
-  }, [
-    filters.selectedBrand,
-    filters.selectedBrands,
-    filters.brandFilterMode,
-    filters.selectedLanguages,
-    filters.selectedTitleLength,
-    filters.onlyOfficialMv,
-    filters.onlyGuidedVocal,
-    filters.onlyNicheSongs,
-    filters.sortBy,
-    debouncedSearchQuery,
-    getFuseIndex,
-    allSongs,
-    isCatalogDisplayReady,
-  ]);
-
+  const pageEnd = Math.min(displayedCount, Math.max(40, Math.ceil(filteredSongs.length / 40) * 40));
   // Currently Paginated Songs
   const paginatedSongs = useMemo(() => {
-    return filteredSongs.slice(0, displayedCount);
-  }, [filteredSongs, displayedCount]);
+    return filteredSongs.slice(pageEnd - 40, pageEnd);
+  }, [filteredSongs, pageEnd]);
 
   useEffect(() => {
     if (!isCatalogDisplayReady || paginatedSongs.length === 0) {
@@ -619,12 +418,7 @@ export function App() {
     };
   }, [isCatalogDisplayReady, paginatedSongs]);
 
-  useEffect(() => {
-    latestSearchStateRef.current = {
-      query: filters.searchQuery,
-      resultCount: filteredSongs.length,
-    };
-  }, [filters.searchQuery, filteredSongs.length]);
+
 
   // Favorite Toggle
   const handleToggleFavorite = (songId: string) => {
@@ -667,14 +461,7 @@ export function App() {
       });
     }, settleDelay);
 
-    window.setTimeout(() => {
-      const { query, resultCount } = latestSearchStateRef.current;
-      if (query.trim()) {
-        showToast(`已顯示 ${resultCount.toLocaleString()} 首相關歌曲`);
-      } else {
-        showToast(`目前顯示 ${resultCount.toLocaleString()} 首歌曲`);
-      }
-    }, settleDelay);
+
   };
 
   const showCatalogBusyToast = () => {
@@ -789,7 +576,7 @@ export function App() {
           setSearchDraft={setMobileSearchDraft}
           onOpenMobileFilters={handleOpenMobileFilters}
           resultCount={filteredSongs.length}
-          isSearching={isSearching}
+          isSearching={isSearching || searchPending}
           isCatalogLoading={!isCatalogDisplayReady}
           isServerWaking={apiHealthStatus === 'waking'}
           isServerUnavailable={apiHealthStatus === 'unavailable'}
@@ -802,7 +589,7 @@ export function App() {
           setFilters={setFilters}
           onOpenMobileFilters={() => setIsMobileFilterOpen(true)}
           resultCount={filteredSongs.length}
-          isSearching={isSearching}
+          isSearching={isSearching || searchPending}
           isCatalogLoading={!isCatalogDisplayReady}
           isServerWaking={apiHealthStatus === 'waking'}
           isServerUnavailable={apiHealthStatus === 'unavailable'}
@@ -1087,6 +874,8 @@ export function App() {
               {isCatalogRetrying ? '重新載入中' : '重新載入歌庫'}
             </button>
           </div>
+        ) : searchPending ? (
+          <div role="status" style={{ padding: 32, textAlign: 'center' }}>正在搜尋歌曲…</div>
         ) : isCatalogReady && filteredSongs.length === 0 ? (
           <div className="empty-state-panel glass-panel" style={{
             textAlign: 'center',
@@ -1131,22 +920,18 @@ export function App() {
           />
         )}
 
-        {/* Load More Button */}
-        {displayedCount < filteredSongs.length && (
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <button
-              onClick={() => setDisplayedCount(prev => prev + 40)}
-              className="btn-primary"
-              style={{ padding: '12px 28px', fontSize: '0.95rem' }}
-            >
-              <span>顯示更多歌曲 (目前 {paginatedSongs.length} / {filteredSongs.length} 首)</span>
-              <ChevronDown size={18} />
-            </button>
-          </div>
+        {filteredSongs.length > 40 && !searchPending && (
+          <nav aria-label="歌曲分頁" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '24px' }}>
+            <button className="btn-secondary" disabled={pageEnd <= 40} onClick={() => { setDisplayedCount(Math.max(40, pageEnd - 40)); resultsRegionRef.current?.scrollIntoView({ block: 'start' }); }}>上一頁</button>
+            <span>第 {Math.ceil(pageEnd / 40)} / {Math.ceil(filteredSongs.length / 40)} 頁</span>
+            <button className="btn-primary" disabled={pageEnd >= filteredSongs.length} onClick={() => { setDisplayedCount(pageEnd + 40); resultsRegionRef.current?.scrollIntoView({ block: 'start' }); }}>下一頁</button>
+          </nav>
         )}
       </main>
 
       {/* Modals & Overlays */}
+      <Suspense fallback={<div role="status" className="glass-panel" style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 2000, padding: 16 }}>正在開啟…</div>}>
+      {selectedSongDetail && (
       <SongDetailModal
         song={selectedSongDetail}
         onClose={() => setSelectedSongDetail(null)}
@@ -1154,14 +939,18 @@ export function App() {
         onToggleFavorite={handleToggleFavorite}
         brandSongCounts={brandSongCounts}
       />
+      )}
 
+      {isMobileFilterOpen && (
       <BottomSheetFilter
         isOpen={isMobileFilterOpen}
         onClose={() => setIsMobileFilterOpen(false)}
         filters={filters}
         setFilters={setFilters}
       />
+      )}
 
+      {isFavoritesOpen && (
       <FavoritesDrawer
         isOpen={isFavoritesOpen}
         onClose={() => setIsFavoritesOpen(false)}
@@ -1171,6 +960,7 @@ export function App() {
         onSelectSong={(song) => { setIsFavoritesOpen(false); setSelectedSongDetail(song); }}
         onToggleFavorite={handleToggleFavorite}
       />
+      )}
 
       {isSuggestModalOpen && (
         <SuggestSongModal
@@ -1191,6 +981,8 @@ export function App() {
           onClose={() => setLegalNoticeTab(null)}
         />
       )}
+
+      </Suspense>
 
       <ToastNotification message={toastMessage} />
 

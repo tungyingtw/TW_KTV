@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import type { Song, BrandId, BrandInfo, SongVotes } from '../types/ktv';
 import { BRANDS } from '../data/brands';
 import { useBrands } from '../hooks/useBrands';
 import { Heart, Video, Disc, CheckCircle2, Flag } from 'lucide-react';
-import { ReportModal } from './ReportModal';
+const ReportModal = lazy(() => import('./ReportModal').then(m => ({ default: m.ReportModal })));
 import { AdBannerSlot } from './AdBannerSlot';
 import { ResultLegend } from './ResultLegend';
 import { getLanguageStyle } from '../utils/languageStyle';
@@ -153,7 +153,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
         </div>
 
         {reportingSong && (
-          <ReportModal song={reportingSong} onClose={() => setReportingSong(null)} />
+          <Suspense fallback={<div role="status">正在開啟回報…</div>}><ReportModal song={reportingSong} onClose={() => setReportingSong(null)} /></Suspense>
         )}
       </div>
     );
@@ -321,7 +321,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
         </div>
 
         {reportingSong && (
-          <ReportModal song={reportingSong} onClose={() => setReportingSong(null)} />
+          <Suspense fallback={<div role="status">正在開啟回報…</div>}><ReportModal song={reportingSong} onClose={() => setReportingSong(null)} /></Suspense>
         )}
       </div>
     );
@@ -622,7 +622,7 @@ export const MatrixView: React.FC<MatrixViewProps> = ({
       </div>
 
       {reportingSong && (
-        <ReportModal song={reportingSong} onClose={() => setReportingSong(null)} />
+        <Suspense fallback={<div role="status">正在開啟回報…</div>}><ReportModal song={reportingSong} onClose={() => setReportingSong(null)} /></Suspense>
       )}
     </div>
   );
