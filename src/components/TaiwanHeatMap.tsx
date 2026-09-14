@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Activity, ChevronLeft, ChevronRight, Minus, Plus, RotateCcw } from 'lucide-react';
 
 export type RegionPath = {
@@ -132,6 +133,15 @@ export function TaiwanHeatMap({
   actionMessage,
 }: TaiwanHeatMapProps) {
   const [pointer, setPointer] = useState<PointerState | null>(null);
+  useEffect(() => {
+    const hideTooltip = () => setPointer(null);
+    window.addEventListener('scroll', hideTooltip, true);
+    window.addEventListener('resize', hideTooltip);
+    return () => {
+      window.removeEventListener('scroll', hideTooltip, true);
+      window.removeEventListener('resize', hideTooltip);
+    };
+  }, []);
   const [mapScale, setMapScale] = useState(DEFAULT_MAP_SCALE);
   const [mapOffsetX, setMapOffsetX] = useState(DEFAULT_MAP_OFFSET_X);
   const [mapOffsetY, setMapOffsetY] = useState(DEFAULT_MAP_OFFSET_Y);
@@ -171,6 +181,7 @@ export function TaiwanHeatMap({
 
   const handleMapPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!event.isPrimary || (event.button !== 0 && event.pointerType === 'mouse')) return;
+    setPointer(null);
     mapWrapRef.current?.setPointerCapture(event.pointerId);
     mapWrapRef.current?.classList.add('is-dragging');
     dragStateRef.current = {
@@ -289,7 +300,8 @@ export function TaiwanHeatMap({
                   className={selectedRegion ? 'is-dimmed' : ''}
                   fill={getHeatColor(visits, maxVisits)}
                   opacity={0.46 + (visits / maxVisits) * 0.48}
-                  onMouseMove={(event) => setPointer({ x: event.clientX, y: event.clientY, region })}
+                  onMouseMove={(event) => { if (!dragStateRef.current) setPointer({ x: event.clientX, y: event.clientY, region }); }}
+                  onMouseLeave={() => setPointer(null)}
                   tabIndex={0}
                   role="button"
                   aria-label={`${regionLabels[region.id] || region.name}，${formatCount(visits)} 人次`}
@@ -306,7 +318,8 @@ export function TaiwanHeatMap({
                 d={selectedRegion.d}
                 className="is-selected"
                 fill={getHeatColor(visitCounts[selectedRegion.id] || 0, maxVisits)}
-                onMouseMove={(event) => setPointer({ x: event.clientX, y: event.clientY, region: selectedRegion })}
+                onMouseMove={(event) => { if (!dragStateRef.current) setPointer({ x: event.clientX, y: event.clientY, region: selectedRegion }); }}
+                onMouseLeave={() => setPointer(null)}
                 tabIndex={0}
                 role="button"
                 aria-label={`${regionLabels[selectedRegion.id] || selectedRegion.name}，${formatCount(visitCounts[selectedRegion.id] || 0)} 人次`}
@@ -335,11 +348,12 @@ export function TaiwanHeatMap({
             )}
           </g>
         </svg>
-        {pointer && (
-          <div className="taiwan-demo-tooltip" style={{ left: Math.max(8, Math.min(pointer.x + 14, window.innerWidth - 170)), top: Math.max(8, Math.min(pointer.y + 14, window.innerHeight - 85)) }}>
+        {/* Viewport coordinates must escape the panel's backdrop-filter containing block. */}
+        {pointer && createPortal(
+          <div role="tooltip" className="taiwan-demo-tooltip" style={{ zIndex: 2000, width: 170, maxWidth: 'calc(100vw - 16px)', boxSizing: 'border-box', left: Math.max(8, Math.min(pointer.x + 14, window.innerWidth - 178)), top: Math.max(8, Math.min(pointer.y + 14, window.innerHeight - 85)) }}>
             <strong>{regionLabels[pointer.region.id] || pointer.region.name}</strong>
             <span>{formatCount(visitCounts[pointer.region.id] || 0)} 人次</span>
-          </div>
+          </div>, document.body
         )}
         {selectedRegion && showJoinAction && (
           <div
