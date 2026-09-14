@@ -74,7 +74,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
     setIsLoading(true);
     setIsDailyStatsLoading(true);
     setError('');
-    setDailyStats(null);
+
     setDailyStatsError('');
     setActionMessage('');
 
@@ -156,7 +156,7 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
   const selectedPercent = totalVisits && selectedVisits ? ((selectedVisits / totalVisits) * 100).toFixed(1) : '0.0';
 
   const handleJoinSelectedRegion = async () => {
-    if (!selectedRegion || isSubmitting || selectedRegion.id === confirmedRegionId) return;
+    if (!selectedRegion || isLoading || isSubmitting || selectedRegion.id === confirmedRegionId) return;
     setIsSubmitting(true);
     setActionMessage('');
 
@@ -187,8 +187,8 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
     }
   };
 
-  const joinActionDisabled = isSubmitting || selectedRegion?.id === confirmedRegionId;
-  const joinActionLabel = isSubmitting ? '更新中...' : selectedRegion?.id === confirmedRegionId ? '已記錄此地區' : '設為我的地區';
+  const joinActionDisabled = isLoading || isSubmitting || selectedRegion?.id === confirmedRegionId;
+  const joinActionLabel = isLoading ? '統計更新中…' : isSubmitting ? '更新中...' : selectedRegion?.id === confirmedRegionId ? '已記錄此地區' : '設為我的地區';
 
   return (
     <>
@@ -207,13 +207,13 @@ export function VisitRegionHeatContent({ onClose, compactHeader = false }: Visit
         </header>
       )}
 
-      {isLoading && <div role="status" className="visit-region-modal-state">熱度讀取中，首次連線可能需要稍候…</div>}
-      {!isLoading && error && <div role="alert" className="visit-region-modal-state is-error">{error}<button type="button" className="btn-secondary" onClick={() => setReloadKey(k => k + 1)}>重新讀取</button></div>}
-      {!isLoading && !error && (
+      {isLoading && <div role="status" className={stats ? 'visit-region-refresh-status' : 'visit-region-modal-state'}>{stats ? '正在更新，下方暫時顯示上次資料…' : '熱度讀取中，首次連線可能需要稍候…'}</div>}
+      {!isLoading && error && <div role="alert" className="visit-region-modal-state is-error">{error}{stats && <span>下方保留上次成功讀取的資料。</span>}<button type="button" className="btn-secondary" onClick={() => setReloadKey(k => k + 1)}>重新讀取</button></div>}
+      {stats && regions.length > 0 && (
         <div className="visit-region-modal-grid">
           <div className="visit-region-summary">
             <span>累積到訪分布 · 非即時位置</span>
-            <button type="button" className="btn-secondary" disabled={isSubmitting} onClick={() => setReloadKey(k => k + 1)}>更新統計</button>
+            <button type="button" className="btn-secondary" disabled={isLoading || isSubmitting} onClick={() => setReloadKey(k => k + 1)}>更新統計</button>
           </div>
           <TaiwanHeatMap
             regions={regions}

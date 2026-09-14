@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { MapTooltip } from './MapTooltip';
 import { Activity, ChevronLeft, ChevronRight, Minus, Plus, RotateCcw } from 'lucide-react';
 
 export type RegionPath = {
@@ -136,10 +136,13 @@ export function TaiwanHeatMap({
   useEffect(() => {
     const hideTooltip = () => setPointer(null);
     window.addEventListener('scroll', hideTooltip, true);
+    const dismissTooltip = (event: KeyboardEvent) => { if (event.key === 'Escape') hideTooltip(); };
     window.addEventListener('resize', hideTooltip);
+    window.addEventListener('keydown', dismissTooltip);
     return () => {
       window.removeEventListener('scroll', hideTooltip, true);
       window.removeEventListener('resize', hideTooltip);
+      window.removeEventListener('keydown', dismissTooltip);
     };
   }, []);
   const [mapScale, setMapScale] = useState(DEFAULT_MAP_SCALE);
@@ -217,7 +220,7 @@ export function TaiwanHeatMap({
     const drag = dragStateRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
-    mapWrapRef.current?.releasePointerCapture(event.pointerId);
+    if (mapWrapRef.current?.hasPointerCapture(event.pointerId)) mapWrapRef.current.releasePointerCapture(event.pointerId);
     mapWrapRef.current?.classList.remove('is-dragging');
     dragStateRef.current = null;
 
@@ -249,12 +252,13 @@ export function TaiwanHeatMap({
       </label>
       <p className="visit-region-map-hint">點選縣市查看人次；手機可上下滑動頁面、左右拖曳地圖。</p>
       <div className="taiwan-demo-map-tools" aria-label="地圖檢視控制">
-        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.max(mapOffsetX - 42, -MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} aria-label="地圖向左移"><ChevronLeft size={16} /></button>
-        <button type="button" onClick={() => applyMapTransform({ scale: Math.max(0.92, Number((mapScale - 0.1).toFixed(2))), offsetX: mapOffsetX, offsetY: mapOffsetY })} aria-label="縮小地圖"><Minus size={16} /></button>
+        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.max(mapOffsetX - 42, -MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} disabled={mapOffsetX <= -MAP_OFFSET_X_LIMIT} aria-label="地圖向左移"><ChevronLeft size={16} /></button>
+        <button type="button" onClick={() => applyMapTransform({ scale: Math.max(0.92, Number((mapScale - 0.1).toFixed(2))), offsetX: mapOffsetX, offsetY: mapOffsetY })} disabled={mapScale <= 0.92} aria-label="縮小地圖"><Minus size={16} /></button>
         <button type="button" onClick={resetMapView} aria-label="重設地圖視角"><RotateCcw size={16} /></button>
-        <button type="button" onClick={() => applyMapTransform({ scale: Math.min(1.82, Number((mapScale + 0.1).toFixed(2))), offsetX: mapOffsetX, offsetY: mapOffsetY })} aria-label="放大地圖"><Plus size={16} /></button>
-        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.min(mapOffsetX + 42, MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} aria-label="地圖向右移"><ChevronRight size={16} /></button>
+        <button type="button" onClick={() => applyMapTransform({ scale: Math.min(1.82, Number((mapScale + 0.1).toFixed(2))), offsetX: mapOffsetX, offsetY: mapOffsetY })} disabled={mapScale >= 1.82} aria-label="放大地圖"><Plus size={16} /></button>
+        <button type="button" onClick={() => applyMapTransform({ scale: mapScale, offsetX: Math.min(mapOffsetX + 42, MAP_OFFSET_X_LIMIT), offsetY: mapOffsetY })} disabled={mapOffsetX >= MAP_OFFSET_X_LIMIT} aria-label="地圖向右移"><ChevronRight size={16} /></button>
       </div>
+      <span className="visit-region-scale" aria-label="地圖縮放比例">{Math.round(mapScale * 100)}%</span>
       <div className="taiwan-demo-legend" aria-label="顏色分布說明">
         <span>少</span>
         <i className="is-gradient" />
@@ -290,20 +294,21 @@ export function TaiwanHeatMap({
             </filter>
           </defs>
           <g>
-            {regions.filter((region) => region.id !== selectedId).map((region) => {
+            {regions.map((region) => {
               const visits = visitCounts[region.id] || 0;
               return (
                 <path
                   key={region.id}
                   data-region-id={region.id}
                   d={region.d}
-                  className={selectedRegion ? 'is-dimmed' : ''}
+                  className={region.id === selectedId ? 'is-selected' : selectedRegion ? 'is-dimmed' : ''}
                   fill={getHeatColor(visits, maxVisits)}
                   opacity={0.46 + (visits / maxVisits) * 0.48}
                   onMouseMove={(event) => { if (!dragStateRef.current) setPointer({ x: event.clientX, y: event.clientY, region }); }}
                   onMouseLeave={() => setPointer(null)}
                   tabIndex={0}
                   role="button"
+                  aria-pressed={region.id === selectedId}
                   aria-label={`${regionLabels[region.id] || region.name}，${formatCount(visits)} 人次`}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectRegion(region.id); }
@@ -311,23 +316,6 @@ export function TaiwanHeatMap({
                 />
               );
             })}
-            {selectedRegion && (
-              <path
-                key={`selected-${selectedRegion.id}`}
-                data-region-id={selectedRegion.id}
-                d={selectedRegion.d}
-                className="is-selected"
-                fill={getHeatColor(visitCounts[selectedRegion.id] || 0, maxVisits)}
-                onMouseMove={(event) => { if (!dragStateRef.current) setPointer({ x: event.clientX, y: event.clientY, region: selectedRegion }); }}
-                onMouseLeave={() => setPointer(null)}
-                tabIndex={0}
-                role="button"
-                aria-label={`${regionLabels[selectedRegion.id] || selectedRegion.name}，${formatCount(visitCounts[selectedRegion.id] || 0)} 人次`}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectRegion(selectedRegion.id); }
-                }}
-              />
-            )}
             <g className="taiwan-demo-region-pulses" aria-hidden="true">
               {regionPulses.map((pulse) => {
                 const anchor = REGION_ANCHOR_POINTS[pulse.regionId];
@@ -348,13 +336,7 @@ export function TaiwanHeatMap({
             )}
           </g>
         </svg>
-        {/* Viewport coordinates must escape the panel's backdrop-filter containing block. */}
-        {pointer && createPortal(
-          <div role="tooltip" className="taiwan-demo-tooltip" style={{ zIndex: 2000, width: 170, maxWidth: 'calc(100vw - 16px)', boxSizing: 'border-box', left: Math.max(8, Math.min(pointer.x + 14, window.innerWidth - 178)), top: Math.max(8, Math.min(pointer.y + 14, window.innerHeight - 85)) }}>
-            <strong>{regionLabels[pointer.region.id] || pointer.region.name}</strong>
-            <span>{formatCount(visitCounts[pointer.region.id] || 0)} 人次</span>
-          </div>, document.body
-        )}
+        {pointer && <MapTooltip x={pointer.x} y={pointer.y} label={regionLabels[pointer.region.id] || pointer.region.name} count={visitCounts[pointer.region.id] || 0} />}
         {selectedRegion && showJoinAction && (
           <div
             className="taiwan-demo-map-action"

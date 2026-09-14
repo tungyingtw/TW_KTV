@@ -37,3 +37,10 @@
 
 .visit-region-modal-grid .taiwan-demo-legend { display: inline-flex; vertical-align: middle; margin-left: 12px; }
 .visit-region-modal-grid .taiwan-demo-daily-bar em { font-size: .65rem; }
+
+/* Preserve geographic and keyboard targets while marking selection. */
+.visit-region-modal-grid .taiwan-demo-map path.is-selected { transform: none; }
+.visit-region-modal-grid .taiwan-demo-map-tools button:disabled { opacity: .4; cursor: default; }
+.visit-region-scale { margin-left: 8px; font-size: .75rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+.visit-region-refresh-status { padding: 12px 16px; color: var(--text-secondary); font-size: .85rem; }

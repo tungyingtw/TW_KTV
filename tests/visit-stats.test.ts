@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { VisitStatsPanel } from '../src/components/VisitStatsPanel';
+import { tooltipPosition } from '../src/utils/tooltipPosition';
 
 const props = { totalVisits: 0, userRegionId: '', selectedRegion: undefined, selectedVisits: 0, selectedPercent: '0.0', sortedRegions: [{ id: 'TWTPE', name: '台北市', d: 'M0 0' }], visitCounts: {}, regionLabels: {}, onSelectRegion() {}, onJoinSelectedRegion() {} };
 test('daily loading and failure do not imply zero visits', () => {
@@ -20,4 +21,19 @@ test('empty rankings and large daily counts remain honest and readable', () => {
   assert.ok(html.includes('1.2千'));
   assert.ok(html.includes('1,200 人次'));
   assert.ok(html.includes('08:00'));
+});
+test('tooltip follows the pointer and flips above/left at viewport boundaries', () => {
+  assert.deepEqual(tooltipPosition(100, 100, 170, 60, 1000, 700), { left: 114, top: 114 });
+  const lower = tooltipPosition(613, 674, 170, 60, 1274, 720);
+  assert.equal(lower.top, 600);
+  assert.ok(lower.top + 60 < 674);
+  const edge = tooltipPosition(990, 690, 170, 60, 1000, 700);
+  assert.deepEqual(edge, { left: 806, top: 616 });
+  assert.deepEqual(tooltipPosition(0, 0, 170, 60, 180, 70), { left: 8, top: 8 });
+});
+test('an old final date is not labelled today and empty daily responses do not imply zero', () => {
+  const old = renderToStaticMarkup(createElement(VisitStatsPanel, { ...props, dailyStats: [{ date: '2000-01-01', count: 1 }] }));
+  assert.ok(!old.includes('is-today'));
+  const empty = renderToStaticMarkup(createElement(VisitStatsPanel, props));
+  assert.ok(empty.includes('今日暫無資料'));
 });

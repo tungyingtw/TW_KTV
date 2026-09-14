@@ -83,7 +83,7 @@ export function VisitStatsPanel({
             <span><BarChart3 size={16} /> 近 10 日到訪</span>
             {dailyDateRange && <small>{dailyDateRange}</small>}
           </div>
-          <strong>{isDailyStatsLoading ? '今日讀取中…' : dailyStatsError ? '今日暫無資料' : `今日 ${formatCount(todayCount)} 人次`}</strong>
+          <strong>{isDailyStatsLoading ? '今日讀取中…' : dailyStatsError || dailyStats.length === 0 ? '今日暫無資料' : `今日 ${formatCount(todayCount)} 人次`}</strong>
         </div>
         {isDailyStatsLoading && <p className="taiwan-demo-daily-empty">每日統計讀取中...</p>}
         {!isDailyStatsLoading && dailyStatsError && <div role="alert" className="taiwan-demo-daily-empty">{dailyStatsError} {onRetryDailyStats && <button type="button" className="btn-secondary" onClick={onRetryDailyStats}>重試</button>}</div>}
@@ -92,9 +92,9 @@ export function VisitStatsPanel({
             <p className="taiwan-demo-daily-note">以 UTC 分日，台灣時間每日 08:00 換日。</p>
             {dailyStats.length === 0 && <p className="taiwan-demo-daily-empty">尚無每日統計資料</p>}
             <div className="taiwan-demo-daily-bars" aria-label="近 10 日每日到訪人次">
-              {dailyStats.map((item, index) => {
+              {dailyStats.map((item) => {
                 const height = item.count ? Math.max(12, Math.round((item.count / maxDailyCount) * 100)) : 4;
-                const isToday = index === dailyStats.length - 1;
+                const isToday = item.date === new Date().toISOString().slice(0, 10);
                 return (
                   <div
                     key={item.date}
