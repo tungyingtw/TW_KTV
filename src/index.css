@@ -8580,3 +8580,22 @@ header,
 }
 
 /* Phase 9 mobile result cards: quick judgement first, platform details on demand */
+
+.song-pagination { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 24px; }
+.song-pagination-controls, .song-pagination-numbers, .song-pagination-item, .song-pagination-jump { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.song-pagination-controls, .song-pagination-jump { flex-wrap: wrap; }
+.song-pagination-numbers .btn-primary, .song-pagination-numbers .btn-secondary { min-width: 40px; min-height: 44px; padding: 8px 12px; }
+.song-pagination-ellipsis { color: var(--text-secondary, #94a3b8); padding: 0 2px; }
+.song-pagination-summary { background: transparent; color: var(--text-primary, #f8fafc); border: 0; padding: 10px 4px; min-height: 44px; font: inherit; cursor: pointer; }
+.song-pagination-jump { font-size: 0.875rem; color: var(--text-secondary, #94a3b8); }
+.song-pagination-jump input { width: 76px; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid var(--border-color, #475569); border-radius: 8px; background: var(--bg-card, #17202b); color: var(--text-primary, #f8fafc); font: inherit; text-align: center; }
+.song-pagination-jump input[aria-invalid="true"] { border-color: #f43f5e; }
+.song-pagination button:focus-visible, .song-pagination input:focus-visible { outline: 2px solid var(--accent-blue, #38bdf8); outline-offset: 3px; }
+.song-pagination-range { font-size: 0.75rem; }
+.song-pagination button:disabled, .song-pagination button:disabled:hover { background: var(--bg-card) !important; color: var(--text-muted) !important; border: 1px solid var(--border-color); opacity: 0.6; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
+@media (max-width: 480px) {
+  .song-pagination-controls { gap: 6px; }
+  .song-pagination-controls > .btn-primary, .song-pagination-controls > .btn-secondary { padding: 10px 12px; min-height: 44px; }
+  .song-pagination-summary { font-size: 0.875rem; }
+  .song-pagination-range { flex-basis: 100%; text-align: center; }
+}

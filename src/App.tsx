@@ -9,6 +9,7 @@ import { MobileNavbar } from './components/mobile/MobileNavbar';
 import { MobileSearchBar } from './components/mobile/MobileSearchBar';
 import { MobileBrandTabScroll } from './components/mobile/MobileBrandTabScroll';
 import { MatrixView } from './components/MatrixView';
+import { SongPagination } from './components/SongPagination';
 import { AdBannerSlot } from './components/AdBannerSlot';
 import { ToastNotification } from './components/ToastNotification';
 import { SiteInfoGuide } from './components/SiteInfoGuide';
@@ -921,11 +922,7 @@ export function App() {
         )}
 
         {filteredSongs.length > 40 && !searchPending && (
-          <nav aria-label="歌曲分頁" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '24px' }}>
-            <button className="btn-secondary" disabled={pageEnd <= 40} onClick={() => { setDisplayedCount(Math.max(40, pageEnd - 40)); resultsRegionRef.current?.scrollIntoView({ block: 'start' }); }}>上一頁</button>
-            <span>第 {Math.ceil(pageEnd / 40)} / {Math.ceil(filteredSongs.length / 40)} 頁</span>
-            <button className="btn-primary" disabled={pageEnd >= filteredSongs.length} onClick={() => { setDisplayedCount(pageEnd + 40); resultsRegionRef.current?.scrollIntoView({ block: 'start' }); }}>下一頁</button>
-          </nav>
+          <SongPagination currentPage={Math.ceil(pageEnd / 40)} totalPages={Math.ceil(filteredSongs.length / 40)} compact={isMobile} onPageChange={page => { setDisplayedCount(page * 40); resultsRegionRef.current?.scrollIntoView({ block: 'start' }); }} />
         )}
       </main>
 
