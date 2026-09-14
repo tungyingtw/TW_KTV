@@ -13,6 +13,10 @@ dist
 dist-ssr
 *.local
 .env
+.env.*
+!.env.example
+*.tsbuildinfo
+*.bundle
 ADMIN_CREDENTIALS.txt
 *.bat
 
@@ -22,13 +26,11 @@ LOGO/
 # AI Agent Guides & Rules (Keep Local Only)
 .agents/
 .agents
+.codex/
 
 # Internal planning documents (Keep Local Only)
-docs/*
-!docs/taiwan-map-visit-stats-plan.md
-!docs/taiwan-map-visit-stats-release-checklist.md
-!docs/taiwan-map-seed-runbook.md
-!docs/taiwan-map-commit-readiness-plan.md
+docs/
+tests/mahjong/*.md
 
 # Internal Maintenance & Scratch Scripts (Strict Isolation)
 scratch/
@@ -57,6 +59,15 @@ server/admin_users.json
 server/admin_sessions.json
 server/brand_settings.json
 server/catalog_overrides.json
+server/artist_aliases_overrides.json
+server/stats_daily.json
+server/visit_region_stats.json
+server/site_notice.json
+server/votes_archived_signals.json
+server/review_actions.json
+server/review_actions_handled.json
+server/reports_archive/
+server/review_actions_archive/
 
 # IDE & OS temporary files
 .vscode/*
